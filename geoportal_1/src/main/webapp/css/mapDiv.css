@@ -1,0 +1,397 @@
+/* map panel */
+#map {
+ 	min-width: 415px;
+ 	height: 512px;
+ 	display: inline-block;
+}
+
+.map_expanded {
+	width: 1000px !important;
+	z-index: 500;
+	position:absolute;
+}
+ 
+.clearfloats {
+	clear:both;
+}
+
+#map_tabs {
+  	float:right; 
+  	height: 25px;
+  	margin-right:5px;
+}
+
+#geosearchDiv {
+	position: absolute;
+	top: 5px;
+	right: 4px;
+	width: 253px;
+	z-index: 1001;
+}
+
+#geosearchDiv > input {
+	background: none repeat scroll 0 0 transparent;
+	border: 1px solid #AAAAAA;
+	color: #FFFFFF;
+	height: 17px;
+	width: 220px;
+	opacity: .5;
+	filter:Alpha(Opacity=50);
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+#geosearchDiv > span {
+	color: white;
+	font-size: 10px;
+	visibility: hidden;
+}
+
+#goButton {
+	float: right;
+	height: 19px;
+	width: 19px;
+	background: #cccccc url(../media/bg_grayfade.png)  repeat-x;
+	color: #666666;
+	border:1px solid #AEAEAE;
+	font-family:tahoma;
+	font-size:12px;
+	/*margin-top:4px;
+	padding:0 4px;*/
+	-moz-border-radius: 0px 4px 4px 0px;
+	border-radius: 0px 4px 4px 0px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	box-shadow: -1px -1px 2px -1px #AEAEAE inset;
+}
+
+div#goButton:hover {
+	color:#417dc1; 
+}
+
+.mapClearButtonItemInactive {
+	height: 20px;
+	width: auto;
+	padding: 0 2px;
+	/*background: #cccccc url(../media/bg_grayfade.png)  repeat-x;*/
+	background: #FFFFFF;
+	color: #666666;
+	border:1px solid #AEAEAE;
+	font-family:tahoma;
+	font-size:12px;
+	-moz-border-radius: 4px 4px 4px 4px;
+	border-radius: 4px 4px 4px 4px;
+	cursor: pointer;
+	text-align: center;
+	line-height: 18px;
+	box-shadow: -1px -1px 2px -1px #AEAEAE inset;
+}
+
+.mapClearButtonItemInactive:hover {
+	color:#417dc1; 
+}
+
+#mapLoadIndicator {
+	position: absolute;
+	width: 27px;
+	height: 25px;
+	left: 205px;
+	top: 3px;
+}
+
+div.olControlMousePosition {
+	bottom: 13px !important;
+}
+
+#geoportalMap {
+  margin: 0px;
+  padding: 0px;  
+}
+  
+.olControlScaleLine {
+  margin-left: 60px;
+  padding: 1px;
+  opacity: 0.65;
+  filter:Alpha(Opacity=65);
+  background-color: white;
+}
+
+.olControlPanel {
+  left: 5px;
+  top: 5px;
+}
+
+/*.olImageLoadError_custom {
+	display: none;
+}*/
+
+.olControlPanel div {
+  float: left;
+}
+    
+#mapToolBar {
+	height: 31px;
+	width: 100%;
+	position: absolute;
+	background-color: #000000;
+	opacity: .35;	
+	filter:Alpha(Opacity=35);
+	z-index: 1000;
+}
+
+.olControlOverviewMapContainer {
+    position: absolute;
+    bottom: 100%;
+    top: 53px;
+    right: 4px;
+}
+
+.olControlOverviewMapElement {
+    padding: 2px 2px 2px 2px;
+    background-color: #CCCCCC;
+    -moz-border-radius: 0 0 0 0;
+    margin-right: -3px;
+    margin-top: -21px;
+}
+
+.olControlOverviewMapMinimizeButton {
+    right: 0px;
+    bottom: 0px;
+    cursor: pointer;
+}    
+
+.olControlOverviewMapMaximizeButton {
+    right: 0px;
+    bottom: 0px;
+    cursor: pointer;
+}
+
+.olControlOverviewMapExtentRectangle {
+    overflow: hidden;
+    /*background-image: url("img/blank.gif");*/
+    cursor: move;
+    border: 2px dotted red;
+}
+.olControlOverviewMapRectReplacement {
+    overflow: hidden;
+    cursor: move;
+    background-image: url("img/overview_replacement.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.olControlNavToolbar { 
+    width:60px;
+    height:30px;
+}    
+.olControlNavToolbar div { 
+  display:block;
+  width:  100px;
+  height: 28px;
+  top: 10px;
+  left: 6px;
+  position: relative;
+}
+
+.olControlNavigationHistory {
+	background-image: none;
+	background-repeat:no-repeat;
+	height:24px;
+	width:24px;
+  	cursor: pointer;
+}
+.olControlNavigationHistoryPreviousItemActive { 
+  background: url("../media/arrow_back.png") no-repeat scroll 0 0 transparent;
+}
+.olControlNavigationHistoryPreviousItemActive:hover { 
+  background: url("../media/arrow_back_blue.png") no-repeat scroll 0 0 transparent;
+}
+.olControlNavigationHistoryPreviousItemInactive { 
+   background: url("../media/arrow_back_disable.png") no-repeat scroll 0 0 transparent;
+}
+.olControlNavigationHistoryNextItemActive { 
+   background: url("../media/arrow_forward.png") no-repeat scroll 0 0 transparent;
+}
+
+.olControlNavigationHistoryNextItemActive:hover { 
+   background: url("../media/arrow_forward_blue.png") no-repeat scroll 0 0 transparent;
+}
+
+.olControlNavigationHistoryNextItemInactive { 
+   background: url("../media/arrow_forward_disable.png") no-repeat scroll 0 0 transparent;
+}
+
+.olControlPanel .olControlNavigationItemActive { 
+  background: url("../media/pan_on.png") no-repeat scroll 0 0 transparent;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+.olControlPanel .olControlNavigationItemInactive { 
+  background: url("../media/pan_off.png") no-repeat scroll 0 0 transparent;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+.olControlPanel .olControlZoomBoxItemActive { 
+  background: url("../media/zoom_on.png") no-repeat scroll 0 0 transparent;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+.olControlPanel .olControlZoomBoxItemInactive { 
+  background: url("../media/zoom_off.png") no-repeat scroll 0 0 transparent;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+div.olControlZoomBoxItemInactive:hover {
+	background-image: url("../media/zoom_off.png");
+}
+
+.olControlPanel .olControlZoomToMaxExtentItemInactive { 
+  background: url("../media/full_extent.png") no-repeat scroll 0 0 transparent;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+div.olControlZoomToMaxExtentItemInactive:hover {
+	background-image: url("../media/full_extent_hover.png") !important; 
+}
+
+.olControlZoomToMaxExtentItemInactiveHover {
+	 background-image: url("../media/full_extent_hover.png") !important;
+	 cursor: pointer;
+	 
+} 
+
+.olControlPanel .olControlZoomToMaxExtentItemActive { 
+  background: url("../media/full_extent_hover.png") no-repeat scroll 0 0 transparent;
+  width: 24px;
+  height: 24px;
+}
+
+.olHandlerBoxZoomBox {
+    border: 2px solid red;
+    position: absolute;
+    background-color: white;
+    opacity: 0.50;
+    font-size: 1px;
+    filter: alpha(opacity=50);
+}
+.olHandlerBoxSelectFeature {
+    border: 2px solid blue;
+    position: absolute;
+    background-color: white;
+    opacity: 0.50;
+    font-size: 1px;
+    filter: alpha(opacity=50);
+}   
+
+.olControlPanPanel {
+    top: 37px;
+    left: 5px;
+    width: 41px;
+    height: 41px;
+    background: url("../media/panarrows_bg.png") no-repeat scroll 0 0 transparent;    
+}  
+
+.olControlPanPanel div {
+    cursor: pointer;
+    position: absolute;
+	width:41px;
+	height:41px;
+}
+
+.olControlPanPanel .olControlPanNorthItemInactive {
+	width: 18px;
+	height: 18px;
+    top: 2px;
+    left: 13px;
+    background: url("../media/pandarrows_north.png") no-repeat scroll 0 0 transparent;
+}
+.olControlPanPanel .olControlPanSouthItemInactive {
+		width: 18px;
+	height: 18px;
+    top: 30px;
+    left: 13px;
+    background: url("../media/pandarrows_south.png") no-repeat scroll 0 0 transparent;
+}
+.olControlPanPanel .olControlPanWestItemInactive {
+		width: 18px;
+	height: 18px;
+    top: 15px;
+    left: 2px;
+    background: url("../media/pandarrows_west.png") no-repeat scroll 0 0 transparent;
+}
+.olControlPanPanel .olControlPanEastItemInactive {
+		width: 18px;
+	height: 18px;
+    top: 15px;
+    left: 28px;
+    background: url("../media/pandarrows_east.png") no-repeat scroll 0 0 transparent;
+}
+
+.olControlPanPanel .olControlPanNorth {
+		width: 18px;
+	height: 18px;
+    top: 2px;
+    left: 13px;
+    background: url("../media/pandarrows_north.png") no-repeat scroll 0 0 transparent;
+}
+.olControlPanPanel .olControlPanSouth {
+		width: 18px;
+	height: 18px;
+    top: 30px;
+    left: 13px;
+    background: url("../media/pandarrows_south.png") no-repeat scroll 0 0 transparent;
+}
+.olControlPanPanel .olControlPanWest {
+		width: 18px;
+	height: 18px;
+    top: 15px;
+    left: 2px;
+    background: url("../media/pandarrows_west.png") no-repeat scroll 0 0 transparent;
+}
+.olControlPanPanel .olControlPanEast {
+		width: 18px;
+	height: 18px;
+    top: 15px;
+    left: 28px;
+    background: url("../media/pandarrows_east.png") no-repeat scroll 0 0 transparent;
+}
+
+.olControlZoomPanel .olControlZoomOutItemInactive {
+    top: 36px;
+    left: 0px;
+    background-position: 0px 0px;
+}
+
+.olImageLoadError {
+    background-color: pink;
+    opacity: 0.5;
+    filter: alpha(opacity=50); /* IE */
+}
+
+#OpenLayers.Map_46_GMap2Container {
+	background-color:white !important;
+}
+
+.olControlModPanZoomBar {
+	top: 0px !important;
+	left: 0px !important;
+	}
+
+#OpenLayers_Control_PanZoomBar_ZoombarOpenLayers.Map_61 {
+	left: 19px !important;
+	width: 4px !important;
+	background-repeat: repeat-y;
+}
+
+.olLayerGoogleCopyright {
+	z-index: 0 !important;
+}
+

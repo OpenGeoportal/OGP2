@@ -1,0 +1,32 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                    http://www.springframework.org/schema/security 
+                    http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+    <http pattern="/resources/**" security="none" />
+     
+	<http use-expressions="true" access-denied-page="/accessDenied">
+	    <intercept-url pattern="/login*" access="permitAll"/>  
+    	<intercept-url pattern="/solrDelete" access="hasRole('administrator')"/>
+    	<form-login login-page="/login" default-target-url="/metadataUpload" authentication-failure-url="/loginfailed" />
+    	<intercept-url pattern="/**" access="hasAnyRole('user', 'administrator')"/>
+		<logout/>
+	</http>
+<!--    <ldap-server url="ldaps://ldap.tufts.edu/ou=People,dc=tufts,dc=edu" />
+-->
+    <authentication-manager>
+            <!--   <ldap-authentication-provider user-dn-pattern="uid={0},ou=people"/>
+         -->
+        <authentication-provider>
+            <user-service>
+                <user name="chris" password="koala" authorities="administrator, user" />
+                <user name="steve" password="emu" authorities="administrator, user" />
+                <user name="joeshmoe" password="wombat" authorities="user" />
+                <user name="peter" password="opal" authorities="user" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager>
+</beans:beans>

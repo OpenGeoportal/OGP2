@@ -1,0 +1,18 @@
+{"config":{
+	"institutions":{
+		"Tufts":[{"classKey": "layerDownloader.kml.Tufts", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
+			{"classKey": "layerDownloader.vector.Tufts", "accessLevel":["public"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.vector.Tufts.proxied", "accessLevel":["restricted"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.raster.Tufts", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]},
+			{"classKey": "layerDownloader.raster.Tufts.proxied", "accessLevel":["restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
+		"Berkeley":[{"classKey": "layerDownloader.kml.Berkeley", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
+			{"classKey": "layerDownloader.vector.Berkeley", "accessLevel":["public","restricted"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.raster.Berkeley", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
+		"Harvard":[{"classKey": "layerDownloader.kml.HGL", "accessLevel":["public"],"dataType":["vector","raster","paper map"], "outputFormats":["kml","kmz"]},
+			{"classKey": "layerDownloader.vector.HGL", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]},
+			{"classKey": "layerDownloader.raster.HGL", "accessLevel":["public","restricted"],"dataType":["raster","paper map"],"outputFormats":["geotiff"]}],
+		"MIT":[{"classKey": "layerDownloader.kml.MIT", "accessLevel":["public"],"dataType":["vector","raster"], "outputFormats":["kml", "kmz"]},
+		    {"classKey": "layerDownloader.all.MIT", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]}], 
+		"MassGIS":[{"classKey": "layerDownloader.kml.MassGIS", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},                  
+			{"classKey": "layerDownloader.vector.MassGIS", "accessLevel":["public","restricted"],"dataType":["vector"],"outputFormats":["shp"]},
+			{"classKey": "layerDownloader.raster.MassGIS", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}]}}} 

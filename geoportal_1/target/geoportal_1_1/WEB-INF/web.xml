@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="OGP_Tufts" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>OpenGeoPortal</display-name>
+		<welcome-file-list>
+		<welcome-file>openGeoPortalHome.jsp</welcome-file>
+	</welcome-file-list>
+	
+ <context-param>
+  		<param-name>contextConfigLocation</param-name>
+  		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml</param-value>
+	</context-param>
+<filter>
+   <filter-name>springSecurityFilterChain</filter-name>
+    	<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+
+	<filter-mapping>
+  		<filter-name>springSecurityFilterChain</filter-name>
+  		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<listener>  
+  		<listener-class>  
+   		org.springframework.web.context.request.RequestContextListener  
+  		</listener-class>  
+	</listener>
+	<listener>
+  		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener> 
+	<!-- <listener>
+	 <listener-class>
+            org.OpenGeoPortal.Ingest.IngestStatusSessionListener
+        </listener-class>
+  </listener>-->
+    <servlet>
+        <servlet-name>appServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>appServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+	<!--<servlet>
+		<description/>
+		<display-name>Restricted WMS</display-name>
+		<servlet-name>servlet.RestrictedWMSProxy</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>3</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.RestrictedWMSProxy</servlet-name>
+		<url-pattern>/restricted/wms</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description/>
+		<display-name>Layer Downloader</display-name>
+		<servlet-name>servlet.download</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.download</servlet-name>
+		<url-pattern>/download</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description/>
+		<display-name>Feature Info</display-name>
+		<servlet-name>servlet.getFeatureInfo</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.getFeatureInfo</servlet-name>
+		<url-pattern>/featureInfo</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description/>	
+		<display-name>Link Shortener</display-name>
+		<servlet-name>servlet.URLShortener</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.URLShortener</servlet-name>
+		<url-pattern>/shortenLink</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<description/>	
+		<display-name>Get Image</display-name>
+		<servlet-name>servlet.WMSProxy.getImage</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.WMSProxy.getImage</servlet-name>
+		<url-pattern>/getImage</url-pattern>
+	</servlet-mapping>
+		<servlet>
+		<description/>	
+		<display-name>Get Metadata</display-name>
+		<servlet-name>servlet.getMetadata</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.getMetadata</servlet-name>
+		<url-pattern>/getMetadata</url-pattern>
+	</servlet-mapping>-->
+	<!--<servlet>
+		<description/>	
+		<display-name>WFS Capabilities</display-name>
+		<servlet-name>servlet.WFSGetCapabilities</servlet-name>
+		<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>servlet.WFSGetCapabilities</servlet-name>
+		<url-pattern>/wfs</url-pattern>
+	</servlet-mapping>-->
+<!--  
+	    <servlet>
+        <servlet-name>appServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>/WEB-INF/servlet-context.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>       
+ 
+    <servlet-mapping>
+        <servlet-name>appServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    -->
+
+
+</web-app>

@@ -1,0 +1,77 @@
+ <!-- topic keywords come from http://gcmd.nasa.gov/User/difguide/iso_topics.html  -->
+ <div id="advancedSearchBox">
+    <form id="advancedSearchForm" onsubmit="return false;">
+    	<div class="searchFormRow">
+    	    <label class="searchFormLabel">Topic:</label>
+    		<div id="topicDropdown" class="searchFormInput">
+      		</div>
+    		<!--<span class="searchFormLabel">Topic:</span>
+    		<select name="advancedSelectTopic" id="advancedSelectTopic" class="selectTopic searchFormInput">
+      					<option>Select a topic (optional)</option>
+	      				<option value="farming">Agriculture and Farming</option>
+						<option value="biota">Biology and Ecology</option>
+						<option value="boundaries">Administrative and Political Boundaries</option>
+						<option value="climatologyMeteorologyAtmosphere">Atmospheric and Climatic</option>
+						<option value="economy">Business and Economic</option>
+						<option value="elevation">Elevation and Derived Products</option>
+						<option value="environment">Environment and Conservation</option>
+						<option value="geoscientificinformation">Geological and Geophysical</option>
+						<option value="health">Human Health and Disease</option>
+						<option value="imageryBaseMapsEarthCover">Imagery and Base Maps</option>
+						<option value="intelligenceMilitary">Military</option>
+						<option value="inlandWaters">Inland Water Resources</option>
+						<option value="location">Locations and Geodetic Networks</option>
+						<option value="oceans">Oceans and Estuaries</option>
+						<option value="planningCadastre">Cadastral</option>
+						<option value="society">Cultural, Society, and Demographics</option>
+						<option value="structure">Facilities and Structure</option>
+						<option value="transportation">Transportation Networks</option>
+						<option value="utilitiesCommunications">Utilities and Communication</option>
+    		</select>-->
+    	</div>
+		<div class="searchFormRow">
+    		<label for="advancedKeywordText" class="searchFormLabel">Keyword(s):</label>
+    		<input name="advancedKeywordText" type="text" class="searchFormInput" id="advancedKeywordText"/>
+    	</div>
+    	<div class="searchFormRow">
+   			<label for="advancedOriginatorText" class="searchFormLabel">Originator:</label>    				
+   			<input name="advancedOriginatorText" type="text" class="searchFormInput" id="advancedOriginatorText"/>
+		</div>
+		<div class="searchFormRow">
+    		<label for="advancedDateFromText" class="searchFormLabel">Year(s):</label>
+    		<span class="searchFormInput">
+    			<input name="advancedDateFromText" type="text" id="advancedDateFromText" size="4" />
+      			to 
+        		<input name="advancedDateToText" type="text" id="advancedDateToText" size="4" />
+        	</span>
+        </div>
+        <div class="searchFormRow">
+   			<label class="searchFormLabel">Data Type:</label>    	
+   			<div id="dataTypeDropdown" class="styledDropdown searchFormInput">
+      		</div>
+   		</div>
+   		<!--<div>-->
+   			<div class="searchFormRow">
+   			    <label class="searchFormLabel">Data Repository:</label>
+   				<div id="sourceDropdown" class="searchFormInput">
+      			</div>
+      		</div>
+      	<!--</div>-->
+      	<div class="searchFormRow">
+      	    <span class="searchFormLabel"><!-- spacer --></span>
+    		<span class="formCheckbox searchFormInput">
+    			<input type="checkbox" name="restrictedCheck" id="restrictedCheck" />
+   				<label for="restrictedCheck">Include Restricted Data</label>
+   			</span>
+   		</div>
+   		<div class="searchFormRow advancedSearchButtons">
+   			<span id="advancedSearchClear" class="styledButtonSmall" onclick="org.OpenGeoPortal.ui.clearInput('advancedSearchForm')">Clear</span>
+   			<span id="advancedSearchSubmit" class="styledButtonSmall" onclick="org.OpenGeoPortal.ui.searchSubmit()">Search</span>
+    	</div>
+    	<div class="searchFormRow">			
+   			<input type="checkbox" name="mapFilterCheck2" id="mapFilterCheck2" class="mapFilterFlag" onclick="org.OpenGeoPortal.ui.mapFilterStatus(this)" value="on" checked="checked" />
+    		<label for="mapFilterCheck2">Limit results to visible map area</label>
+    		<span id="lessSearchOptions" class="searchToggle button" onclick="org.OpenGeoPortal.ui.toggleSearch(this)">basic options</span>
+    	</div>
+	</form>
+</div>

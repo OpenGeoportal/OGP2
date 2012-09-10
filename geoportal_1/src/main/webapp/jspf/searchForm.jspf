@@ -1,0 +1,50 @@
+<div id="basicSearchDiv">
+	<div class="sub_header">
+			<span class="sub_headerTitle">
+				SEARCH
+				<!--<img src="media/header_search.png" alt="Search" />-->
+			</span>
+ 		<div class="arrow_buttons">
+    		<img src="media/button_arrow_up.png" class="button" alt="collapse" />
+    		<img src="media/button_arrow_left.png" class="button" alt="collapse left" />
+    		<img src="media/button_arrow_right.png" class="button" alt="expand right" />
+ 		</div>
+	</div>
+    
+    <div class="searchBox">
+    	<%@include file="basicSearch.jspf"%> 
+        <%@include file="advancedSearch.jspf"%> 
+   </div>
+   
+ 	<div id="resultsSubHeader" class="sub_header"> 
+ 	 	<span class="sub_headerTitle">
+ 	   		<span id="resultsNumber" class="resultsNumber">
+    			0
+    		</span>
+
+ 			RESULTS
+    		<!--<img src="media/header_searchresults.png" alt="Search Results" /> -->
+    	</span>
+
+    	<span id="sortDropdownLabel">by</span>
+    	<div id="sortDropdown">
+      	</div>
+    	<!--<span class="sub_headerButtons">-->	
+    		<div id="columnDropdown">
+    		columns
+			</div>
+			<!--  
+    		<span class="mapClearButton styledButtonSmall" title="Clear all layers from the map" >
+    		clear map
+			</span>
+			
+		</span>-->
+ 	</div>
+	<%@include file="welcomeText.jspf"%> 
+ 	<div id="resultsTable"></div>
+ 	<div id="searchResultsMessage"></div>
+ 	<div id="searchResultsNavigation"></div>
+
+</div>
+
+
