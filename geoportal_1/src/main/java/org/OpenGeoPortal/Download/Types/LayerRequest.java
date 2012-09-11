@@ -104,10 +104,6 @@ public class LayerRequest {
 		this.responseHeaders = responseHeaders;
 	}
 
-	public Boolean getMetadata() {
-		return metadata;
-	}
-
 	public void setMetadata(Boolean metadata) {
 		this.metadata = metadata;
 	}
@@ -162,6 +158,10 @@ public class LayerRequest {
 	
 	public String getDownloadUrl(){
 		return ParseJSONSolrLocationField.getDownloadUrl(this.layerInfo.getLocation());
+	}
+
+	public boolean hasMetadata() {
+		return metadata;
 	}
 	
 

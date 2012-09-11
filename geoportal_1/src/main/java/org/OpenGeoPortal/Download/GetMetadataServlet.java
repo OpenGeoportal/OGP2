@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
-import org.OpenGeoPortal.Utilities.FileName;
+import org.OpenGeoPortal.Utilities.OgpFileUtils;
 import org.springframework.web.HttpRequestHandler;
 
 public class GetMetadataServlet implements HttpRequestHandler {
@@ -71,7 +71,7 @@ public class GetMetadataServlet implements HttpRequestHandler {
 			fileName = layerId;
 		}
 		response.setHeader("Content-Disposition", disposition + "; filename=\""
-				+ FileName.filter(fileName) + ".xml" + "\"");
+				+ OgpFileUtils.filterName(fileName) + ".xml" + "\"");
 		response.setContentType("application/xml");
 		// return a link to the zip file, or info to create link
 		response.getWriter().write(metadataString);

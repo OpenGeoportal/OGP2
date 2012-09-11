@@ -1,24 +1,20 @@
 package org.OpenGeoPortal.Download;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
-import org.OpenGeoPortal.Download.Config.DownloadConfigRetriever;
+import org.OpenGeoPortal.Download.DownloadStatusManagerImpl.DownloadRequestStatus;
 import org.OpenGeoPortal.Download.Types.LayerDisposition;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Download.Types.LayerStatus;
-import org.OpenGeoPortal.Solr.SearchConfigRetriever;
-import org.OpenGeoPortal.Utilities.FileName;
+import org.OpenGeoPortal.Layer.GeometryType;
+import org.OpenGeoPortal.Utilities.OgpFileUtils;
+import org.OpenGeoPortal.Utilities.ZipFilePackager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
@@ -30,64 +26,57 @@ import org.springframework.scheduling.annotation.Async;
  *
  */
 public class DownloadPackagerImpl implements DownloadPackager {
+	@Autowired
 	private MetadataRetriever metadataRetriever;
 	@Autowired
 	private DownloadStatusManager downloadStatusManager;
-	
+	private File directory;
+
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	/**
-	 * a MetadataRetriever is injected
-	 * @param metadataRetriever
-	 */
-	public void setMetadataRetriever(MetadataRetriever metadataRetriever){
-		this.metadataRetriever = metadataRetriever;
-	}
-	
-	/**
+	 * @throws Exception 
 	 * 
 	 */
 	@Async
-	public void packageFiles(UUID requestId){
-		
-		
+	public void packageFiles(UUID requestId) throws Exception{
+		DownloadRequestStatus downloadStatus = downloadStatusManager.getDownloadRequestStatus(requestId);
+		Set <File> filesToPackage = getFilesToPackage(downloadStatus.getRequestList());
+		if (filesToPackage.isEmpty()){
+			throw new Exception("No files to package.");
+		}
+		File zipArchive = new File(directory, "OGPDownload.zip");
+		ZipFilePackager.addFilesToArchive(filesToPackage, zipArchive);
+		downloadStatus.setDownloadPackage(zipArchive);
 	}
 	
-	/**
-	 * defines what post processing happens after layers are downloaded.  In this case, retrieves metadata if needed,
-	 * adds all the files to a zip archive
-	 */
-	/*void doWork() {
-		final File downloadDirectory = this.getDownloadDirectory();
-		try {
-			this.addFilesToZipArchive();
-			this.setLayerLink(this.downloadDirectoryName + "/" + this.zipArchive.getName());
-		} catch (Exception e) {
-			System.out.println("File Download Error(doWork): " + e.getMessage());
-		} 
-	}*/
-
-	private Set<File> getFilesToPackage(){
+	private Set<File> getFilesToPackage(List<LayerRequest> layers){
 		//we can get this from the DownloadStatusManager
 	    Set<File> filesToPackage = new HashSet<File>();
-	    downloadStatusManager.
-	    for (LayerRequest layer : this.layers) {
+	    directory = null;
+	    for (LayerRequest layer : layers) {
 	    	if ((layer.getStatus() == LayerStatus.DOWNLOAD_SUCCESS)&&
     			(layer.getDisposition() == LayerDisposition.DOWNLOADED_LOCALLY)){
 
-	    		if (!layer.metadata){
+	    		if (!layer.hasMetadata()){
 	    			//get metadata for this layer, add the resulting xml file to the file list
 	    			File xmlFile;
-	    			if (layer.isVector()&&(!layer.requestedFormat.equals("kmz"))){
-	    				xmlFile = new File(this.getDownloadDirectory(), FileName.filter(layer.name) + ".shp.xml");
+	    			if (directory == null){
+	    				directory = layer.getDownloadedFiles().iterator().next().getParentFile();
+	    			}
+	    			if (GeometryType.isVector(GeometryType.parseGeometryType(layer.getLayerInfo().getDataType()))&&(!layer.getRequestedFormat().equals("kmz"))){
+	    				xmlFile = new File(directory, OgpFileUtils.filterName(layer.getLayerInfo().getName()) + ".shp.xml");
 	    			} else {
-	    				xmlFile = new File(this.getDownloadDirectory(), FileName.filter(layer.name) + ".xml");
+	    				xmlFile = new File(directory, OgpFileUtils.filterName(layer.getLayerInfo().getName()) + ".xml");
 	    			}
 
 	    			try {
-						layer.downloadedFiles.add(this.metadataRetriever.getXMLFile(layer.name, xmlFile));
+						layer.downloadedFiles.add(this.metadataRetriever.getXMLFile(layer.getLayerInfo().getName(), xmlFile));
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						//couldn't get the metadata, but don't kill the download
-						e.printStackTrace();
+						logger.error(e.getMessage());
+						//e.printStackTrace();
+						
 					} 
 	    		}
 	    		

@@ -3,6 +3,7 @@ package org.OpenGeoPortal.Download.Methods;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public abstract class AbstractDownloadMethod {
 		this.currentLayer = currentLayer;
 		this.requestId = requestId;
 		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), "POST");
-		File directory = directoryRetriever.getDirectory("download");
+		File directory = getDirectory();
 		String contentType = httpRequester.getContentType();
 		File outputFile = OgpFileUtils.createNewFileFromDownload(currentLayer.getLayerInfo().getName(), contentType, directory);
 		OutputStream outputStream = new FileOutputStream(outputFile);
@@ -49,6 +50,13 @@ public abstract class AbstractDownloadMethod {
 		}
 
 		return new AsyncResult<File>(outputFile);
+	}
+	
+	private File getDirectory() throws IOException{
+		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
+		File newDir = File.createTempFile("OGP", "", downloadDirectory);
+		newDir.mkdir();
+		return newDir;
 	}
 	
 	public abstract String createDownloadRequest() throws Exception;

@@ -1,7 +1,5 @@
 package org.OpenGeoPortal.Download;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +30,6 @@ import org.springframework.beans.factory.BeanFactoryAware;
  *
  */
 public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
-	String downloadDirectoryName = "download";
 	private List<SolrRecord> layerInfo;
 	private Boolean locallyAuthenticated = false;
 	protected LayerInfoRetriever layerInfoRetriever;
@@ -72,18 +69,6 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 
 	public void setDirectoryRetriever(DirectoryRetriever directoryRetriever) {
 		this.directoryRetriever = directoryRetriever;
-	}
-	
-	
-	public File getDownloadDirectory() {
-		try {
-			File theDirectory = directoryRetriever.getDirectory(this.downloadDirectoryName);
-			return theDirectory;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("The directory \"" + this.downloadDirectoryName + "\" could not be retrieved.");
-			return null;
-		}
 	}
 	
 	/**
@@ -145,7 +130,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		LayerRequest layer = new LayerRequest(solrRecord, requestedFormat);
 		layer.setRequestedBounds(new BoundingBox(bounds[0], bounds[1], bounds[2], bounds[3]));
 		layer.setEmailAddress(this.emailAddress);
-		layer.setTargetDirectory(this.getDownloadDirectory());
+		layer.setTargetDirectory(this.directoryRetriever.getDownloadDirectory());
 		return layer;
 	}
 

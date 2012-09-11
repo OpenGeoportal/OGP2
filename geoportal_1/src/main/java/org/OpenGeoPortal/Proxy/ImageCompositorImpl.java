@@ -51,8 +51,8 @@ public class ImageCompositorImpl implements ImageCompositor {
 	private UUID registerRequest(String sessionId, ImageRequest imageRequest) {
 		UUID requestId = UUID.randomUUID();
 		logger.info(requestId.toString());
-		IngestStatus ingestStatus = new GenericIngestStatus();
-		imageStatusManager.addDownloadRequestStatus(requestId, sessionId, imageStatus);
+		ImageStatus imageStatus = new GenericImageStatus();
+		imageStatusManager.addImageStatus(requestId, sessionId, imageStatus);
 		return requestId;
 	}
 

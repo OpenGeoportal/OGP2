@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.springframework.core.io.Resource;
 
 public class GetDirectory implements DirectoryRetriever {
+	private static final String DOWNLOAD_DIRECTORY = "download";
 	Resource resource;
 
 
@@ -37,4 +38,14 @@ public class GetDirectory implements DirectoryRetriever {
 		}
 	}
 	
+	public File getDownloadDirectory() {
+		try {
+			File theDirectory = this.getDirectory(DOWNLOAD_DIRECTORY);
+			return theDirectory;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("The directory \"" + DOWNLOAD_DIRECTORY + "\" could not be retrieved.");
+			return null;
+		}
+	}
 }

@@ -1,12 +1,10 @@
 package org.OpenGeoPortal.Proxy;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -24,10 +22,12 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.OpenGeoPortal.Authentication.OgpAuthenticator;
-import org.OpenGeoPortal.Download.LayerInfoRetriever;
+import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
+import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.HttpRequestHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -36,11 +36,11 @@ import org.xml.sax.SAXException;
 
 public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 	private GenericProxy genericProxy;
-	private OgpAuthenticator ogpAuthenticator;
-	private final String restrictedWMSServerUrl = "http://127.0.0.1:8580/wms";
-	private final String restrictedWMSServerUsername = "";
-	private final String restrictedWMSServerPassword = "";
 	private LayerInfoRetriever layerInfoRetriever;
+	private DocumentBuilder builder;
+	private Transformer serializer;
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 
 	//this needs to handle authentication if supplied a username and password
 
@@ -60,14 +60,34 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 		return this.genericProxy;
 	}
 
-	public void setOgpAuthenticator(OgpAuthenticator ogpAuthenticator) {
-		this.ogpAuthenticator = ogpAuthenticator;
+	GetCapabilitiesWMSProxy(){
+		//parse the returned XML
+		// Create a factory
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		//ignore validation, dtd
+        factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        factory.setValidating(false);
+		// Use document builder factory
+		this.builder = null;
+		try {
+			builder = factory.newDocumentBuilder();
+		} catch (ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+       	serializer = null;
+		try {
+			serializer = TransformerFactory.newInstance().newTransformer();
+		} catch (TransformerConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TransformerFactoryConfigurationError e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+		serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 	}
-
-	public OgpAuthenticator getOgpAuthenticator() {
-		return this.ogpAuthenticator;
-	}
-
 	@Override
 	public void handleRequest(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -84,47 +104,27 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 			layerIdSet.add(layerIds[i]); 
    		}
 
-   		Map<String, Map<String, String>> layerInfoMap = null;
+   		List<SolrRecord> layerRecords = null;
 		try {
-			layerInfoMap = this.layerInfoRetriever.getAllLayerInfo(layerIdSet);
+			layerRecords = this.layerInfoRetriever.fetchAllLayerInfo(layerIdSet);
 		} catch (Exception e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
    		
-   		//There is some info that requires the getCapabilities doc (native epsg code),
-   		//so we must request it and parse it.  The benefit is that we can just grab the appropriate FeatureType node and
-   		//insert it into this response.  Eventually, if we can get the epsg code from solr reliably, solr might be the
-   		//faster method, since we are parsing a potentially large xml document.
-		//alternatively, for now, we're going to use the geoserver rest interface to get the necessary info, but abstract it to an interface,
-		//so that we can use a different method in the future
-		/*
-		http://geoserver-dev.atech.tufts.edu/rest/workspaces/sde/featuretypes/GISPORTAL.GISOWNER01.SOMERVILLE_CITYBOUNDARY.xml
-		//this should be much faster
-		 * 
-		 */
-   		String institution = layerInfoMap.get(layerIds[0]).get("Institution");
-		String servicePoint = layerInfoMap.get(layerIds[0]).get("Location");
+		SolrRecord firstRecord = layerRecords.get(0);
+   		//String institution = firstRecord.getInstitution();
+		String servicePoint = firstRecord.getLocation();
 		servicePoint = ParseJSONSolrLocationField.getWmsUrl(servicePoint);
    		String serverName = servicePoint.substring(0, servicePoint.indexOf("/wms"));
-   		//String serverName = "http://geoserver-dev.atech.tufts.edu:80";
-   		System.out.println(serverName);
+   		logger.debug(serverName);
    		genericProxy.proxyRequest(request, response, servicePoint + "request=getCapabilities&version=1.1.1");
 
-		//parse the returned XML
-		// Create a factory
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		//ignore validation, dtd
-        factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        factory.setValidating(false);
-		// Use document builder factory
-		DocumentBuilder builder = null;
-		try {
-			builder = factory.newDocumentBuilder();
-		} catch (ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+   		Set<String> layerNames = new HashSet<String>();
+   		for (SolrRecord layer: layerRecords){
+				String currentLayerName = layer.getWorkspaceName() + ":" + layer.getName();
+				layerNames.add(currentLayerName);
+   		}
 		//Parse the document
 		Document document = null;
 		try {
@@ -143,38 +143,19 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 		for (int i = 0; i < elementNodes.getLength(); i++){
 			Node featureTypeNameElement = elementNodes.item(i);
 			String featureTypeName = featureTypeNameElement.getTextContent().trim();
-   			for (String layer : layerIds){
-   				String currentLayerName = layerInfoMap.get(layer).get("WorkspaceName") + ":" + layerInfoMap.get(layer).get("Name");
-   				System.out.println(currentLayerName);
-   				if (currentLayerName.equals(featureTypeName)){
-   					Node featureTypeElement = featureTypeNameElement.getParentNode();
-   			      	StringWriter stw = new StringWriter();
-   	            	Transformer serializer = null;
-					try {
-						serializer = TransformerFactory.newInstance().newTransformer();
-					} catch (TransformerConfigurationException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (TransformerFactoryConfigurationError e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-   	             	serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-					serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-   	            	try {
-						serializer.transform(new DOMSource(featureTypeElement), new StreamResult(stw));
-					} catch (TransformerException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-   	            	featureTypeInfo += stw.toString();  
-   					break;
-   				}
-   			}
+			if (!layerNames.contains(featureTypeName)){
+				Node featureTypeElement = featureTypeNameElement.getParentNode();
+				featureTypeElement.getParentNode().removeChild(featureTypeElement);
+			}
 		}
-		System.out.println(featureTypeInfo);
-		if (featureTypeInfo.length() == 0){
-			//throw new Exception("No features found.");
-		}
+		
+	      	StringWriter stw = new StringWriter();
+           	try {
+				serializer.transform(new DOMSource(document), new StreamResult(stw));
+			} catch (TransformerException e) {
+				logger.error(e.getMessage());
+			}
+           	featureTypeInfo += stw.toString(); 
+           	response.getWriter().print(featureTypeInfo);
 	}
 }

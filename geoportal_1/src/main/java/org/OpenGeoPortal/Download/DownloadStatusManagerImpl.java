@@ -1,5 +1,6 @@
 package org.OpenGeoPortal.Download;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,7 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 	List<DownloadRequestStatus> globalDownloadRequestStatus = new ArrayList<DownloadRequestStatus>();
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Override
 	public synchronized DownloadRequestStatus getDownloadRequestStatus(UUID requestId){
 		for (DownloadRequestStatus status: globalDownloadRequestStatus){
 			if (status.getRequestId().equals(requestId)){
@@ -31,6 +33,7 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 		return sessionStatus;
 	}
 	
+	@Override
 	public synchronized void removeStatusBySessionId(String sessionId){
 		List<DownloadRequestStatus> sessionStatus = getStatusBySessionId(sessionId);
 		if (!sessionStatus.isEmpty()){
@@ -41,6 +44,7 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 		
 	}
 	
+	@Override
 	public synchronized void addDownloadRequestStatus(UUID requestId, String sessionId, List<LayerRequest> layerRequests){
 		DownloadRequestStatus requestStatus = new DownloadRequestStatus();
 		requestStatus.setRequestId(requestId);
@@ -49,9 +53,10 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 		globalDownloadRequestStatus.add(requestStatus);
 	}
 	
-	class DownloadRequestStatus {
+	public class DownloadRequestStatus {
 		private UUID requestId;
 		private String sessionId;
+		private File downloadPackage;
 		private List<LayerRequest> requestList = new ArrayList<LayerRequest>();
 		
 		public UUID getRequestId() {
@@ -66,6 +71,14 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 		public void setSessionId(String sessionId) {
 			this.sessionId = sessionId;
 		}
+		
+		public File getDownloadPackage() {
+			return downloadPackage;
+		}
+		public void setDownloadPackage(File downloadPackage) {
+			this.downloadPackage = downloadPackage;
+		}
+		
 		public List<LayerRequest> getRequestList() {
 			return requestList;
 		}
