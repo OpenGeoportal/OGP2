@@ -3,16 +3,16 @@ package org.OpenGeoPortal.Download;
 import java.util.List;
 import java.util.UUID;
 
-import org.OpenGeoPortal.Download.DownloadStatusManagerImpl.DownloadRequestStatus;
+import org.OpenGeoPortal.Download.DownloadStatusManagerImpl.DownloadRequest;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 
 public interface DownloadStatusManager {
 
-	void addDownloadRequestStatus(UUID requestId, String sessionId,
+	void addDownloadRequest(UUID requestId, String sessionId,
 			List<LayerRequest> layerRequests);
 
-	void removeStatusBySessionId(String sessionId);
+	void removeRequestBySessionId(String sessionId);
 
-	DownloadRequestStatus getDownloadRequestStatus(UUID requestId);
+	DownloadRequest getDownloadRequest(UUID requestId);
 
 }

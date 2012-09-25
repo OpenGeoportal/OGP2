@@ -13,14 +13,14 @@
 			<span class="styledButton" title="Save map image" onclick="org.OpenGeoPortal.ui.saveImage();">Save Image</span>
 			<span class="styledButton" title="Print map" onclick="org.OpenGeoPortal.ui.printImage();">Print</span>
 			<div id="basemapDropdown">
-				<button id="basemapSelect" class="styledButton" title="Select base map"><span>Basemap<img src="media/arrow_down.png" alt="Select base map" /></span></button>
+				<button id="basemapSelect" class="styledButton" title="Select base map"><span>Basemap<img src="resources/media/arrow_down.png" alt="Select base map" /></span></button>
 				<div id="basemapMenu">
 				</div>
 			</div>
 		</div>  
 	</div>
 	<div id="container">
-		<div id="roll_right" class="arrow_buttons"><img src="media/button_arrow_right.png" class="button" /></div>
+		<div id="roll_right" class="arrow_buttons"><img src="resources/media/button_arrow_right.png" class="button" /></div>
 		<div id="left_col">
 			<%@include file="jspf/leftPanel.jspf"%>
 		</div>

@@ -8,11 +8,16 @@ import org.OpenGeoPortal.Solr.SolrClient;
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SolrLayerInfoRetriever implements LayerInfoRetriever{
-	public SearchConfigRetriever searchConfigRetriever;
+	private SearchConfigRetriever searchConfigRetriever;
 	private SolrClient solrClient;
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public void setSolrClient(SolrClient solrClient) {
 		this.solrClient = solrClient;
@@ -22,7 +27,8 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 		this.searchConfigRetriever = searchConfigRetriever;
 	}
 	
-	public List<SolrRecord> fetchAllLayerInfo(Set<String> layerIds) throws SolrServerException{
+	public List<SolrRecord> fetchAllLayerInfo(Set<String> layerIds) throws SolrServerException {
+		SolrServer server = solrClient.getSolrServer();
 		String query = "";
 		for (String layerId : layerIds){
 			query += "LayerId:" + layerId.trim();
@@ -31,28 +37,38 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 		if (query.length() > 0){
 			query = query.substring(0, query.lastIndexOf(" OR "));
 		}
+        /*ModifiableSolrParams params = new ModifiableSolrParams();
+        params.set("q", query);
+
+            QueryResponse response = server.query(params);*/
+		logger.debug("Solr query terms: " + query);
 	    SolrQuery queryObj = new SolrQuery();
-	    queryObj.setQuery( query );
-		List<SolrRecord> results = solrClient.getSolrServer().query(queryObj).getBeans(SolrRecord.class);
+	    queryObj.setQuery(query);
+	    QueryResponse response = null;
+	    try {
+	    	response = server.query(queryObj);
+	    } catch (Exception e){
+	    	logger.error(e.getMessage());
+	    }
+	    //logger.info(response.getResults().get(0).getFieldValue("Name").toString());
+	    List<SolrRecord> results = response.getBeans(SolrRecord.class);
+
 		return results;
 	}
 
 	@Override
 	public String getWMSUrl(SolrRecord solrRecord) {
-		String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
-		String accessLevel = solrRecord.getAccess();//layerInfo.get("Access");
-
-		String wmsProxyUrl = null;
-		try {
-			wmsProxyUrl = this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
-			//System.out.println("getwmsproxy" + wmsProxyUrl + institution + accessLevel);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		if (wmsProxyUrl != null){
-			return wmsProxyUrl;
+		logger.debug("Has proxy url: " + Boolean.toString(hasProxy(solrRecord)));
+		if (hasProxy(solrRecord)){
+			String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
+			String accessLevel = solrRecord.getAccess();//layerInfo.get("Access")
+			try {
+				return this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
 		} else {
 			return ParseJSONSolrLocationField.getWmsUrl(solrRecord.getLocation());
 		}

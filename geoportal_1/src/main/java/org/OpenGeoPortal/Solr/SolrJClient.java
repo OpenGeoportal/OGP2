@@ -6,7 +6,7 @@ import java.net.MalformedURLException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CommonsHttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrException;
@@ -14,26 +14,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SolrJClient implements SolrClient{
-	
-	//private String solrUrl;
+	private SearchConfigRetriever searchConfigRetriever;
 	private SolrServer solrServer;
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-	String solrUrl;
+	//String solrUrl;
 	
-	public SolrJClient(String solrUrl) {
+	
+	public SolrJClient(SearchConfigRetriever searchConfigRetriever) {
+		this.searchConfigRetriever = searchConfigRetriever;
+		init();
+	}
+	
+	public void init() {
 		try {
-			this.solrUrl = solrUrl;
-			SolrServer solr = new CommonsHttpSolrServer(solrUrl);
-			this.solrServer = solr;
+			String url = searchConfigRetriever.getSearchUrl();
+			url = url.substring(0, url.indexOf("/select"));
+			//logger.info(url);
+			SolrServer server = new HttpSolrServer(url);
+			  // Note that the following property could be set through JVM level arguments too
+			  /*System.setProperty("solr.solr.home", "/home/shalinsmangar/work/oss/branch-1.3/example/solr");
+			  CoreContainer.Initializer initializer = new CoreContainer.Initializer();
+			  CoreContainer coreContainer = initializer.initialize();
+			  EmbeddedSolrServer server = new EmbeddedSolrServer(coreContainer, "");*/
+			this.solrServer = server;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			logger.error("problem creating solr server");
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error("problem creating solr server");
 		}
 	}
 	
 	public SolrServer getSolrServer(){
 		return solrServer;
 	}
+	
 	public Boolean commit() {
 		try {
 			UpdateResponse updateResponse = solrServer.commit();

@@ -1,6 +1,7 @@
 package org.OpenGeoPortal.Utilities;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +30,12 @@ public class OgpFileUtils {
 	 * method creates a new file, adds the appropriate extension to the filename based on MIME-TYPE
 	 * @param layerName, mimeType, directory
 	 * @return a handle to the new file
+	 * @throws IOException 
 	 */
-	public static File createNewFileFromDownload(String fileName, String mimeType, File directory){
+	public static File createNewFileFromDownload(String fileName, String mimeType, File directory) throws IOException{
 		fileName = OgpFileUtils.filterName(fileName);
 		String responseContentType = mimeType;
-		System.out.println("response MIME-Type: " + responseContentType);
+		logger.info("response MIME-Type: " + responseContentType);
 		//get info from RequestedLayer object
 		if (responseContentType.indexOf(";") > -1){
 			responseContentType = responseContentType.substring(0, responseContentType.indexOf(";"));
@@ -45,7 +47,7 @@ public class OgpFileUtils {
 			fileExtension = ".html";
 		} else if (responseContentType.contains("application/zip")){
 			fileExtension = ".zip";
-		} else if ((responseContentType.equals("image/tiff;subtype=\"geotiff\""))||responseContentType.contains("image/tiff")){ 
+		} else if (responseContentType.contains("image/tiff")){ 
 			fileExtension = ".tif";
 		} else if (responseContentType.contains("image/jpeg")){ 
 			fileExtension = ".jpg";
@@ -56,13 +58,16 @@ public class OgpFileUtils {
 		} else {
 			fileExtension = ".unk";
 		}
-
+		directory.mkdirs();
+		directory.mkdir();
 		File newFile = new File(directory, fileName + fileExtension);
 		int i = 1;
 		while (newFile.exists()){
-			newFile = new File(directory, fileName + i + fileExtension);
+			newFile = new File(directory, fileName + "_" + i + fileExtension);
 			i++;
 		}
+		newFile.createNewFile();
+		logger.debug("New file path: " + newFile.getAbsolutePath());
 		return newFile;
 	}
 	

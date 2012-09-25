@@ -1,28 +1,28 @@
 <!--<script type="text/javascript" src="https://getfirebug.com/firebug-lite.js"></script>-->
-<link rel="stylesheet" href="javascript/openlayers/OpenLayers-2.12/theme/default/style.css" type="text/css" />
-<link rel="stylesheet" href="javascript/openlayers/OpenLayers-2.12/theme/default/google.css" type="text/css" />
-<link rel="stylesheet" href="css/jquery-ui-1.8.2.custom.css" type="text/css" />
-<link rel="stylesheet" href="css/structure.css" type="text/css" />
-<link rel="stylesheet" href="css/mapDiv.css" type="text/css" />
-<link rel="stylesheet" href="css/dataTable.css" type="text/css" />
+<link rel="stylesheet" href="resources/javascript/openlayers/OpenLayers-2.12/theme/default/style.css" type="text/css" />
+<link rel="stylesheet" href="resources/javascript/openlayers/OpenLayers-2.12/theme/default/google.css" type="text/css" />
+<link rel="stylesheet" href="resources/css/jquery-ui-1.8.2.custom.css" type="text/css" />
+<link rel="stylesheet" href="resources/css/structure.css" type="text/css" />
+<link rel="stylesheet" href="resources/css/mapDiv.css" type="text/css" />
+<link rel="stylesheet" href="resources/css/dataTable.css" type="text/css" />
 <!--<link rel="stylesheet" href="css/institution.css" type="text/css" />-->
-<link rel="stylesheet" type="text/css" media="print" href="css/print.css" />
+<link rel="stylesheet" type="text/css" media="print" href="resources/css/print.css" />
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?v=3.3&amp;sensor=false"></script>
-<script type="text/javascript" src="javascript/openlayers/OpenLayers-2.12/OpenLayers.js"></script>
-<script type="text/javascript" src="javascript/jquery/js/jquery-1.6.4.min.js"></script>
-<script type="text/javascript" src="javascript/DataTables/media/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="javascript/jquery/js/jquery-ui-1.8.16.custom.min.js"></script>
-<script type="text/javascript" src="javascript/jquery.scrollTo-min.js"></script>
-<script type="text/javascript" src="javascript/jquery.ba-resize.js"></script>
-<script type="text/javascript" src="javascript/panZoom.js"></script>
-<script type="text/javascript" src="javascript/institution.js"></script>
-<script type="text/javascript" src="javascript/errorObject.js"></script>
-<script type="text/javascript" src="javascript/utility.js"></script>
-<script type="text/javascript" src="javascript/mapDiv.js"></script>
-<script type="text/javascript" src="javascript/layerTable.js"></script>
-<script type="text/javascript" src="javascript/userInterface.js"></script>
-<script type="text/javascript" src="javascript/main.js"></script>
-<script type="text/javascript" src="javascript/solr.js"></script>
+<script type="text/javascript" src="resources/javascript/openlayers/OpenLayers-2.12/OpenLayers.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script type="text/javascript" src="resources/javascript/DataTables/media/js/jquery.dataTables.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+<script type="text/javascript" src="resources/javascript/jquery.scrollTo-min.js"></script>
+<script type="text/javascript" src="resources/javascript/jquery.ba-resize.js"></script>
+<script type="text/javascript" src="resources/javascript/panZoom.js"></script>
+<script type="text/javascript" src="resources/javascript/institution.js"></script>
+<script type="text/javascript" src="resources/javascript/errorObject.js"></script>
+<script type="text/javascript" src="resources/javascript/utility.js"></script>
+<script type="text/javascript" src="resources/javascript/mapDiv.js"></script>
+<script type="text/javascript" src="resources/javascript/layerTable.js"></script>
+<script type="text/javascript" src="resources/javascript/userInterface.js"></script>
+<script type="text/javascript" src="resources/javascript/main.js"></script>
+<script type="text/javascript" src="resources/javascript/solr.js"></script>
 <!-- <script type="text/javascript" src="javascript/testOverviewMap.js"></script>-->
 <!-- We should move to using a cdn where possible with a locally hosted fallback -->
 <!--

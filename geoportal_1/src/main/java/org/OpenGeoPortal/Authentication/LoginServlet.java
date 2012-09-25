@@ -56,7 +56,7 @@ public class LoginServlet implements HttpRequestHandler {
 		} else {	
 			// here with all required arguments
 			// authenticate against local resources
-			authenticated = ogpAuthenticator.authenticate(username, password);
+			//authenticated = ogpAuthenticator.authenticate(username, password);
 			
 			System.out.println("for " + username + " Authenticator returned " + authenticated);
 			

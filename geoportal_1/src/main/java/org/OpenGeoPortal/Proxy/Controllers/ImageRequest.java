@@ -1,7 +1,9 @@
 package org.OpenGeoPortal.Proxy.Controllers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Solr.SolrRecord;
@@ -62,6 +64,15 @@ public class ImageRequest {
 	public List<LayerImage> getLayerImages(){
 		return this.layerImages;
 	}
+	
+	public Set<String> getLayerIds(){
+		Set<String> layerIds = new HashSet<String>();
+		for (LayerImage layerImage: this.layerImages){
+			layerIds.add(layerImage.getLayerId());
+		}
+		return layerIds;
+	}
+	
 	public class LayerImage implements Comparable<LayerImage> {
 		String layerId;
 		String sld;

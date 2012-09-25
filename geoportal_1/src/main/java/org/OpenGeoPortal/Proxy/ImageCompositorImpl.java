@@ -20,6 +20,7 @@ import org.OpenGeoPortal.Utilities.ZipFilePackager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 
 public class ImageCompositorImpl implements ImageCompositor {
@@ -30,33 +31,30 @@ public class ImageCompositorImpl implements ImageCompositor {
 	private Graphics2D compositeImageGraphicsObj;
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
-	@Autowired
+	@Autowired @Qualifier("httpRequester.generic")
 	private HttpRequester httpRequester;
 	@Autowired
 	private ImageStatusManager imageStatusManager;
 	
 	@Override
-	@Async
 	public UUID requestImage(String sessionId, ImageRequest imageRequest){
-		UUID requestID = registerRequest(sessionId, imageRequest);
-		try {
-			createComposite(imageRequest);
-		} catch (IOException e) {
-			//should write some status info to the manager object
-			e.printStackTrace();
-		}
-		return requestID;
+		UUID requestId = registerRequest(sessionId, imageRequest);
+		logger.info("Request registered: " + requestId.toString());
+		createComposite(imageRequest);
+		logger.info("this should come back instantly if the request is asynchronous");
+		return requestId;
 	}
 	
 	private UUID registerRequest(String sessionId, ImageRequest imageRequest) {
 		UUID requestId = UUID.randomUUID();
-		logger.info(requestId.toString());
 		ImageStatus imageStatus = new GenericImageStatus();
 		imageStatusManager.addImageStatus(requestId, sessionId, imageStatus);
 		return requestId;
 	}
 
-	public void createComposite(ImageRequest imageRequest) throws IOException{
+	@Async
+	public void createComposite(ImageRequest imageRequest) {
+		logger.info("creating image composite");
 	    BufferedImage compositeImage = new BufferedImage(imageRequest.getWidth(), imageRequest.getHeight(), BufferedImage.TYPE_INT_ARGB);
 	    
 	    try { 
@@ -71,11 +69,17 @@ public class ImageCompositorImpl implements ImageCompositor {
     		   	//this needs to be done for each image received
 	    		try {
 	    			processLayer(layerImage.getBaseUrl(), layerImage.getQueryString(), layerImage.getOpacity());
-	    		} catch (MalformedURLException e) {
+	    		} catch (Exception e) {
 	    			//just skip it
+	    			e.printStackTrace();
 	    		} 
 	    	}
-	    	writeImageArchive(compositeImage);//write this location + status to the manager object
+	    	try {
+				writeImageArchive(compositeImage);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}//write this location + status to the manager object
 	    } finally {   
 	        compositeImageGraphicsObj.dispose();
 		}
@@ -90,8 +94,10 @@ public class ImageCompositorImpl implements ImageCompositor {
         } catch (IOException e) {
             //...
         } 
-        File archive = ZipFilePackager.zipUpFile(outputFile);
-        return archive;
+        //File archive = ZipFilePackager.zipUpFile(outputFile);
+        //return archive;
+        logger.info("Image written");
+        return outputFile;
 	}
 	
 		private File getOutputFile(File imageDirectory){
@@ -105,21 +111,24 @@ public class ImageCompositorImpl implements ImageCompositor {
 	
 	private void processLayer(String serviceURL, String requestString, int opacity) throws MalformedURLException{
 	   	//now we have everything we need to create a request
-	   	
+	   	logger.info("processing layer");
 	   	BufferedImage currentImg = null;
 	    try {
-	    	currentImg = ImageIO.read(this.httpRequester.sendRequest(serviceURL, requestString,
-	    			"GET", null));
-	    } catch (IOException e) {}
+	    	currentImg = ImageIO.read(this.httpRequester.sendRequest(serviceURL, requestString, "GET", ""));
+	    } catch (Exception e) {
+	    	e.printStackTrace();
+	    }
             
+	    logger.info("image retrieved");
 	   	//this needs to be done for each image received
         
-        //this defines opacity...do I need this, or will sld take care of it?
+        //this defines opacity
         float[] scales = { 1f, 1f, 1f, 1f};
         scales[3] = opacity / 100f;
         //System.out.println(scales[3]);
-        float[] offsets = new float[4];
+        float[] offsets = new float[3];
         RescaleOp rop = new RescaleOp(scales, offsets, null);
+        logger.info("drawing layer...");
 		compositeImageGraphicsObj.drawImage(currentImg, rop, 0, 0);
 	}
 }

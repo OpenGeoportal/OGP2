@@ -7,12 +7,12 @@
                     http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
     <http pattern="/resources/**" security="none" />
-     
+         
 	<http use-expressions="true" access-denied-page="/accessDenied">
 	    <intercept-url pattern="/login*" access="permitAll"/>  
-    	<intercept-url pattern="/solrDelete" access="hasRole('administrator')"/>
-    	<form-login login-page="/login" default-target-url="/metadataUpload" authentication-failure-url="/loginfailed" />
-    	<intercept-url pattern="/**" access="hasAnyRole('user', 'administrator')"/>
+    	<intercept-url pattern="/restricted/**" access="isAuthenticated()"/>
+    	<form-login login-page="/login" />
+    	<intercept-url pattern="/**" access="permitAll"/>
 		<logout/>
 	</http>
 <!--    <ldap-server url="ldaps://ldap.tufts.edu/ou=People,dc=tufts,dc=edu" />

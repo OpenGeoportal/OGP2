@@ -7,6 +7,7 @@ import org.OpenGeoPortal.Solr.SolrRecord;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OgpDownloadConfigRetriever extends ConfigRetriever implements DownloadConfigRetriever{
 	
@@ -35,11 +36,7 @@ public class OgpDownloadConfigRetriever extends ConfigRetriever implements Downl
 	 * (non-Javadoc)
 	 * @see org.OpenGeoPortal.Download.DownloadConfigRetriever#getClassKey(org.OpenGeoPortal.Download.RequestedLayer)
 	 */
-	Logger logger;
-	
-	public OgpDownloadConfigRetriever(String configFilePath){
-		this.setConfigFilePath(configFilePath);
-	}
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	public String getClassKey(LayerRequest layer) throws Exception {
 		this.readConfigFile();
@@ -61,7 +58,7 @@ public class OgpDownloadConfigRetriever extends ConfigRetriever implements Downl
 			if (!accessMatch){
 				continue;
 			}
-			
+			logger.debug("access match");
 			Boolean dataTypeMatch = false;
 			ArrayNode dataTypeArrayNode = (ArrayNode) currentNode.path("dataType");
 			String generalizedDataType = record.getDataType().toLowerCase();
@@ -78,7 +75,7 @@ public class OgpDownloadConfigRetriever extends ConfigRetriever implements Downl
 			if (!dataTypeMatch){
 				continue;
 			}
-			
+			logger.debug("data type match");
 			Boolean outputFormatMatch = false;
 			ArrayNode outputFormatArrayNode = (ArrayNode) currentNode.path("outputFormats");
 			Iterator<JsonNode> outputFormatIterator = outputFormatArrayNode.iterator();
@@ -90,7 +87,7 @@ public class OgpDownloadConfigRetriever extends ConfigRetriever implements Downl
 			if (!outputFormatMatch){
 				continue;
 			}
-			
+			logger.debug("requested format match");
 			classKey = currentNode.path("classKey").getTextValue();
 			if (accessMatch && dataTypeMatch && outputFormatMatch){
 				break;

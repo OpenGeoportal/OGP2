@@ -23,7 +23,7 @@
     <ul>
     	<li>Click the <span style="font-weight:bold">Preview</span> checkbox to preview the layer on the map from your search results or from your Cart</li>
     	<li>Expand the layer dropdown to access the preview controls</li>
-    	<li>Click the attribute preview tool <span><img src="media/preview.gif"/></span> and click on a feature on the map to view its attributes</li>
+    	<li>Click the attribute preview tool <span><img src="resources/media/preview.gif"/></span> and click on a feature on the map to view its attributes</li>
     </ul> 
     <h2>Download</h2>
 	<ul>

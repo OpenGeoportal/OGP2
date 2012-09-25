@@ -24,7 +24,7 @@ public class GetDirectory implements DirectoryRetriever {
 
 		String directoryString = this.resource.getFile().getParentFile().getParentFile().getAbsolutePath();
 		directoryString += "/" + directoryName;
-		System.out.println(directoryString);
+		//System.out.println(directoryString);
 		File theDirectory = new File(directoryString);
 				
 		if (!theDirectory.exists()){

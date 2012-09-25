@@ -32,8 +32,7 @@ public class MultiLayerDownloader implements LayerDownloader {
 
 	@Async
 	@Override
-	public void downloadLayers(String sessionId, UUID requestId,
-			List<LayerRequest> list) throws Exception {
+	public void downloadLayers(UUID requestId, List<LayerRequest> list) throws Exception {
 		for (LayerRequest currentLayer: layerRequests){
 			//this.downloadMethod.validate(currentLayer);
 				//check to see if the filename exists

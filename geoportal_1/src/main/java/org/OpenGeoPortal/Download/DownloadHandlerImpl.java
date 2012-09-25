@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * This is an abstract class that provides the logic to determine which concrete class 
@@ -32,13 +34,18 @@ import org.springframework.beans.factory.BeanFactoryAware;
 public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	private List<SolrRecord> layerInfo;
 	private Boolean locallyAuthenticated = false;
+	@Autowired
 	protected LayerInfoRetriever layerInfoRetriever;
+	@Autowired
 	protected DownloadConfigRetriever downloadConfigRetriever;
+	@Autowired
 	protected SearchConfigRetriever searchConfigRetriever;
 	private String emailAddress = "";
+	@Autowired
 	private DirectoryRetriever directoryRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	DownloadStatusManager downloadStatusManager;
+	@Autowired
+	protected DownloadStatusManager downloadStatusManager;
 
 	protected BeanFactory beanFactory;
 	
@@ -62,14 +69,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	public Boolean getLocallyAuthenticated(){
 		return this.locallyAuthenticated;
 	}
-	
-	public DirectoryRetriever getDirectoryRetriever() {
-		return directoryRetriever;
-	}
 
-	public void setDirectoryRetriever(DirectoryRetriever directoryRetriever) {
-		this.directoryRetriever = directoryRetriever;
-	}
 	
 	/**
 	 * a method that sets an email address.  Only used for certain download types
@@ -95,9 +95,9 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		this.setReplyEmail(emailAddress);
 		this.setLocallyAuthenticated(locallyAuthenticated);
 		Map <String, List<LayerRequest>> downloadRequestMap = null;
-		
+		UUID requestId = UUID.randomUUID();
 		downloadRequestMap = this.createDownloadRequestMap(layerMap, bounds);
-		UUID requestId = this.submitDownloadRequest(sessionId, downloadRequestMap);
+		this.submitDownloadRequest(sessionId, requestId, downloadRequestMap);
 		return requestId;
 	}
 
@@ -105,10 +105,12 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		this.layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerMap.keySet());
 		Map <String, List<LayerRequest>> downloadMap = new HashMap<String, List<LayerRequest>>(); 
 		for (SolrRecord record: this.layerInfo){
-			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()), bounds);
+			logger.debug("Requested format: " + layerMap.get(record.getLayerId()[0]));
+			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()[0]), bounds);
 			String currentClassKey = null;
 			try {
 				currentClassKey = this.downloadConfigRetriever.getClassKey(layerRequest);
+				logger.info("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
 				layerRequest.setStatus(LayerStatus.NO_DOWNLOAD_METHOD);
 				continue;
@@ -134,15 +136,6 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		return layer;
 	}
 
-	public DownloadStatusManager getDownloadStatusManager() {
-		return downloadStatusManager;
-	}
-
-	public void setDownloadStatusManager(DownloadStatusManager downloadStatusManager) {
-		this.downloadStatusManager = downloadStatusManager;
-	}
-	
-
 
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
@@ -166,26 +159,24 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
 	 * LayerRequest objects that can be downloaded using that concrete class.
 	 */
-	
-	public UUID submitDownloadRequest(String sessionId, Map <String, List<LayerRequest>> downloadMap) {
-		UUID requestId = UUID.randomUUID();
+	@Async
+	public void submitDownloadRequest(String sessionId, UUID requestId, Map <String, List<LayerRequest>> downloadMap) {
 
 		for (String currentDownloader: downloadMap.keySet()){
 			//get concrete class key from config
 			List<LayerRequest> layerRequests = downloadMap.get(currentDownloader);
-			downloadStatusManager.addDownloadRequestStatus(requestId, sessionId, layerRequests);
+			downloadStatusManager.addDownloadRequest(requestId, sessionId, layerRequests);
 
 			try{
 				LayerDownloader layerDownloader = this.getLayerDownloader(currentDownloader);
-				layerDownloader.downloadLayers(sessionId, requestId, layerRequests);
+				layerDownloader.downloadLayers(requestId, layerRequests);
 
 			} catch (Exception e) {
+				e.printStackTrace();
 				logger.error("runDownloadRequest: " + e.getMessage());
 				//should put error info in the status manager for these layers
 			}
 		}
-
-		return requestId;
 	}
 
 

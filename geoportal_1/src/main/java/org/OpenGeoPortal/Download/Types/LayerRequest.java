@@ -1,6 +1,9 @@
 package org.OpenGeoPortal.Download.Types;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,17 +28,28 @@ public class LayerRequest {
 	public String responseMIMEType;
 	public Map<String, List<String>> responseHeaders;
 	public Boolean metadata;
+	private Date timeStamp;
 
 	
+	List<Map<String,String>> successMessage = new ArrayList<Map<String,String>>();
+	List<Map<String,String>> errorMessage = new ArrayList<Map<String,String>>();
+	List<Map<String,String>> warningMessage = new ArrayList<Map<String,String>>();
+	
 	public LayerRequest(SolrRecord record, String requestedFormat){
-		this.id = record.getLayerId();
+		this.id = record.getLayerId()[0];
 		this.layerInfo = record;
+		this.timeStamp = new Date();
+
 		//probably best to make all values with a limited set of possibilities enums
 		this.setRequestedFormat(requestedFormat);
 		this.status = LayerStatus.AWAITING_REQUEST;
 		this.disposition = LayerDisposition.AWAITING_REQUEST;
 	}
 
+	public Date getTimeStamp(){
+		return this.timeStamp;
+	}
+	
 	public UUID getJobId() {
 		return jobId;
 	}
@@ -164,5 +178,34 @@ public class LayerRequest {
 		return metadata;
 	}
 	
-
+	public void addError(String name, String message){
+		errorMessage.add(statusMessage(name, message));
+	}
+	
+	public void addSuccess(String name, String message){
+		successMessage.add(statusMessage(name, message));
+	}
+	
+	public void addWarning(String name, String message){
+		warningMessage.add(statusMessage(name, message));
+	}
+	
+	public List<Map<String,String>> getSuccesses(){
+		return successMessage;
+	}
+	
+	public List<Map<String,String>> getWarnings(){
+		return warningMessage;
+	}
+	
+	public List<Map<String,String>> getErrors(){
+		return errorMessage;
+	}
+	
+	private static Map<String,String> statusMessage(String layerName, String status){
+		Map<String, String> statusMap = new HashMap<String, String>();
+		statusMap.put("layer", layerName);
+		statusMap.put("status", status);
+		return statusMap;
+	}
 }

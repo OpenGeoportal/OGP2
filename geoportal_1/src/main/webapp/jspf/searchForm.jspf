@@ -2,12 +2,12 @@
 	<div class="sub_header">
 			<span class="sub_headerTitle">
 				SEARCH
-				<!--<img src="media/header_search.png" alt="Search" />-->
+				<!--<img src="resources/media/header_search.png" alt="Search" />-->
 			</span>
  		<div class="arrow_buttons">
-    		<img src="media/button_arrow_up.png" class="button" alt="collapse" />
-    		<img src="media/button_arrow_left.png" class="button" alt="collapse left" />
-    		<img src="media/button_arrow_right.png" class="button" alt="expand right" />
+    		<img src="resources/media/button_arrow_up.png" class="button" alt="collapse" />
+    		<img src="resources/media/button_arrow_left.png" class="button" alt="collapse left" />
+    		<img src="resources/media/button_arrow_right.png" class="button" alt="expand right" />
  		</div>
 	</div>
     
@@ -23,7 +23,7 @@
     		</span>
 
  			RESULTS
-    		<!--<img src="media/header_searchresults.png" alt="Search Results" /> -->
+    		<!--<img src="resources/media/header_searchresults.png" alt="Search Results" /> -->
     	</span>
 
     	<span id="sortDropdownLabel">by</span>

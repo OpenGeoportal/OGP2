@@ -15,6 +15,9 @@ import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.DirectoryRetriever;
 import org.OpenGeoPortal.Utilities.HttpRequester;
 import org.OpenGeoPortal.Utilities.OgpFileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 
@@ -22,13 +25,25 @@ import org.springframework.scheduling.annotation.AsyncResult;
 public abstract class AbstractDownloadMethod {
 	protected LayerRequest currentLayer;
 	protected HttpRequester httpRequester;
+	@Autowired
 	protected DirectoryRetriever directoryRetriever;
 	protected UUID requestId;
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	
+	public HttpRequester getHttpRequester() {
+		return httpRequester;
+	}
+
+	public void setHttpRequester(HttpRequester httpRequester) {
+		this.httpRequester = httpRequester;
+	}
+
 	@Async
 	public Future<File> download(UUID requestId, LayerRequest currentLayer) throws Exception {
 		this.currentLayer = currentLayer;
 		this.requestId = requestId;
+		currentLayer.setMetadata(this.includesMetadata());
 		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), "POST");
 		File directory = getDirectory();
 		String contentType = httpRequester.getContentType();
@@ -38,7 +53,6 @@ public abstract class AbstractDownloadMethod {
 		try {
 			int currentBytes;
 			while ((currentBytes = bufferedIn.read()) != -1) {
-				//System.out.println("Receiving " + currentBytes + " bytes");
 				outputStream.write(currentBytes);
 			} 
 		} finally {
@@ -52,10 +66,15 @@ public abstract class AbstractDownloadMethod {
 		return new AsyncResult<File>(outputFile);
 	}
 	
+	protected abstract Boolean includesMetadata();
+
 	private File getDirectory() throws IOException{
 		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
 		File newDir = File.createTempFile("OGP", "", downloadDirectory);
-		newDir.mkdir();
+		newDir.delete();
+		Boolean success= newDir.mkdir();
+		newDir.setReadable(true);
+		newDir.setWritable(true);
 		return newDir;
 	}
 	

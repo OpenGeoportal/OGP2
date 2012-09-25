@@ -1,0 +1,18 @@
+{"config":{
+	"institutions":{
+		"Tufts":[{"classKey": "layerDownloader.kml.reflector", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
+			{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.wfs.proxied", "accessLevel":["restricted"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]},
+			{"classKey": "layerDownloader.wcs.proxied", "accessLevel":["restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
+		"Berkeley":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
+			{"classKey": "layerDownloader.wfs", "accessLevel":["public","restricted"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
+		"Harvard":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector","raster","paper map"], "outputFormats":["kml","kmz"]},
+			{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]},
+			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster","paper map"],"outputFormats":["geotiff"]}],
+		"MIT":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector","raster"], "outputFormats":["kml", "kmz"]},
+		    {"classKey": "layerDownloader.all.MIT", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]}], 
+		"MassGIS":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},                  
+			{"classKey": "layerDownloader.wfs", "accessLevel":["public","restricted"],"dataType":["vector"],"outputFormats":["shp"]},
+			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}]}}} 

@@ -1,5 +1,6 @@
 package org.OpenGeoPortal.Solr;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ import org.apache.solr.client.solrj.beans.Field;
 
 public class SolrRecord {
 	@Field("LayerId")
-	String layerId;
+	String[] layerId;
 	@Field("Name")
 	String name;
 	@Field("CollectionId")
@@ -41,39 +42,39 @@ public class SolrRecord {
 	@Field("PlaceKeywords")
 	String placeKeywords;
 	@Field("GeoReferenced")
-	String georeferenced;
+	Boolean georeferenced;
 	@Field("Abstract")
 	String description;
 	@Field("Location")
 	String location;
 	@Field("MaxY")
-	String maxY;
+	Double maxY;
 	@Field("MinY")
-	String minY;
+	Double minY;
 	@Field("MaxX")
-	String maxX;
+	Double maxX;
 	@Field("MinX")
-	String minX;
+	Double minX;
 	@Field("CenterX")
-	String centerX;
+	Double centerX;
 	@Field("CenterY")
-	String centerY;
+	Double centerY;
 	@Field("HalfWidth")
-	String halfWidth;
+	Double halfWidth;
 	@Field("HalfHeight")
-	String halfHeight;
+	Double halfHeight;
 	@Field("Area")
-	String area;
+	Double area;
 	@Field("WorkspaceName")
 	String workspaceName;
 	@Field("ContentDate")
-	String contentDate;
+	Date contentDate;
 	@Field("FgdcText")
 	String fgdcText;
-	public String getLayerId() {
+	public String[] getLayerId() {
 		return layerId;
 	}
-	public void setLayerId(String layerId) {
+	public void setLayerId(String[] layerId) {
 		this.layerId = layerId;
 	}
 	public String getName() {
@@ -172,10 +173,10 @@ public class SolrRecord {
 	public void setPlaceKeywords(String placeKeywords) {
 		this.placeKeywords = placeKeywords;
 	}
-	public String getGeoreferenced() {
+	public Boolean getGeoreferenced() {
 		return georeferenced;
 	}
-	public void setGeoreferenced(String georeferenced) {
+	public void setGeoreferenced(Boolean georeferenced) {
 		this.georeferenced = georeferenced;
 	}
 	public String getDescription() {
@@ -190,58 +191,58 @@ public class SolrRecord {
 	public void setLocation(String location) {
 		this.location = location;
 	}
-	public String getMaxY() {
+	public Double getMaxY() {
 		return maxY;
 	}
-	public void setMaxY(String maxY) {
+	public void setMaxY(Double maxY) {
 		this.maxY = maxY;
 	}
-	public String getMinY() {
+	public Double getMinY() {
 		return minY;
 	}
-	public void setMinY(String minY) {
+	public void setMinY(Double minY) {
 		this.minY = minY;
 	}
-	public String getMaxX() {
+	public Double getMaxX() {
 		return maxX;
 	}
-	public void setMaxX(String maxX) {
+	public void setMaxX(Double maxX) {
 		this.maxX = maxX;
 	}
-	public String getMinX() {
+	public Double getMinX() {
 		return minX;
 	}
-	public void setMinX(String minX) {
+	public void setMinX(Double minX) {
 		this.minX = minX;
 	}
-	public String getCenterX() {
+	public Double getCenterX() {
 		return centerX;
 	}
-	public void setCenterX(String centerX) {
+	public void setCenterX(Double centerX) {
 		this.centerX = centerX;
 	}
-	public String getCenterY() {
+	public Double getCenterY() {
 		return centerY;
 	}
-	public void setCenterY(String centerY) {
+	public void setCenterY(Double centerY) {
 		this.centerY = centerY;
 	}
-	public String getHalfWidth() {
+	public Double getHalfWidth() {
 		return halfWidth;
 	}
-	public void setHalfWidth(String halfWidth) {
+	public void setHalfWidth(Double halfWidth) {
 		this.halfWidth = halfWidth;
 	}
-	public String getHalfHeight() {
+	public Double getHalfHeight() {
 		return halfHeight;
 	}
-	public void setHalfHeight(String halfHeight) {
+	public void setHalfHeight(Double halfHeight) {
 		this.halfHeight = halfHeight;
 	}
-	public String getArea() {
+	public Double getArea() {
 		return area;
 	}
-	public void setArea(String area) {
+	public void setArea(Double area) {
 		this.area = area;
 	}
 	public String getWorkspaceName() {
@@ -250,10 +251,10 @@ public class SolrRecord {
 	public void setWorkspaceName(String workspaceName) {
 		this.workspaceName = workspaceName;
 	}
-	public String getContentDate() {
+	public Date getContentDate() {
 		return contentDate;
 	}
-	public void setContentDate(String contentDate) {
+	public void setContentDate(Date contentDate) {
 		this.contentDate = contentDate;
 	}
 	public String getFgdcText() {
@@ -265,12 +266,12 @@ public class SolrRecord {
 	
 	public Map<String,String> toMap(){
 		Map<String,String> map = new HashMap<String,String>();
-		map.put("LayerId", this.layerId);
+		map.put("LayerId", this.layerId[0]);
 		map.put("LayerName", this.name);
 		map.put("Title", this.layerDisplayName);
 		map.put("DataType", this.dataType);
 		map.put("Access", this.access);
-		map.put("ContentDate", this.contentDate);
+		//map.put("ContentDate", this.contentDate);
 		map.put("Bounds", this.minX + "," + this.minY + "," + this.maxX + "," + this.maxY);
 		map.put("Originator", this.originator);
 		map.put("Publisher", this.publisher);

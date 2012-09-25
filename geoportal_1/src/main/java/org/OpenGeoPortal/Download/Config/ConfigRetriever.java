@@ -1,4 +1,3 @@
-
 package org.OpenGeoPortal.Download.Config;
 
 import java.io.File;
@@ -6,8 +5,9 @@ import java.io.IOException;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 
 /**
  * an abstract class for reading a JSON config file
@@ -15,11 +15,12 @@ import org.codehaus.jackson.map.ObjectMapper;
  *
  */
 public abstract class ConfigRetriever {
-	public String configFilePath;
 	public JsonNode configContents = null;
+	Resource resource;
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	public void setConfigFilePath(String configFilePath){
-		this.configFilePath = configFilePath;
+	public void setResource(Resource resource){
+		this.resource = resource;
 	}
 	
 	/**
@@ -28,7 +29,7 @@ public abstract class ConfigRetriever {
 	 * @throws java.io.IOException
 	 */
 	public File loadConfigFile() throws java.io.IOException {
-		File configFile = new File(this.configFilePath);
+		File configFile = resource.getFile();
 		return configFile;
 	}
 	

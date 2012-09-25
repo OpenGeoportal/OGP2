@@ -132,9 +132,9 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 			layerIdSet.add(layerIds[i]); 
    		}
 
-   		List<SolrRecord> layerInfoMap = null;
+   		List<SolrRecord> layerInfoList = null;
 		try {
-			layerInfoMap = this.layerInfoRetriever.fetchAllLayerInfo(layerIdSet);
+			layerInfoList = this.layerInfoRetriever.fetchAllLayerInfo(layerIdSet);
 		} catch (Exception e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
@@ -151,7 +151,7 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 		//this should be much faster
 		 * 
 		 */
-   		String institution = layerInfoMap.get(layerIds[0]).get("Institution");
+   		String institution = layerInfoList.get(0).getInstitution();
 		//String servicePoint = layerInfoMap.get(layerIds[0]).get("Location");
 		//servicePoint = ParseJSONSolrLocationField.getWmsUrl(servicePoint);
    		//String serverName = servicePoint.substring(0, servicePoint.indexOf("/wms"));
@@ -163,10 +163,9 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
    			version = "1.0.0";
    		}
    		this.featureNodesDocument = this.createXMLDocument();
-		for (String layer: layerIds){
-			Map<String,String> currentLayerInfo = layerInfoMap.get(layer);
-   			String workspace = currentLayerInfo.get("WorkspaceName");
-   			String layerName = currentLayerInfo.get("Name");
+		for (SolrRecord layer: layerInfoList){
+   			String workspace = layer.getWorkspaceName();
+   			String layerName = layer.getName();
    			//System.out.println(serverName + "/" + workspace + "/" + layerName + "/wfs?request=GetCapabilities&version=" + version);
    			URL getCapabilitiesUrl = new URL(serverName + "/" + workspace + "/" + layerName + "/wfs?request=GetCapabilities&version=" + version);
    			

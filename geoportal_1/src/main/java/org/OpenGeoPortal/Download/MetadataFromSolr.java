@@ -12,6 +12,7 @@ import org.xml.sax.*;
 import org.OpenGeoPortal.Solr.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocumentList;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.*;
 
 /**
@@ -20,6 +21,7 @@ import org.w3c.dom.*;
  *
  */
 public class MetadataFromSolr implements MetadataRetriever {
+	@Autowired
 	private SolrClient solrClient;
 	private String layerId;
 	private Document xmlDocument;

@@ -20,7 +20,7 @@ public class UrlShortenerGoogle implements UrlShortener {
 		return this.searchConfigRetriever;
 	}
 	
-    public String retrieveShortLink(String longUrl){
+    public String retrieveShortLink(String longUrl) throws Exception{
     	/*
     	 * 	/*POST https://www.googleapis.com/urlshortener/v1/url
 		Content-Type: application/json
@@ -32,25 +32,11 @@ public class UrlShortenerGoogle implements UrlShortener {
 	   messageConverters.add(new MappingJacksonHttpMessageConverter());
  	   template.setMessageConverters(messageConverters);
          //now we need to add the parameters
- 	   String apiKey = null;
- 	   try {
- 		   apiKey = this.searchConfigRetriever.getArbitrary("googleAPIKey");
- 	   } catch (Exception e1) {
- 		   // TODO Auto-generated catch block
- 		   e1.printStackTrace();
- 		   //If there is an error simply return the original url
- 		   return longUrl;
- 	   }
+ 	   String apiKey = this.searchConfigRetriever.getArbitrary("googleAPIKey");
 
        LinkShortenRequestGoogle postObject = new LinkShortenRequestGoogle(longUrl);
-       LinkShortenReturnGoogle result = null;
-       try {
-    	   result = template.postForObject(url + apiKey, postObject, LinkShortenReturnGoogle.class);
-       } catch (Exception e){
-    	   e.getMessage();
- 		   //If there is an error simply return the original url
-    	   return longUrl;
-       }
+       LinkShortenReturnGoogle result = template.postForObject(url + apiKey, postObject, LinkShortenReturnGoogle.class);
+
        return result.getId();
     }
 }

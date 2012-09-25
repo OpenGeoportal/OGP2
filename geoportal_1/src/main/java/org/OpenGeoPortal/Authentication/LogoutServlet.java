@@ -29,19 +29,6 @@ we authenticate against an LDAP server at Tufts University.
 */
 
 public class LogoutServlet implements HttpRequestHandler {
-	private OgpAuthenticator ogpAuthenticator;
-
-
-
-	public OgpAuthenticator getOgpAuthenticator() {
-		return ogpAuthenticator;
-	}
-
-
-
-	public void setOgpAuthenticator(OgpAuthenticator ogpAuthenticator) {
-		this.ogpAuthenticator = ogpAuthenticator;
-	}
 
 	@Override
 	public void handleRequest(HttpServletRequest request,

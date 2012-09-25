@@ -8,9 +8,6 @@ import org.codehaus.jackson.JsonNode;
 
 public class OgpConfigRetriever extends ConfigRetriever implements
 		SearchConfigRetriever {
-	public OgpConfigRetriever(String configFilePath) {
-		this.setConfigFilePath(configFilePath);
-	}
 
 	public String getSearchUrl() throws IOException {
 		this.readConfigFile();

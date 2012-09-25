@@ -44,8 +44,10 @@ public class ZipFilePackager{
 		while ((bytesRead = currentFileStream.read(buffer))!= -1) {
 			newZipStream.write(buffer, 0, bytesRead);
 		}
-		currentFileStream.close();
+		newZipStream.closeArchiveEntry();
 		newZipStream.close();
+		currentFileStream.close();
+		logger.info("Deleting: " + fileToZip.getName());
 		fileToZip.delete();
 		return zipFile;
 	}
@@ -77,6 +79,7 @@ public class ZipFilePackager{
 	    			while ((bytesRead = currentFileStream.read(buffer))!= -1) {
 	    				newZipStream.write(buffer, 0, bytesRead);
 	    			}
+	    			newZipStream.closeArchiveEntry();
 	    		} else {
 	    			//read the entries from the zip file and copy them to the new zip archive
 	    			//so that we don't have to recompress them.
@@ -97,6 +100,7 @@ public class ZipFilePackager{
 	    				while ((bytesRead = currentZipStream.read(buffer))!= -1) {
 	    					newZipStream.write(buffer, 0, bytesRead);
 	           	 		}
+	    				newZipStream.closeArchiveEntry();
 	    			}
 	    			currentZipStream.close();
 	    		}	

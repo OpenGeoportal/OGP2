@@ -9,6 +9,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Solr.SolrRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -16,6 +18,7 @@ import org.w3c.dom.NodeList;
 
 public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public String createDownloadRequest() throws Exception {
 		//--generate POST message
@@ -68,11 +71,7 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	 Map<String, String> getWfsDescribeLayerInfo()
 	 	throws Exception
 	 {
-		// TODO should be xml
-		/*DocumentFragment requestXML = createDocumentFragment();
-		// Insert the root element node
-		Element rootElement = requestXML.createElement("DescribeFeatureType");
-		requestXML.appendChild(rootElement);*/
+		// TODO should be xml doc fragment?
 		String layerName = this.currentLayer.getLayerNameNS();
 	 	String describeFeatureRequest = "<DescribeFeatureType"
 	            + " version=\"1.0.0\""
@@ -84,8 +83,11 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	            + "</DescribeFeatureType>";
 
 		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), describeFeatureRequest, "POST");
-		System.out.println(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
+		String contentType = this.httpRequester.getContentType();
 
+		if (!contentType.contains("xml")){
+			throw new Exception("Expecting an XML response; instead, got content type '" + contentType + "'");
+		}
 		//parse the returned XML and return needed info as a map
 		// Create a factory
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -126,7 +128,7 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 			}
 			
 		} catch (Exception e){
-			throw new Exception("error getting layer info: "+ e.getMessage());
+			throw new Exception("Error getting layer info from DescribeFeatureType: "+ e.getMessage());
 		}
 		
 		return describeLayerInfo;

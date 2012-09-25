@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,15 +16,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
 
 @Controller
-@RequestMapping("/download")
+@RequestMapping("/layerDownload")
 public class DownloadController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private DownloadHandler downloadHandler;
 
 	@RequestMapping(method=RequestMethod.POST, produces="application/json")
-	public @ResponseBody String processDownload(@RequestParam("layers") String[] layers, @RequestParam("email") String email, 
-			@RequestParam("bbox") String bbox, Model model) throws Exception {
+	public @ResponseBody Map<String,String> processDownload(@RequestParam("layers") String[] layers, @RequestParam("email") String email, 
+			@RequestParam("bbox") String bbox) throws Exception {
 		 /**
 		 * This servlet should receive a POST request with an object containing 
 		 * all the info needed for each layer to be downloaded.  The servlet calls a class 
@@ -36,9 +35,8 @@ public class DownloadController {
 		 *
 		 * @author Chris Barnett
 		 */
-
+		logger.debug(layers[0]);
 		  //do data validation here
-
 		String[] arrBbox = bbox.split(",");
 		Map<String,String> layerMap = new HashMap<String,String>();
 		for (int i = 0; i < layers.length; i++){
@@ -47,6 +45,8 @@ public class DownloadController {
 		}
 		String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
 		UUID requestId = downloadHandler.requestLayers(sessionId, layerMap, arrBbox, email, true);
-		return requestId.toString();
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("requestId", requestId.toString());
+		return map;
 	}
 }

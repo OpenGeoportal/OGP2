@@ -4,8 +4,8 @@
 			OPTIONS
 			</span>
  		<div class="arrow_buttons">
-    		<img src="media/button_arrow_left.png" class="button" alt="collapse left" />
-    		<img src="media/button_arrow_right.png" class="button" alt="expand right" />
+    		<img src="resources/media/button_arrow_left.png" class="button" alt="collapse left" />
+    		<img src="resources/media/button_arrow_right.png" class="button" alt="expand right" />
  		</div>
 	</div>
 	<div id="savedLayersOptions">

@@ -1,0 +1,13 @@
+{"config":{"homeInstitution": "Tufts", "institutionSpecificCss": "resources/css/institutionTufts.css", 
+        "institutionSpecificJavaScript": "", 
+	"googleAnalyticsId": "UA-19787732-1", 
+	"googleAPIKey": "AIzaSyCuK9otEY-rbMNJEpDO_NzD1jA-OyqubDY",
+	"search":{"serviceType": "solr", "serviceAddress": "http://localhost:8080/solr/select"}, 
+	"institutions": {"Tufts":{"proxy": {"id": "proxy.Restricted.Tufts", "accessLevel": ["restricted"], "wms": "/restricted/wms"}, 
+				"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_tufts.png", "altDisplay": "Tufts", "tooltipText": "Tufts University"}}}, 
+	"Harvard":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_harvard.png", 
+			"altDisplay": "HGL", "tooltipText": "Harvard Geospatial Library"}}}, 
+	"Berkeley":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_berkeley.png", "altDisplay": "Berkeley", "tooltipText": "UC Berkeley"}}}, 
+	"MIT":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_mit.png", "altDisplay": "MIT", "tooltipText": "Massachusetts Institute of Technology"}}}, 
+	"MassGIS":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_massgis.png", "altDisplay": "MassGIS", "tooltipText": "MassGIS"}}}
+	}}}

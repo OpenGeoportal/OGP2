@@ -10,22 +10,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DownloadStatusManagerImpl implements DownloadStatusManager {
-	List<DownloadRequestStatus> globalDownloadRequestStatus = new ArrayList<DownloadRequestStatus>();
+	List<DownloadRequest> globalDownloadRequestRegistry = new ArrayList<DownloadRequest>();
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Override
-	public synchronized DownloadRequestStatus getDownloadRequestStatus(UUID requestId){
-		for (DownloadRequestStatus status: globalDownloadRequestStatus){
+	public synchronized DownloadRequest getDownloadRequest(UUID requestId){
+		for (DownloadRequest status: globalDownloadRequestRegistry){
 			if (status.getRequestId().equals(requestId)){
+				logger.debug("Status found");
+				logger.info(status.getRequestList().get(0).getLayerNameNS());
 				return status;
 			}
 		}
+		logger.debug("No status found");
 		return null;
 	}
 
-	private synchronized List<DownloadRequestStatus> getStatusBySessionId(String sessionId){
-		List<DownloadRequestStatus> sessionStatus = new ArrayList<DownloadRequestStatus>();
-		for (DownloadRequestStatus status: globalDownloadRequestStatus){
+	private synchronized List<DownloadRequest> getRequestBySessionId(String sessionId){
+		List<DownloadRequest> sessionStatus = new ArrayList<DownloadRequest>();
+		for (DownloadRequest status: globalDownloadRequestRegistry){
 			if (status.getSessionId().equals(sessionId)){
 				sessionStatus.add(status);
 			}
@@ -34,10 +37,10 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 	}
 	
 	@Override
-	public synchronized void removeStatusBySessionId(String sessionId){
-		List<DownloadRequestStatus> sessionStatus = getStatusBySessionId(sessionId);
+	public synchronized void removeRequestBySessionId(String sessionId){
+		List<DownloadRequest> sessionStatus = getRequestBySessionId(sessionId);
 		if (!sessionStatus.isEmpty()){
-			globalDownloadRequestStatus.removeAll(sessionStatus);
+			globalDownloadRequestRegistry.removeAll(sessionStatus);
 		} else {
 			logger.debug("No download status objects found for this session: " + sessionId);
 		}
@@ -45,15 +48,16 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 	}
 	
 	@Override
-	public synchronized void addDownloadRequestStatus(UUID requestId, String sessionId, List<LayerRequest> layerRequests){
-		DownloadRequestStatus requestStatus = new DownloadRequestStatus();
+	public synchronized void addDownloadRequest(UUID requestId, String sessionId, List<LayerRequest> layerRequests){
+		logger.info("adding request status object");
+		DownloadRequest requestStatus = new DownloadRequest();
 		requestStatus.setRequestId(requestId);
 		requestStatus.setSessionId(sessionId);
 		requestStatus.setRequestList(layerRequests);
-		globalDownloadRequestStatus.add(requestStatus);
+		globalDownloadRequestRegistry.add(requestStatus);
 	}
 	
-	public class DownloadRequestStatus {
+	public class DownloadRequest {
 		private UUID requestId;
 		private String sessionId;
 		private File downloadPackage;
@@ -77,6 +81,7 @@ public class DownloadStatusManagerImpl implements DownloadStatusManager {
 		}
 		public void setDownloadPackage(File downloadPackage) {
 			this.downloadPackage = downloadPackage;
+			logger.info("Download package: " + downloadPackage.getAbsolutePath());
 		}
 		
 		public List<LayerRequest> getRequestList() {
