@@ -21,7 +21,7 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 				return status;
 			}
 		}
-		logger.error("No status found");
+		logger.info("No status found for download request");
 		return null;
 	}
 
@@ -71,7 +71,7 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	
 	@Override
 	public synchronized void addDownloadRequest(UUID requestId, String sessionId, List<MethodLevelDownloadRequest> layerRequests){
-		logger.info("Adding request status object...");
+		logger.info("Adding download request status object...");
 		DownloadRequest requestStatus = new DownloadRequest();
 		requestStatus.setRequestId(requestId);
 		requestStatus.setSessionId(sessionId);
@@ -80,14 +80,24 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	}
 
 	@Override
-	public void addImageRequest(UUID requestId, String sessionId,
+	public synchronized void addImageRequest(UUID requestId, String sessionId,
 			ImageRequest imageRequest) {
-		logger.info("Adding request status object...");
-		ImageRequest requestStatus = new ImageRequest();
-		requestStatus.setRequestId(requestId);
-		requestStatus.setSessionId(sessionId);
-		globalImageRequestRegistry.add(requestStatus);
+		logger.info("Adding image request status object...");
+		imageRequest.setRequestId(requestId);
+		imageRequest.setSessionId(sessionId);
+		globalImageRequestRegistry.add(imageRequest);
 		
+	}
+
+	@Override
+	public synchronized ImageRequest getImageRequest(UUID requestId) {
+		for (ImageRequest status: globalImageRequestRegistry){
+			if (status.getRequestId().equals(requestId)){
+				return status;
+			}
+		}
+		logger.info("No status found for image request.");
+		return null;
 	}
 
 }

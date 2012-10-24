@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
 
 @Controller
-@RequestMapping("/getImage")
+@RequestMapping("/requestImage")
 public class ImageController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired

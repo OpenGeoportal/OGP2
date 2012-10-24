@@ -11,6 +11,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest;
+import org.OpenGeoPortal.Proxy.Controllers.ImageRequest.ImageStatus;
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest.LayerImage;
 import org.OpenGeoPortal.Utilities.DirectoryRetriever;
 import org.slf4j.Logger;
@@ -48,17 +49,18 @@ public class ImageCompositorImpl implements ImageCompositor {
     		   	//this needs to be done for each image received
 	    		try {
 	    			processLayer(layerImage);
+	    			layerImage.setImageStatus(ImageStatus.SUCCESS);
 	    		} catch (Exception e) {
 	    			//just skip it
 	    			logger.error("There was an error processing this layer image.  Skipping...");
+	    			layerImage.setImageStatus(ImageStatus.FAILED);
 	    			e.printStackTrace();
 	    		} 
 	    	}
 	    	try {
-				imageRequest.setDownloadFile(writeImageArchive(compositeImage));
+				imageRequest.setDownloadFile(writeImage(compositeImage));
 				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}//write this location + status to the manager object
 	    } catch (Exception e){
@@ -77,6 +79,7 @@ public class ImageCompositorImpl implements ImageCompositor {
     			layerImage.setImageFileFuture(imageDownloader.getImage(layerImage.getBaseUrl(), layerImage.getQueryString()));
     		} catch (Exception e) {
     			//just skip it
+    			layerImage.setImageStatus(ImageStatus.FAILED);
     			logger.error("There was a problem getting this image.  Skipping.");
     			e.printStackTrace();
     		} 
@@ -94,7 +97,7 @@ public class ImageCompositorImpl implements ImageCompositor {
 		return newDir;
 	}
 	
-	private File writeImageArchive(BufferedImage compositeImage) throws IOException{
+	private File writeImage(BufferedImage compositeImage) throws IOException{
     	File imageDirectory = getDirectory();
 		File outputFile = getOutputFile(imageDirectory);
         try {
@@ -142,6 +145,5 @@ public class ImageCompositorImpl implements ImageCompositor {
 		compositeImageGraphicsObj.drawImage(currentImg, rop, 0, 0);
 		//cleaning up temp file
 		imgFile.delete();
-		
 	}
 }

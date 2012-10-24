@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.OpenGeoPortal.Download.Controllers.RequestStatusController.StatusSummary;
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -38,6 +39,12 @@ public class ImageRequest {
 	@JsonIgnore
 	File downloadFile;
 
+	public enum ImageStatus {
+		PROCESSING,
+		FAILED,
+		SUCCESS
+	}
+	
 	public File getDownloadFile() {
 		return downloadFile;
 	}
@@ -147,15 +154,8 @@ public class ImageRequest {
 		File imageFile;
 		@JsonIgnore
 		Future<File> imageFileFuture;
-
-		LayerImage(){}
-		
-		LayerImage(String layerId, String sld, int opacity, int zIndex){
-			this.layerId = layerId;
-			this.sld =sld;
-			this.opacity = opacity;
-			this.zIndex = zIndex;
-		}
+		@JsonIgnore
+		ImageStatus imageStatus = ImageStatus.PROCESSING;
 
 		public String getName() {
 			return name;
@@ -224,6 +224,14 @@ public class ImageRequest {
 			this.imageFileFuture = imageFileFuture;
 		}
 		
+		public ImageStatus getImageStatus() {
+			return imageStatus;
+		}
+
+		public void setImageStatus(ImageStatus imageStatus) {
+			this.imageStatus = imageStatus;
+		}
+		
 		@Override
 		@JsonIgnore
 		public int compareTo(LayerImage n) {
@@ -238,5 +246,36 @@ public class ImageRequest {
 	        LayerImage n = (LayerImage) o;
 	        return n.layerId.equals(layerId);
 	    }
+	}
+	
+	private StatusSummary getRawStatusSummary(){
+		//Processing or Complete for the request
+		StatusSummary completionStatus = null;
+		int successCount = 0;
+		int failureCount = 0;
+		
+		List<LayerImage> layerList = getLayers();
+		for (LayerImage request: layerList){
+			logger.info(request.getImageStatus().toString());
+			if (request.getImageStatus().equals(ImageStatus.PROCESSING)){
+				return StatusSummary.PROCESSING;
+			} else if (request.getImageStatus().equals(ImageStatus.SUCCESS)) {
+				successCount++;
+			} else if (request.getImageStatus().equals(ImageStatus.FAILED)){
+				failureCount++;
+			}
+		}
+		if (failureCount == 0){
+			completionStatus = StatusSummary.COMPLETE_SUCCEEDED;
+		} else if (successCount == 0){
+			completionStatus = StatusSummary.COMPLETE_FAILED;
+		} else {
+			completionStatus = StatusSummary.COMPLETE_PARTIAL;
+		}
+		return completionStatus;
+	}
+	
+	public StatusSummary getStatusSummary() {
+		return getRawStatusSummary();
 	}
 }

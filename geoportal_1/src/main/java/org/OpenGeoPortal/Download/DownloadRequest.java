@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.OpenGeoPortal.Download.Controllers.RequestStatusController.StatusSummary;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
 import org.slf4j.Logger;
@@ -46,15 +47,6 @@ public class DownloadRequest {
 	
 	public void setRequestList(List<MethodLevelDownloadRequest> layerRequests){
 		requestList = layerRequests;
-	}
-
-	
-	public enum StatusSummary {
-		PROCESSING,
-		READY_FOR_PACKAGING,
-		COMPLETE_FAILED,
-		COMPLETE_SUCCEEDED,
-		COMPLETE_PARTIAL
 	}
 	
 	private Boolean isPostProcessingComplete(){

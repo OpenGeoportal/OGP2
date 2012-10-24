@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.OpenGeoPortal.Download.DownloadRequest.StatusSummary;
+import org.OpenGeoPortal.Download.Controllers.RequestStatusController.StatusSummary;
 
 public class RequestStatus {
 	private List<RequestStatusElement> requestStatus = new ArrayList<RequestStatusElement>();

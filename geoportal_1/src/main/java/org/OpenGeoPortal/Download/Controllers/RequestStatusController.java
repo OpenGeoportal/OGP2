@@ -1,12 +1,14 @@
 package org.OpenGeoPortal.Download.Controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.OpenGeoPortal.Download.DownloadRequest;
-import org.OpenGeoPortal.Download.DownloadRequest.StatusSummary;
 import org.OpenGeoPortal.Download.RequestStatusManager;
+import org.OpenGeoPortal.Download.Controllers.RequestStatusController.StatusSummary;
+import org.OpenGeoPortal.Proxy.Controllers.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,31 +26,77 @@ public class RequestStatusController {
 	@Autowired
 	private RequestStatusManager requestStatusManager;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	List<DownloadRequest> downloadRequests; 
+	private List<DownloadRequest> downloadRequests; 
+	private List<ImageRequest> imageRequests;
+	
+	public enum StatusSummary {
+		PROCESSING,
+		READY_FOR_PACKAGING,
+		COMPLETE_FAILED,
+		COMPLETE_SUCCEEDED,
+		COMPLETE_PARTIAL
+	}
 	
 	@RequestMapping(method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody RequestStatus getDownloadStatus(@RequestParam("requestIds") String requestIds)  {
+	public @ResponseBody RequestStatus getDownloadStatus(@RequestParam("requestIds") String requestIds) throws IOException  {
 		String[] requestIdsArr = requestIds.split(",");
-		
-		this.downloadRequests = new ArrayList<DownloadRequest>();
-		for (String requestId: requestIdsArr){
-			this.downloadRequests.add(requestStatusManager.getDownloadRequest(UUID.fromString(requestId)));
+		if (requestIdsArr.length == 0){
+			throw new IOException("Request Ids required.");
 		}
-		//really only need a subset of this and a summary of errors/successes/warnings.  
-		return getRequestStatus();
+		this.downloadRequests = new ArrayList<DownloadRequest>();
+		this.imageRequests = new ArrayList<ImageRequest>();
+
+		for (String requestId: requestIdsArr){
+			try {
+				DownloadRequest dlRequest = requestStatusManager.getDownloadRequest(UUID.fromString(requestId));
+				if (dlRequest != null){
+					this.downloadRequests.add(dlRequest);
+				}
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+			try {
+				ImageRequest imRequest = requestStatusManager.getImageRequest(UUID.fromString(requestId));
+				if (imRequest != null){
+					this.imageRequests.add(imRequest);
+				}
+			} catch (Exception e){
+				e.printStackTrace();
+			}
+		}
+		if ((this.downloadRequests.size() + this.imageRequests.size()) > 0){
+			return getRequestStatus();
+		} else {
+			logger.error("no requests found");
+			throw new IOException("No requests found.");
+		}
 	}
 	
 	private RequestStatus getRequestStatus(){
 		logger.debug("Creating RequestStatus object");
 		RequestStatus requestStatus = new RequestStatus();
+		logger.info("download requests size: " + Integer.toString(downloadRequests.size()));
 		for (DownloadRequest downloadRequest: downloadRequests){
 			UUID requestId = downloadRequest.getRequestId();
 			logger.debug("RequestId: " + requestId.toString());
 			String type = "layer";
 			StatusSummary status = downloadRequest.getStatusSummary();
-			logger.debug("status summary: " + status.toString());
+			logger.debug("Download status summary: " + status.toString());
 			requestStatus.addRequestStatusElement(requestId, type, status);
 		}
+
+		for (ImageRequest imageRequest: imageRequests){
+			UUID requestId = imageRequest.getRequestId();
+			logger.info("RequestId: " + requestId.toString());
+			String type = "image";
+			StatusSummary status = imageRequest.getStatusSummary();
+			logger.info("Image status summary: " + status.toString());
+			requestStatus.addRequestStatusElement(requestId, type, status);
+		}
+
+		logger.info(Integer.toString(requestStatus.getRequestStatus().size()));
 		return requestStatus;
 	}
+	
+
 }

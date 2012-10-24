@@ -283,7 +283,7 @@ org.OpenGeoPortal.UserInterface = function(){
 		jQuery(document).bind("loginSucceeded", function(){
 			that.applyLoginActions();
 		});
-		jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
+		/*jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
 			console.log(ajaxSettings);
 
 			if (jqXHR.status == 401){
@@ -299,7 +299,7 @@ org.OpenGeoPortal.UserInterface = function(){
 			console.log(jqXHR);
 			console.log(ajaxSettings);
 			console.log(thrownError);*/
-		});
+		//});
 		//this.checkUserInput();			
 		jQuery("body").delegate(".ui-dialog-titlebar", "dblclick", function(){
 			var id = jQuery(this).parent().children(".dialog").attr("id");
@@ -1268,7 +1268,7 @@ org.OpenGeoPortal.UserInterface.prototype.requestDownload = function(requestObj)
 		_gaq.push(["_trackEvent", "download", requestObj.layerNumber]);
 	delete requestObj.layerNumber;
 	var params = {
-			url: "layerDownload",
+			url: "requestDownload",
 			data: requestObj,
 			dataType: "json",
 			type: "POST",
@@ -1508,13 +1508,13 @@ org.OpenGeoPortal.UserInterface.prototype.getLayerList = function(downloadAction
 	return layerInfo;
 };
 
-org.OpenGeoPortal.UserInterface.prototype.downloadFromMapServer = function(requestObj) {
+//org.OpenGeoPortal.UserInterface.prototype.downloadFromMapServer = function(requestObj) {
 	//modularize wms call so I can use the same code for 'save image'
 	/*if (!jQuery("#attachment")[0]){
 		jQuery("body").append('<div id="attachment" style="display:none;"></div>');
 	}*/
 	//var url = "WMSGetMapProxy.jsp?server=" + requestObj.server + '&format=' + requestObj.format + '&bbox=' + requestObj.bbox;
-	var url = "getImage?server=" + requestObj.server + '&format=' + requestObj.format + '&bbox=' + requestObj.bbox;
+	/*var url = "getImage?server=" + requestObj.server + '&format=' + requestObj.format + '&bbox=' + requestObj.bbox;
 	url += '&srs=' + requestObj.srs + '&layers=' + requestObj.layers;
 	url += '&width=' + requestObj.width + '&height=' + requestObj.height + '&type=' + requestObj.type;
 	if (typeof requestObj.sld != 'undefined'){
@@ -1530,8 +1530,8 @@ org.OpenGeoPortal.UserInterface.prototype.downloadFromMapServer = function(reque
 	jQuery("body").append('<iframe id="' + downloadFrameId + '" style="display:none" src="' + url + '"></iframe>');
 	jQuery("#" + downloadFrameId).bind("load", function(e){
 		that.utility.hideLoadIndicator("mapLoadIndicator", downloadFrameId);
-	});
-};
+	});*/
+//};
 
 org.OpenGeoPortal.UserInterface.prototype.doPrint = function(){
 	window.print();
@@ -1607,7 +1607,7 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 	requestObj.height = jQuery('#map').height();
 	//return a url from the servlet
 	var params = {
-			url: "getImage",
+			url: "requestImage",
 			data: JSON.stringify(requestObj),
 			dataType: "json",
 			type: "POST",
@@ -1615,6 +1615,8 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 			complete: function(){
 			},
 			success: function(data){
+				org.OpenGeoPortal.downloadQueue.registerImageRequest(data.requestId);
+
 				//should parse errors
 				//will also have status info for requested layers in this returned object
 				/*var line = "";
@@ -1646,7 +1648,7 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 					this.genericModalDialog(message, "DOWNLOAD ERRORS");
 				}*/
 					//check packageLink
-				if (typeof data.imageLink != 'undefined'){
+				/*if (typeof data.imageLink != 'undefined'){
 						var downloadFrameId;
 						do {
 							downloadFrameId = "downloadFrame" + parseInt(Math.random() * 10000);
@@ -1657,7 +1659,7 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 						jQuery("#" + downloadFrameId).bind("load", function(e){
 							that.utility.hideLoadIndicator("mapLoadIndicator", downloadFrameId);
 						});
-				}
+				}*/
 
 				
 			}

@@ -1,4 +1,4 @@
-package org.OpenGeoPortal.Download.Controllers;
+package org.OpenGeoPortal.Proxy.Controllers;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.OpenGeoPortal.Download.DownloadRequest;
 import org.OpenGeoPortal.Download.RequestStatusManager;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -18,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@RequestMapping("/getDownload")
-public class DownloadRetrievalController {
+@RequestMapping("/getImage")
+public class ImageRetrievalController {
 	@Autowired
 	private RequestStatusManager requestStatusManager;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -27,10 +26,10 @@ public class DownloadRetrievalController {
 	@RequestMapping(method=RequestMethod.GET)
 	public void getDownload(@RequestParam("requestId") String requestId, HttpServletResponse response) throws IOException  {
 		
-		DownloadRequest layerDownloadRequest = requestStatusManager.getDownloadRequest(UUID.fromString(requestId));
-		File downloadPackage = layerDownloadRequest.getDownloadPackage();
+		ImageRequest imageRequest = requestStatusManager.getImageRequest(UUID.fromString(requestId));
+		File downloadPackage = imageRequest.getDownloadFile();
 		response.setContentLength((int) downloadPackage.length());
-		response.setContentType("application/zip");
+		response.setContentType("application/octet-stream");
 		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());
 		FileUtils.copyFile(downloadPackage, response.getOutputStream());
 	}

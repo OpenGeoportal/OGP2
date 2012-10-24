@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
 
 @Controller
-@RequestMapping("/layerDownload")
+@RequestMapping("/requestDownload")
 public class DownloadRequestController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired

@@ -17,4 +17,6 @@ public interface RequestStatusManager {
 	void addImageRequest(UUID requestId, String sessionId,
 			ImageRequest imageRequest);
 
+	ImageRequest getImageRequest(UUID fromString);
+
 }
