@@ -35,6 +35,16 @@ public class ImageRequest {
 	int width;
 	@JsonProperty("layers")
 	List<LayerImage> layerImage; 
+	@JsonIgnore
+	File downloadFile;
+
+	public File getDownloadFile() {
+		return downloadFile;
+	}
+
+	public void setDownloadFile(File downloadFile) {
+		this.downloadFile = downloadFile;
+	}
 
 	public String getBbox() {
 		return bbox;

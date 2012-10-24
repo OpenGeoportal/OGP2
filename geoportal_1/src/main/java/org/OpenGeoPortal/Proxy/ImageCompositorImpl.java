@@ -55,7 +55,8 @@ public class ImageCompositorImpl implements ImageCompositor {
 	    		} 
 	    	}
 	    	try {
-				writeImageArchive(compositeImage);
+				imageRequest.setDownloadFile(writeImageArchive(compositeImage));
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -82,8 +83,19 @@ public class ImageCompositorImpl implements ImageCompositor {
     	}
 	}
 
+	private File getDirectory() throws IOException{
+		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
+		File newDir = File.createTempFile("OGP", "", downloadDirectory);
+		newDir.delete();
+		//Boolean success= 
+		newDir.mkdir();
+		newDir.setReadable(true);
+		newDir.setWritable(true);
+		return newDir;
+	}
+	
 	private File writeImageArchive(BufferedImage compositeImage) throws IOException{
-    	File imageDirectory = directoryRetriever.getDownloadDirectory();
+    	File imageDirectory = getDirectory();
 		File outputFile = getOutputFile(imageDirectory);
         try {
             //write image to file
@@ -99,7 +111,7 @@ public class ImageCompositorImpl implements ImageCompositor {
 		private File getOutputFile(File imageDirectory){
     		File outputFile;
 			do {
-    			String outputFileName = "OGPImage" + Math.round(Math.random() * 10000) + "." + FORMAT_SUFFIX;
+    			String outputFileName = "OGPImage." + FORMAT_SUFFIX;
     			outputFile = new File(imageDirectory, outputFileName);
     		} while (outputFile.exists());
 			return outputFile;
