@@ -26,6 +26,14 @@ if (typeof org.OpenGeoPortal.Utility == 'undefined'){
     throw new Error("org.OpenGeoPortal.Utility already exists and is not an object");
 }
 
+org.OpenGeoPortal.Utility.ImageLocation = "resources/media/";
+org.OpenGeoPortal.Utility.CssLocation = "resources/css/";
+org.OpenGeoPortal.Utility.JspfLocation = "jspf/"
+	
+org.OpenGeoPortal.Utility.getImage = function(imageName){
+	return org.OpenGeoPortal.Utility.ImageLocation + imageName;
+};
+
 org.OpenGeoPortal.Utility.whichTab = function(){
 	var tabInfo = {};
 	var tabIndex;
@@ -120,6 +128,16 @@ org.OpenGeoPortal.Utility.getMetadata = function (layerId){
 		jQuery.ajax(params);
 };
 
+org.OpenGeoPortal.Utility.escapeQuotes = function(stringOfInterest){
+	return stringOfInterest.replace("'", "\\'").replace('"', '\\"');
+	
+};
+
+org.OpenGeoPortal.Utility.stripExtraSpaces = function(stringOfInterest){
+	stringOfInterest = stringOfInterest.replace("\n", "");
+	return stringOfInterest.replace(/\s+/g, ' ');
+};
+
 org.OpenGeoPortal.Utility.loadIndicatorStatus = {"intervalId": "", "currentRequests": 0};
 
 org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
@@ -138,7 +156,7 @@ org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
 		//var j = 1;
 		//no current ajax requests, so we can start a new indicator
 		if (that.loadIndicatorStatus["currentRequests"] == 0){
-			indicator.css("background-image", "url('resources/media/progress.png')");
+			indicator.css("background-image", "url('" + org.OpenGeoPortal.Utility.getImage("progress.png") + "')");
 			indicator.fadeIn();
 
 			that.loadIndicatorStatus["intervalId"] = setInterval(indicatorFunction, 84);

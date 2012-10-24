@@ -10,7 +10,7 @@
 			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
 		"Harvard":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector","raster","paper map"], "outputFormats":["kml","kmz"]},
 			{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]},
-			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster","paper map"],"outputFormats":["geotiff"]}],
+			{"classKey": "layerDownloader.email.HGL", "accessLevel":["public","restricted"],"dataType":["raster","paper map"],"outputFormats":["geotiff"]}],
 		"MIT":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector","raster"], "outputFormats":["kml", "kmz"]},
 		    {"classKey": "layerDownloader.all.MIT", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]}], 
 		"MassGIS":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},                  

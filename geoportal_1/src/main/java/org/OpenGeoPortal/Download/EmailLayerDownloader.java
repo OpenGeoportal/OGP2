@@ -1,14 +1,12 @@
 package org.OpenGeoPortal.Download;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Download.Methods.EmailDownloadMethod;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
-import org.OpenGeoPortal.Download.Types.LayerStatus;
+import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -24,11 +22,8 @@ import org.springframework.scheduling.annotation.Async;
 //and take care of layer status as much as possible
 public class EmailLayerDownloader implements LayerDownloader {
 	private EmailDownloadMethod emailDownloadMethod;
-	private DownloadStatusManager downloadStatusManager;
-	private UUID requestId;
-	private List<LayerRequest> layerRequests;
+	private RequestStatusManager requestStatusManager;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	private List<Future<File>> downloadFutures = new ArrayList<Future<File>>();
 
 	public EmailDownloadMethod getEmailDownloadMethod() {
 		return emailDownloadMethod;
@@ -42,33 +37,38 @@ public class EmailLayerDownloader implements LayerDownloader {
 
 	@Async
 	@Override
-	public void downloadLayers(UUID requestId,
-			List<LayerRequest> list) throws Exception {
-		for (LayerRequest currentLayer: layerRequests){
+	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest request) throws Exception {
+		List<LayerRequest> layerList = request.getRequestList();
+		for (LayerRequest currentLayer: layerList){
 			//this.downloadMethod.validate(currentLayer);
 				//check to see if the filename exists
 			//this should fire off a callable that asynchronously calls the download method
 			try {
-				Future<Boolean> currentFile = this.emailDownloadMethod.sendEmail(requestId, currentLayer);
+				logger.info("Trying to send email...");
+				currentLayer.setFutureValue(this.emailDownloadMethod.sendEmail(currentLayer));
 			} catch (Exception e){
 				//e.printStackTrace();
-				System.out.println("an error downloading this layer: " + currentLayer.getLayerInfo().getName());
-				currentLayer.setStatus(LayerStatus.DOWNLOAD_FAILED);
+				logger.error("an error downloading this layer: " + currentLayer.getLayerInfo().getName());
+				currentLayer.setStatus(Status.FAILED);
 				continue;
 			}
 		} 
-		List<File> downloadedLayers = new ArrayList<File>();
-		for (Future<File> currentFuture: downloadFutures){
-			downloadedLayers.add(currentFuture.get());
+		for (LayerRequest currentLayer: layerList){
+			Future<?> currentFuture = currentLayer.getFutureValue();
+			if ((Boolean) currentFuture.get()){
+				currentLayer.setStatus(Status.SUCCESS);
+			} else {
+				currentLayer.setStatus(Status.FAILED);
+			}
 		}
 	}
 
 
-	public DownloadStatusManager getDownloadStatusManager() {
-		return downloadStatusManager;
+	public RequestStatusManager getRequestStatusManager() {
+		return requestStatusManager;
 	}
 
-	public void setDownloadStatusManager(DownloadStatusManager downloadStatusManager) {
-		this.downloadStatusManager = downloadStatusManager;
+	public void setRequestStatusManager(RequestStatusManager requestStatusManager) {
+		this.requestStatusManager = requestStatusManager;
 	}
 }

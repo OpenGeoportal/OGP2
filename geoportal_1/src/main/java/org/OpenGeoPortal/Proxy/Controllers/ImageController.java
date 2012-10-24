@@ -1,30 +1,23 @@
 package org.OpenGeoPortal.Proxy.Controllers;
 
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.OpenGeoPortal.Authentication.OgpUserContext;
-import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
-import org.OpenGeoPortal.Proxy.ImageCompositor;
+import org.OpenGeoPortal.Proxy.ImageHandler;
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest.LayerImage;
 import org.OpenGeoPortal.Solr.SearchConfigRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,7 +33,7 @@ public class ImageController {
 	@Autowired
 	private SearchConfigRetriever searchConfigRetriever;
 	@Autowired
-	private ImageCompositor imageCompositor;
+	private ImageHandler imageHandler;
 	private String proxyTo;
 	private boolean isLocallyAuthenticated;// = true;
 	@Autowired
@@ -56,29 +49,32 @@ public class ImageController {
 		this.proxyTo = proxyTo;
 	}
 
-	@RequestMapping(method=RequestMethod.POST, consumes="application/json", produces="application/json")
-	public @ResponseBody Map<String,String> processImageRequest(@RequestBody ImageRequest imageRequest, Model model) throws Exception {
+	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", consumes="application/json", produces="application/json")
+	public @ResponseBody Map<String,String> processImageRequest(@RequestBody String imageRequest) throws Exception {
 		 /**
-		 * ultimately, this servlet, given the above parameters + z order, should be able to grab images
-		 * from various servers and composite them.  Should be passed a custom json object to maintain structure.
+		 * This controller given the above parameters + z order, grabs images
+		 * from various servers and composites them.  Is passed a custom json object to maintain structure.
 		 * 
-		 * offer formats available via geoserver.
+		 * We should offer formats available via geoserver.
 		 * 
 		 * determine if a layer is within the provided bounds and exclude it if not
 		 * 
 		 * @author Chris Barnett
 		 */
-		logger.info("here");
-		logger.info(imageRequest.toString());
 		home = this.searchConfigRetriever.getHome();
-		this.imageRequest = imageRequest;
+		//
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			this.imageRequest = mapper.readValue(URLDecoder.decode(imageRequest, "UTF-8"), ImageRequest.class);
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 		this.isLocallyAuthenticated = ogpUserContext.isAuthenticatedLocally();
 
 		Map<String, String> map = new HashMap<String, String>();
 		populateImageRequest();
-		//why doesn't this happen asynchronously?
-		UUID requestId = imageCompositor.requestImage(RequestContextHolder.currentRequestAttributes().getSessionId(), imageRequest);
-		
+		UUID requestId = imageHandler.requestImage(RequestContextHolder.currentRequestAttributes().getSessionId(), this.imageRequest);
+		logger.debug("Image requested.");
 		map.put("requestId", requestId.toString());
 		return map;
 	}
@@ -97,7 +93,6 @@ public class ImageController {
 					return false;
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
 			}
@@ -107,125 +102,38 @@ public class ImageController {
 	   	}
 	}
 	
-	private ImageRequest createImageRequest(HttpServletRequest request) throws Exception{
-		ImageRequest imageRequest = new ImageRequest();
-		//read the POST'ed JSON object
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode rootNode = mapper.readTree(request.getInputStream());
-		imageRequest.setSrs(rootNode.path("srs").getTextValue());
-		String bounds = rootNode.path("bbox").getTextValue();
-		String[] arrBounds = bounds.split(",");
-		imageRequest.setBounds(new BoundingBox(arrBounds[0], arrBounds[1], arrBounds[2], arrBounds[3]));
-		imageRequest.setFormat(URLEncoder.encode(rootNode.path("format").getTextValue(), "UTF-8"));
-		imageRequest.setHeight(rootNode.path("height").asInt());
-		imageRequest.setWidth(rootNode.path("width").asInt());
-		
-		String baseQuery = generateBaseQuery(imageRequest);
-		ArrayNode layers = (ArrayNode) rootNode.path("layers");
-	    Set<String> layerIds = new HashSet<String>();
 
-		for (JsonNode currentLayer: layers){
-			//actually, lets use zIndex as a key, and make this a sorted map
-			LayerImage currentLayerImage = imageRequest.new LayerImage();
-			String layerId = currentLayer.path("layerId").getTextValue();
-			currentLayerImage.setLayerId(layerId);
-			layerIds.add(layerId);
-			String queryString = baseQuery;
-			String sld = currentLayer.path("sld").getTextValue();
-  		   	if ((sld != null)&&(!sld.equals("null")&&(!sld.isEmpty()))){
-		   		queryString += "&sld_body=" + sld;//URLEncoder.encode(currentSLD, "UTF-8");
-				currentLayerImage.setSld(sld);
-		   	}
-			int opacity = currentLayer.path("opacity").asInt();
-			currentLayerImage.setOpacity(opacity);
-			currentLayerImage.setQueryString(queryString);
-			imageRequest.addLayerImage(currentLayerImage);
-			
-		}
-    	//I'm making the assumtion that the overhead of having separate http requests
-		//to Solr is far greater than iterating over these lists
-	    List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerIds);
-	    
-		for (LayerImage layerImage: imageRequest.getLayerImages()){
-			String currentId = layerImage.getLayerId();
-			for (SolrRecord solrRecord : layerInfo){
-				if (!hasPermission(solrRecord)){
-					//skip layers the user doesn't have permission to retrieve
-					continue;
-				}
-				if (solrRecord.getLayerId()[0].equalsIgnoreCase(currentId)){
-					layerImage.setSolrRecord(solrRecord);
-	    		   	layerImage.setQueryString(layerImage.getQueryString() + "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName());
-
-	    		   	//a kludge;  really the simplegenericproxy should be able to handle this
-	    		   	//System.out.println(this.layerInfoRetriever.hasProxy(currentLayerMap));
-	    			if (this.layerInfoRetriever.hasProxy(solrRecord)){
-	    				layerImage.setBaseUrl(this.proxyTo);
-	    			}  else {
-	        		   	try {
-	    					layerImage.setBaseUrl(this.layerInfoRetriever.getWMSUrl(solrRecord));
-	    				} catch (Exception e1) {
-	    					// TODO Auto-generated catch block
-	    					e1.printStackTrace();
-	    				}
-	    			}
-					
-				}
-			}
-		}
-		
-		return imageRequest;
-	}
-	
 	private void populateImageRequest() throws Exception{
-		
-		String baseQuery = generateBaseQuery(imageRequest);
-		/*ArrayNode layers = (ArrayNode) rootNode.path("layers");
-	    Set<String> layerIds = new HashSet<String>();
-
-		for (JsonNode currentLayer: layers){
-			//actually, lets use zIndex as a key, and make this a sorted map
-			LayerImage currentLayerImage = imageRequest.new LayerImage();
-			String layerId = currentLayer.path("layerId").getTextValue();
-			currentLayerImage.setLayerId(layerId);
-			layerIds.add(layerId);
-			String queryString = baseQuery;
-			String sld = currentLayer.path("sld").getTextValue();
-  		   	if ((sld != null)&&(!sld.equals("null")&&(!sld.isEmpty()))){
-		   		queryString += "&sld_body=" + sld;//URLEncoder.encode(currentSLD, "UTF-8");
-				currentLayerImage.setSld(sld);
-		   	}
-			int opacity = currentLayer.path("opacity").asInt();
-			currentLayerImage.setOpacity(opacity);
-			currentLayerImage.setQueryString(queryString);
-			imageRequest.addLayerImage(currentLayerImage);
-			
-		}*/
-    	//I'm making the assumtion that the overhead of having separate http requests
+		String baseQuery = generateBaseQuery(imageRequest);	
+    	//I'm making the assumption that the overhead of having separate http requests
 		//to Solr is far greater than iterating over these lists
 		
 	    List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(imageRequest.getLayerIds());
 	    
-		for (LayerImage layerImage: imageRequest.getLayerImages()){
+		for (LayerImage layerImage: imageRequest.getLayers()){
 			String currentId = layerImage.getLayerId();
 			for (SolrRecord solrRecord : layerInfo){
 				if (!hasPermission(solrRecord)){
 					//skip layers the user doesn't have permission to retrieve
+					//the client should never send these layers, since the user shouldn't be able to preview them
 					continue;
 				}
 				if (solrRecord.getLayerId()[0].equalsIgnoreCase(currentId)){
 					layerImage.setSolrRecord(solrRecord);
-	    		   	layerImage.setQueryString(layerImage.getQueryString() + "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName());
-
-	    		   	//a kludge;  really the simplegenericproxy should be able to handle this
-	    		   	//System.out.println(this.layerInfoRetriever.hasProxy(currentLayerMap));
+					String layerQueryString = "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName();
+					String currentSLD = layerImage.getSld();
+	    		   	if ((currentSLD != null)&&(!currentSLD.equals("null")&&(!currentSLD.isEmpty()))){
+	    		   		layerQueryString += "&sld_body=" + URLEncoder.encode(currentSLD, "UTF-8");
+	    		   	}
+	    		   	
+	    		   	layerImage.setQueryString(baseQuery + layerQueryString);
+	    		   	logger.debug(layerImage.getQueryString());
 	    			if (this.layerInfoRetriever.hasProxy(solrRecord)){
 	    				layerImage.setBaseUrl(this.proxyTo);
 	    			}  else {
 	        		   	try {
 	    					layerImage.setBaseUrl(this.layerInfoRetriever.getWMSUrl(solrRecord));
 	    				} catch (Exception e1) {
-	    					// TODO Auto-generated catch block
 	    					e1.printStackTrace();
 	    				}
 	    			}
@@ -238,9 +146,25 @@ public class ImageController {
 	
 	private String generateBaseQuery(ImageRequest imageRequest){
         //switch based on format to add dpi settings, change/add header info
+		/*try {
+			logger.info("format: " + imageRequest.getFormat());
+		} catch (NullPointerException e){
+			logger.info("format is null");
+		}
+		try {
+			logger.info("srs: " + imageRequest.getSrs());
+		} catch (NullPointerException e){
+			logger.info("srs is null");
+		}
+		try {
+			logger.info("bbox: " + imageRequest.getBbox());
+		} catch (NullPointerException e){
+			logger.info("bbox is null");
+		}*/
+		
         String genericQueryString;
     	genericQueryString = "service=wms&version=1.1.1&request=GetMap&format=" + imageRequest.getFormat() + "&SRS=" + imageRequest.getSrs();
-        genericQueryString += "&styles=&bbox=" + imageRequest.getBounds().toString();
+        genericQueryString += "&styles=&bbox=" + imageRequest.getBbox();
 
     	if (imageRequest.getFormat().equals("image/png")){
 	    	
@@ -252,6 +176,7 @@ public class ImageController {
     		genericQueryString += "&tiled=false&transparent=true";
     	} 
     	genericQueryString += "&height=" + imageRequest.getHeight() + "&width=" + imageRequest.getWidth();
+    	logger.debug(genericQueryString);
     	return genericQueryString;
 	}
 }

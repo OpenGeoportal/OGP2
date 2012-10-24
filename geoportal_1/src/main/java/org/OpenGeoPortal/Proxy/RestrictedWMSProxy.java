@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.HttpRequestHandler;
 
+@Deprecated
 public class RestrictedWMSProxy implements HttpRequestHandler {
 	private GenericProxy genericProxy;
 	private String proxyTo;

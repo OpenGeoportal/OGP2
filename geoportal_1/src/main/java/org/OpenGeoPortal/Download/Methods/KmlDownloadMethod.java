@@ -5,12 +5,17 @@ import org.OpenGeoPortal.Layer.GeometryType;
 
 public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {
 	private static final Boolean INCLUDES_METADATA = false;
+	private static final String METHOD = "GET";
 	
 	@Override
 	public Boolean includesMetadata() {
 		return INCLUDES_METADATA;
 	}
 
+	@Override
+	public String getMethod(){
+		return METHOD;
+	}
 
 	@Override
 	public String createDownloadRequest() throws Exception {

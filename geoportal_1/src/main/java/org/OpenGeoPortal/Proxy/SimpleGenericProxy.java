@@ -16,6 +16,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+@Deprecated
 public class SimpleGenericProxy implements GenericProxy {
 	private HttpEntity responseEntity;
 

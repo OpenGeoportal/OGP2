@@ -53,27 +53,33 @@ public class ZipFilePackager{
 	}
 	
 	public static void addFilesToArchive(Set<File> filesToPackage, File zipArchive) throws IOException {
-		
 	    if (filesToPackage.isEmpty()){
 	    	//if there are no files, don't do anything.
 	    	logger.error("No files to package.");
 	    	return;
 	    }
-	    
+	    if (filesToPackage.size() == 1){
+	    	File returnFile = filesToPackage.iterator().next();
+	    	if (returnFile.getName().toLowerCase().endsWith(".zip")){
+	    		logger.debug("Only 1 zip file...no need to process");
+	    		returnFile.renameTo(zipArchive);
+	    		return;
+	    	}
+	    }
 		byte[] buffer = new byte[1024 * 1024];
-		//long startTime = System.currentTimeMillis();
 	    
-		ZipArchiveOutputStream newZipStream = null;
-		newZipStream = new ZipArchiveOutputStream(zipArchive);
+		ZipArchiveOutputStream newZipStream = new ZipArchiveOutputStream(zipArchive);
 	    int zipFileCounter = 0;
 	    for (File currentFile : filesToPackage){
 	    	try{
 	    		FileInputStream currentFileStream = new FileInputStream(currentFile);
 	    		zipFileCounter++;
-	    		if (!currentFile.getName().contains(".zip")){
+	    		if (!currentFile.getName().toLowerCase().endsWith(".zip")){
+	    			logger.debug("Adding uncompressed file...");
 	    			//add this uncompressed file to the archive
 	    			int bytesRead;
 	    			String entryName = currentFile.getName();
+	    			logger.debug("Zipping: " + entryName);
 	    			ZipArchiveEntry zipEntry = new ZipArchiveEntry(entryName);
 	    			newZipStream.putArchiveEntry(zipEntry);
 	    			while ((bytesRead = currentFileStream.read(buffer))!= -1) {
@@ -81,12 +87,14 @@ public class ZipFilePackager{
 	    			}
 	    			newZipStream.closeArchiveEntry();
 	    		} else {
+	    			logger.debug("Adding entries from compressed file...");
 	    			//read the entries from the zip file and copy them to the new zip archive
 	    			//so that we don't have to recompress them.
 	    			ZipArchiveInputStream currentZipStream = new ZipArchiveInputStream(currentFileStream);
 	    			ArchiveEntry currentEntry;
 	    			while ((currentEntry = currentZipStream.getNextEntry()) != null) {
 	    				String entryName = currentEntry.getName();
+		    			logger.debug("Zipping: " + entryName);
 	    				ZipArchiveEntry zipEntry = new ZipArchiveEntry(entryName);
 	    				try {
 	    					newZipStream.putArchiveEntry(zipEntry);
@@ -112,6 +120,7 @@ public class ZipFilePackager{
 				e.printStackTrace();
 			} finally {
 				//always delete the file
+				logger.debug("Deleting: " + currentFile.getName());
 	    		currentFile.delete();
 
 	    	}

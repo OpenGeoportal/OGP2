@@ -10,7 +10,7 @@ import org.OpenGeoPortal.Download.LayerDownloader;
 import org.OpenGeoPortal.Download.Config.DownloadConfigRetriever;
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
-import org.OpenGeoPortal.Download.Types.LayerStatus;
+import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.OpenGeoPortal.Solr.SearchConfigRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
@@ -45,7 +45,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	private DirectoryRetriever directoryRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
-	protected DownloadStatusManager downloadStatusManager;
+	protected RequestStatusManager requestStatusManager;
 
 	protected BeanFactory beanFactory;
 	
@@ -112,7 +112,8 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 				currentClassKey = this.downloadConfigRetriever.getClassKey(layerRequest);
 				logger.info("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
-				layerRequest.setStatus(LayerStatus.NO_DOWNLOAD_METHOD);
+				layerRequest.setStatus(Status.FAILED);
+				logger.info("No download method found for: '" + record.getLayerId()[0] +"'");
 				continue;
 			}
 			if (downloadMap.containsKey(currentClassKey)){
@@ -155,21 +156,22 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 
 	/**
 	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
-	 * 
+	 *  
 	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
 	 * LayerRequest objects that can be downloaded using that concrete class.
 	 */
 	@Async
 	public void submitDownloadRequest(String sessionId, UUID requestId, Map <String, List<LayerRequest>> downloadMap) {
-
+		List<MethodLevelDownloadRequest> requestList = new ArrayList<MethodLevelDownloadRequest>();
 		for (String currentDownloader: downloadMap.keySet()){
 			//get concrete class key from config
 			List<LayerRequest> layerRequests = downloadMap.get(currentDownloader);
-			downloadStatusManager.addDownloadRequest(requestId, sessionId, layerRequests);
+			MethodLevelDownloadRequest request = new MethodLevelDownloadRequest(layerRequests);
 
 			try{
 				LayerDownloader layerDownloader = this.getLayerDownloader(currentDownloader);
-				layerDownloader.downloadLayers(requestId, layerRequests);
+				layerDownloader.downloadLayers(requestId, request);
+				requestList.add(request);
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -177,6 +179,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 				//should put error info in the status manager for these layers
 			}
 		}
+		requestStatusManager.addDownloadRequest(requestId, sessionId, requestList);
 	}
 
 

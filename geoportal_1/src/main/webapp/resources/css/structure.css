@@ -10,7 +10,7 @@ body {
 	text-align: center;
 	margin: 0; 
 	padding: 0;
-	background: #cccccc url(../media/bg_tile.gif)  repeat;
+	/*background: #cccccc url(../media/bg_tile.gif)  repeat;*/
 	font-family: arial, sans-serif;
 	font-size: 12px;
 	color: black;
@@ -112,7 +112,7 @@ h3 {
 	}
 
  div#main {
- 	width: 90%;
+ 	/*width: 90%;*/
  	min-width: 1002px;
  	/*width: 1002px;*/
  	margin: 0 auto;
@@ -122,7 +122,7 @@ h3 {
  
 /* Header */
 #header {
-	height: 100px;
+	height: 92px;
   	background-color: #edf4fa;
 	border-right: #333 solid 1px;
 	border-left: #333 solid 1px;
@@ -177,7 +177,7 @@ span.infoLinks:hover {
 /* Menu */
 #menu {
 	position: absolute;
-	top: 70px;
+	top: 62px;
 	height: 25px;
 	width: inherit; 
 	min-width: 1000px;

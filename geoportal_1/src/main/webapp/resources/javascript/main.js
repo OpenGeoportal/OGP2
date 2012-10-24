@@ -29,9 +29,9 @@ if (document.createStyleSheet){
 jQuery(document).ready(function (){
 	jQuery.noConflict();
 	var javaScriptFileName = org.OpenGeoPortal.InstitutionInfo.getCustomJavaScript();
-	if (javaScriptFileName.length > 0)
+	if (javaScriptFileName.length > 0){
 		jQuery.getScript(javaScriptFileName);
-	
+	}
 	org.OpenGeoPortal.layerState = new org.OpenGeoPortal.LayerSettings();
 	org.OpenGeoPortal.map = new org.OpenGeoPortal.MapController();
 	org.OpenGeoPortal.resultsTableObj = new org.OpenGeoPortal.LayerTable();
@@ -41,9 +41,25 @@ jQuery(document).ready(function (){
 	org.OpenGeoPortal.cartTableObj.hideCol("Save");
 	org.OpenGeoPortal.cartTableObj.showCol("checkBox");
 	org.OpenGeoPortal.ui.addSharedLayersToCart();
+	
+	org.OpenGeoPortal.downloadQueue = new org.OpenGeoPortal.Downloader();
+	
+	/*downtime notice */
+	/*var downtimeText = "Layers will be unavailable until later this afternoon while we perform server maintenance. We apologize for the inconvenience.";
+	var downtimeDiv = '<div id="downtimeNotice" class="dialog infoDialog"><p>' + downtimeText + '</p></div>';
+	jQuery("body").append(downtimeDiv);
+	jQuery('#downtimeNotice').dialog({
+		zIndex: 2999,
+		title: "Downtime",
+		resizable: false,
+		minWidth: 415,
+		autoOpen: false		
+	});
+	jQuery("#downtimeNotice").dialog("open");
+	*/
 });
 
-jQuery(window).unload(function(){
+/*jQuery(window).unload(function(){
 	jQuery.get("logout.jsp");
-});
+});*/
   

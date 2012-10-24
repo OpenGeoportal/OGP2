@@ -9,20 +9,21 @@
 		<property name="location" value="WEB-INF/ogp.properties" />
 	</bean>
 
- <bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.SimpleGenericProxy"></bean>
- 
+ <!--<bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.SimpleGenericProxy"></bean>
+ -->
  <bean id="userContext.ogp" class="org.OpenGeoPortal.Authentication.OgpUserContextImpl" ></bean>
- 
-  <bean id="downloadStatusManager" class="org.OpenGeoPortal.Download.DownloadStatusManagerImpl" ></bean>
- 
+ <!--
  <bean id="servlet.RestrictedWMSProxy" class="org.OpenGeoPortal.Proxy.RestrictedWMSProxy">
   	<property name="genericProxy" ref="proxy.simple"/>
   	<property name="proxyTo" value="${ogp.proxyToWMS}"/>
 </bean>
-
+-->
 <!-- misc -->	
+<bean id="imageHandler" class="org.OpenGeoPortal.Proxy.ImageHandlerImpl" scope="prototype" />
 <bean id="imageCompositor" class="org.OpenGeoPortal.Proxy.ImageCompositorImpl" scope="prototype" />
-<bean id="imageStatusManager" class="org.OpenGeoPortal.Proxy.ImageStatusManagerImpl" />
+<bean id="imageDownloader" class="org.OpenGeoPortal.Proxy.ImageDownloaderImpl" scope="prototype"/>
+
+<bean id="requestStatusManager" class="org.OpenGeoPortal.Download.RequestStatusManagerImpl" />
 
 <bean id="cleanupDirectory.download" class="org.OpenGeoPortal.Utilities.CleanupDirectoryImpl" />
  <bean id="urlShortener.Google" class="org.OpenGeoPortal.Utilities.UrlShortenerGoogle">
@@ -62,11 +63,16 @@
     <bean id="downloadHandler" class="org.OpenGeoPortal.Download.DownloadHandlerImpl">
   </bean>
 <!-- http requesters -->
-  <bean id="httpRequester.generic" class="org.OpenGeoPortal.Utilities.HttpComponentsHttpRequester">
+  <bean id="httpRequester.generic" class="org.OpenGeoPortal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">
+  		<property name="ogpHttpClient" ref="httpClient.pooling"/>
   </bean>
   
-  <bean id="httpRequester.allTrustingCert" class="org.OpenGeoPortal.Utilities.HttpComponentsAllTrustingCertHttpRequester">
+  <bean id="httpRequester.allTrustingCert" class="org.OpenGeoPortal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">
+    		<property name="ogpHttpClient" ref="httpClient.pooling.allTrusting"/>
   </bean>
+  
+  <bean id="httpClient.pooling" class="org.OpenGeoPortal.Utilities.Http.PoolingHttpClient"/>
+  <bean id="httpClient.pooling.allTrusting" class="org.OpenGeoPortal.Utilities.Http.AllTrustingCertPoolingHttpClient"/>
   
 <!-- Download methods -->
   <bean id="downloadMethod.wms" class="org.OpenGeoPortal.Download.Methods.WmsDownloadMethod" scope="prototype">

@@ -1,7 +1,6 @@
 package org.OpenGeoPortal.Download;
 
 import java.io.File;
-import java.util.List;
 
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 
@@ -28,7 +27,7 @@ abstract class AbstractLayerDownloader implements LayerDownloader {
 		this.responseFileName = responseFileName;
 	}
 	
-	abstract public void downloadLayers(List<LayerRequest> layerList) throws Exception;
+	abstract public void downloadLayers(MethodLevelDownloadRequest request) throws Exception;
 	
 	/**
 	 * method for changing a layer's Name to a string that can be used as a file name.

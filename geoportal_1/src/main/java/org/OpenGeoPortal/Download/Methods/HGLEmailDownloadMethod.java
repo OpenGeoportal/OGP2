@@ -1,14 +1,14 @@
 package org.OpenGeoPortal.Download.Methods;
 
-import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
-import org.OpenGeoPortal.Download.Types.LayerDisposition;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
-import org.OpenGeoPortal.Utilities.HttpRequester;
+import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
+import org.OpenGeoPortal.Utilities.Http.HttpRequester;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 
@@ -24,8 +24,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	private HttpRequester httpRequester;
 	private List<LayerRequest> layerList;
 	private LayerRequest currentLayer;
-	private UUID requestId;
-
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public void setLayerList(List<LayerRequest> layerList){
 		this.layerList = layerList;
@@ -51,9 +50,9 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 		}
 	}
 	
-	public void setAllLayerDisposition(LayerDisposition disposition){
+	public void setAllLayerStatus(Status status){
 		for (LayerRequest currentLayer: this.layerList){
-			currentLayer.setDisposition(disposition);
+			currentLayer.setStatus(status);
 		}
 	}
 	
@@ -64,7 +63,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 			this.validate(representativeLayer);
 		} catch (Exception e){
 			//die gracefully
-			this.setAllLayerDisposition(LayerDisposition.REQUEST_ABORTED);
+			this.setAllLayerStatus(Status.FAILED);
 			return null;
 		}
 		BoundingBox bounds = representativeLayer.getRequestedBounds();
@@ -83,15 +82,20 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	
 	@Override
 	@Async
-	public Future<Boolean> sendEmail(UUID requestId, LayerRequest currentLayer) throws Exception {
+	public Future<Boolean> sendEmail(LayerRequest currentLayer) throws Exception {
 		this.currentLayer = currentLayer;
-		this.requestId = requestId;
-		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), "POST");
-
-		return new AsyncResult<Boolean>(true);
+		try {
+			this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), "GET");
+			logger.info("Email request sent.");
+			return new AsyncResult<Boolean>(true);
+		} catch (Exception e){
+			logger.error("Attempt to send email failed.");
+			return new AsyncResult<Boolean>(false);
+		}
 	}
 
 	private String getUrl() {
+		logger.info("Download URL: " + currentLayer.getDownloadUrl());
 		return currentLayer.getDownloadUrl();
 	}
 

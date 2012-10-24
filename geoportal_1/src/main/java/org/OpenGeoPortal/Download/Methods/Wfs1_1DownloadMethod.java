@@ -16,7 +16,13 @@ import org.w3c.dom.NodeList;
 
 public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
+	private static final String METHOD = "POST";
 
+	@Override
+	public String getMethod(){
+		return METHOD;
+	}
+	
 	public String createDownloadRequest() throws Exception {
 		//--generate POST message
 		//info needed: geometry column, bbox coords, epsg code, workspace & layername

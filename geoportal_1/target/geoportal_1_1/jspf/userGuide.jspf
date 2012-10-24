@@ -563,7 +563,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 			<br/>
 			<p class=MsoNormal align=center>
 				<span style='color: black'><img border=0 width=624 height=383
-					id="Picture2" src="media/userGuide/image001.gif"></span>
+					id="Picture2" src="resources/media/userGuide/image001.gif"></span>
 			</p>
 			<br/>
 		</li>
@@ -586,7 +586,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 			<p class=MsoNormal align=center >
 				<b><span style='font-size: 16.0pt'><img border=0
 						width=455 height=416 id="Picture13"
-						src="media/userGuide/image002.gif"></span></b>
+						src="resources/media/userGuide/image002.gif"></span></b>
 			</p>
 			<br/>
 		</li>
@@ -621,7 +621,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Global
 								Zoom</span> <img border=0 width=20 height=22 id="Picture31"
-								src="media/userGuide/image003.jpg"><span
+								src="resources/media/userGuide/image003.jpg"><span
 								style='color: black'> Restores the highest level view
 								available</span>
 						</p>
@@ -630,7 +630,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Back</span> <img
 								border=0 width=18 height=20 id="Picture1"
-								src="media/userGuide/image004.jpg"><span
+								src="resources/media/userGuide/image004.jpg"><span
 								style='color: black'> Backs you up to previously viewed
 								map extents</span>
 						</p>
@@ -639,7 +639,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Forward</span>
 							<img border=0 width=21 height=19 id="Picture32"
-								src="media/userGuide/image005.jpg"><span
+								src="resources/media/userGuide/image005.jpg"><span
 								style='color: black'> Moves you through subsequent map extents
 								</span>
 						</p>
@@ -648,7 +648,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Zoom In</span>
 							<img border=0 width=26 height=21 id="Picture34"
-								src="media/userGuide/image006.jpg"><span
+								src="resources/media/userGuide/image006.jpg"><span
 								style='color: black'> switches the cursor to a magnifying
 								glass icon which, when clicked, zooms in to the identified point
 								on the map. Hold down the left-click to drag and draw a box over
@@ -659,7 +659,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Pan
 								Control</span> <img border=0 width=23 height=23 id="Picture35"
-								src="media/userGuide/image007.jpg"><span
+								src="resources/media/userGuide/image007.jpg"><span
 								style='color: black'> switches the cursor to a hand icon
 								which, when the left click is held down, allows you to drag and
 								pan the map</span>
@@ -677,7 +677,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Clear
 								Previews</span><img border=0 width=77 height=22 id="Picture297"
-								src="media/userGuide/image008.gif">Used to deselect any
+								src="resources/media/userGuide/image008.gif">Used to deselect any
 							results checked to preview and remove them from the
 							map
 						</p>
@@ -686,7 +686,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				<p class=MsoNormal
 					style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 					<span style='color: black'><img border=0 width=622
-						height=362 id="Picture3" src="media/userGuide/image009.gif"></span>
+						height=362 id="Picture3" src="resources/media/userGuide/image009.gif"></span>
 				</p>
 				<br/>
 			</li>
@@ -705,7 +705,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				<p class=MsoNormal
 					style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 					<img border=0 width=626 height=311 id="Picture4"
-						src="media/userGuide/image010.gif">
+						src="resources/media/userGuide/image010.gif">
 				</p>
 <br/>
 				<p class=MsoNormal
@@ -739,7 +739,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 <br/>
 						<p class=MsoNormal>
 							<img border=0 width=628 height=484 id="Picture5"
-								src="media/userGuide/image011.gif">
+								src="resources/media/userGuide/image011.gif">
 						</p>
 
 						<p class=MsoNormal>
@@ -750,7 +750,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 <br/>
 						<p class=MsoNormal>
 							<img border=0 width=624 height=457 id="Picture312"
-								src="media/userGuide/image012.gif">
+								src="resources/media/userGuide/image012.gif">
 						</p>
 
 
@@ -759,7 +759,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 								and Draw a Box</b> to perform a search similar to "Find Place". Using
 							the <b><span style='color: black'>Zoom In</span></b><span
 								style='color: black'> </span><img border=0 width=26 height=21
-								id="Picture44" src="media/userGuide/image006.jpg"><span
+								id="Picture44" src="resources/media/userGuide/image006.jpg"><span
 								style='color: black'> tool while clicking and dragging
 								draws a box that zooms to the extent of the area of interest. By default the OpenGeoportal returns 
 								relevant results each time the displayed map extent changes.</span>
@@ -776,11 +776,11 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 <br/>
 						<p class=MsoNormal>
 							<img border=0 width=624 height=486 id="Picture313"
-								src="media/userGuide/image013.gif">
+								src="resources/media/userGuide/image013.gif">
 						</p>
 <br/>
 						<p class=MsoNormal>Also, panning or zooming in to a different
-							area immediately initiates another search for the new area.</p>
+							area imresources/mediately initiates another search for the new area.</p>
 						<p>Try combining your spatial search with a text search to further refine your results.</p>
 					</li>
 					<li>
@@ -814,7 +814,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 								<p class=MsoNormal>
 									<img border=0 width=630 height=504 id="Picture7"
-										src="media/userGuide/image014.gif">
+										src="resources/media/userGuide/image014.gif">
 								</p>
 							</li>
 							<li>
@@ -832,7 +832,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 								<p class=MsoNormal style='line-height: normal'>
 									<img border=0 width=640 height=238 id="Picture10"
-										src="media/userGuide/image015.gif">
+										src="resources/media/userGuide/image015.gif">
 								</p>
 
 								<p class=MsoNormal style='line-height: normal'>The
@@ -843,7 +843,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 								<p class=MsoNormal
 									style='margin-top: 0in; margin-right: 0in; margin-bottom: 0in; margin-left: .25in; margin-bottom: .0001pt; line-height: normal'>
 									<span style='color: black'><img border=0 width=597
-										height=356 id="Picture11" src="media/userGuide/image016.gif"></span>
+										height=356 id="Picture11" src="resources/media/userGuide/image016.gif"></span>
 								</p>
 
 								<ol type="i">
@@ -856,7 +856,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 										</p>
 										<p class=MsoNormal>
 											<img border=0 width=369 height=292 id="Picture365"
-												src="media/userGuide/image017.gif">
+												src="resources/media/userGuide/image017.gif">
 										</p>
 										<ul>
 											<li>
@@ -1059,7 +1059,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 										<p class=MsoListParagraphCxSpMiddle
 											style='line-height: normal'>
 											<img border=0 width=365 height=28 id="Picture18"
-												src="media/userGuide/image018.gif">
+												src="resources/media/userGuide/image018.gif">
 										</p>
 									</li>
 									<li>
@@ -1071,7 +1071,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 										<p class=MsoListParagraphCxSpMiddle>
 											<img border=0 width=336 height=26 id="Picture23"
-												src="media/userGuide/image019.gif">
+												src="resources/media/userGuide/image019.gif">
 										</p>
 									</li>
 									<li>
@@ -1084,7 +1084,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 										<p class=MsoNormal
 											style='margin-left: .5in; line-height: normal'>
 											<img border=0 width=211 height=29 id="Picture26"
-												src="media/userGuide/image020.gif">
+												src="resources/media/userGuide/image020.gif">
 
 										</p>
 									</li>
@@ -1120,7 +1120,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 										</ul>
 										<p class=MsoNormal>
 											<img border=0 width=351 height=163 id="Picture366"
-												src="media/userGuide/image021.gif">
+												src="resources/media/userGuide/image021.gif">
 										</p>
 
 									</li>
@@ -1136,7 +1136,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 										<p class=MsoNormal
 											style='margin-top: 0in; margin-right: 0in; margin-bottom: 0in; margin-left: .75in; margin-bottom: .0001pt; line-height: normal'>
 											<img border=0 width=318 height=163 id="Picture41"
-												src="media/userGuide/image022.gif">
+												src="resources/media/userGuide/image022.gif">
 										</p>
 									</li>
 									<li>
@@ -1153,7 +1153,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 										<p class=MsoNormal >
 											<img border=0 width=237 height=38 id="Picture48"
-												src="media/userGuide/image023.gif">
+												src="resources/media/userGuide/image023.gif">
 										</p>
 									</li>
 									<li>
@@ -1182,7 +1182,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 										</ul>
 										<p class=MsoNormal >
 											<img border=0 width=223 height=44 id="Picture53"
-												src="media/userGuide/image024.gif">
+												src="resources/media/userGuide/image024.gif">
 										</p>
 
 									</li>
@@ -1245,7 +1245,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Collapse/Expand</span> <img border=0
 								width=17 height=16 id="Picture20"
-								src="media/userGuide/image025.jpg">collapses or expands
+								src="resources/media/userGuide/image025.jpg">collapses or expands
 							the portion of the Search tab where criteria are entered. Having
 							this portion of the tab collapsed allows more search results to
 							appear on the screen.
@@ -1255,7 +1255,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Collapse Left</span> <img border=0
 								width=16 height=13 id="Picture21"
-								src="media/userGuide/image026.jpg"> collapses the tabbed
+								src="resources/media/userGuide/image026.jpg"> collapses the tabbed
 							area of the interface completely, maximizing the map view. When
 							the left side of the screen is collapsed, the button to expand
 							right displays at the left edge of the screen. Using the expand
@@ -1266,7 +1266,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Expand Right</span> <img border=0
 								width=15 height=14 id="Picture22"
-								src="media/userGuide/image027.jpg"> collapses the map area
+								src="resources/media/userGuide/image027.jpg"> collapses the map area
 							of the interface completely, maximizing the tabbed potion of the
 							interface. When the right side of the screen is collapsed, using
 							the expand left button will restore the interface to the default
@@ -1274,7 +1274,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						</p>
 						<p class=MsoNormal>
 							<img border=0 width=629 height=233 id="Picture12"
-								src="media/userGuide/image028.gif">
+								src="resources/media/userGuide/image028.gif">
 						</p>
 					</li>
 					<li>
@@ -1282,7 +1282,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Save Image</span> <img border=0
 								width=88 height=21 id="Picture24"
-								src="media/userGuide/image029.jpg"><b><span
+								src="resources/media/userGuide/image029.jpg"><b><span
 								style='color: black'> </span></b><span style='color: black'>
 								The Search Results allow you to save data sets only, so if you
 								want to save a map to view or download, you must click Save
@@ -1293,7 +1293,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Print</span> <img border=0 width=89
-								height=20 id="Picture27" src="media/userGuide/image030.jpg"><span
+								height=20 id="Picture27" src="resources/media/userGuide/image030.jpg"><span
 								style='color: black'> The Print button allows you to
 								print the current map.<br> Tip - Consider using a PDF
 								printer to avoid having to download a map, saving the map with
@@ -1304,13 +1304,13 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Basemap</span> <img border=0 width=87
-								height=25 id="Picture30" src="media/userGuide/image031.jpg"><b><span
+								height=25 id="Picture30" src="resources/media/userGuide/image031.jpg"><b><span
 								style='color: black'> </span></b><span style='color: black'>There
 								are five options for the basemap you can use in the OpenGeoportal.</span>
 						</p>
 						<p class=MsoNormal>
 							<img border=0 width=556 height=182 id="Picture9"
-								src="media/userGuide/image032.gif">
+								src="resources/media/userGuide/image032.gif">
 						</p>
 					</li>
 					<li>
@@ -1365,7 +1365,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 			</li>
 			<p class=MsoNormal>
 				<img border=0 width=544 height=242 id="Picture36"
-					src="media/userGuide/image033.gif">
+					src="resources/media/userGuide/image033.gif">
 			</p>
 		</ol>
 		<li>
@@ -1387,7 +1387,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 			<p class=MsoNormal>
 				<img border=0 width=626 height=454 id="Picture14"
-					src="media/userGuide/image034.gif">
+					src="resources/media/userGuide/image034.gif">
 			</p>
 		</li>
 		<li>
@@ -1402,14 +1402,14 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 			<p class=MsoNormal style='margin-left: .5in; line-height: normal'>
 				<span style='color: black'><img border=0 width=433 height=377
-					id="Picture399" src="media/userGuide/image035.gif"></span>
+					id="Picture399" src="resources/media/userGuide/image035.gif"></span>
 			</p>
 			<ol type="i">
 				<li>
 					<p class=MsoListParagraphCxSpMiddle>
 						<span style='color: black'>Show/Hide Preview Controls</span> <img
 							border=0 width=15 height=16 id="Picture58"
-							src="media/userGuide/image036.jpg"><span
+							src="resources/media/userGuide/image036.jpg"><span
 							style='color: black'> Expands the result to provide
 							options to customize opacity, font size and color, adjusting how
 							the data will preview on the map. Click on the arrow by the
@@ -1419,7 +1419,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					<p class=MsoNormal
 						style='margin-top: 0in; margin-right: 0in; margin-bottom: 0in; margin-left: .5in; margin-bottom: .0001pt; line-height: normal'>
 						<span style='color: black'><img border=0 width=442
-							height=131 id="Picture15" src="media/userGuide/image037.gif"></span>
+							height=131 id="Picture15" src="resources/media/userGuide/image037.gif"></span>
 					</p>
 
 				</li>
@@ -1434,7 +1434,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=443 height=132 id="Picture16"
-							src="media/userGuide/image038.gif">
+							src="resources/media/userGuide/image038.gif">
 					</p>
 				</li>
 				<li>
@@ -1442,7 +1442,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<span style='color: black'>Data Type</span>
 					</p>
 					<p class=MsoNormal>
-						<img width=18 height=115 src="media/userGuide/image039.jpg"
+						<img width=18 height=115 src="resources/media/userGuide/image039.jpg"
 							align=left hspace=12><span style='color: black'>Raster
 							- a generally rectangular grid of pixels</span>
 					</p>
@@ -1467,7 +1467,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 							a physical map</span>
 					</p> <!-- <p class=MsoNormalCxSpMiddle>
 								<img border=0 width=440 height=128 id="Picture17"
-									src="media/userGuide/image040.gif">
+									src="resources/media/userGuide/image040.gif">
 							</p>-->
 				</li>
 				<li>
@@ -1478,7 +1478,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=439 height=127 id="Picture19"
-							src="media/userGuide/image041.gif">
+							src="resources/media/userGuide/image041.gif">
 					</p>
 				</li>
 				<li>
@@ -1490,7 +1490,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=438 height=130 id="Picture28"
-							src="media/userGuide/image042.gif">
+							src="resources/media/userGuide/image042.gif">
 					</p>
 				</li>
 				<li>
@@ -1504,7 +1504,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=628 height=517 id="Picture448"
-							src="media/userGuide/image043.gif">
+							src="resources/media/userGuide/image043.gif">
 					</p>
 				</li>
 				<li>
@@ -1521,7 +1521,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					<p class=MsoListParagraphCxSpLast>
 						<b><span style='color: black'>Login</span></b><span
 							style='color: black'> </span><img border=0 width=27 height=14
-							id="Picture103" src="media/userGuide/image044.jpg"><span
+							id="Picture103" src="resources/media/userGuide/image044.jpg"><span
 							style='color: black'> If the data is protected, click the
 							login button to provide your credentials to access the data and
 							preview it on the map.</span>
@@ -1529,7 +1529,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<span style='color: black'><img border=0 width=628
-							height=335 id="Picture461" src="media/userGuide/image045.gif"></span>
+							height=335 id="Picture461" src="resources/media/userGuide/image045.gif"></span>
 					</p>
 					<p class=MsoNormal>
 						<span style='color: black'>Within Preview, there are
@@ -1551,7 +1551,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=627
-									height=343 id="Picture462" src="media/userGuide/image046.gif"></span>
+									height=343 id="Picture462" src="resources/media/userGuide/image046.gif"></span>
 							</p>
 						</li>
 						<li>
@@ -1565,7 +1565,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 							<p class=MsoNormal>
 								<img border=0 width=603 height=166 id="Picture33"
-									src="media/userGuide/image047.gif">
+									src="resources/media/userGuide/image047.gif">
 							</p>
 						</li>
 						<li>
@@ -1578,34 +1578,34 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=627
-									height=293 id="Picture38" src="media/userGuide/image048.gif"></span>
+									height=293 id="Picture38" src="resources/media/userGuide/image048.gif"></span>
 							</p>
 						</li>
 						<li>
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Zoom to Geographic Extent of
 									Layer</span> <img border=0 width=23 height=22 id="Picture113"
-									src="media/userGuide/image049.jpg"> By clicking on the
+									src="resources/media/userGuide/image049.jpg"> By clicking on the
 								magnifying glass, the map pans and zooms to the full extent of the layer.
 							</p>
 
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=628
-									height=250 id="Picture40" src="media/userGuide/image050.gif"></span>
+									height=250 id="Picture40" src="resources/media/userGuide/image050.gif"></span>
 							</p>
 						</li>
 						<li>
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Click a Previewed Feature on
 									the Map to View its Attributes</span> <img border=0 width=22 height=21
-									id="Picture115" src="media/userGuide/image051.jpg"><span style='color: black'>By
+									id="Picture115" src="resources/media/userGuide/image051.jpg"><span style='color: black'>By
 									clicking on this, the cursor turns into a crosshairs. Then,
 									click on any feature to bring up the attribute information
 									about it. </span>
 							</p>
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=622
-									height=260 id="Picture42" src="media/userGuide/image052.gif"></span>
+									height=260 id="Picture42" src="resources/media/userGuide/image052.gif"></span>
 							</p>
 						</li>
 					</ol>
@@ -1623,7 +1623,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<span style='color: black'><img border=0 width=435
-							height=273 id="Picture484" src="media/userGuide/image053.gif"></span>
+							height=273 id="Picture484" src="resources/media/userGuide/image053.gif"></span>
 					</p>
 
 					<p class=MsoListParagraphCxSpFirst>
@@ -1635,7 +1635,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoListParagraphCxSpMiddle>
 						<span style='color: black'><img border=0 width=225
-							height=223 id="Picture485" src="media/userGuide/image054.gif"></span>
+							height=223 id="Picture485" src="resources/media/userGuide/image054.gif"></span>
 					</p>
 
 					<p class=MsoListParagraphCxSpMiddle>
@@ -1703,7 +1703,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=629 height=150 id="Picture56"
-							src="media/userGuide/image055.gif">
+							src="resources/media/userGuide/image055.gif">
 					</p>
 				</li>
 			</ol>
@@ -1726,7 +1726,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 			<p class=MsoNormal>
 				<img border=0 width=555 height=533 id="Picture59"
-					src="media/userGuide/image056.gif">
+					src="resources/media/userGuide/image056.gif">
 			</p>
 
 			<p class=MsoNormal
@@ -1738,7 +1738,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 			<p class=MsoNormal>
 				<img border=0 width=508 height=304 id="Picture60"
-					src="media/userGuide/image057.gif">
+					src="resources/media/userGuide/image057.gif">
 			</p>
 
 			<p class=MsoNormal>The four buttons are:</p>
@@ -1774,7 +1774,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=624 height=328 id="Picture469"
-							src="media/userGuide/image058.gif">
+							src="resources/media/userGuide/image058.gif">
 					</p>
 
 					<p class=MsoListParagraph>
@@ -1786,7 +1786,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=356 height=209 id="Picture470"
-							src="media/userGuide/image059.gif">
+							src="resources/media/userGuide/image059.gif">
 					</p>
 				</li>
 				<li>
@@ -1806,7 +1806,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=629 height=399 id="Picture61"
-							src="media/userGuide/image060.gif">
+							src="resources/media/userGuide/image060.gif">
 					</p>
 				</li>
 				<li>
@@ -1855,7 +1855,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=624 height=250 id="Picture54"
-							src="media/userGuide/image061.jpg">
+							src="resources/media/userGuide/image061.jpg">
 					</p> <span style='color: black'>Also always visible are two
 						links at the lower left of the window:</span>
 				</li>
@@ -1875,7 +1875,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<img border=0 width=221 height=94 id="Picture57"
-							src="media/userGuide/image062.gif">
+							src="resources/media/userGuide/image062.gif">
 					</p>
 				</li>
 			</ol>

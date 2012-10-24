@@ -4,12 +4,18 @@ import org.OpenGeoPortal.Download.Types.BoundingBox;
 
 public class MITDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = true;
-
+	private static final String METHOD = "GET";
+	
 	@Override
 	public Boolean includesMetadata() {
 		return INCLUDES_METADATA;
 	}
 
+	@Override
+	public String getMethod(){
+		return METHOD;
+	}
+	
 	private String getDataType() {
 		String geometry = this.currentLayer.getLayerInfo().getDataType();
 		if (geometry.equals("line")){

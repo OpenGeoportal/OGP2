@@ -15,14 +15,20 @@
 <script type="text/javascript" src="resources/javascript/jquery.scrollTo-min.js"></script>
 <script type="text/javascript" src="resources/javascript/jquery.ba-resize.js"></script>
 <script type="text/javascript" src="resources/javascript/panZoom.js"></script>
+<script type="text/javascript" src="resources/javascript/utility.js"></script>
 <script type="text/javascript" src="resources/javascript/institution.js"></script>
 <script type="text/javascript" src="resources/javascript/errorObject.js"></script>
-<script type="text/javascript" src="resources/javascript/utility.js"></script>
+<script type="text/javascript" src="resources/javascript/analytics.js"></script>
 <script type="text/javascript" src="resources/javascript/mapDiv.js"></script>
+<script type="text/javascript" src="resources/javascript/layerSettings.js"></script>
 <script type="text/javascript" src="resources/javascript/layerTable.js"></script>
+<script type="text/javascript" src="resources/javascript/login.js"></script>
 <script type="text/javascript" src="resources/javascript/userInterface.js"></script>
 <script type="text/javascript" src="resources/javascript/main.js"></script>
 <script type="text/javascript" src="resources/javascript/solr.js"></script>
+<script type="text/javascript" src="resources/javascript/download.js"></script>
+<script type="text/javascript" src="resources/javascript/geoCommonsExport.js"></script>
+
 <!-- <script type="text/javascript" src="javascript/testOverviewMap.js"></script>-->
 <!-- We should move to using a cdn where possible with a locally hosted fallback -->
 <!--

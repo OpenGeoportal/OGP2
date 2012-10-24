@@ -19,6 +19,13 @@ public class WmsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	private static final Double MAX_AREA =  1800.0 * 1800.0;  //should be within recommended geoserver memory settings.
 	private static final Boolean INCLUDES_METADATA = false;
 
+	private static final String METHOD = "GET";
+
+	@Override
+	public String getMethod(){
+		return METHOD;
+	}
+	
 	public String createDownloadRequest() throws Exception {
 		//--generate POST message
 		//info needed: geometry column, bbox coords, epsg code, workspace & layername

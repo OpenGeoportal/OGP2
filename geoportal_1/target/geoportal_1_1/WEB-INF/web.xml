@@ -26,11 +26,11 @@
 	<listener>
   		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener> 
-	<!-- <listener>
+	<listener>
 	 <listener-class>
-            org.OpenGeoPortal.Ingest.IngestStatusSessionListener
+            org.OpenGeoPortal.Download.RequestStatusSessionListener
         </listener-class>
-  </listener>-->
+  </listener>
     <servlet>
         <servlet-name>appServlet</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>

@@ -18,8 +18,14 @@ import org.w3c.dom.NodeList;
 
 public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
+	private static final String METHOD = "POST";
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@Override
+	public String getMethod(){
+		return METHOD;
+	}
+	
 	public String createDownloadRequest() throws Exception {
 		//--generate POST message
 		//info needed: geometry column, bbox coords, epsg code, workspace & layername
@@ -68,9 +74,7 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		return this.currentLayer.getWfsUrl();
 	};
 	
-	 Map<String, String> getWfsDescribeLayerInfo()
-	 	throws Exception
-	 {
+	 Map<String, String> getWfsDescribeLayerInfo() throws Exception {
 		// TODO should be xml doc fragment?
 		String layerName = this.currentLayer.getLayerNameNS();
 	 	String describeFeatureRequest = "<DescribeFeatureType"

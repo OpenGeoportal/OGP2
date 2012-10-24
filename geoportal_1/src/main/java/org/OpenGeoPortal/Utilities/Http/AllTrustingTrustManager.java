@@ -1,4 +1,4 @@
-package org.OpenGeoPortal.Utilities;
+package org.OpenGeoPortal.Utilities.Http;
 
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;

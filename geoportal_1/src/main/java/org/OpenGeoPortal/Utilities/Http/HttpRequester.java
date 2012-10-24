@@ -1,4 +1,4 @@
-package org.OpenGeoPortal.Utilities;
+package org.OpenGeoPortal.Utilities.Http;
 
 import java.io.IOException;
 import java.io.InputStream;

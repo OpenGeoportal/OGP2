@@ -1,14 +1,13 @@
 package org.OpenGeoPortal.Download.Types;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
@@ -19,8 +18,7 @@ public class LayerRequest {
 	private String requestedFormat;
 	private UUID jobId;
 	private String emailAddress = "";
-	private LayerStatus status;
-	private LayerDisposition disposition;
+	private Status status;
 	private File targetDirectory;
 	private BoundingBox requestedBounds;
 	private String epsgCode;
@@ -29,12 +27,8 @@ public class LayerRequest {
 	public Map<String, List<String>> responseHeaders;
 	public Boolean metadata;
 	private Date timeStamp;
+	private Future<?> futureValue;
 
-	
-	List<Map<String,String>> successMessage = new ArrayList<Map<String,String>>();
-	List<Map<String,String>> errorMessage = new ArrayList<Map<String,String>>();
-	List<Map<String,String>> warningMessage = new ArrayList<Map<String,String>>();
-	
 	public LayerRequest(SolrRecord record, String requestedFormat){
 		this.id = record.getLayerId()[0];
 		this.layerInfo = record;
@@ -42,8 +36,13 @@ public class LayerRequest {
 
 		//probably best to make all values with a limited set of possibilities enums
 		this.setRequestedFormat(requestedFormat);
-		this.status = LayerStatus.AWAITING_REQUEST;
-		this.disposition = LayerDisposition.AWAITING_REQUEST;
+		this.status = Status.PROCESSING;
+	}
+	
+	public enum Status {
+		PROCESSING,
+		FAILED,
+		SUCCESS
 	}
 
 	public Date getTimeStamp(){
@@ -138,24 +137,16 @@ public class LayerRequest {
 		this.requestedFormat = requestedFormat;
 	}
 	
-	public void setStatus(LayerStatus status){
+	public void setStatus(Status status){
 		this.status = status;
 	}
 	
-	public LayerStatus getStatus(){
+	public Status getStatus(){
 		return this.status;
 	}
 	
 	public String getLayerNameNS(){
 		return this.layerInfo.getWorkspaceName() + ":" + this.layerInfo.getName();
-	}
-
-	public void setDisposition(LayerDisposition disposition) {
-		this.disposition = disposition;
-	}
-	
-	public LayerDisposition getDisposition(){
-		return this.disposition;
 	}
 
 	public String getWmsUrl(){
@@ -177,35 +168,12 @@ public class LayerRequest {
 	public boolean hasMetadata() {
 		return metadata;
 	}
-	
-	public void addError(String name, String message){
-		errorMessage.add(statusMessage(name, message));
+
+	public Future<?> getFutureValue() {
+		return futureValue;
 	}
-	
-	public void addSuccess(String name, String message){
-		successMessage.add(statusMessage(name, message));
-	}
-	
-	public void addWarning(String name, String message){
-		warningMessage.add(statusMessage(name, message));
-	}
-	
-	public List<Map<String,String>> getSuccesses(){
-		return successMessage;
-	}
-	
-	public List<Map<String,String>> getWarnings(){
-		return warningMessage;
-	}
-	
-	public List<Map<String,String>> getErrors(){
-		return errorMessage;
-	}
-	
-	private static Map<String,String> statusMessage(String layerName, String status){
-		Map<String, String> statusMap = new HashMap<String, String>();
-		statusMap.put("layer", layerName);
-		statusMap.put("status", status);
-		return statusMap;
+
+	public void setFutureValue(Future<?> futureValue) {
+		this.futureValue = futureValue;
 	}
 }

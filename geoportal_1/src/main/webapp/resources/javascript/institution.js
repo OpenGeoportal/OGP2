@@ -1,8 +1,7 @@
 /**
- * this should come from a config file
- * Ideally we could have an object with all needed variables of an institution parameterized;
- * wms server, tilecaching server, download server, source graphic...what else? resolutions array for tile caching?
- */
+ * pulls info from ogpConfig.json for the client to use
+ * 
+ * */
 
 if (typeof org == 'undefined'){ 
 	org = {};
@@ -75,6 +74,16 @@ org.OpenGeoPortal.InstitutionInfo.getWMSProxy = function(institution, accessLeve
 	
 };
 
+org.OpenGeoPortal.InstitutionInfo.getLoginType = function(institution){
+	var info = org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
+	return info[institution]["login"]["loginType"];
+};
+
+org.OpenGeoPortal.InstitutionInfo.getAuthenticationPage = function(institution){
+	var info = org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
+	return info[institution]["login"]["authenticationPage"];
+};
+
 org.OpenGeoPortal.InstitutionInfo.getSearch = function(){	
 	var search = org.OpenGeoPortal.InstitutionInfo.Search;
 	//return Search if it is not empty
@@ -122,101 +131,19 @@ org.OpenGeoPortal.InstitutionInfo.requestInfo = function(){
 	jQuery.ajax(params);
 };
 
-/*org.OpenGeoPortal.InstitutionInfo.getPreviewUrlArray = function(layerObj){
-	//is layer public or private? is this a request that can be handled by a tilecache?
-	//is this a wms request? something to think about.  for now, we only support wms previews
-	validateLayerObj = function(){
-		var paramArray = ["access", "institution", "tilecache"];
-		for (var paramIndex in paramArray){
-			var param = paramArray[paramIndex];
-			if (typeof layerObj[param] == "undefined"){
-				throw new Error("org.OpenGeoPortal.InstitutionInfo.getPreviewUrlArray: The parameter " + param + " is required.");
-			}
-		}
-	};
-	validateLayerObj();
-	var urlArraySize = 3; //this seems to be a good size for OpenLayers performance
-	var urlArray = [];
-	populateUrlArray = function(url){
-		for (var i=0; i < urlArraySize; i++){
-			urlArray[i] = url;
-		}	
-	};
-	var wmsProxyUrl = this.localRestrictedWMS;
-	if (wmsProxyUrl.length == 0){
-		throw new Error("No server for restricted data has been configured.");
-	}
-	if (layerObj.access.toLowerCase() != "public"){
-		if (layerObj.institution.toLowerCase() != this.getHomeInstitution().toLowerCase()) {
-			throw new Error("You don't have access to preview this layer");
-		} else {
-			populateUrlArray(wmsProxyUrl);
-		}
-	} else {
-		var institutionInfo = this.getInstitutionInfo();
-		var addressArray;
-		if ((typeof institutionInfo[layerObj.institution].preview.tileCache == "undefined") ||
-				(layerObj.tilecache == false)){
-			addressArray = institutionInfo[layerObj.institution].preview.WMS.serviceAddress;
-			if (addressArray.length == 1){
-				populateUrlArray(addressArray[0]);
-			} else {
-				urlArray = addressArray;
-			}
-		} else {
-			addressArray = institutionInfo[layerObj.institution].preview.tileCache.serviceAddress;
-			if (addressArray.length == 1){
-				populateUrlArray(addressArray[0]);
-			} else {
-				urlArray = addressArray;
-			}
-		}
-	}
-	
-	return urlArray;
-};
-
-org.OpenGeoPortal.InstitutionInfo.tilecacheToWMS =  function(tilingUrl){
-	var wmsArray = false;
-	var tilingArray = new Array();
-	if (jQuery.isArray(tilingUrl)){
-		tilingArray = tilingUrl;
-		tilingUrl = tilingUrl[0];
-		wmsArray = true;
-	}
-
-	if (tilingUrl.indexOf(this.localRestrictedWMS) > -1){
-		return tilingUrl;
-	}
-	var institutionInfo = org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
-	for (var institution in institutionInfo){
-		var currentInstitution = institutionInfo[institution].preview;
-		for (var serviceType in currentInstitution){
-			if (tilingUrl == currentInstitution[serviceType].serviceAddress[0]){
-				if (wmsArray){
-					for (var i in tilingArray){
-						tilingArray[i] = currentInstitution.WMS.serviceAddress[0];
-					}
-					return tilingArray;
-				} else {
-					return currentInstitution.WMS.serviceAddress[0];
-				}
-			}
-		}
-	}
-};
-*/
-org.OpenGeoPortal.InstitutionInfo.imagePath = "resources/media/";
+org.OpenGeoPortal.InstitutionInfo.imagePath = org.OpenGeoPortal.Utility.ImageLocation;
 
 org.OpenGeoPortal.InstitutionInfo.icons = {
 		"dataTypes": {
-				  "Point": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_dot.png", "displayName":"Point"},
-				  "Line": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_arc.png", "displayName":"Line"},
-				  "Polygon": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_polygon.png", "displayName":"Polygon"},
-				  "Raster": {"source":  org.OpenGeoPortal.InstitutionInfo.imagePath + "type_raster.png", "displayName":"Raster"},
-				  "PaperMap": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_map.png", "displayName":"Scanned Map"}
+				  "Point": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_dot.png", "displayName":"point"},
+				  "Line": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_arc.png", "displayName":"line"},
+				  "Polygon": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_polygon.png", "displayName":"polygon"},
+				  "Raster": {"source":  org.OpenGeoPortal.InstitutionInfo.imagePath + "type_raster.png", "displayName":"raster"},
+				  "PaperMap": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_map.png", "displayName":"scanned map"},
+				  "LibraryRecord": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_library.png", "displayName":"library record"}
 	}
 };
+
 
 org.OpenGeoPortal.InstitutionInfo.dataTypes = {	dataTypeArray : [{"DisplayName":"Point", "value": "point"}, 
                                                	                 {"DisplayName":"Line", "value": "line"},

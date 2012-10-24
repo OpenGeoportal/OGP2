@@ -6,15 +6,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.DirectoryRetriever;
-import org.OpenGeoPortal.Utilities.HttpRequester;
 import org.OpenGeoPortal.Utilities.OgpFileUtils;
+import org.OpenGeoPortal.Utilities.Http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ public abstract class AbstractDownloadMethod {
 	protected HttpRequester httpRequester;
 	@Autowired
 	protected DirectoryRetriever directoryRetriever;
-	protected UUID requestId;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	
@@ -40,11 +38,10 @@ public abstract class AbstractDownloadMethod {
 	}
 
 	@Async
-	public Future<File> download(UUID requestId, LayerRequest currentLayer) throws Exception {
+	public Future<File> download(LayerRequest currentLayer) throws Exception {
 		this.currentLayer = currentLayer;
-		this.requestId = requestId;
 		currentLayer.setMetadata(this.includesMetadata());
-		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), "POST");
+		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), getMethod());
 		File directory = getDirectory();
 		String contentType = httpRequester.getContentType();
 		File outputFile = OgpFileUtils.createNewFileFromDownload(currentLayer.getLayerInfo().getName(), contentType, directory);
@@ -81,6 +78,8 @@ public abstract class AbstractDownloadMethod {
 	public abstract String createDownloadRequest() throws Exception;
 	
 	public abstract String getUrl();
+	
+	public abstract String getMethod();
 	
 	public BoundingBox getClipBounds(){
 		SolrRecord layerInfo = this.currentLayer.getLayerInfo();

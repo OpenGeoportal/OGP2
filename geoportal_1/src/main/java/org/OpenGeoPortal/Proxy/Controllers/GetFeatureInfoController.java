@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.OpenGeoPortal.Utilities.HttpRequester;
+import org.OpenGeoPortal.Utilities.Http.HttpRequester;
 import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

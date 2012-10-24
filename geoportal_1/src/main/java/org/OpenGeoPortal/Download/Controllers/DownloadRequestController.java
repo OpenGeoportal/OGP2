@@ -17,13 +17,13 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 @Controller
 @RequestMapping("/layerDownload")
-public class DownloadController {
+public class DownloadRequestController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private DownloadHandler downloadHandler;
 
 	@RequestMapping(method=RequestMethod.POST, produces="application/json")
-	public @ResponseBody Map<String,String> processDownload(@RequestParam("layers") String[] layers, @RequestParam("email") String email, 
+	public @ResponseBody Map<String,String> processDownload(@RequestParam("layers[]") String[] layers, @RequestParam("email") String email, 
 			@RequestParam("bbox") String bbox) throws Exception {
 		 /**
 		 * This servlet should receive a POST request with an object containing 

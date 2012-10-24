@@ -1,22 +1,49 @@
 package org.OpenGeoPortal.Proxy.Controllers;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Solr.SolrRecord;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageRequest {
-
+	@JsonIgnore
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+	@JsonIgnore
+	private UUID requestId;
+	@JsonIgnore
+	private String sessionId;
+	@JsonProperty("srs")
 	String srs;
+	@JsonProperty("bbox")
+	String bbox;
+	@JsonIgnore
 	BoundingBox bounds;
+	@JsonProperty("format")
 	String format;
+	@JsonProperty("height")
 	int height;
+	@JsonProperty("width")
 	int width;
-	List<LayerImage> layerImages = new ArrayList<LayerImage>();
+	@JsonProperty("layers")
+	List<LayerImage> layerImage; 
 
+	public String getBbox() {
+		return bbox;
+	}
+
+	public void setBbox(String bbox) {
+		this.bbox = bbox;
+	}
+	
 	public String getSrs() {
 		return srs;
 	}
@@ -57,31 +84,76 @@ public class ImageRequest {
 		this.width = width;
 	}
 
-	public void addLayerImage(LayerImage layerImage){
-		this.layerImages.add(layerImage);
+	public void setLayers(List<LayerImage> layers){
+		this.layerImage = layers;
 	}
 	
-	public List<LayerImage> getLayerImages(){
-		return this.layerImages;
+
+	public List<LayerImage> getLayers(){
+		return this.layerImage;
 	}
 	
 	public Set<String> getLayerIds(){
 		Set<String> layerIds = new HashSet<String>();
-		for (LayerImage layerImage: this.layerImages){
+		for (LayerImage layerImage: this.layerImage){
 			layerIds.add(layerImage.getLayerId());
 		}
 		return layerIds;
 	}
 	
-	public class LayerImage implements Comparable<LayerImage> {
+	public UUID getRequestId() {
+		return requestId;
+	}
+
+	public void setRequestId(UUID requestId) {
+		this.requestId = requestId;
+	}
+
+	public String getSessionId() {
+		return sessionId;
+	}
+
+	public void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+
+	public static class LayerImage implements Comparable<LayerImage> {
+		@JsonIgnore
+		String name;
+		@JsonProperty("opacity")
+		int opacity;
+		@JsonProperty("zIndex")
+		int zIndex;
+		@JsonProperty("layerId")
 		String layerId;
 		String sld;
-		int opacity;
-		int zIndex;
+		@JsonIgnore
 		String baseUrl;
+		@JsonIgnore
 		String queryString;
+		@JsonIgnore
 		SolrRecord solrRecord;
+		@JsonIgnore
+		File imageFile;
+		@JsonIgnore
+		Future<File> imageFileFuture;
 
+		LayerImage(){}
+		
+		LayerImage(String layerId, String sld, int opacity, int zIndex){
+			this.layerId = layerId;
+			this.sld =sld;
+			this.opacity = opacity;
+			this.zIndex = zIndex;
+		}
+
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+		
 		public String getLayerId() {
 			return layerId;
 		}
@@ -125,13 +197,31 @@ public class ImageRequest {
 		public void setSolrRecord(SolrRecord solrRecord) {
 			this.solrRecord = solrRecord;
 		}
+		
+		public File getImageFile() {
+			return imageFile;
+		}
+
+		public void setImageFile(File imageFile) {
+			this.imageFile = imageFile;
+		}
+		
+		public Future<File> getImageFileFuture() {
+			return imageFileFuture;
+		}
+
+		public void setImageFileFuture(Future<File> imageFileFuture) {
+			this.imageFileFuture = imageFileFuture;
+		}
+		
 		@Override
+		@JsonIgnore
 		public int compareTo(LayerImage n) {
 	        return (zIndex < n.zIndex ? -1 :
 	               (zIndex == n.zIndex ? 0 : 1));
 		}
 		
-
+		@JsonIgnore
 	    public boolean equals(Object o) {
 	        if (!(o instanceof LayerImage))
 	            return false;

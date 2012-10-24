@@ -17,6 +17,7 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 		//this is not great...only handles one level of directories
 		try {
 			//convert to milliseconds
+			int counter = 0;
 			long timeInterval = FILE_AGE_MINUTES * 60 * 1000;
 			File[] downloadedFiles = directoryRetriever.getDownloadDirectory().listFiles();
 			long currentTime = System.currentTimeMillis();
@@ -29,21 +30,27 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 						if (currentTime - innerDownloadedFile.lastModified() > timeInterval){
 							logger.info("Deleting file: " + innerDownloadedFile.getName());
 							innerDownloadedFile.delete();
+							counter++;
 						}
 					}
 					if (downloadedFile.listFiles().length == 0){
 						logger.info("Deleting directory: " + downloadedFile.getName());
 						downloadedFile.delete();
+						counter++;
 					}
 				} else { 
 				
 					if (currentTime - downloadedFile.lastModified() > timeInterval){
 						logger.info("Deleting file: " + downloadedFile.getName());
 						downloadedFile.delete();
+						counter++;
 					}
 					
 				}
 				
+			}
+			if (counter == 0){
+				logger.info("No items to delete.");
 			}
 		} catch (Exception e) {
 			logger.error("Attempt to delete old files was unsuccessful.");
