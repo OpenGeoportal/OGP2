@@ -69,7 +69,8 @@ public abstract class AbstractDownloadMethod {
 		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
 		File newDir = File.createTempFile("OGP", "", downloadDirectory);
 		newDir.delete();
-		Boolean success= newDir.mkdir();
+		//Boolean success= 
+		newDir.mkdir();
 		newDir.setReadable(true);
 		newDir.setWritable(true);
 		return newDir;

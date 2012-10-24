@@ -8,7 +8,7 @@ import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+//import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -78,7 +78,7 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 		
 		String version = null;
 		String ogcRequest = null;
-		String service = null;
+		//String service = null;
        	String layers = request.getParameter("OGPIDS");
 
 		/* 
@@ -101,7 +101,7 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
     		} else if (currentParam.equalsIgnoreCase("request")){
     			ogcRequest = request.getParameter(currentParam);
     		} else if (currentParam.equalsIgnoreCase("service")){
-    			service = request.getParameter(currentParam);
+    			//service = request.getParameter(currentParam);
     		}	
     	}
        	
@@ -151,7 +151,7 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 		//this should be much faster
 		 * 
 		 */
-   		String institution = layerInfoList.get(0).getInstitution();
+   		//String institution = layerInfoList.get(0).getInstitution();
 		//String servicePoint = layerInfoMap.get(layerIds[0]).get("Location");
 		//servicePoint = ParseJSONSolrLocationField.getWmsUrl(servicePoint);
    		//String serverName = servicePoint.substring(0, servicePoint.indexOf("/wms"));

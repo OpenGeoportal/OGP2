@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.OpenGeoPortal.Authentication.OgpUserContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
+//import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.HttpRequestHandler;
 
 @Deprecated
@@ -36,13 +36,13 @@ public class RestrictedWMSProxy implements HttpRequestHandler {
 		return this.genericProxy;
 	}
 
-	private Boolean isLocallyAuthenticated(){
+	/*private Boolean isLocallyAuthenticated(){
 		try {
 			return SecurityContextHolder.getContext().getAuthentication().isAuthenticated();
 		} catch (NullPointerException e){
 			return false;
 		}
-	}
+	}*/
 	
 	@Override
 	public void handleRequest(HttpServletRequest request,
