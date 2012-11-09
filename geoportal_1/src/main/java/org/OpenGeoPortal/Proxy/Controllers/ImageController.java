@@ -7,16 +7,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.OpenGeoPortal.Authentication.OgpUserContext;
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.OpenGeoPortal.Proxy.ImageHandler;
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest.LayerImage;
+import org.OpenGeoPortal.Security.OgpUserContext;
 import org.OpenGeoPortal.Solr.SearchConfigRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,20 +35,12 @@ public class ImageController {
 	private SearchConfigRetriever searchConfigRetriever;
 	@Autowired
 	private ImageHandler imageHandler;
-	private String proxyTo;
+	private @Value("${ogp.proxyToWMS}") String proxyTo;
 	private boolean isLocallyAuthenticated;// = true;
 	@Autowired
 	private OgpUserContext ogpUserContext;
 	private String home;// = "Tufts";
 	private ImageRequest imageRequest;
-	
-	public String getProxyTo() {
-		return proxyTo;
-	}
-
-	public void setProxyTo(String proxyTo) {
-		this.proxyTo = proxyTo;
-	}
 
 	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", consumes="application/json", produces="application/json")
 	public @ResponseBody Map<String,String> processImageRequest(@RequestBody String imageRequest) throws Exception {

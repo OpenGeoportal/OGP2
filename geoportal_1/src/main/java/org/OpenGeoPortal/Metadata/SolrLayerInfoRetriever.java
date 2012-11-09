@@ -58,7 +58,7 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 
 	@Override
 	public String getWMSUrl(SolrRecord solrRecord) {
-		logger.debug("Has proxy url: " + Boolean.toString(hasProxy(solrRecord)));
+		logger.info("Has proxy url: " + Boolean.toString(hasProxy(solrRecord)));
 		if (hasProxy(solrRecord)){
 			String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
 			String accessLevel = solrRecord.getAccess();//layerInfo.get("Access")
@@ -66,6 +66,7 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 				return this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
+				logger.error("Error getting proxy");
 				e.printStackTrace();
 				return null;
 			}
@@ -78,7 +79,6 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	public boolean hasProxy(SolrRecord layerInfo) {
 		String institution = layerInfo.getInstitution();
 		String accessLevel = layerInfo.getAccess();
-
 		String wmsProxyUrl = null;
 		try {
 			wmsProxyUrl = this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
@@ -86,7 +86,6 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		if (wmsProxyUrl != null){
 			return true;
 		} else {
@@ -101,6 +100,25 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	    queryObj.setQuery( query );
 		List<SolrRecord> results = solrClient.getSolrServer().query(queryObj).getBeans(SolrRecord.class);
 		return results.get(0);
+	}
+
+	@Override
+	public String getWFSUrl(SolrRecord solrRecord) {
+		logger.info("Has proxy url: " + Boolean.toString(hasProxy(solrRecord)));
+		if (hasProxy(solrRecord)){
+			String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
+			String accessLevel = solrRecord.getAccess();//layerInfo.get("Access")
+			try {
+				return this.searchConfigRetriever.getWfsProxy(institution, accessLevel);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				logger.error("Error getting proxy");
+				e.printStackTrace();
+				return null;
+			}
+		} else {
+			return ParseJSONSolrLocationField.getWfsUrl(solrRecord.getLocation());
+		}
 	}
 
 }

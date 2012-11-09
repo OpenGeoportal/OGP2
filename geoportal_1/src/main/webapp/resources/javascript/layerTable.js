@@ -648,7 +648,6 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     	  var fgdcDocument = jQuery.parseXML(fgdcRawText);
     	  var xsl = null;
     	  var params = {
-    			  //url: "FGDC_Classic_for_Web_body.xsl",
     			  url: "resources/xml/FGDC_V2_a.xsl",
     			  async: false,
     			  context: contextObj,
@@ -671,13 +670,19 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     		  dialogDiv += '</div> \n';
     		  jQuery('body').append(dialogDiv);
     	  }
-    	  var downloadButton = '<span class="styledButton" id="metadataDownloadButton">Download Metadata (XML)</span>';
+    	  var dialogHeight = 400;
     	  //jQuery('#metadataDialog').width("550");
+    	  var metadataContent = '<div id="toMetadataTop"></div><div id="metadataContent"></div><div id="metadataFooter" title="LayerId: ' + layerId + '">' + layerId + '</div>';
     	  var metadataDialog = jQuery("#metadataDialog");
-    	  metadataDialog.html(resultDocument);
-    	  metadataDialog.prepend(downloadButton);
-    	  metadataDialog.dialog({ zIndex: 9999, width: 560, height: 400, title: "<div title='Layer ID: " + layerId + "'>FGDC METADATA</div>" });  
-    	  metadataDialog[0].scrollTop = 0;
+    	  metadataDialog.html(metadataContent)
+    	  jQuery("#metadataContent").html(resultDocument);
+    	  
+    	  metadataDialog.dialog({ zIndex: 9999, width: 630, height: dialogHeight, title: "<div>FGDC METADATA</div>" });  
+    	  if (jQuery("#metadataDownloadButton").length == 0){
+        	  var downloadButton = '<span class="styledButtonSmall" id="metadataDownloadButton">Download Metadata (XML)</span>';
+    		  metadataDialog.parent().find(".ui-dialog-titlebar").first().prepend(downloadButton);
+    	  }
+    	  jQuery("#metadataContent")[0].scrollTop = 0;
     	  metadataDialog.dialog("open");
     	  metadataDialog.find("a").click(function(event){
   			var toID = jQuery(this).attr("href");
@@ -700,6 +705,8 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
         	  }
     	  };
     	  jQuery("#metadataDownloadButton").bind("click", downloadFunction);
+    	  jQuery("#toMetadataTop").unbind();
+    	  jQuery("#toMetadataTop").bind("click", function(){jQuery("#metadataContent")[0].scrollTop = 0;});
 	  };
 	  
 	  this.downloadMetadata = function downloadMetadata(event){

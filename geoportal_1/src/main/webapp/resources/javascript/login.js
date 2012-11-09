@@ -131,6 +131,15 @@ org.OpenGeoPortal.LogIn = function(institution){
 
 };
 
+this.checkLoginStatus = function(){
+	var that = this;
+	var ajaxArgs = {url: "login", type: "GET", 
+			context: that,
+			crossDomain: true,
+			success: that.loginStatusResponse
+			};
+	jQuery.ajax(ajaxArgs);
+};
 // retrieve user entered values, generate https request and set login flag
 // some special processing is included for running on localhost 
 this.processFormLogin = function()
@@ -146,19 +155,24 @@ this.processFormLogin = function()
 	}
         var port = window.location.port;
 	if ((port == "") || (port == null))
-		port = "443";
-	port = ":" + port;
+		port = "8443";
+	port = ":" + "8443";
 	var protocol = "https";
-	if (hostname == "localhost")
-		protocol = "http";
+	//if (hostname == "localhost")
+		//protocol = "http";
 	var that = this;
 	var url = protocol + "://" + hostname + port + "/" + extraPath + this.authenticationPage;
+	//var url = this.authenticationPage;
 	var username = jQuery("#loginFormUsername").val();
 	var password = jQuery("#loginFormPassword").val();
 	var ajaxArgs = {url: url, type: "POST", 
 			context: that,
-			data: {"username": username, "password": password},
-			dataType: "jsonp",
+	        beforeSend: function(xhr) {
+	        	xhr.withCredentials = true;
+	        },
+			data: {"j_username": username, "j_password": password},
+			//dataType: "jsonp",
+			crossDomain: true,
 			success: that.loginResponse, 
 			error: that.loginResponseError};
 	jQuery.ajax(ajaxArgs);
@@ -176,26 +190,42 @@ this.processIframeLogin = function(){
 
 //callback handler invoked with response to authenticate server call
 //sets the userId variable to hold the id of the logged in user
+this.loginStatusResponse = function(data, textStatus, jqXHR)
+{
+
+	var that = this;
+	if (data.authenticated)
+	{
+		if (typeof _gaq != "undefined")
+			_gaq.push(["_trackEvent", "login", "already logged in"]);
+		var username = data.username;
+		this.userId = username || data.authenticated;
+		jQuery(document).trigger("loginSucceeded");
+	}
+	else
+	{
+		that.loginStatusError(data,textStatus,jqXHR);
+
+	}
+};
+//callback handler invoked with response to authenticate server call
+//sets the userId variable to hold the id of the logged in user
 this.loginResponse = function(data, textStatus, jqXHR)
 {
-	var loggedIn = data.authenticated;
-	var username = data.username;
+
 	var that = this;
-	if (loggedIn)
+	if (data.authenticated)
 	{
 		if (typeof _gaq != "undefined")
 			_gaq.push(["_trackEvent", "login", "success"]);
-		this.userId = username || loggedIn;
+		var username = data.username;
+		this.userId = username || data.authenticated;
 		jQuery("#loginDialog").dialog('close');	
 		jQuery(document).trigger("loginSucceeded");
 	}
 	else
 	{
-		if (typeof _gaq != "undefined")
-			_gaq.push(["_trackEvent", "login", "failed"]);
-		this.userId = null;
-		this.loginDialog({"message": "login failed"});
-		jQuery(document).trigger("loginFailed");
+		that.loginResponseError(data,textStatus,jqXHR);
 
 	}
 };
@@ -203,8 +233,17 @@ this.loginResponse = function(data, textStatus, jqXHR)
 
 //callback handler invoked when if an error occurs during ajax call to authenticate a user
 this.loginResponseError = function(jqXHR, textStatus, errorThrown){
-	this.loginDialog({"message": "an error occured during log in: " + textStatus});
+	if (typeof _gaq != "undefined")
+		_gaq.push(["_trackEvent", "login", "failed"]);
 	this.userId = null;
+	this.loginDialog({"message": "login failed"});
+	jQuery(document).trigger("loginFailed");
+};
+
+//callback handler invoked when if an error occurs during ajax call to authenticate a user
+this.loginStatusError = function(jqXHR, textStatus, errorThrown){
+	this.userId = null;
+	jQuery(document).trigger("loginFailed");
 };
 
 	

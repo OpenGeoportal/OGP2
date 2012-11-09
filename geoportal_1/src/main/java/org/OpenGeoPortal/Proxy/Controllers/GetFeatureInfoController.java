@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
@@ -31,10 +32,10 @@ public class GetFeatureInfoController {
 	private LayerInfoRetriever layerInfoRetriever;
 
 	@RequestMapping(method=RequestMethod.GET)
-	public void getFeatureInfo(@RequestParam("OGPID") String layerId, 
-			@RequestParam("x") String xCoord, @RequestParam("y") String yCoord, 
-			@RequestParam("bbox") String bbox, @RequestParam("height") String height,
-			@RequestParam("width") String width, HttpServletResponse response) throws Exception {
+	public void getFeatureInfo(@RequestParam("OGPID") String layerId, @RequestParam("bbox") String bbox, 
+			@RequestParam("x") String xCoord,@RequestParam("y") String yCoord,
+			@RequestParam("width") String width,@RequestParam("height") String height,
+			HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 	    String format = "application/vnd.ogc.gml";
 
@@ -55,12 +56,29 @@ public class GetFeatureInfoController {
 			e.printStackTrace();
 			//response.sendError(500);
 		}
+	    
+	    /*
+	     * http://www.example.com/wfs?
+   service=wfs&
+   version=1.1.0&
+   request=GetFeature&
+   typeName=layerName&
+   maxFeatures=NUMBER_OF_FEATURES&srsName=EPSG:900913
+   bbox=a1,b1,a2,b2
+   bbox should be determined by the client.  the size of a pixel?
+	     */
 	    String layerName = layerInfo.getWorkspaceName() + ":" + layerInfo.getName();
 	    String query = "service=wms&version=1.1.1&request=GetFeatureInfo&info_format=" + format 
 				+ "&SRS=EPSG:900913&feature_count=" + NUMBER_OF_FEATURES + "&styles=&height=" + height + "&width=" + width +"&bbox=" + bbox 
 				+ "&x=" + xCoord + "&y=" + yCoord +"&query_layers=" + layerName + "&layers=" + layerName;
-		logger.debug("executing WMS getFeatureRequest: " + previewUrl + "?" + query);
-
+	    
+	    /*String query = "service=wfs&version=1.1.0&request=GetFeature&typeName=" + layerName + "&maxFeatures=" + NUMBER_OF_FEATURES 
+	    		+ "&srsName=EPSG:900913&bbox=" + bbox;*/
+		logger.info("executing WMS getFeatureRequest: " + previewUrl + "?" + query);
+		if (!previewUrl.contains("http")){
+			
+			request.getRequestDispatcher(previewUrl + "?" + query).forward(request, response);
+		}
 		InputStream input = httpRequester.sendRequest(previewUrl, query, "GET");
 		logger.debug(httpRequester.getContentType());
 		response.setContentType(httpRequester.getContentType());

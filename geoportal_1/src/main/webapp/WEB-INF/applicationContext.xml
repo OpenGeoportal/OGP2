@@ -9,15 +9,9 @@
 		<property name="location" value="WEB-INF/ogp.properties" />
 	</bean>
 
- <!--<bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.SimpleGenericProxy"></bean>
- -->
- <bean id="userContext.ogp" class="org.OpenGeoPortal.Authentication.OgpUserContextImpl" ></bean>
- <!--
- <bean id="servlet.RestrictedWMSProxy" class="org.OpenGeoPortal.Proxy.RestrictedWMSProxy">
-  	<property name="genericProxy" ref="proxy.simple"/>
-  	<property name="proxyTo" value="${ogp.proxyToWMS}"/>
-</bean>
--->
+ <bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.GenericProxyImpl" />
+ <bean id="userContext.ogp" class="org.OpenGeoPortal.Security.OgpUserContextImpl" />
+
 <!-- misc -->	
 <bean id="imageHandler" class="org.OpenGeoPortal.Proxy.ImageHandlerImpl" scope="prototype" />
 <bean id="imageCompositor" class="org.OpenGeoPortal.Proxy.ImageCompositorImpl" scope="prototype" />

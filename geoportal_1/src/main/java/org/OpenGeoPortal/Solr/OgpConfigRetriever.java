@@ -1,10 +1,12 @@
 package org.OpenGeoPortal.Solr;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import org.OpenGeoPortal.Download.Config.ConfigRetriever;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
 
 public class OgpConfigRetriever extends ConfigRetriever implements
 		SearchConfigRetriever {
@@ -46,23 +48,39 @@ public class OgpConfigRetriever extends ConfigRetriever implements
 		return this.configContents.path(configKey).getTextValue();
 	}
 
-	@Override
-	public String getWmsProxy(String institution, String accessLevel)
+	private String getProxy(String institution, String accessLevel, String serviceKey)
 			throws IOException {
 		this.readConfigFile();
+		institution = institution.trim();
+		accessLevel = accessLevel.trim();
 		JsonNode allInstitutionsObject = this.configContents.path("institutions");
 		JsonNode institutionObject = allInstitutionsObject.path(institution);
 		if (institutionObject.has("proxy")) {
 			JsonNode proxyObject = institutionObject.path("proxy");
-			List<String> accessArray = proxyObject.findValuesAsText("accessLevel");
-			if (accessArray.contains(accessLevel)
-					|| accessArray.contains(accessLevel.toLowerCase())) {
-				return proxyObject.path("wms").getTextValue();
-			} else {
-				return null;
+			ArrayNode accessNode = (ArrayNode) proxyObject.path("accessLevel");
+			Iterator<JsonNode> accessIterator = accessNode.getElements();
+			while (accessIterator.hasNext()){
+				String currentValue = accessIterator.next().getTextValue();
+				if (currentValue.equalsIgnoreCase(accessLevel)){
+					return proxyObject.path(serviceKey).getTextValue();
+				}
 			}
+			return null;
+		
 		} else {
 			return null;
 		}
+	}
+	
+	@Override
+	public String getWmsProxy(String institution, String accessLevel)
+			throws IOException {
+		return getProxy(institution, accessLevel, "wms");
+	}
+	
+	@Override
+	public String getWfsProxy(String institution, String accessLevel)
+			throws IOException {
+		return getProxy(institution, accessLevel, "wfs");
 	}
 }

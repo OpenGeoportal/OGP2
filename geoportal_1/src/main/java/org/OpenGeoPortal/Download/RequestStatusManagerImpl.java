@@ -21,7 +21,7 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 				return status;
 			}
 		}
-		logger.info("No status found for download request");
+		//logger.info("No status found for download request");
 		return null;
 	}
 
@@ -96,7 +96,7 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 				return status;
 			}
 		}
-		logger.info("No status found for image request.");
+		//logger.info("No status found for image request.");
 		return null;
 	}
 

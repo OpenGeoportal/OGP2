@@ -228,7 +228,7 @@ org.OpenGeoPortal.LayerSettings = function(){
 						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].activate();
 					  jQuery('.olMap').css('cursor', "crosshair");
 					} else {
-						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("media/preview.gif"));
+						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview.gif"));
 						org.OpenGeoPortal.map.events.unregister("click", layer, org.OpenGeoPortal.map.wmsGetFeature);
 						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.ZoomBox")[0].deactivate();
 						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].activate();

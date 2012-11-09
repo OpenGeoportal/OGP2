@@ -3,6 +3,9 @@ Design by Free CSS Templates
 http://www.freecsstemplates.org
 Released for free under a Creative Commons Attribution 2.5 License
 */
+/*
+This file has been heavily modified from the original template
+*/
 
 :focus {outline:none;}
 
@@ -83,6 +86,7 @@ h3 {
     display: inline-block;
     font-size: 10px;
     line-height: 16px;
+    font-weight: normal;
 }
 
 .styledButtonSmall:hover {
@@ -109,6 +113,9 @@ h3 {
 #metadataDownloadButton {
 	padding-left: 20px;
 	padding-right: 20px;
+	float: right;
+    margin-right: 5px;
+    margin-top: 3px
 	}
 
  div#main {
@@ -779,8 +786,30 @@ div.colorCell:hover {
 	width: 460px;
 }
 
+#toMetadataTop {
+	position: absolute;
+	background: transparent;
+	opacity: .35;
+	height: 15px;
+    left: 0;
+    margin-right: -21px;
+    width: 100%;
+}
+
+#toMetadataTop:hover {
+	background: url("../media/arrow_up_white.png") no-repeat scroll 5px 50% black;
+}
+#metadataFooter {
+	color: white;
+}
 #metadataDialog {
+	padding-top: 0;
+	padding-right: 0;
+	padding-bottom: 15px;
+}
+#metadataContent {
 	overflow: auto;
+	height: 100%;
 	/*word-wrap: break-word;*/
 }
 
@@ -930,3 +959,38 @@ td.attributeName:hover {
 	height: 17px;
 	padding: 5px;
 }
+
+#requestTickerContainer {
+	-moz-border-radius: 4px 0px 0px 0px;
+	border-radius: 4px 0px 0px 0px;
+	border-left: 1px solid #AAAAAA;
+	border-top: 1px solid #AAAAAA;
+	display: none;
+	color: #333333;
+	position: fixed;
+	bottom: 0;
+	right: 1px;
+	height: 31px;
+	width: 170px;
+	background-color: #DDDDDD;
+	background: -moz-linear-gradient(left, #BBBBBB, #DDDDDD);
+	background: -webkit-gradient(linear, left, right, from(#BBBBBB), to(#DDDDDD));
+	z-index: 2000;
+}
+
+#requestTicker {
+	text-align: right;
+	padding-top: 9px;
+	padding-bottom: 9px;
+	padding-left: 31px;
+	padding-right: 9px;
+	display: inline-block;
+}
+
+#processingIndicator {
+	position: absolute;
+	margin: 4px;
+	height: 25px;
+    width: 27px;
+}
+

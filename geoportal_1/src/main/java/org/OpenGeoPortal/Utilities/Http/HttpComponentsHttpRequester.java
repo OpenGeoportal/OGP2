@@ -71,7 +71,6 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 		InputStream replyStream = null;
 		try {
 			HttpPost httppost = new HttpPost(serviceURL);
-			
 			StringEntity postEntity = new StringEntity(requestBody, ContentType.create(contentType, "UTF-8"));
 			httppost.setEntity(postEntity);
 			logger.info("executing POST request to " + httppost.getURI());
@@ -99,6 +98,9 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 	@Override
 	public InputStream sendRequest(String serviceURL, String requestString,
 			String requestMethod, String contentType) throws IOException {
+		logger.debug("URL: " + serviceURL);
+		logger.debug("Query string: " + requestString);
+		logger.debug("Request Method: " + requestMethod);
 		if ((serviceURL.isEmpty())||(serviceURL.equals(null))){
 			throw new IOException("No URL provided!");
 		}

@@ -25,6 +25,7 @@ public class ImageDownloaderImpl implements ImageDownloader {
 	@Async
 	public Future<File> getImage(String baseUrl, String queryString) throws IOException {
 		File tempFile = File.createTempFile("img", ".png");
+		logger.info(baseUrl);
 		InputStream is = this.httpRequester.sendRequest(baseUrl, queryString, "GET");
 		String contentType = this.httpRequester.getContentType();
 		if (contentType.toLowerCase().contains("png")){

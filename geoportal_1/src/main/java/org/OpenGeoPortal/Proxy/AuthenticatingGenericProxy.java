@@ -5,7 +5,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,15 +16,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 
-public class AuthenticatingGenericProxy implements GenericProxy {
+public class AuthenticatingGenericProxy extends GenericProxyImpl implements GenericProxy {
 	private HttpEntity responseEntity;
 	private UsernamePasswordCredentials credentials;
 	private Boolean useAuthentication;
@@ -56,27 +57,17 @@ public class AuthenticatingGenericProxy implements GenericProxy {
 		}
 	}
 	
-	public void proxyRequest(HttpServletRequest request,
-			HttpServletResponse response, String remoteAddress){
-		try {
-			this.abstractRequest(request, response, remoteAddress, "copy");
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	public void abstractRequest(HttpServletRequest request, HttpServletResponse response, String remoteAddress, String action) throws MalformedURLException{
+	public void abstractRequest(HttpServletRequest request, HttpServletResponse response, String remoteAddress, String action){
 		HttpHost targetHost = new HttpHost(remoteAddress);
-		DefaultHttpClient httpclient = new DefaultHttpClient();
+		HttpClient httpclient = this.ogpHttpClient.getHttpClient();
 		
 		if (useAuthentication){
 			int port = targetHost.getPort();
 			String hostName = targetHost.getHostName();
 		
 			this.credentials = new UsernamePasswordCredentials(this.username, this.password);
-
-			httpclient.getCredentialsProvider().setCredentials(
+//this may not work.  may need a new client.
+			((AbstractHttpClient) httpclient).getCredentialsProvider().setCredentials(
     	        new AuthScope(hostName, port), 
     	        this.credentials);
     	
@@ -125,69 +116,5 @@ public class AuthenticatingGenericProxy implements GenericProxy {
 			// immediate deallocation of all system resources
 			httpclient.getConnectionManager().shutdown();
 		}
-	}
-	
-	public InputStream getContentStream(HttpServletRequest request, HttpServletResponse response, String remoteUrl){
-		try {
-			this.abstractRequest(request, response, remoteUrl, "stream");
-		} catch (MalformedURLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			return this.responseEntity.getContent();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	public void checkStatus (HttpResponse internalResponse, HttpServletResponse externalResponse) throws IOException{
-		if (internalResponse.getStatusLine().getStatusCode() != 200){
-			externalResponse.sendError(internalResponse.getStatusLine().getStatusCode());
-			System.out.println(internalResponse.getStatusLine());
-		}
-	}
-	
-	public void copyHeaders (HttpResponse internalResponse, HttpServletResponse externalResponse){
-		Header[] headers = internalResponse.getAllHeaders();
-		for (int i = 0; i < headers.length; i++) {
-			 //System.out.println(headers[i]);
-			if (!headers[i].getName().equals("Content-Disposition")){
-				externalResponse.setHeader(headers[i].getName(), headers[i].getValue());
-			}
-		}
-	}
-	
-	public void copyResponse(HttpResponse internalResponse, HttpServletResponse externalResponse) throws IOException{
-		HttpEntity entity = internalResponse.getEntity();
-		//System.out.println(entity.getContentType());
-		
-		OutputStream outputStream = externalResponse.getOutputStream();
-		BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream);
-		BufferedInputStream bufferedInputStream = new BufferedInputStream(entity.getContent());
-
-		try {
-			int currentBytes;
-			while ((currentBytes = bufferedInputStream.read()) != -1) {
-				 //System.out.println("Receiving " + currentBytes + " bytes");
-				bufferedOutputStream.write(currentBytes);
-			} 
-		} catch (Exception e){
-			e.getStackTrace();
-			}
-		finally {
-			try {
-				bufferedInputStream.close();
-			} finally {
-				bufferedOutputStream.close();
-			}
-		}
-
-		EntityUtils.consume(entity);
 	}
 }

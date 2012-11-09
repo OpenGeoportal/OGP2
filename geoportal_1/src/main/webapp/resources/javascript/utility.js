@@ -140,8 +140,7 @@ org.OpenGeoPortal.Utility.stripExtraSpaces = function(stringOfInterest){
 
 org.OpenGeoPortal.Utility.loadIndicatorStatus = {"intervalId": "", "currentRequests": 0};
 
-org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
-	var that = this;
+org.OpenGeoPortal.Utility.indicatorAnimationStart = function(div){
 	var indicatorFunction = function(){
 		try{
 			indicator.css("background-position", 
@@ -153,13 +152,31 @@ org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
 		} catch (e){}
 	};
 	var indicator = jQuery('#' + div);
+	indicator.css("background-image", "url('" + org.OpenGeoPortal.Utility.getImage("progress.png") + "')");
+	var intervalId = setInterval(indicatorFunction, 84);
+	return intervalId;
+};
+
+org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
+	var that = this;
+	/*var indicatorFunction = function(){
+		try{
+			indicator.css("background-position", 
+				function(a,b){
+					var y = parseInt(b.substr(b.indexOf(" "))); 
+					y -= 25; 
+					var value =  "0 " + y + "px";
+					return value;});
+		} catch (e){}
+	};*/
+	var indicator = jQuery('#' + div);
 		//var j = 1;
 		//no current ajax requests, so we can start a new indicator
 		if (that.loadIndicatorStatus["currentRequests"] == 0){
-			indicator.css("background-image", "url('" + org.OpenGeoPortal.Utility.getImage("progress.png") + "')");
-			indicator.fadeIn();
+			//indicator.css("background-image", "url('" + org.OpenGeoPortal.Utility.getImage("progress.png") + "')");
 
-			that.loadIndicatorStatus["intervalId"] = setInterval(indicatorFunction, 84);
+			that.loadIndicatorStatus["intervalId"] = org.OpenGeoPortal.Utility.indicatorAnimationStart(div);
+			indicator.fadeIn();
 			that.loadIndicatorStatus["currentRequests"] = 1;
 		} else {
 			//we don't need to setInterval or change intervalId; we do need to push a value into currentRequests

@@ -1,32 +1,39 @@
-<beans:beans xmlns="http://www.springframework.org/schema/security"
-    xmlns:beans="http://www.springframework.org/schema/beans"
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans 
                     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                     http://www.springframework.org/schema/security 
                     http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
-    <http pattern="/resources/**" security="none" />
+    <security:http pattern="/resources/**" security="none" />
          
-	<http use-expressions="true" access-denied-page="/accessDenied">
-	    <intercept-url pattern="/login*" access="permitAll"/>  
-    	<intercept-url pattern="/restricted/**" access="isAuthenticated()"/>
-    	<form-login login-page="/login" />
-    	<intercept-url pattern="/**" access="permitAll"/>
-		<logout/>
-	</http>
+	<security:http use-expressions="true" auto-config="true" >
+	    <security:intercept-url pattern="/login*" access="permitAll" requires-channel="https"/>  
+    	<security:intercept-url pattern="/restricted/**" access="isAuthenticated()"/>
+    	<security:form-login login-page="/login" login-processing-url="/j_security_check" />
+    	<security:form-login login-page="/logout" login-processing-url="/j_spring_security_logout" />
+    	<security:intercept-url pattern="/**" access="permitAll"/>
+	</security:http>
+
+ 
+
+ 
+    <security:authentication-manager alias="authenticationManager" />
+ 
+    
 <!--    <ldap-server url="ldaps://ldap.tufts.edu/ou=People,dc=tufts,dc=edu" />
 -->
-    <authentication-manager>
+    <security:authentication-manager>
             <!--   <ldap-authentication-provider user-dn-pattern="uid={0},ou=people"/>
          -->
-        <authentication-provider>
-            <user-service>
-                <user name="chris" password="koala" authorities="administrator, user" />
-                <user name="steve" password="emu" authorities="administrator, user" />
-                <user name="joeshmoe" password="wombat" authorities="user" />
-                <user name="peter" password="opal" authorities="user" />
-            </user-service>
-        </authentication-provider>
-    </authentication-manager>
-</beans:beans>
+        <security:authentication-provider>
+            <security:user-service>
+                <security:user name="chris" password="koala" authorities="administrator, user" />
+                <security:user name="steve" password="emu" authorities="administrator, user" />
+                <security:user name="joeshmoe" password="wombat" authorities="user" />
+                <security:user name="peter" password="opal" authorities="user" />
+            </security:user-service>
+        </security:authentication-provider>
+    </security:authentication-manager>
+</beans>

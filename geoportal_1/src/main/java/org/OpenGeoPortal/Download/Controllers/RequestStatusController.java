@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.OpenGeoPortal.Download.DownloadRequest;
 import org.OpenGeoPortal.Download.RequestStatusManager;
-import org.OpenGeoPortal.Download.Controllers.RequestStatusController.StatusSummary;
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +74,7 @@ public class RequestStatusController {
 	private RequestStatus getRequestStatus(){
 		logger.debug("Creating RequestStatus object");
 		RequestStatus requestStatus = new RequestStatus();
-		logger.info("download requests size: " + Integer.toString(downloadRequests.size()));
+		//logger.info("download requests size: " + Integer.toString(downloadRequests.size()));
 		for (DownloadRequest downloadRequest: downloadRequests){
 			UUID requestId = downloadRequest.getRequestId();
 			logger.debug("RequestId: " + requestId.toString());
@@ -87,14 +86,14 @@ public class RequestStatusController {
 
 		for (ImageRequest imageRequest: imageRequests){
 			UUID requestId = imageRequest.getRequestId();
-			logger.info("RequestId: " + requestId.toString());
+			//logger.info("RequestId: " + requestId.toString());
 			String type = "image";
 			StatusSummary status = imageRequest.getStatusSummary();
-			logger.info("Image status summary: " + status.toString());
+			//logger.info("Image status summary: " + status.toString());
 			requestStatus.addRequestStatusElement(requestId, type, status);
 		}
 
-		logger.info(Integer.toString(requestStatus.getRequestStatus().size()));
+		//logger.info(Integer.toString(requestStatus.getRequestStatus().size()));
 		return requestStatus;
 	}
 	

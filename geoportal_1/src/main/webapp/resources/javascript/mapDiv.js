@@ -48,6 +48,7 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
         type: OpenLayers.Control.TYPE_BUTTON,
         title: "Clear the map", active: true
     });
+    
     panel.addControls([
                        globalExtent,
                        nav.previous,
@@ -58,11 +59,32 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
         ]);
     //display mouse coords in lon-lat
     var displayCoords = new OpenLayers.Control.MousePosition({displayProjection: new OpenLayers.Projection("EPSG:4326")});
+   // var mapBounds = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
 
-	var options = {
-			projection: "EPSG:900913",
+    /*new OpenLayers.Map({
+        div: "map",
+        projection: "EPSG:900913",
+        layers: [
+            new OpenLayers.Layer.Google("Google Streets"),
+            new OpenLayers.Layer.OSM(null, null, {isBaseLayer: false, opacity: 0.7})
+        ],
+        zoom: 1
+    });*/
+
+	var options = {/*resolutions: [156543.03390625, 78271.516953125, 39135.7584765625, 19567.87923828125, 
+	                             9783.939619140625, 4891.9698095703125, 2445.9849047851562, 1222.9924523925781, 
+	                             611.4962261962891, 305.74811309814453, 152.87405654907226, 76.43702827453613, 
+	                             38.218514137268066, 19.109257068634033, 9.554628534317017, 4.777314267158508, 
+	                             2.388657133579254, 1.194328566789627, 0.5971642833948135, 0.29858214169740677, 
+	                             0.14929107084870338, 0.07464553542435169, 0.037322767712175846, 
+	                             0.018661383856087923, 0.009330691928043961, 0.004665345964021981],*/
 	        allOverlays: true,
-            numZoomLevels: 20,
+			projection: "EPSG:900913",
+			zoom: 1,
+			//maxExtent: mapBounds,
+			//units: "m",
+            //numZoomLevels: 20,
+            minZoom: 1,
             controls: [new OpenLayers.Control.ModPanZoomBar(),
                        new OpenLayers.Control.ScaleLine(),
                        displayCoords,
@@ -73,7 +95,8 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 	//merge default options and user specified options into 'options'--not recursive
 	jQuery.extend(userOptions, options);
 	//div defaults to 0 height for certain doc-types
-	jQuery('#' + userDiv).height(jQuery('#container').height());
+	jQuery('#' + userDiv).height("100%");
+	//jQuery("#map").height(512);
 	//call OpenLayers.Map with function arguments
 
     // attempt to reload tile if load fails
@@ -83,14 +106,12 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
     OpenLayers.Util.onImageLoadErrorColor = 'transparent';
     var that = this;
 	OpenLayers.Map.call(this, null, options);
-
-
 	//default background map
-	this.setBackgroundMap();	
+	this.setBackgroundMap();
+
     var center = this.WGS84ToMercator(0, 10);
 	//set map position
 	this.setCenter(center);
-	
 
 	//register events
 	jQuery('#' + userDiv).resize(function () {that.updateSize();});
@@ -167,10 +188,10 @@ org.OpenGeoPortal.MapController.prototype.getBackgroundType = function() {
 org.OpenGeoPortal.MapController.prototype.backgroundMaps = function(mapType){
 	if (typeof google != "undefined"){
 		var bgMaps = {
-			googleHybrid: {mapClass: "Google", zoomLevels: 22, name: "Google Hybrid", params: {type: google.maps.MapTypeId.HYBRID}},
-			googleSatellite: {mapClass: "Google", zoomLevels: 22, name: "Google Satellite", params: {type: google.maps.MapTypeId.SATELLITE}},
-			googleStreets: {mapClass: "Google", zoomLevels: 20, name: "Google Streets", params: {type: google.maps.MapTypeId.ROADMAP}}, 
-			googlePhysical: {mapClass: "Google", zoomLevels: 15, name: "Google Physical", params: {type: google.maps.MapTypeId.TERRAIN}},
+			googleHybrid: {mapClass: "Google", zoomLevels: 22, name: "Google Hybrid", params: {type: google.maps.MapTypeId.HYBRID, minResolution: 2.388657133579254}},
+			googleSatellite: {mapClass: "Google", zoomLevels: 22, name: "Google Satellite", params: {type: google.maps.MapTypeId.SATELLITE, minResolution: 2.388657133579254}},
+			googleStreets: {mapClass: "Google", zoomLevels: 20, name: "Google Streets", params: {type: google.maps.MapTypeId.ROADMAP, minResolution: 2.388657133579254}}, 
+			googlePhysical: {mapClass: "Google", zoomLevels: 15, name: "Google Physical", params: {type: google.maps.MapTypeId.TERRAIN, minResolution: 2.388657133579254}},
 			osm: {mapClass: "OSM", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png',/* getURL: this.getOsmTileUrl,*/
 				displayOutsideMaxExtent: true}, url: "http://tile.openstreetmap.org/"}
 		};
@@ -236,15 +257,13 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 		} else {
 			var bgMap = new OpenLayers.Layer.Google(backgroundMaps.name,
 				backgroundMaps.params);
-		    bgMap.events.register("loadend", that, function(){alert("loaded");});
-		    bgMap.events.register("loadstart", that, function(){alert("loadstart");});
 
 			this.addLayer(bgMap);
 			google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
 				  //console.log("Tiles loaded");
 				  that.render(that.userDiv);
-					that.userMapAction = true;
 					jQuery(".mapClearButtonItemInactive").text("clear previews");
+					that.userMapAction = true;
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
 				});
@@ -377,7 +396,7 @@ org.OpenGeoPortal.MapController.prototype.getAttributeDescriptionJsonpSuccess = 
 	  }
 	  var doc = solrResponse["docs"][0];  // get the first layer object
 	  var fgdcRawText = doc["FgdcText"];
-	  var fgdcText = unescape(fgdcRawText);  // text was escaped on ingest into Solr
+	  var fgdcText = fgdcRawText;  // text was escaped on ingest into Solr
 	  //var parser = new DOMParser();
 	  //var fgdcDocument = parser.parseFromString(fgdcText,"text/xml");
 	  jQuery(jQuery.parseXML(fgdcText)).find("attrlabl").each(function(){
@@ -401,122 +420,119 @@ org.OpenGeoPortal.MapController.prototype.getAttributeDescriptionJsonpError = fu
 	throw new Error("The attribute description could not be retrieved.");
 };
 
-/*org.OpenGeoPortal.MapController.prototype.ClickHandler = function(){
-	var that = this;
-	OpenLayers.Class(OpenLayers.Control, {                
-
-    defaultHandlerOptions: {
-        'single': true,
-        'double': false,
-        'pixelTolerance': 0,
-        'stopSingle': false,
-        'stopDouble': false
-    },
-
-    initialize: function(options) {
-        this.handlerOptions = OpenLayers.Util.extend(
-            {}, this.defaultHandlerOptions
-        );
-        OpenLayers.Control.prototype.initialize.apply(
-            this, arguments
-        ); 
-        this.handler = new OpenLayers.Handler.Click(
-            this, {
-                'click': this.trigger
-            }, this.handlerOptions
-        );
-    }, 
-
-    trigger: function(e) {
-    	that.wmsGetFeature(e);
-    }
-
-	});
-};*/
-
 org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
 	//since this is an event handler, the context isn't the MapController Object
 	if (typeof this.map != "undefined"){
 	var mapObject = this.map;
 	var layerStateObject = mapObject.layerStateObject;
 	var that = this;
+	var PIXELS = 10;//#pixel(s) on each side
+	var pixelSize = mapObject.getGeodesicPixelSize();//pixel size in kilometers
+	//console.log(pixelSize);
+	var xbboxSize = pixelSize.w * PIXELS * 1000;//in meters
+	var ybboxSize = pixelSize.h * PIXELS * 1000;
+	var point = mapObject.getLonLatFromViewPortPx(e.xy);
 	var pixel = e.xy;
+	//console.log(point);
+	//var srcProj = new OpenLayers.Projection("EPSG:4326");
+	//var destProj = new OpenLayers.Projection("EPSG:900913");
+	var projPoint = point;//.transform(srcProj, destProj);
+	//console.log(projPoint);
+	var xMin = projPoint.lon - xbboxSize/2;
+	var yMin = projPoint.lat - ybboxSize/2;
+	var xMax = projPoint.lon + xbboxSize/2;
+	var yMax = projPoint.lat + ybboxSize/2;
 	var layerID = this.name;
-	//var wmsName = layerStateObject.getState(layerID, "wmsName");
-	//var searchString = "layername=" + wmsName;//this.params.LAYERS;
 	var searchString = "OGPID=" + layerID;
-	searchString += "&bbox=" + this.map.getExtent().toBBOX();
+	searchString += "&bbox=" + this.map.getExtent().toBBOX();//+ xMin + "," + yMin + "," + xMax + "," + yMax;
+		//+ this.map.getExtent().toBBOX(); 
 	//geoserver doesn't like fractional pixel values
 	searchString += "&x=" + Math.round(pixel.x) + "&y=" + Math.round(pixel.y);
 	searchString += "&height=" + this.map.size.h + "&width=" + this.map.size.w;
-	/*var currentURL = this.url;
-	var wmsUrl;
-	if (jQuery.isArray(currentURL)){
-		wmsUrl = mapObject.config.tilecacheToWMS(currentURL[0]);
-	} else {
-    	wmsUrl = mapObject.config.tilecacheToWMS(currentURL);
-	}
-
-	searchString += "&url=" + wmsUrl;
-*/
+    
     var ajaxParams = {
     		type: "GET",
     		context: this,
-            url: 'featureInfo',//jsp avoids same server restrictions
-            //url: 'getFeatureInformation.jsp',//jsp avoids same server restrictions
+            url: 'featureInfo',
             data: searchString,
             dataType: 'text',
             success: function(data, textStatus, XMLHttpRequest){
-    	  //create a hidden div w/ the dialog info
-    	  //create a new dialog instance, or just open the dialog if it already exists
-    		var dialogTitle = '<span class="getFeatureTitle">' + layerStateObject.getFeatureTitle + "</span>";
-    		var tableText = '<table class="attributeInfo">';
-    		var response = jQuery.parseXML(jQuery.trim(data));
-    		var attributes = response.getElementsByTagName("gml:featureMember");
-    		if (attributes.length == 0){
-    			attributes = response.getElementsByTagName("featureMember");
-    		}
-   
-    		var innerText = '';
-    		
-    		//add or modify a layer with a vector representing the selected feature
-    		/*if (this.map.getLayersByName("attributeSelection").length > 0){
-    			var featureLayer = this.map.getLayersByName("attributeSelection")[0];
-    			featureLayer.removeAllFeatures();
-    		} else {
-    			var featureLayer = new OpenLayers.Layer.Vector("attributeSelection");
-    			this.map.addLayer(featureLayer);
-    		}
-    		*/
-    		var linecount = 0;
-    		//supports only one feature as is
-    		jQuery(attributes).children().first().children().each(function(){
-    			if (typeof jQuery(this).children()[0] == 'undefined'){
-    				var attributeName = this.nodeName;
-    				attributeName = attributeName.substr(attributeName.indexOf(":") + 1);
-    				var attributeValue = jQuery(this).text();
-  			  		linecount++;
-  			  		innerText += '<tr><td class="attributeName">';
-  			  		innerText += attributeName;
-  			  		innerText += "</td><td>";
-  			  		innerText += attributeValue;
-  			  		innerText += "</td></tr>";
-    			}
-    		});
+            	//console.log(data);
+            	//create a new dialog instance, or just open the dialog if it already exists
+            	var dialogTitle = '<span class="getFeatureTitle">' + layerStateObject.getFeatureTitle + "</span>";
+            	var tableText = '<table class="attributeInfo">';
+            	var response = jQuery.parseXML(jQuery.trim(data));
+            	var attributes = response.getElementsByTagName("gml:featureMember");
+            	if (attributes.length == 0){
+            		attributes = response.getElementsByTagName("featureMember");
+            	}
+            	var rawFeatures = response;//.getElementsByTagName("wfs:FeatureCollection");
+            	var innerText = '';
+            	var featureLayer;
+            	//add or modify a layer with a vector representing the selected feature
+            	if (this.map.getLayersByName("featureSelection").length > 0){
+            		featureLayer = this.map.getLayersByName("featureSelection")[0];
+            	} else {
+                    var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+                    style_blue.strokeColor = "blue";
+                    style_blue.fillColor = "blue";
+                    style_blue.fillOpacity = 1;
+                    style_blue.pointRadius = 2;
+                    style_blue.strokeWidth = 2;
+                    style_blue.strokeLinecap = "butt";
+                    style_blue.zIndex = 999999;
+            		featureLayer = new OpenLayers.Layer.Vector("featureSelection");//, {
+                   //     style: style_blue
+                    //});
+            	
+            		this.map.addLayer(featureLayer);
+            	}
+            	var options = {
+                        'featureType': "GISPORTAL.GISOWNER01.BOSTONINFRASTRUCTURE12",
+                        'featureNS': "http://geoserver.sf.net",
+                        'internalProjection': new OpenLayers.Projection("EPSG:900913"),
+                        'externalProjection': new OpenLayers.Projection("EPSG:2249")
+            	};
+                var format = new OpenLayers.Format.GML.v3(options);
+            	var features = format.read(rawFeatures);
+            	//console.log(features);
+                var vector = new OpenLayers.Feature.Vector(features.geometry);
+                //vector.bounds = this.map.getExtent();
+                this.map.testVector = vector;
+                featureLayer.removeAllFeatures();
+                featureLayer.addFeatures([vector]);
+                featureLayer.redraw();
+            	this.map.setLayerIndex(featureLayer, (this.map.layers.length -1));
 
-  	  		tableText += innerText + "</table>";
-    		if (innerText.length == 0){
-    			//return;
-    			tableText = '<p>There is no data for this layer at this point.</p>';
-    		}
-			var containerHeight = jQuery("#container").height();
-			var dataHeight =  linecount * 20;
-			if (dataHeight > containerHeight){
-				dataHeight = containerHeight;
-			} else {
-				dataHeight = "auto";
-			}
-  			if (typeof jQuery('#featureInfo')[0] == 'undefined'){
+            	var linecount = 0;
+            	//supports only one feature as is
+            	jQuery(attributes).children().first().children().each(function(){
+            		if (typeof jQuery(this).children()[0] == 'undefined'){
+            			var attributeName = this.nodeName;
+            			attributeName = attributeName.substr(attributeName.indexOf(":") + 1);
+            			var attributeValue = jQuery(this).text();
+  			  			linecount++;
+  			  			innerText += '<tr><td class="attributeName">';
+  			  			innerText += attributeName;
+  			  			innerText += "</td><td>";
+  			  			innerText += attributeValue;
+  			  			innerText += "</td></tr>";
+            		}
+            	});
+
+  	  			tableText += innerText + "</table>";
+  	  			if (innerText.length == 0){
+  	  				//return;
+  	  				tableText = '<p>There is no data for this layer at this point.</p>';
+  	  			}
+  	  			var containerHeight = jQuery("#container").height();
+  	  			var dataHeight =  linecount * 20;
+  	  			if (dataHeight > containerHeight){
+  	  				dataHeight = containerHeight;
+  	  			} else {
+  	  				dataHeight = "auto";
+  	  			}
+  	  			if (typeof jQuery('#featureInfo')[0] == 'undefined'){
   	  				var infoDiv = '<div id="featureInfo" class="dialog">' + dialogTitle + tableText + '</div>';
   	  				jQuery("body").append(infoDiv);
   	  				jQuery("#featureInfo").dialog({
@@ -538,6 +554,7 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
             error: function(jqXHR, textStatus, errorThrown) {if ((jqXHR.status != 401)&&(textStatus != 'abort')){new org.OpenGeoPortal.ErrorObject(new Error(), "Error retrieving Feature Information.");}},
             complete: function(){that.map.currentAttributeRequest = false;}
     };
+    
     if (typeof this.map.currentAttributeRequest == 'object'){
     	this.map.currentAttributeRequest.abort();
     } 

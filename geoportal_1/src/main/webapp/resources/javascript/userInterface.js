@@ -35,6 +35,7 @@ org.OpenGeoPortal.UserInterface = function(){
 	this.config = org.OpenGeoPortal.InstitutionInfo;
 	this.jspfDir = org.OpenGeoPortal.Utility.JspfLocation;
 	this.login = new org.OpenGeoPortal.LogIn(this.config.getHomeInstitution());
+	this.login.checkLoginStatus();
 	var that = this;
 
 	/**
@@ -201,21 +202,21 @@ org.OpenGeoPortal.UserInterface = function(){
 		
 		//'hover' for graphics that are not background graphics
 		jQuery('.olControlModPanZoomBar img[id*="zoomin"]').bind("mouseenter", function(){
-			jQuery(this).attr("src", this.getImage("slider_plus_hover.png"));
+			jQuery(this).attr("src", that.getImage("slider_plus_hover.png"));
 			jQuery(this).css("cursor", "pointer");
 		});
 		
 		jQuery('.olControlModPanZoomBar img[id*="zoomin"]').bind("mouseleave", function(){
-			jQuery(this).attr("src", this.getImage("zoom-plus-mini.png"));
+			jQuery(this).attr("src", that.getImage("zoom-plus-mini.png"));
 		});
 		
 		jQuery('.olControlModPanZoomBar img[id*="zoomout"]').bind("mouseenter", function(){
-			jQuery(this).attr("src", this.getImage("slider_minus_hover.png"));
+			jQuery(this).attr("src", that.getImage("slider_minus_hover.png"));
 			jQuery(this).css("cursor", "pointer");
 		});
 		
 		jQuery('.olControlModPanZoomBar img[id*="zoomout"]').bind("mouseleave", function(){
-			jQuery(this).attr("src", this.getImage("zoom-minus-mini.png"));
+			jQuery(this).attr("src", that.getImage("zoom-minus-mini.png"));
 		});
 		
 		jQuery('#tabs a').bind("mousedown", function(){
@@ -235,9 +236,11 @@ org.OpenGeoPortal.UserInterface = function(){
 		jQuery('#left_tabs').height(containerHeight);
 		jQuery("#left_col").width(this.getSearchPanelWidth());
 		jQuery('#map').width(jQuery("#container").width() - this.getSearchPanelWidth() - 1);
-		if (parseInt(jQuery("#map").width()) > 900) {
+		if (parseInt(jQuery("#map").width()) > 1200) {
 			//org.OpenGeoPortal.map.zoomTo(org.OpenGeoPortal.map.getZoom() + 1);
-			this.mapObject.zoomTo(this.mapObject.getZoom() + 1);
+			if (this.mapObject.zoom == 1){
+			this.mapObject.zoomTo(2);
+			}
 		}
 		jQuery('#container').resize(function() {
 			//org.OpenGeoPortal.map.events.triggerEvent('zoomend');
@@ -1155,6 +1158,7 @@ org.OpenGeoPortal.UserInterface.prototype.downloadContinue = function(){
 						}
 					}
 					requestObj.email = emailAddress;
+	    			that.toProcessingAnimation(jQuery(this).parent().find("button").first());
 	    			that.requestDownload(requestObj);
 				},
 				Cancel: function() {
@@ -1545,6 +1549,15 @@ org.OpenGeoPortal.UserInterface.prototype.printImage = function(){
 	window.print();
 };
 
+
+org.OpenGeoPortal.UserInterface.prototype.toProcessingAnimation = function($fromObj){
+	jQuery("#requestTickerContainer").show();
+	var options = { to: "#requestTickerContainer", className: "ui-effects-transfer"};
+	$fromObj.effect( "transfer", options, 500, function(){
+		//org.OpenGeoPortal.ui.updateSavedLayersNumber();
+	});
+};
+
 org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, resolution){
 	imageFormat = 'png';
 	var format;
@@ -1666,6 +1679,8 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 	};
 
 	jQuery.ajax(params);
+	this.toProcessingAnimation(jQuery("#map_tabs > span").first());
+
 
 };
 
@@ -1920,7 +1935,7 @@ org.OpenGeoPortal.UserInterface.prototype.changeLoginButtonsToControls = functio
 	//change login button to checkbox for institution logged in
 	var that = this;
 	jQuery(".colPreview img").each(function(){
-		if (jQuery(this).attr("src") == this.getImage("view_login.png")){
+		if (jQuery(this).attr("src") == that.getImage("view_login.png")){
 			var node = jQuery(this).closest("tr");
 			var tableObject = node.closest("table");
 			var tableName = tableObject.attr("id");
@@ -1969,13 +1984,13 @@ org.OpenGeoPortal.UserInterface.prototype.applyLoginActions = function(){
 	jQuery("#headerLogin").unbind("click");
 	jQuery("#headerLogin").click(function(event){event.preventDefault();
 	//for logout capability
-	var ajaxArgs = {url: "logout.jsp", 
+		var ajaxArgs = {url: "logout", 
 			context: that,
 			dataType: "json",
 			success: that.logoutResponse
 			};
 		jQuery.ajax(ajaxArgs);
-	});
+		});
 	this.filterResults();
 };
 /*

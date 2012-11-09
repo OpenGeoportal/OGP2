@@ -14,10 +14,14 @@ if (typeof org.OpenGeoPortal == 'undefined'){
 
 
 org.OpenGeoPortal.Downloader = function(){
+	jQuery("body").append('<div id="requestTickerContainer" class="raised"></div>');
 	var that = this;
 	this.requestQueue = {
 			"pollId": "",
 			"isPollRunning": false,
+			"tickerId": "",
+			"processingIndicatorId": "",
+			"isTickerRunning": false,
 			"requests": {
 				"pending":{
 					"layers":[],
@@ -110,23 +114,76 @@ org.OpenGeoPortal.Downloader = function(){
 
 	this.firePoll = function(){
 		var t=setTimeout('org.OpenGeoPortal.downloadQueue.pollRequestStatus()', INTERVAL_MS);
-		that.requestQueue.pollId = t;
-		that.requestQueue.isPollRunning = true;
+		this.requestQueue.pollId = t;
+		this.requestQueue.isPollRunning = true;
+		this.setTickerText();
 	};
 	
 	this.startPoll = function(){
 		if (!that.requestQueue.isPollRunning){
+			that.startTicker();
 			that.firePoll();
 		} else {
 			//poll is already running
 		}
 	};
 	
+	this.startTicker = function(){
+		//show ticker (a div with transparent black background, fixed to bottom of screen, loader
+		//put a counter in a closure to iterate over the array
+		if (jQuery("#requestTicker").length == 0){
+			jQuery("#requestTickerContainer").html('<div id="processingIndicator"></div><div id="requestTicker"></div></div>');
+		} else {
+		}
+		
+		jQuery("#requestTickerContainer").fadeIn();
+
+		//jQuery("#requestTicker").text(this.getTickerText());
+
+		this.requestQueue.processingIndicatorId = org.OpenGeoPortal.Utility.indicatorAnimationStart("processingIndicator");
+	};
+	
+	this.stopTicker = function(){
+		try {
+			var intervalId = this.requestQueue.tickerId;
+			clearInterval(intervalId);
+		} catch (e) {}
+		//hide ticker
+		jQuery("#requestTickerContainer").fadeOut();
+		clearInterval(this.requestQueue.processingIndicatorId);
+	};
+	
+	this.setTickerText = function(){
+		var pending = this.requestQueue.requests.pending;
+		var imageRequests = pending.images.length; 
+		var layerRequests = pending.layers.length;
+		var totalRequests = imageRequests + layerRequests;
+		console.log(imageRequests + " " + layerRequests + " " + totalRequests);
+		var tickerText = "Processing ";
+
+		if (totalRequests > 1){
+			tickerText += totalRequests;
+			tickerText += " Requests";
+			//var that = this;
+			//this.requestQueue.tickerId = setInterval(function(){ that.tick () }, 3000);
+		} else {
+			tickerText += "Request";
+		}
+
+		jQuery("#requestTicker").text(tickerText);
+		//jQuery("#requestTickerContainer").width(jQuery("#requestTicker").width());
+	};
+	
+	this.tick = function(){
+		jQuery('#requestTicker').slideUp( function () { jQuery('#requestTicker').slideDown(); });
+	}
+
 	this.stopPoll = function(){
-		if (that.requestQueue.isPollRunning){
-			var t= that.requestQueue.pollId;
+		this.stopTicker();
+		if (this.requestQueue.isPollRunning){
+			var t= this.requestQueue.pollId;
 			clearTimeout(t);
-			that.requestQueue.isPollRunning = false;
+			this.requestQueue.isPollRunning = false;
 		} else {
 			//poll is not running
 		}
@@ -157,17 +214,21 @@ org.OpenGeoPortal.Downloader = function(){
 	};
 	
 	var handleDownload = function(statusObj){
+		jQuery('body').append('<iframe class="download"></iframe>');
+		var url;
+		var currentRequestId;
 		if (statusObj.type == "layer"){
-			var currentRequestId = statusObj.requestId;
+			currentRequestId = statusObj.requestId;
 			that.promoteLayerRequest(statusObj);
-			var url = "getDownload?requestId=" + currentRequestId;
-			location.href = url;
+			url = "getDownload?requestId=" + currentRequestId;
 		} else if (statusObj.type == "image"){
-			var currentRequestId = statusObj.requestId;
+			currentRequestId = statusObj.requestId;
 			that.promoteImageRequest(statusObj);
-			var url = "getImage?requestId=" + currentRequestId;
-			location.href = url;
+			url = "getImage?requestId=" + currentRequestId;
 		}
+		jQuery('body').append('<iframe id="' + currentRequestId + '" class="download" src="' + url + '"></iframe>');
+		//jQuery("#" + currentRequestId).load(function(){jQuery(this).remove()});
+
 	};
 	
 	var getLayerRequestIds = function(){
@@ -219,5 +280,5 @@ org.OpenGeoPortal.Downloader = function(){
 			};
 		
 			jQuery.ajax(params);
-	}
+	};
 };

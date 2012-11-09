@@ -10,5 +10,6 @@ public interface LayerInfoRetriever {
 	public String getWMSUrl(SolrRecord solrRecord);
 	SolrRecord getAllLayerInfo(String layerId) throws Exception;
 	boolean hasProxy(SolrRecord solrRecord);
+	public String getWFSUrl(SolrRecord solrRecord);
 
 }

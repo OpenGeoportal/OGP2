@@ -58,8 +58,4 @@ jQuery(document).ready(function (){
 	jQuery("#downtimeNotice").dialog("open");
 	*/
 });
-
-/*jQuery(window).unload(function(){
-	jQuery.get("logout.jsp");
-});*/
   
