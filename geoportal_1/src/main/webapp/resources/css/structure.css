@@ -994,3 +994,6 @@ td.attributeName:hover {
     width: 27px;
 }
 
+iframe.download {
+	display: none;
+}

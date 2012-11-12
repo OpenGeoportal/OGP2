@@ -83,8 +83,8 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 			zoom: 1,
 			//maxExtent: mapBounds,
 			//units: "m",
-            //numZoomLevels: 20,
-            minZoom: 1,
+            numZoomLevels: 20,
+            minZoom: 2,
             controls: [new OpenLayers.Control.ModPanZoomBar(),
                        new OpenLayers.Control.ScaleLine(),
                        displayCoords,
@@ -278,12 +278,21 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 			osmLayer.setVisibility(true);
 		} else {
 			var bgMap = new OpenLayers.Layer.OSM(
-					backgroundMaps.name,
-					null,
+					backgroundMaps.name//,
+					//null,
 					//backgroundMaps.url,
-					backgroundMaps.params);
+					//backgroundMaps.params
+					);
 			this.addLayer(bgMap);
 			this.setLayerIndex(this.getLayersByName('OpenStreetMap')[0], 1);
+			bgMap.events.register(bgMap.mapObject, "loadend", function() {
+				  //console.log("Tiles loaded");
+				  that.render(that.userDiv);
+					jQuery(".mapClearButtonItemInactive").text("clear previews");
+					that.userMapAction = true;
+					//really should only fire the first time
+					bgMap.events.unregister(bgMap.mapObject, "loadend");
+				});
 		}
 		if (this.getLayersByClass('OpenLayers.Layer.Google').length > 0){
 			var googleLayer = this.getLayersByClass('OpenLayers.Layer.Google')[0];
@@ -924,6 +933,7 @@ org.OpenGeoPortal.MapController.prototype.prevExtent = null;
 
 org.OpenGeoPortal.MapController.prototype.extentChanged = function(){
 	var currentExtent = this.getExtent();
+	var previous;
 	if (typeof this.prevExtent == "object"){
 		previous = this.prevExtent;
 	} else {

@@ -52,7 +52,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	
 	this.tableHeadingsObj = new org.OpenGeoPortal.LayerTable.TableHeadings(this);
 	//temporary?
-	tableHeadings = this.tableHeadingsObj.getTableHeadings();
+	var tableHeadings = this.tableHeadingsObj.getTableHeadings();
 	
 	this.tableLayerState = new org.OpenGeoPortal.LayerTable.TableLayerState();
 	this.getImage = function(imageName){
@@ -672,9 +672,9 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     	  }
     	  var dialogHeight = 400;
     	  //jQuery('#metadataDialog').width("550");
-    	  var metadataContent = '<div id="toMetadataTop"></div><div id="metadataContent"></div><div id="metadataFooter" title="LayerId: ' + layerId + '">' + layerId + '</div>';
+    	  var metadataTemplate = '<div id="toMetadataTop"></div><div id="metadataContent"></div><div id="metadataFooter" title="LayerId: ' + layerId + '">' + layerId + '</div>';
     	  var metadataDialog = jQuery("#metadataDialog");
-    	  metadataDialog.html(metadataContent)
+    	  metadataDialog.html(metadataTemplate)
     	  jQuery("#metadataContent").html(resultDocument);
     	  
     	  metadataDialog.dialog({ zIndex: 9999, width: 630, height: dialogHeight, title: "<div>FGDC METADATA</div>" });  
@@ -682,16 +682,17 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
         	  var downloadButton = '<span class="styledButtonSmall" id="metadataDownloadButton">Download Metadata (XML)</span>';
     		  metadataDialog.parent().find(".ui-dialog-titlebar").first().prepend(downloadButton);
     	  }
-    	  jQuery("#metadataContent")[0].scrollTop = 0;
+    	  var metadataContent = jQuery("#metadataContent");
+    	  metadataContent[0].scrollTop = 0;
     	  metadataDialog.dialog("open");
-    	  metadataDialog.find("a").click(function(event){
+    	  metadataContent.find("a").click(function(event){
   			var toID = jQuery(this).attr("href");
   			if (toID.indexOf("#") == 0){
   				event.preventDefault();
     			//parse the hrefs for the anchors in this DOM element into toID
   				//xsl uses names instead of ids; yuck
   				toID = toID.substring(1);
-    			metadataDialog.scrollTo(jQuery('[name="' + toID + '"]'));
+    			metadataContent.scrollTo(jQuery('[name="' + toID + '"]'));
   			}
     		});
     	  jQuery("#metadataDownloadButton").unbind();
@@ -758,7 +759,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
           for (var urlType in location){
         	  if (urlType.toLowerCase() == "maprecord"){
       			var params = {
-    					url: location[urlType].replace("arrowsmith", "delisle"),
+    					url: location[urlType],
     					dataType: 'jsonp',
     					success: that.openMapRecordSuccess
     				  };
@@ -1968,7 +1969,7 @@ org.OpenGeoPortal.LayerTable.prototype.getResizeInfoFromTitle = function(columnT
 	//returns needed info about resizable columns
 	var headingsObj = this.tableHeadingsObj;
 	var fields = headingsObj.getTableHeadings();
-	heading = {};
+	var heading = {};
 	for (var key in fields){
 		if (headingsObj.getValue(key, "resizable")){
 			if (columnTitle == headingsObj.getValue(key, "sTitle")){
@@ -2325,7 +2326,7 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 		if (typeof headings[headingKey] == 'undefined'){
 			throw new Error('The heading key: "' + headingKey + '" is not applicable to the function setWidth');
 		}
-		currentHeadingObj = headings[headingKey];
+		var currentHeadingObj = headings[headingKey];
 		if (currentHeadingObj["resizable"]){
 			//should validate newWidth to make sure that it is an appropriate integer
 			if (newWidth >= currentHeadingObj["minWidth"]){

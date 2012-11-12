@@ -1,5 +1,8 @@
 package org.OpenGeoPortal.Download.Methods;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 
 public class MITDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
@@ -14,6 +17,13 @@ public class MITDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	@Override
 	public String getMethod(){
 		return METHOD;
+	}
+	
+	@Override
+	public Set<String> getExpectedContentType(){
+		Set<String> expectedContentType = new HashSet<String>();
+		expectedContentType.add("application/zip");
+		return expectedContentType;
 	}
 	
 	private String getDataType() {

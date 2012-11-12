@@ -38,6 +38,8 @@ public class ImageRequest {
 	List<LayerImage> layerImage; 
 	@JsonIgnore
 	File downloadFile;
+	@JsonIgnore
+	Boolean downloadFileSet = false;
 
 	public enum ImageStatus {
 		PROCESSING,
@@ -51,6 +53,7 @@ public class ImageRequest {
 
 	public void setDownloadFile(File downloadFile) {
 		this.downloadFile = downloadFile;
+		this.downloadFileSet = true;
 	}
 
 	public String getBbox() {
@@ -266,11 +269,23 @@ public class ImageRequest {
 			}
 		}
 		if (failureCount == 0){
-			completionStatus = StatusSummary.COMPLETE_SUCCEEDED;
+			if (!downloadFileSet){
+				completionStatus = StatusSummary.PROCESSING;
+			} else if (getDownloadFile().exists()){
+				completionStatus = StatusSummary.COMPLETE_SUCCEEDED;
+			} else {
+				completionStatus = StatusSummary.PROCESSING;
+			}
 		} else if (successCount == 0){
 			completionStatus = StatusSummary.COMPLETE_FAILED;
 		} else {
-			completionStatus = StatusSummary.COMPLETE_PARTIAL;
+			if (!downloadFileSet){
+				completionStatus = StatusSummary.PROCESSING;
+			} else if (getDownloadFile().exists()){
+				completionStatus = StatusSummary.COMPLETE_PARTIAL;
+			} else {
+				completionStatus = StatusSummary.PROCESSING;
+			}
 		}
 		return completionStatus;
 	}

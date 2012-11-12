@@ -165,7 +165,7 @@ org.OpenGeoPortal.LayerSettings = function(){
 		}
 	};
 	
-	syncUi = function (updateObj){
+	var syncUi = function (updateObj){
 		//console.log('syncUi');
 		//return true;
 		for (var key in updateObj){

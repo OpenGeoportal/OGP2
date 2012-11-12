@@ -1,5 +1,10 @@
 package org.OpenGeoPortal.Download.Methods;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Layer.GeometryType;
 
@@ -15,6 +20,14 @@ public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	@Override
 	public String getMethod(){
 		return METHOD;
+	}
+
+	@Override
+	public Set<String> getExpectedContentType(){
+		Set<String> expectedContentType = new HashSet<String>();
+		expectedContentType.add("application/vnd.google-earth.kml+xml");
+		expectedContentType.add("application/vnd.google-earth.kmz");
+		return expectedContentType;
 	}
 
 	@Override

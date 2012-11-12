@@ -351,7 +351,7 @@ org.OpenGeoPortal.UserInterface.prototype.styledSelect = function(divId, paramOb
 	var selectElement = jQuery('#' + divId);
 	selectElement.addClass("styledDropdown");
 	
-	selectHtml = '<button id="' + divId + 'Select" class="styledButton styledSelect" title="' + paramObj.text + '">';
+	var selectHtml = '<button id="' + divId + 'Select" class="styledButton styledSelect" title="' + paramObj.text + '">';
 	selectHtml += '<span class="styledSelectText">' + paramObj.text;
 	selectHtml += '</span><img class="styledSelectArrow" src="' + this.getImage('arrow_down.png') + '">';
 	selectHtml += '</button>';
@@ -1283,7 +1283,7 @@ org.OpenGeoPortal.UserInterface.prototype.requestDownload = function(requestObj)
 				jQuery("#optionDetails").html(noSelectionHtml);
 				jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
 			},
-			success: that.requestDownloadSuccess
+			success: function(data){org.OpenGeoPortal.downloadQueue.registerLayerRequest(data.requestId, requestObj);}
 	};
 	//close the download box;
 	jQuery("#downloadDialog").dialog("close");
@@ -1628,7 +1628,7 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 			complete: function(){
 			},
 			success: function(data){
-				org.OpenGeoPortal.downloadQueue.registerImageRequest(data.requestId);
+				org.OpenGeoPortal.downloadQueue.registerImageRequest(data.requestId, requestObj);
 
 				//should parse errors
 				//will also have status info for requested layers in this returned object

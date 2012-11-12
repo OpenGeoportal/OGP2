@@ -2,7 +2,9 @@ package org.OpenGeoPortal.Download.Methods;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,6 +22,13 @@ public class Wcs1_1_1DownloadMethod extends AbstractDownloadMethod implements Pe
 	@Override
 	public String getMethod(){
 		return METHOD;
+	}
+	
+	@Override
+	public Set<String> getExpectedContentType(){
+		Set<String> expectedContentType = new HashSet<String>();
+		expectedContentType.add("application/zip");
+		return expectedContentType;
 	}
 	
 	public String createDownloadRequest() throws Exception {

@@ -51,6 +51,7 @@ public class PerLayerDownloader implements LayerDownloader {
 				currentLayer.setStatus(Status.SUCCESS);
 				logger.info("finished download for: " + currentLayer.getLayerNameNS());
 			} catch (Exception e){
+				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
 				currentLayer.setStatus(Status.FAILED);	
 			}
 		

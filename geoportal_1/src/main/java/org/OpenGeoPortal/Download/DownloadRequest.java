@@ -17,7 +17,7 @@ public class DownloadRequest {
 	private String sessionId;
 	private File downloadPackage;
 	private List<MethodLevelDownloadRequest> requestList = new ArrayList<MethodLevelDownloadRequest>();
-	private Boolean postProcessingComplete = false;
+	private Boolean downloadPackageSet = false;;
 	
 	public UUID getRequestId() {
 		return requestId;
@@ -38,7 +38,7 @@ public class DownloadRequest {
 	public void setDownloadPackage(File downloadPackage) {
 		this.downloadPackage = downloadPackage;
 		logger.info("Download package: " + downloadPackage.getAbsolutePath());
-		this.postProcessingComplete = true;
+		this.downloadPackageSet = true;
 	}
 	
 	public List<MethodLevelDownloadRequest> getRequestList() {
@@ -50,7 +50,15 @@ public class DownloadRequest {
 	}
 	
 	private Boolean isPostProcessingComplete(){
-		return postProcessingComplete;
+		if (downloadPackageSet){
+			if (this.downloadPackage.exists()){
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 	
 	public Boolean isReadyForPackaging(){

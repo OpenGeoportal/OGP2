@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
@@ -19,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
-
 
 public abstract class AbstractDownloadMethod {
 	protected LayerRequest currentLayer;
@@ -37,13 +38,27 @@ public abstract class AbstractDownloadMethod {
 		this.httpRequester = httpRequester;
 	}
 
+	public abstract Set<String> getExpectedContentType();
+	
+	public Boolean expectedContentTypeMatched(String foundContentType){
+		if (getExpectedContentType().contains(foundContentType)){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	@Async
 	public Future<File> download(LayerRequest currentLayer) throws Exception {
 		this.currentLayer = currentLayer;
 		currentLayer.setMetadata(this.includesMetadata());
 		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), getMethod());
 		File directory = getDirectory();
-		String contentType = httpRequester.getContentType();
+		String contentType = httpRequester.getContentType().toLowerCase();
+		if (!expectedContentTypeMatched(contentType)){
+			logger.error("Unexpected content type: " + contentType);
+			throw new Exception("Unexpected content type");
+		}
 		File outputFile = OgpFileUtils.createNewFileFromDownload(currentLayer.getLayerInfo().getName(), contentType, directory);
 		OutputStream outputStream = new FileOutputStream(outputFile);
 		InputStream bufferedIn = new BufferedInputStream(inputStream);

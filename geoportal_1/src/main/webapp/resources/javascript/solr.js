@@ -277,7 +277,7 @@ org.OpenGeoPortal.Solr.prototype.getFilter = function getFilter(columnName, valu
 			temp += "+OR+";
 		temp += columnName + ":" + value;
 	}
-	filter = "fq=" + escape(temp);
+	var filter = "fq=" + escape(temp);
 	return filter;
 	
 };
@@ -671,8 +671,6 @@ org.OpenGeoPortal.Solr.prototype.getRestrictedFilter = function getRestrictedFil
 	return this.restrictedFilter;
 };
 
-var bar;
-
 org.OpenGeoPortal.Solr.prototype.getSpatialQuery = function getSpatialQuery() //mapMinX, mapMaxX, mapMinY, mapMaxY)
 {
 	//var spatialQuery = "_val_:\"sum(" + this.layerWithinMap(this.MinX, this.MaxX, this.MinY, this.MaxY) + 
@@ -1008,7 +1006,7 @@ org.OpenGeoPortal.Solr.prototype.getSearchQuery = function getSearchQuery()
 	var topicFilter = null;
 	var spatialFilter = "";
 	var spatialQuery = null;
-	queryClause = "";
+	var queryClause = "";
 	
 	// at most, only one of basicKeywords or advancedKeywords should be set 
 	var basicKeywords = this.getBasicKeywords();
