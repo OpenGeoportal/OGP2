@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.OpenGeoPortal</groupId>
-  <artifactId>geoportal_1</artifactId>
+  <artifactId>geoportal</artifactId>
   <packaging>war</packaging>
   <version>1.2.BETA</version>
-  <name>geoportal webapp</name>
+  <name>opengeoportal webapp</name>
   <url>http://opengeoportal.org</url>
 	<!-- this is the project's initial pom file and there are, no doubt, many 
 		things wrong with it. NOTE: this pom file specifies a non-standard war file. 
@@ -237,7 +237,7 @@
 		  </dependency>
 	</dependencies>
 	<build>
-	    <finalName>geoportal_1_1</finalName>
+	    <finalName>opengeoportal</finalName>
 		<plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
