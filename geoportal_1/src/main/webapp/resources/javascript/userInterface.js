@@ -191,41 +191,51 @@ org.OpenGeoPortal.UserInterface = function(){
 	    //set mouse cursor behavior
 		this.mouseCursor();
 		this.resizePanels();
-		jQuery("#mapLoadIndicator").bind("ajaxSend", function(e){
+		var loadIndicator = "#mapLoadIndicator";
+		jQuery(document).on("ajaxSend",loadIndicator, function(e){
 			that.utility.showLoadIndicator(jQuery(this).attr("id"), e);
 		 });
 		
-		jQuery("#mapLoadIndicator").bind("ajaxComplete", function(e){
+		jQuery(document).on("ajaxComplete", loadIndicator, function(e){
 				that.utility.hideLoadIndicator(jQuery(this).attr("id"), e);
 			 });
 
-		
 		//'hover' for graphics that are not background graphics
-		jQuery('.olControlModPanZoomBar img[id*="zoomin"]').bind("mouseenter", function(){
-			jQuery(this).attr("src", that.getImage("slider_plus_hover.png"));
-			jQuery(this).css("cursor", "pointer");
+		var zoomPlusSelector = '.olControlModPanZoomBar img[id*="zoomin"]';
+		jQuery(document).on("mouseenter", zoomPlusSelector, function(){
+			jQuery(this).attr("src", that.utility.getImage("slider_plus_hover.png"));
+			//jQuery(this).css("cursor", "pointer");
 		});
 		
-		jQuery('.olControlModPanZoomBar img[id*="zoomin"]').bind("mouseleave", function(){
-			jQuery(this).attr("src", that.getImage("zoom-plus-mini.png"));
+		jQuery(document).on("mouseleave", zoomPlusSelector, function(){
+			jQuery(this).attr("src", that.utility.getImage("zoom-plus-mini.png"));
 		});
 		
-		jQuery('.olControlModPanZoomBar img[id*="zoomout"]').bind("mouseenter", function(){
-			jQuery(this).attr("src", that.getImage("slider_minus_hover.png"));
-			jQuery(this).css("cursor", "pointer");
+		jQuery(document).on("click", zoomPlusSelector, function(){
+			that.mapObject.zoomIn();
 		});
 		
-		jQuery('.olControlModPanZoomBar img[id*="zoomout"]').bind("mouseleave", function(){
-			jQuery(this).attr("src", that.getImage("zoom-minus-mini.png"));
+		var zoomMinusSelector = '.olControlModPanZoomBar img[id*="zoomout"]';
+		jQuery(document).on("mouseenter", zoomMinusSelector, function(){
+			jQuery(this).attr("src", that.utility.getImage("slider_minus_hover.png"));
+			//jQuery(this).css("cursor", "pointer");
+		});
+		
+		jQuery(document).on("mouseleave", zoomMinusSelector, function(){
+			jQuery(this).attr("src", that.utility.getImage("zoom-minus-mini.png"));
+		});
+		
+		jQuery(document).on("click", zoomMinusSelector, function(){
+			that.mapObject.zoomOut();
 		});
 		
 		jQuery('#tabs a').bind("mousedown", function(){
 			//console.log(jQuery(this));
 				var tabImage = jQuery(this).find("img");
 				if (tabImage.length > 0){
-					tabImage.attr("src", that.getImage("shoppingcart_on.png"));
+					tabImage.attr("src", that.utility.getImage("shoppingcart_on.png"));
 				} else {
-					jQuery('#tabs a img').attr("src", that.getImage("shoppingcart.png"));
+					jQuery('#tabs a img').attr("src", that.utility.getImage("shoppingcart.png"));
 				};
 		});
 		var containerHeight = jQuery(window).height() - jQuery("#header").height() - jQuery("#footer").height() - 2;
@@ -280,7 +290,7 @@ org.OpenGeoPortal.UserInterface = function(){
 			}
 		});
 		
-		jQuery('#downloadHeaderCheck').live('click', that.toggleChecksSaved);
+		jQuery(document).on('click', '#downloadHeaderCheck', that.toggleChecksSaved);
 		jQuery("#headerLogin").click(function(event){that.promptLogin(event);});
 
 		jQuery(document).bind("loginSucceeded", function(){
@@ -304,14 +314,14 @@ org.OpenGeoPortal.UserInterface = function(){
 			console.log(thrownError);*/
 		//});
 		//this.checkUserInput();			
-		jQuery("body").delegate(".ui-dialog-titlebar", "dblclick", function(){
+		/*jQuery("body").delegate(".ui-dialog-titlebar", "dblclick", function(){
 			var id = jQuery(this).parent().children(".dialog").attr("id");
 			if (that.isDialogMinimized(id)){
 				that.maximizeDialog(id);
 			} else {
 				that.minimizeDialog(id);
 			}
-		});
+		});*/
 	};
 	this.init();
 };
@@ -1121,6 +1131,7 @@ org.OpenGeoPortal.UserInterface.prototype.downloadContinue = function(){
 	//first, check to see if anything is in savedLayers & checked
 	var that = this;
 	pluralSuffix = function(totalNumber){
+		var plural;
 		if (totalNumber > 1){
 			plural = "s";
 		} else {
@@ -1469,7 +1480,7 @@ org.OpenGeoPortal.UserInterface.prototype.getLayerList = function(downloadAction
 	jQuery(".downloadSelection").removeClass("downloadSelection");
 	jQuery(".downloadSelection").removeClass("downloadUnselection");
 
-	layerInfo = {};
+	var layerInfo = {};
 	var tableObj = jQuery("#savedLayers").dataTable();
 	var checkedRows = jQuery(".cartCheckBox:checked");
 	var that = this;
@@ -1574,7 +1585,7 @@ org.OpenGeoPortal.UserInterface.prototype.saveImage = function(imageFormat, reso
 	default: throw new Error("This image format (" + imageFormat + ") is unavailable.");
 	}
 	
-	requestObj = {};
+	var requestObj = {};
 	requestObj.layers = [];
 
     for (var layer in this.mapObject.layers){
@@ -2123,7 +2134,7 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 	var that = this;
 	var layerStateObject = this.layerStateObject;
 	jQuery('.olMap').css('cursor', "-moz-grab");
-	jQuery('div.olControlZoomBoxItemInactive').bind('click', function(){
+	jQuery(document).on('click', 'div.olControlZoomBoxItemInactive', function(){
 		jQuery('.olMap').css('cursor', "-moz-zoom-in");
 		var mapLayers = that.mapObject.layers;
 		for (var i in mapLayers){
@@ -2137,9 +2148,9 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 			}
 		}
 		layerStateObject.resetState('getFeature');
-		jQuery('.attributeInfoControl').attr('src', this.getImage('preview.gif'));
+		jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
 	});
-	jQuery('.olControlNavigationItemActive').bind('click', function(){
+	jQuery(document).on('click', '.olControlNavigationItemActive', function(){
 		jQuery('.olMap').css('cursor', "-moz-grab");
 		//var mapLayers = org.OpenGeoPortal.map.layers;
 		var mapLayers = that.mapObject.layers;
@@ -2154,7 +2165,7 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 			}
 		}
 		layerStateObject.resetState('getFeature');
-		jQuery('.attributeInfoControl').attr('src', this.getImage('preview.gif'));
+		jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
 	});
 };
 

@@ -373,7 +373,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  
 	  this.selectPreviewedRow = function(){
 		  var tableName = this.getTableID();	  		
-	      jQuery('#' + tableName + ' td.colPreview > div > input:checkbox').live("click", function(event) {
+	      jQuery(document).on("click", '#' + tableName + ' td.colPreview > div > input:checkbox', function(event) {
 	          var rowObj = jQuery(event.target).closest("tr");
 	          if (jQuery(event.target).is(":checked")){
 	        	  rowObj.addClass('previewedLayer');
@@ -393,7 +393,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  //adds class to row for highlighting current row
 	  this.highlightRow = function(){
 		  var tableName = this.getTableID();
-	      jQuery('#' + tableName + ' > tbody').live("mouseout", function(event) {
+	      jQuery(document).on("mouseout", '#' + tableName + ' > tbody', function(event) {
 	    	  var currentNode = jQuery(event.target).parentsUntil('#' + tableName).last();
 	    	  jQuery(currentNode).children().removeClass('row_selected');
 	    	  org.OpenGeoPortal.map.hideLayerBBox();
@@ -401,7 +401,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  		
 	      var tableObj = this.getTableObj();
 	      var tableHeadingsObj = this.tableHeadingsObj;
-	      jQuery('#' + tableName + ' > tbody').live("mouseover", function(event) {
+	      jQuery(document).on("mouseover", '#' + tableName + ' > tbody', function(event) {
 	          var rowObj = jQuery(event.target).parentsUntil('#' + tableName + ' > tbody').last();
 	          rowObj.addClass('row_selected');
 	          if (rowObj.children('td').hasClass('resultsControls')){
@@ -428,6 +428,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  };
 	  
 	  this.downloadActionSelectRow = function(rowPosition, isSelected){
+		  var selectionClass;
 		  if (isSelected){
 			  selectionClass = 'downloadSelection';
 		  } else {
@@ -886,8 +887,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
       		aData[expandIndex] = aData[expandIndex].replace("org.OpenGeoPortal.resultsTableObj", "org.OpenGeoPortal.cartTableObj");
       		aData = [aData];
       		var newData = aData.concat(currentData);
+      		//this function puts aRowData in the global scope (dataTables issue?)
       		savedTable.fnClearTable();
       		savedTable.fnAddData(newData);
+
       		layerState.setState(layerID, {"inCart": true});
 			jQuery(thisObj).closest('tr').effect( "transfer", options, 500, function(){
 				org.OpenGeoPortal.ui.updateSavedLayersNumber();

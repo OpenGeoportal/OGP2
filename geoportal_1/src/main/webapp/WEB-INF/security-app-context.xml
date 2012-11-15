@@ -22,17 +22,15 @@
     <security:authentication-manager alias="authenticationManager" />
  
     
-<!--    <ldap-server url="ldaps://ldap.tufts.edu/ou=People,dc=tufts,dc=edu" />
+<!--    <ldap-server url="ldaps://secure-ldap-url/ou=People,dc=institution,dc=edu" />
 -->
     <security:authentication-manager>
             <!--   <ldap-authentication-provider user-dn-pattern="uid={0},ou=people"/>
          -->
         <security:authentication-provider>
             <security:user-service>
-                <security:user name="chris" password="koala" authorities="administrator, user" />
-                <security:user name="steve" password="emu" authorities="administrator, user" />
-                <security:user name="joeshmoe" password="wombat" authorities="user" />
-                <security:user name="peter" password="opal" authorities="user" />
+                <security:user name="testAdmin" password="koala" authorities="administrator, user" />
+                <security:user name="testUser" password="wombat" authorities="user" />
             </security:user-service>
         </security:authentication-provider>
     </security:authentication-manager>

@@ -16,15 +16,21 @@ if (typeof org.OpenGeoPortal == 'undefined'){
 } else if (typeof org.OpenGeoPortal != "object"){
     throw new Error("org.OpenGeoPortal already exists and is not an object");
 }
-org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
-document.title = "GeoData@" + org.OpenGeoPortal.InstitutionInfo.getHomeInstitution();
 
-var url = org.OpenGeoPortal.InstitutionInfo.getCustomCss();
-if (document.createStyleSheet){
-    document.createStyleSheet(url);
-} else {
-    jQuery('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo('head'); 
-}
+org.OpenGeoPortal.init = function(){
+	org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
+	document.title = "GeoData@" + org.OpenGeoPortal.InstitutionInfo.getHomeInstitution();
+
+	//we do this here so that we can try to get the css before the document is ready (should we do this in the jsp instead?)
+	var url = org.OpenGeoPortal.InstitutionInfo.getCustomCss();
+	if (document.createStyleSheet){
+		document.createStyleSheet(url);
+	} else {
+		jQuery('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo('head'); 
+	}
+};
+
+org.OpenGeoPortal.init();
 
 jQuery(document).ready(function (){
 	jQuery.noConflict();

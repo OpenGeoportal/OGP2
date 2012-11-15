@@ -432,6 +432,7 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
             } else {
                 zoomLevel += Math.round(deltaY/this.zoomStopHeight);
             }
+            alert("there");
             this.map.zoomTo(zoomLevel);
             this.mouseDragStart = null;
             this.zoomStart = null;

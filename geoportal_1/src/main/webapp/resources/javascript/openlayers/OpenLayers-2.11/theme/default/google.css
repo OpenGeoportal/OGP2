@@ -4,6 +4,7 @@
     left: auto;  
 }
 .olLayerGooglePoweredBy {
+	display: none !important;
     left: 2px;
     bottom: 2px;   
 }

@@ -78,11 +78,13 @@ public class GetFeatureInfoController {
 		if (!previewUrl.contains("http")){
 			
 			request.getRequestDispatcher(previewUrl + "?" + query).forward(request, response);
+			
+		} else {
+			InputStream input = httpRequester.sendRequest(previewUrl, query, "GET");
+			logger.debug(httpRequester.getContentType());
+			response.setContentType(httpRequester.getContentType());
+			IOUtils.copy(input, response.getOutputStream());
 		}
-		InputStream input = httpRequester.sendRequest(previewUrl, query, "GET");
-		logger.debug(httpRequester.getContentType());
-		response.setContentType(httpRequester.getContentType());
-		IOUtils.copy(input, response.getOutputStream());
 	}
 	
 	public LayerInfoRetriever getLayerInfoRetriever() {

@@ -2,7 +2,6 @@ package org.OpenGeoPortal.Solr;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 import org.OpenGeoPortal.Download.Config.ConfigRetriever;
 import org.codehaus.jackson.JsonNode;

@@ -59,32 +59,15 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
         ]);
     //display mouse coords in lon-lat
     var displayCoords = new OpenLayers.Control.MousePosition({displayProjection: new OpenLayers.Projection("EPSG:4326")});
-   // var mapBounds = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
+    var mapBounds = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
 
-    /*new OpenLayers.Map({
-        div: "map",
-        projection: "EPSG:900913",
-        layers: [
-            new OpenLayers.Layer.Google("Google Streets"),
-            new OpenLayers.Layer.OSM(null, null, {isBaseLayer: false, opacity: 0.7})
-        ],
-        zoom: 1
-    });*/
-
-	var options = {/*resolutions: [156543.03390625, 78271.516953125, 39135.7584765625, 19567.87923828125, 
-	                             9783.939619140625, 4891.9698095703125, 2445.9849047851562, 1222.9924523925781, 
-	                             611.4962261962891, 305.74811309814453, 152.87405654907226, 76.43702827453613, 
-	                             38.218514137268066, 19.109257068634033, 9.554628534317017, 4.777314267158508, 
-	                             2.388657133579254, 1.194328566789627, 0.5971642833948135, 0.29858214169740677, 
-	                             0.14929107084870338, 0.07464553542435169, 0.037322767712175846, 
-	                             0.018661383856087923, 0.009330691928043961, 0.004665345964021981],*/
+	var options = {
 	        allOverlays: true,
-			projection: "EPSG:900913",
-			zoom: 1,
-			//maxExtent: mapBounds,
-			//units: "m",
-            numZoomLevels: 20,
-            minZoom: 2,
+	        projection: new OpenLayers.Projection("EPSG:900913"),
+		    maxResolution: 2.8125,
+			maxExtent: mapBounds,
+			units: "m",
+			minZoomLevel: 1,
             controls: [new OpenLayers.Control.ModPanZoomBar(),
                        new OpenLayers.Control.ScaleLine(),
                        displayCoords,
@@ -101,15 +84,16 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 
     // attempt to reload tile if load fails
     OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
+    OpenLayers.ImgPath = "/resources/media/"
     // make OL compute scale according to WMS spec
-    OpenLayers.DOTS_PER_INCH = 90.71428571428572;
+    //OpenLayers.DOTS_PER_INCH = 90.71428571428572;
     OpenLayers.Util.onImageLoadErrorColor = 'transparent';
     var that = this;
-	OpenLayers.Map.call(this, null, options);
+	OpenLayers.Map.call(this, "ogpMap", options);
 	//default background map
 	this.setBackgroundMap();
 
-    var center = this.WGS84ToMercator(0, 10);
+    var center = this.WGS84ToMercator(0, 0);
 	//set map position
 	this.setCenter(center);
 
@@ -188,10 +172,10 @@ org.OpenGeoPortal.MapController.prototype.getBackgroundType = function() {
 org.OpenGeoPortal.MapController.prototype.backgroundMaps = function(mapType){
 	if (typeof google != "undefined"){
 		var bgMaps = {
-			googleHybrid: {mapClass: "Google", zoomLevels: 22, name: "Google Hybrid", params: {type: google.maps.MapTypeId.HYBRID, minResolution: 2.388657133579254}},
-			googleSatellite: {mapClass: "Google", zoomLevels: 22, name: "Google Satellite", params: {type: google.maps.MapTypeId.SATELLITE, minResolution: 2.388657133579254}},
-			googleStreets: {mapClass: "Google", zoomLevels: 20, name: "Google Streets", params: {type: google.maps.MapTypeId.ROADMAP, minResolution: 2.388657133579254}}, 
-			googlePhysical: {mapClass: "Google", zoomLevels: 15, name: "Google Physical", params: {type: google.maps.MapTypeId.TERRAIN, minResolution: 2.388657133579254}},
+			googleHybrid: {mapClass: "Google", zoomLevels: 22, name: "Google Hybrid", params: {type: google.maps.MapTypeId.HYBRID}},
+			googleSatellite: {mapClass: "Google", zoomLevels: 22, name: "Google Satellite", params: {type: google.maps.MapTypeId.SATELLITE}},
+			googleStreets: {mapClass: "Google", zoomLevels: 20, name: "Google Streets", params: {type: google.maps.MapTypeId.ROADMAP}}, 
+			googlePhysical: {mapClass: "Google", zoomLevels: 15, name: "Google Physical", params: {type: google.maps.MapTypeId.TERRAIN}},
 			osm: {mapClass: "OSM", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png',/* getURL: this.getOsmTileUrl,*/
 				displayOutsideMaxExtent: true}, url: "http://tile.openstreetmap.org/"}
 		};
@@ -255,6 +239,8 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 			jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
 
 		} else {
+			backgroundMaps.params.sphericalMercator = true;
+			backgroundMaps.params.maxExtent = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
 			var bgMap = new OpenLayers.Layer.Google(backgroundMaps.name,
 				backgroundMaps.params);
 
@@ -698,7 +684,7 @@ org.OpenGeoPortal.MapController.prototype.getPreviewUrlArray = function (locatio
 
 	var urlArraySize = 3; //this seems to be a good size for OpenLayers performance
 	var urlArray = [];
-	populateUrlArray = function(addressArray){
+	var populateUrlArray = function(addressArray){
 		if (addressArray.length == 1){
 			for (var i=0; i < urlArraySize; i++){
 				urlArray[i] = addressArray[0];
@@ -764,8 +750,8 @@ org.OpenGeoPortal.MapController.prototype.addWMSLayer = function (mapObj) {
              //buffer: 0,
              //gutter: 4,
              transitionEffect: 'resize',
-             opacity: mapObj.opacity,
-             displayOutsideMaxExtent: false//,
+             opacity: mapObj.opacity//,
+             //displayOutsideMaxExtent: false//,
              //wrapDateLine: true
              });
     //how should this change? trigger custom events with jQuery
@@ -877,7 +863,7 @@ org.OpenGeoPortal.MapController.prototype.getBorderColor = function(fillColor){
 	borderColor.red = fillColor.slice(1,3);
 	borderColor.green = fillColor.slice(3,5);
 	borderColor.blue = fillColor.slice(5);
-	for (color in borderColor){
+	for (var color in borderColor){
 		//make the border color darker than the fill
 		var tempColor = parseInt(borderColor[color], 16) - parseInt(0x50);
 		if (tempColor < 0){
@@ -962,8 +948,8 @@ org.OpenGeoPortal.MapController.prototype.getGeodeticExtent = function(){
 
 org.OpenGeoPortal.MapController.prototype.zoomToLayerExtent = function(extent){
 	var layerExtent = OpenLayers.Bounds.fromString(extent);
-	lowerLeft = this.WGS84ToMercator(layerExtent.left, layerExtent.bottom);
-	upperRight = this.WGS84ToMercator(layerExtent.right, layerExtent.top);
+	var lowerLeft = this.WGS84ToMercator(layerExtent.left, layerExtent.bottom);
+	var upperRight = this.WGS84ToMercator(layerExtent.right, layerExtent.top);
 
 	var newExtent = new OpenLayers.Bounds();
 	newExtent.extend(new OpenLayers.LonLat(lowerLeft.lon, lowerLeft.lat));
