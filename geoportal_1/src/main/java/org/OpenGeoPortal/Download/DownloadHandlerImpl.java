@@ -105,15 +105,15 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		this.layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerMap.keySet());
 		Map <String, List<LayerRequest>> downloadMap = new HashMap<String, List<LayerRequest>>(); 
 		for (SolrRecord record: this.layerInfo){
-			logger.debug("Requested format: " + layerMap.get(record.getLayerId()[0]));
-			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()[0]), bounds);
+			logger.debug("Requested format: " + layerMap.get(record.getLayerId()));
+			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()), bounds);
 			String currentClassKey = null;
 			try {
 				currentClassKey = this.downloadConfigRetriever.getClassKey(layerRequest);
 				logger.info("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
 				layerRequest.setStatus(Status.FAILED);
-				logger.info("No download method found for: '" + record.getLayerId()[0] +"'");
+				logger.info("No download method found for: '" + record.getLayerId() +"'");
 				continue;
 			}
 			if (downloadMap.containsKey(currentClassKey)){

@@ -30,6 +30,8 @@ org.OpenGeoPortal.Utility.ImageLocation = "resources/media/";
 org.OpenGeoPortal.Utility.CssLocation = "resources/css/";
 org.OpenGeoPortal.Utility.JspfLocation = "jspf/"
 	
+org.OpenGeoPortal.Utility.InitSet = false;
+
 org.OpenGeoPortal.Utility.getImage = function(imageName){
 	return org.OpenGeoPortal.Utility.ImageLocation + imageName;
 };
