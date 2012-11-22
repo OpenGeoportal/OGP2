@@ -71,6 +71,7 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 		InputStream replyStream = null;
 		try {
 			HttpPost httppost = new HttpPost(serviceURL);
+			logger.info(requestBody);
 			StringEntity postEntity = new StringEntity(requestBody, ContentType.create(contentType, "UTF-8"));
 			httppost.setEntity(postEntity);
 			logger.info("executing POST request to " + httppost.getURI());
