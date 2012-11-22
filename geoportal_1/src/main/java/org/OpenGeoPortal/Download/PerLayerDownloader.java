@@ -45,10 +45,12 @@ public class PerLayerDownloader implements LayerDownloader {
 				continue;
 			}
 		} 
+		int successCount = 0;
 		for (LayerRequest currentLayer: layerList){
 			try{
 				currentLayer.getDownloadedFiles().add((File) currentLayer.getFutureValue().get());
 				currentLayer.setStatus(Status.SUCCESS);
+				successCount++;
 				logger.info("finished download for: " + currentLayer.getLayerNameNS());
 			} catch (Exception e){
 				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
@@ -56,7 +58,12 @@ public class PerLayerDownloader implements LayerDownloader {
 			}
 		
 		}
-		downloadPackager.packageFiles(requestId);
+		
+		if (successCount > 0){
+			downloadPackager.packageFiles(requestId);
+		} else {
+			logger.error("No Files to package.  Download failed.");
+		}
 		
 	}
 

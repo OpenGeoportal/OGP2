@@ -2,7 +2,7 @@
         "institutionSpecificJavaScript": "", 
 	"googleAnalyticsId": "UA-19787732-1", 
 	"googleAPIKey": "AIzaSyCuK9otEY-rbMNJEpDO_NzD1jA-OyqubDY",
-	"search":{"serviceType": "solr", "serviceAddress": "http://localhost:8080/solr/select"}, 
+	"search":{"serviceType": "solr", "serviceAddress": "http://localhost:8080/solr/collection1/select"}, 
 	"institutions": {"Tufts": {"login": {"loginType": "form", "authenticationPage": "login"}, 
 				"proxy": {"id": "proxy.Restricted.Tufts", "accessLevel": ["restricted"], "wms": "restricted/wms", "wfs": "restricted/wfs"}, 
 				"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_tufts.png", "altDisplay": "Tufts", "tooltipText": "Tufts University"}}}, 

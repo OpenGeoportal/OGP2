@@ -8,7 +8,7 @@ import org.apache.solr.client.solrj.beans.Field;
 
 public class SolrRecord {
 	@Field("LayerId")
-	String[] layerId;
+	String layerId;
 	@Field("Name")
 	String name;
 	@Field("CollectionId")
@@ -71,10 +71,10 @@ public class SolrRecord {
 	Date contentDate;
 	@Field("FgdcText")
 	String fgdcText;
-	public String[] getLayerId() {
+	public String getLayerId() {
 		return layerId;
 	}
-	public void setLayerId(String[] layerId) {
+	public void setLayerId(String layerId) {
 		this.layerId = layerId;
 	}
 	public String getName() {
@@ -266,7 +266,7 @@ public class SolrRecord {
 	
 	public Map<String,String> toMap(){
 		Map<String,String> map = new HashMap<String,String>();
-		map.put("LayerId", this.layerId[0]);
+		map.put("LayerId", this.layerId);
 		map.put("LayerName", this.name);
 		map.put("Title", this.layerDisplayName);
 		map.put("DataType", this.dataType);

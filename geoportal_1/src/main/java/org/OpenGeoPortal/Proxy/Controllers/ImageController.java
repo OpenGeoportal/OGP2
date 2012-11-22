@@ -111,7 +111,7 @@ public class ImageController {
 					//the client should never send these layers, since the user shouldn't be able to preview them
 					continue;
 				}
-				if (solrRecord.getLayerId()[0].equalsIgnoreCase(currentId)){
+				if (solrRecord.getLayerId().equalsIgnoreCase(currentId)){
 					layerImage.setSolrRecord(solrRecord);
 					String layerQueryString = "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName();
 					String currentSLD = layerImage.getSld();
