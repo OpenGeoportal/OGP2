@@ -633,7 +633,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  
 	  
 	  // handles jsonp response from request for metadata call
-	  this.showMetadataJsonpSuccess = function(data, contextObj)
+	  this.showMetadataJsonpSuccess = function(data)
 	  {
 		  var solrResponse = data["response"];
     	  var totalResults = solrResponse["numFound"];
@@ -644,14 +644,14 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     	  }
     	  var doc = solrResponse["docs"][0];  // get the first layer object
     	  var fgdcRawText = doc["FgdcText"];
-    	  var layerId = doc["LayerId"][0];
+    	  var layerId = doc["LayerId"];//[0];
     	  //var fgdcText = unescape(fgdcRawText);  // text was escaped on ingest into Solr<--doesn't need to be unescaped: can cause problems if there is a space in a link
     	  var fgdcDocument = jQuery.parseXML(fgdcRawText);
     	  var xsl = null;
     	  var params = {
     			  url: "resources/xml/FGDC_V2_a.xsl",
     			  async: false,
-    			  context: contextObj,
+    			 // context: contextObj,
     			  dataType: 'xml',
     			  success: function(data){xsl = data;}
     	  };

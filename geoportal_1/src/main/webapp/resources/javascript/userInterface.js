@@ -192,12 +192,12 @@ org.OpenGeoPortal.UserInterface = function(){
 		this.mouseCursor();
 		this.resizePanels();
 		var loadIndicator = "#mapLoadIndicator";
-		jQuery(document).on("ajaxSend",loadIndicator, function(e){
-			that.utility.showLoadIndicator(jQuery(this).attr("id"), e);
+		jQuery(document).bind("showLoadIndicator",function(e){
+			that.utility.showLoadIndicator("mapLoadIndicator");
 		 });
 		
-		jQuery(document).on("ajaxComplete", loadIndicator, function(e){
-				that.utility.hideLoadIndicator(jQuery(this).attr("id"), e);
+		jQuery(document).bind("hideLoadIndicator", function(e){
+				that.utility.hideLoadIndicator("mapLoadIndicator");
 			 });
 
 		//'hover' for graphics that are not background graphics
@@ -256,6 +256,7 @@ org.OpenGeoPortal.UserInterface = function(){
 			//org.OpenGeoPortal.map.events.triggerEvent('zoomend');
 			that.mapObject.events.triggerEvent('zoomend');
 		});
+		
 		jQuery(window).resize(function(){
 			var containerHeight = Math.max((jQuery(window).height() - jQuery("#header").height() - jQuery("#footer").height() - 2), 680);
 			jQuery('#container').height(containerHeight);
@@ -1203,6 +1204,38 @@ org.OpenGeoPortal.UserInterface.prototype.isClipped = function(){
 		return true;
 	} else {
 		return false;
+	}
+};
+
+org.OpenGeoPortal.UserInterface.prototype.requestErrorMessage = function(errorMessageObj){
+	
+	var line = "";
+	for (var failedToDownload in data.failed){
+		line += "<tr>";
+		//for (var infoElement in data.failed[failedToDownload]){
+			line += "<td>";
+			line += '<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>';
+			line += "</td>";
+			line += "<td>";
+			line += data.failed[failedToDownload]["institution"];
+			line += "</td>";						
+			line += "<td>";
+			line += data.failed[failedToDownload]["title"];
+			line += "</td>";						
+			line += "<td>";
+			line += data.failed[failedToDownload]["layerId"];
+			line += "</td>";
+			line += '<td><span class="warning">';
+			line += data.failed[failedToDownload]["message"];
+			line += "</span></td>";
+		//}
+		line += "</tr>";
+	}
+	if (line.length > 0){
+		var message = '<table class="downloadStatus">';
+		message += line;
+		message += "</table>";
+		this.genericModalDialog(message, "DOWNLOAD ERRORS");
 	}
 };
 
@@ -2202,7 +2235,8 @@ org.OpenGeoPortal.UserInterface.prototype.createExportParams = function(){
 };
 
 org.OpenGeoPortal.UserInterface.prototype.cartOptionText = function(){
-	var noSelectionHtml = "";
+	var noSelectionHtml = "Choose what to do with layers in your Cart";
+	jQuery("#optionDetails").html(noSelectionHtml);
 	var mapItHtml = "Open highlighted layers in GeoCommons to create maps";
 	var shareHtml = "Create a link to share this Cart";
 	var webServiceHtml = "Stream highlighted layers into an application";
@@ -2324,127 +2358,3 @@ org.OpenGeoPortal.UserInterface.prototype.maximizeDialog = function(dialogId){
 		//>>> jQuery("#geoCommonsExportDialog").dialog("option", "position", jQuery("#geoCommonsExportDialog").data("maxPosition"))
 };
 
-org.OpenGeoPortal.UserInterface.prototype.processingMessageOn = function(dialogId, processingMessage){
-	this.dialogOverlayOn(dialogId);
-	//create a div with the message and the processing graphic
-	var $dialogId = jQuery('#' + dialogId).parent();
-	
-	if ($dialogId.children(".processingMessage").length == 0){
-		$dialogId.append('<div class="processingMessage"></div>');
-	} else {
-		
-	}
-	var processorDivId = dialogId + "Processor"; 
-	var messageDiv = '<div class="processingMessageContents" id="' +processorDivId + "Container";
-	messageDiv += '"><div id="' + processorDivId + '"></div></div>';
-	messageDiv += '<div class="processingMessageText processingMessageContents">' + processingMessage + '</div>';
-	
-	$dialogId.children(".processingMessage").first().html(messageDiv);
-	$dialogId.children(".processingMessage").show();
-	
-	var offset = $dialogId.children(".ui-dialog-titlebar").first().height();
-    var pos = jQuery.extend({
-    		width:    $dialogId.outerWidth()/2,
-    		height:   ($dialogId.outerHeight() - offset)/3,
-    		top:	  $dialogId.outerHeight()/3 - offset,
-    		left:	  $dialogId.outerWidth()/4
-    	});
-
-    /*
-     * display: inline-block;
-    height: inherit;
-    line-height: 100px;
-    vertical-align: middle;
-     * 
-     */
-    
-    $dialogId.children(".processingMessage").css({
-	        position:         'absolute',
-	        top:			  pos.top,
-	        left:				pos.left,
-	        width:            pos.width,
-	        height:           pos.height,
-	        backgroundColor:  '#CCC',
-	        border: '1px solid #AAA',
-	        opacity:          1,
-	        "z-index":			  2501,
-	        "font-size":	"15px"
-	    });
-    jQuery("#" + processorDivId).width("30px");
-    jQuery("#" + processorDivId).height("25px");
-    
-    $dialogId.find(".processingMessageContents").css({
-    	display:	"inline-block",
-    	"vertical-align":	"middle"
-    });
-    
-    $dialogId.find(".processingMessageText").first().css({
-    	"line-height":	pos.height + "px"
-    });
-    
-
-
-    org.OpenGeoPortal.Utility.showLoadIndicator(processorDivId);
-};
-
-org.OpenGeoPortal.UserInterface.prototype.processingMessageOff = function(dialogId, completionMessage, callback){
-    org.OpenGeoPortal.Utility.hideLoadIndicator(dialogId + "Processor");
-	this.maximizeDialog(dialogId);
-	//replace processing message with completion message
-	var $processingMessage = jQuery( "#" + dialogId ).siblings(".processingMessage");
-	jQuery("#" + dialogId + "Processor").hide();
-    org.OpenGeoPortal.Utility.hideLoadIndicator(dialogId + "Processor");
-	$processingMessage.find(".processingMessageText").first().html(completionMessage);
-	//flash message
-	var that = this;
-	var innerCallback = function(){
-		jQuery( "#" + dialogId ).dialog("close");
-		that.dialogOverlayOff(dialogId);
-		callback;
-	};
-	var rate = 63;
-	$processingMessage.delay(500).effect( "highlight", null, rate).delay(rate).effect( "highlight", null, rate).delay(rate)
-		.effect( "highlight", null, rate).delay(500).effect("fade", null, 250, innerCallback);	
-};
-
-org.OpenGeoPortal.UserInterface.prototype.dialogOverlayOn = function(dialogId){
-	jQuery(document).blur();
-	var $dialogId = jQuery('#' + dialogId).parent();
-	if ($dialogId.children(".dialogMask").length == 0){
-		$dialogId.append('<div class="dialogMask"></div>');
-	} else {
-		$dialogId.children(".dialogMask").first().show();
-	}
-	var offset = $dialogId.children(".ui-dialog-titlebar").first().height();
-    var pos = jQuery.extend({
-    		width:    $dialogId.outerWidth(),
-    		height:   $dialogId.outerHeight() - offset,
-    		top:	  offset,
-    		left:	  0
-    	});
-
-    $dialogId.children(".dialogMask").css({
-	        position:         'absolute',
-	        left:			  pos.left,
-	        top:			  pos.top,
-	        width:            pos.width,
-	        height:           pos.height,
-	        backgroundColor:  '#FFF',
-	        opacity:          0,
-	        "z-index":			  2500
-	    }).animate({
-	    opacity: 0.5,
-	  }, 500, function() {
-	    //alert("tried anyway");
-	  });
-};
-
-org.OpenGeoPortal.UserInterface.prototype.dialogOverlayOff = function(dialogId){
-	var $dialogId = jQuery('#' + dialogId).parent();
-	$dialogId.children(".dialogMask").animate({
-	    opacity: 0,
-	  }, 500, function() {
-		  jQuery(this).hide();
-		  $dialogId.children(".processingMessage").hide();
-	  });
-};

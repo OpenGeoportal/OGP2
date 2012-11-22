@@ -63,6 +63,14 @@ org.OpenGeoPortal.Downloader = function(){
 		return that.requestQueue.requests.pending.layers;
 	};
 	
+	this.getCompleteLayerRequests = function(){
+		return that.requestQueue.requests.complete.layers;
+	};
+	
+	this.getFailedLayerRequests = function(){
+		return that.requestQueue.requests.failed.layers;
+	};
+	
 	var getNewRequest = function(requestId, requestObj){
 		var request = {};
 		request.requestId = requestId;
@@ -134,11 +142,47 @@ org.OpenGeoPortal.Downloader = function(){
 		return that.requestQueue.requests.pending.images;
 	};
 	
+	this.getCompleteImageRequests = function(){
+		return that.requestQueue.requests.complete.images;
+	};
+	
+	this.getFailedImageRequests = function(){
+		return that.requestQueue.requests.failed.images;
+	};
+	
 	this.registerImageRequest = function(requestId, requestObj){
 		addImageRequest(requestId, requestObj);
 		if (!that.requestQueue.isPollRunning){
 			this.startPoll();
 		}
+	};
+	
+	this.getRequestById = function(id){
+		var requests = this.getLayerRequests().concat(this.getImageRequests());
+		for (var i in requests){
+			var currentRequest = requests[i];
+			if (currentRequest.requestId == id){
+				currentRequest.queue = "pending";
+				return currentRequest;
+			}
+		}
+		var requests = this.getCompleteLayerRequests().concat(this.getCompleteImageRequests());
+		for (var i in requests){
+			var currentRequest = requests[i];
+			if (currentRequest.requestId == id){
+				currentRequest.queue = "complete";
+				return currentRequest;
+			}
+		}
+		var requests = this.getFailedLayerRequests().concat(this.getFailedImageRequests());
+		for (var i in requests){
+			var currentRequest = requests[i];
+			if (currentRequest.requestId == id){
+				currentRequest.queue = "failed";
+				return currentRequest;
+			}
+		}
+		
 	};
 	
 	this.requestsToFailedById = function(ids){
@@ -265,15 +309,17 @@ org.OpenGeoPortal.Downloader = function(){
 			//console.log(currentStatus);
 			//should be a clause for each possible status message
 			if ((currentStatus == "COMPLETE_SUCCEEDED")||
-					(currentStatus == "PARTIAL_SUCCEEDED")){
+					(currentStatus == "COMPLETE_PARTIAL")){
 				//get the download
 				handleDownload(statuses[i]);
-				//should be a note to the user for partial success
+				if (currentStatus == "COMPLETE_PARTIAL"){
+					//should be a note to the user for partial success
+				}
 			} else if (currentStatus == "PROCESSING"){
 				pendingCounter++;
 			} else if (currentStatus == "COMPLETE_FAILED"){
 				that.requestToFailedByStatus(statuses[i]);
-				//should be a note to user that the dowload failed
+				//should be a note to user that the download failed
 			}
 		}
 		
@@ -352,5 +398,29 @@ org.OpenGeoPortal.Downloader = function(){
 			};
 		
 			jQuery.ajax(params);
+	};
+	
+	this.createErrorMessageObj = function(statusObj){
+		var requestId = statusObj.requestId;
+		var statusMessage = statusObj.status;
+		var requestObj = this.getRequestById(requestId);
+		var layers = [];
+		var layerIds = [];
+		var layersParam = requestObj.layers;
+		for (var i in layersParam){
+			var arrLayer = layersParam[i].split("=");
+			var layerObj = {"layerId": arrLayer[0], "format": arrLayer[1]};
+			layerIds.push(arrLayer[0]);
+			layers.push(layerObj);
+		}
+		//get some info from solr about the layer
+        var solr = new org.OpenGeoPortal.Solr();
+    	var query = solr.getInfoFromLayerIdQuery(layerIds);
+    	solr.sendToSolr(query, this.errorInfoSuccess, this.errorInfoError);
+    	//create message box here, but keep it hidden until solr callback
+	};
+	
+	this.errorInfoSuccess = function(data){
+		
 	};
 };

@@ -100,6 +100,30 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 	//register events
 	jQuery('#' + userDiv).resize(function () {that.updateSize();});
 
+	/*this.events.registerPriority('click', this, function(){
+		console.log("click");
+		that.userMapAction = true;
+	});*/
+	
+	/*this.events.registerPriority('dblclick', this, function(){
+		console.log("dblclick");
+		that.userMapAction = true;
+	});
+	this.events.registerPriority('drag', this, function(){
+		console.log("drag");
+		that.userMapAction = true;
+	});
+	
+	this.events.registerPriority('dragstart', this, function(){
+		console.log("drag");
+		that.userMapAction = true;
+	});
+	
+	this.events.registerPriority('dragend', this, function(){
+		console.log("drag");
+		that.userMapAction = true;
+	});*/
+	
 	this.events.register('zoomend', this, function(){
 		var zoomLevel = that.getZoom();
 		//console.log(zoomLevel);
@@ -149,7 +173,7 @@ org.OpenGeoPortal.MapController.prototype.getOsmTileUrl = function getOsmTileUrl
 
     if (y < 0 || y >= limit) {
     	//console.log["ol 404"];
-        return OpenLayers.Util.getImagesLocation() + "404.png";
+        return org.OpenGeoPortal.Utility.getImage("404.png");
     } else {
         x = ((x % limit) + limit) % limit;
         //console.log([this.url, this.type]);
@@ -176,7 +200,7 @@ org.OpenGeoPortal.MapController.prototype.backgroundMaps = function(mapType){
 			googleSatellite: {mapClass: "Google", zoomLevels: 22, name: "Google Satellite", params: {type: google.maps.MapTypeId.SATELLITE}},
 			googleStreets: {mapClass: "Google", zoomLevels: 20, name: "Google Streets", params: {type: google.maps.MapTypeId.ROADMAP}}, 
 			googlePhysical: {mapClass: "Google", zoomLevels: 15, name: "Google Physical", params: {type: google.maps.MapTypeId.TERRAIN}},
-			osm: {mapClass: "OSM", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png',/* getURL: this.getOsmTileUrl,*/
+			osm: {mapClass: "TMS", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png', getURL: this.getOsmTileUrl,
 				displayOutsideMaxExtent: true}, url: "http://tile.openstreetmap.org/"}
 		};
 		if (mapType == "all"){
@@ -185,7 +209,7 @@ org.OpenGeoPortal.MapController.prototype.backgroundMaps = function(mapType){
 			return bgMaps[mapType];
 		}
 	} else{
-		bgMaps = {osm: {mapClass: "OSM", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png', getURL: this.getOsmTileUrl,
+		bgMaps = {osm: {mapClass: "TMS", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png', getURL: this.getOsmTileUrl,
 		displayOutsideMaxExtent: true}, url: "http://tile.openstreetmap.org/"}};
 		if (mapType == "all"){
 			return bgMaps;
@@ -258,16 +282,15 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 		if (this.getLayersByName('OpenStreetMap').length > 0){
 			this.getLayersByName('OpenStreetMap')[0].setVisibility(false);
 		}
-	} else if (backgroundMaps.mapClass == "OSM"){
+	} else if (backgroundMaps.mapClass == "TMS"){
 		if (this.getLayersByName('OpenStreetMap').length > 0){
 			var osmLayer = this.getLayersByName('OpenStreetMap')[0];
 			osmLayer.setVisibility(true);
 		} else {
-			var bgMap = new OpenLayers.Layer.OSM(
-					backgroundMaps.name//,
-					//null,
-					//backgroundMaps.url,
-					//backgroundMaps.params
+			var bgMap = new OpenLayers.Layer.TMS(
+					backgroundMaps.name,
+					backgroundMaps.url,
+					backgroundMaps.params
 					);
 			this.addLayer(bgMap);
 			this.setLayerIndex(this.getLayersByName('OpenStreetMap')[0], 1);
@@ -452,7 +475,6 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
             data: searchString,
             dataType: 'text',
             success: function(data, textStatus, XMLHttpRequest){
-            	//console.log(data);
             	//create a new dialog instance, or just open the dialog if it already exists
             	var dialogTitle = '<span class="getFeatureTitle">' + layerStateObject.getFeatureTitle + "</span>";
             	var tableText = '<table class="attributeInfo">';
@@ -547,13 +569,15 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
   			jQuery("td.attributeName").mouseenter(function(){that.map.getAttributeDescription(this, that.name);});
             },
             error: function(jqXHR, textStatus, errorThrown) {if ((jqXHR.status != 401)&&(textStatus != 'abort')){new org.OpenGeoPortal.ErrorObject(new Error(), "Error retrieving Feature Information.");}},
-            complete: function(){that.map.currentAttributeRequest = false;}
+            complete: function(){that.map.currentAttributeRequest = false;            	
+            	jQuery(document).trigger("hideLoadIndicator");}
     };
     
     if (typeof this.map.currentAttributeRequest == 'object'){
     	this.map.currentAttributeRequest.abort();
     } 
     this.map.currentAttributeRequest = jQuery.ajax(ajaxParams);
+    jQuery(document).trigger("showLoadIndicator");
 	} else {
 		new org.OpenGeoPortal.ErrorObject(new Error(), "This layer has not been previewed. <br/>You must preview it before getting attribute information.");
 	}

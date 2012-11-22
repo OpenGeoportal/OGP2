@@ -119,7 +119,7 @@ h3 {
 	}
 
  div#main {
- 	/*width: 90%;*/
+ 	width: 100%;
  	min-width: 1002px;
  	/*width: 1002px;*/
  	margin: 0 auto;
@@ -392,8 +392,6 @@ span.infoLinks:hover {
 #left_col {
 	width: 450px;
 	border-right: #999 solid 1px; 	 
-	/*min-height:680px;
-	height: 100%;*/
 	float:left;
 	cursor: default;
 }
@@ -996,4 +994,8 @@ td.attributeName:hover {
 
 iframe.download {
 	display: none;
+}
+
+#featureInfo {
+	overflow: auto;
 }
