@@ -84,7 +84,7 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 
     // attempt to reload tile if load fails
     OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
-    OpenLayers.ImgPath = "/resources/media/"
+    OpenLayers.ImgPath = "resources/media/"
     // make OL compute scale according to WMS spec
     //OpenLayers.DOTS_PER_INCH = 90.71428571428572;
     OpenLayers.Util.onImageLoadErrorColor = 'transparent';
@@ -157,7 +157,6 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 
 	this.currentAttributeRequest = false;
 	this.prevExtent = this.getExtent();
-	//console.log("rendered");
 };
 
 //set inheritance for MapController
@@ -274,6 +273,7 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 				  that.render(that.userDiv);
 					jQuery(".mapClearButtonItemInactive").text("clear previews");
 					that.userMapAction = true;
+					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
 				});

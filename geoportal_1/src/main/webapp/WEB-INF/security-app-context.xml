@@ -1,33 +1,35 @@
-<beans:beans
-	xmlns:beans="http://www.springframework.org/schema/beans"
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:security="http://www.springframework.org/schema/security"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
                     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                     http://www.springframework.org/schema/security 
                     http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
-    <security:http pattern="/resources/**" security="none" />
-         
-	<security:http use-expressions="true" auto-config="true" >
-	    <security:intercept-url pattern="/login*" access="permitAll" requires-channel="https"/>  
-    	<security:intercept-url pattern="/restricted/**" access="isAuthenticated()"/>
-    	<security:form-login login-page="/login" login-processing-url="/j_security_check" />
-    	<security:form-login login-page="/logout" login-processing-url="/j_spring_security_logout" />
-    	<security:intercept-url pattern="/**" access="permitAll"/>
+	<security:http pattern="/resources/**" security="none" />
+
+	<security:http use-expressions="true" auto-config="true">
+		<security:intercept-url pattern="/login*"
+			access="permitAll" requires-channel="https" />
+		<security:intercept-url pattern="/restricted/**"
+			access="isAuthenticated()" />
+		<security:form-login login-page="/login"
+			login-processing-url="/j_security_check" />
+		<security:form-login login-page="/logout"
+			login-processing-url="/j_spring_security_logout" />
+		<security:intercept-url pattern="/**" access="permitAll" />
 	</security:http>
-	
-   <security:authentication-manager alias="authenticationManager" />
-<!--    <ldap-server url="ldaps://secure-ldap-url/ou=People,dc=institution,dc=edu" /> 
--->
-    <security:authentication-manager>
-            <!--   <ldap-authentication-provider user-dn-pattern="uid={0},ou=people"/>
-         -->
-        <security:authentication-provider>
-            <security:user-service>
-                <security:user name="testAdmin" password="koala" authorities="administrator, user" />
-                <security:user name="testUser" password="wombat" authorities="user" />
-            </security:user-service>
-        </security:authentication-provider>
-    </security:authentication-manager>
+	<!-- <ldap-server url="ldaps://secure-ldap-url/ou=People,dc=institution,dc=edu" 
+		/> -->
+	<security:authentication-manager alias="authenticationManager" >
+		<!-- <ldap-authentication-provider user-dn-pattern="uid={0},ou=people"/> -->
+		<security:authentication-provider>
+			<security:user-service>
+				<security:user name="testAdmin" password="koala"
+					authorities="administrator, user" />
+				<security:user name="testUser" password="wombat"
+					authorities="user" />
+			</security:user-service>
+		</security:authentication-provider>
+	</security:authentication-manager>
 </beans:beans>
