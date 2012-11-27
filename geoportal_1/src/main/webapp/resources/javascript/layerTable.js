@@ -89,6 +89,9 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 			setSortColumn = function(){
 				//test for rank first
 				var newColumn = updateObj.organizeBy;
+
+				analytics.track("Change Results Sort Order", newColumn);
+
 				if (newColumn == 'score'){
 					innerThat.settings.organizeBy = newColumn;
 					innerThat.settings.organizeType = "numeric";
