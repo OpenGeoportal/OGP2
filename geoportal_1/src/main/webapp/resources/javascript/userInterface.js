@@ -36,6 +36,7 @@ org.OpenGeoPortal.UserInterface = function(){
 	this.jspfDir = org.OpenGeoPortal.Utility.JspfLocation;
 	this.login = new org.OpenGeoPortal.LogIn(this.config.getHomeInstitution());
 	this.login.checkLoginStatus();
+	analytics = new org.OpenGeoPortal.Analytics();
 	var that = this;
 
 	/**
@@ -296,6 +297,10 @@ org.OpenGeoPortal.UserInterface = function(){
 
 		jQuery(document).bind("loginSucceeded", function(){
 			that.applyLoginActions();
+			analytics.track("Login", "Login Success");
+		});
+		jQuery(document).on("loginFailed", function() {
+			analytics.track("Login", "Login Failure");
 		});
 		/*jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
 			console.log(ajaxSettings);
