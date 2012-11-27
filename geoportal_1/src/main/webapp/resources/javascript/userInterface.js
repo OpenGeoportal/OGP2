@@ -863,11 +863,19 @@ org.OpenGeoPortal.UserInterface.prototype.chooseSort = function(columnName){
 };
 
 org.OpenGeoPortal.UserInterface.prototype.toggleColumn = function(thisObj){
-	if (jQuery(thisObj).is(':checked')) {
-		this.utility.whichTab().tableObject().showCol(jQuery(thisObj).val());
+	var action,
+		checked = jQuery(thisObj).is(":checked"),
+		column = jQuery(thisObj).val();
+
+	if (checked) {
+		this.utility.whichTab().tableObject().showCol(column);
 	} else {
-		this.utility.whichTab().tableObject().hideCol(jQuery(thisObj).val());
+		this.utility.whichTab().tableObject().hideCol(column);
 	}
+
+	action = checked ? "Column Added" : "Column Removed";
+
+	analytics.track("Change Results Columns Displayed", action, column);
 };
 
 org.OpenGeoPortal.UserInterface.prototype.updateSortMenu = function(){
