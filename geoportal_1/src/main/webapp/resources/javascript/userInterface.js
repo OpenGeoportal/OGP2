@@ -302,6 +302,15 @@ org.OpenGeoPortal.UserInterface = function(){
 		jQuery(document).on("loginFailed", function() {
 			analytics.track("Login", "Login Failure");
 		});
+
+		jQuery("#searchResultsNavigation").on("click", "a", function() {
+			var direction,
+				label = jQuery(this).text();
+
+			direction = (label.indexOf("Next") > -1 && "Next") || "Previous";
+
+			analytics.track("Results Pagination", direction + " Results Page");
+		});
 		/*jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
 			console.log(ajaxSettings);
 
