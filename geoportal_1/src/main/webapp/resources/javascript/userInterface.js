@@ -102,6 +102,7 @@ org.OpenGeoPortal.UserInterface = function(){
 		});
 		jQuery("#aboutLink").click(function(){
 			jQuery('#about').dialog("open");
+			analytics.track("Help", "Show About");
 		});
 		jQuery('#contact').dialog({
     		zIndex: 2999,
@@ -140,6 +141,7 @@ org.OpenGeoPortal.UserInterface = function(){
 			} else {
 				jQuery('#userGuide').dialog("open");
 			}
+			analytics.track("Help", "Show User Guide");
 		});
 		//buttons
 		this.createBasemapMenu();
