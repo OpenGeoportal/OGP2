@@ -27,6 +27,9 @@ if (typeof org.OpenGeoPortal == 'undefined'){
  *  @param tableName the id of the actual table element
  */
 org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
+
+	var analytics = new org.OpenGeoPortal.Analytics();
+
 	//set default for the name of the table div...these defaults should not be in the generic layertable code
 	//but in the extensions of the object
 	if ((typeof userDiv == 'undefined')||(userDiv.length === 0)){
@@ -705,6 +708,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
         	  } else {
         		  jQuery("#metadataDownloadIframe").attr("src", iframeSource); 
         	  }
+				analytics.track("Metadata", "Download Metadata", layerId);
     	  };
     	  jQuery("#metadataDownloadButton").bind("click", downloadFunction);
     	  jQuery("#toMetadataTop").unbind();
@@ -743,6 +747,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
           var solr = new org.OpenGeoPortal.Solr();
       	  var query = solr.getMetadataQuery(layerId);
       	  solr.sendToSolr(query, this.showMetadataJsonpSuccess, this.showMetadataJsonpError, this);
+			analytics.track("Metadata", "Display Metdata", layerId);
 	  };	
 	  
 	  this.showLibraryRecord = function(thisObj)
