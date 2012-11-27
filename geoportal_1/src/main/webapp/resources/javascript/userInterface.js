@@ -43,7 +43,19 @@ org.OpenGeoPortal.UserInterface = function(){
 	 * init function
 	 */
 	this.init = function(){
-		jQuery("#tabs").tabs({selected: 1});
+		jQuery("#tabs").tabs({
+			selected: 1,
+			select: function(ev, ui) {
+				var label,
+					idx = ui.index;
+
+				label = (idx == 2) && "Cart Tab" ||
+						(idx == 1) && "Search Tab" ||
+						"Getting Started Tab";
+
+				analytics.track("Interface", "Change Tab", label);
+			}
+		});
 		this.togglePanels();
 		jQuery('.searchBox').keypress(function(event){
 			if (event.keyCode == '13') {
@@ -92,6 +104,11 @@ org.OpenGeoPortal.UserInterface = function(){
 		jQuery("#highlightsLink").click(function(){
 			jQuery('#highlights').dialog("open");
 		});
+
+		jQuery("#top_menu > a").on("click", function() {
+			analytics.track("Interface", "Reset Page");
+		});
+
 		jQuery('#about').dialog({
     		zIndex: 2999,
     		title: "ABOUT",
@@ -793,6 +810,17 @@ org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
           var rollRight = that.getImage("button_arrow_right.png");
           var tabDiv = jQuery(this).parents('.ui-tabs-panel').last();
           var userDiv = tabDiv.find('.searchBox')[0];
+
+			var button,
+				src = jQuery(this).attr("src");
+
+			button = (src == rollUp) && "Collapse Up" ||
+					(src == rollDown) && "Expand Down" ||
+					(src == rollLeft) && "Collapse Left" ||
+					(src == rollRight) && "Expand Right";
+
+			analytics.track("Interface", "Expand/Collapse Buttons", button);
+
           switch (jQuery(this).attr('src')){
           case rollUp: 
         	  jQuery(userDiv).toggle("blind",{},250, function(){that.resultsTableObject.setTableLength();});
