@@ -215,6 +215,14 @@ org.OpenGeoPortal.UserInterface = function(){
 				analytics.track("Go To Box", location);
 			}
 		);
+
+		jQuery("input[name='mapFilterCheck'],input[name='mapFilterCheck2']").on(
+			"change", function(ev) {
+				var value = this.checked ? "Checked" : "Unchecked";
+				analytics.track("Limit Results to Visible Map", value);
+			}
+		);
+
 	    this.cartOptionText();
 	    //set mouse cursor behavior
 		this.mouseCursor();
