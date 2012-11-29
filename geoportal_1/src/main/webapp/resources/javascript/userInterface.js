@@ -64,7 +64,9 @@ org.OpenGeoPortal.UserInterface = function(){
 		});
 		jQuery("#geosearch").keypress(function(event){
 			if (event.keyCode == '13') {
+				var location = jQuery("#geosearch").val();
 				that.geocodeLocation();
+				analytics.track("Go To Box", location);
 			} else if (jQuery(this).val().trim() == that.geocodeText){
 				that.clearInput('geosearchDiv');
 			}
@@ -206,7 +208,13 @@ org.OpenGeoPortal.UserInterface = function(){
 	    		jQuery(this).css("opacity", ".5");
 	    	}});
 	    jQuery("input#geosearch").click(function(){that.clearInput("geosearchDiv");});
-	    jQuery("#goButton").click(function(){that.geocodeLocation();});
+		jQuery("#goButton").click(
+			function(){
+				var location = jQuery("#geosearch").val();
+				that.geocodeLocation();
+				analytics.track("Go To Box", location);
+			}
+		);
 	    this.cartOptionText();
 	    //set mouse cursor behavior
 		this.mouseCursor();
