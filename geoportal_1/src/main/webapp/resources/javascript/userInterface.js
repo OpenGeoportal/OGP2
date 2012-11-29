@@ -1380,8 +1380,14 @@ org.OpenGeoPortal.UserInterface.prototype.requestDownloadSuccess = function(data
 org.OpenGeoPortal.UserInterface.prototype.requestDownload = function(requestObj){
 	var that = this;
 	jQuery("#downloadDialog").dialog( "option", "disabled", true );
-	if (typeof _gaq != "undefined")
-		_gaq.push(["_trackEvent", "download", requestObj.layerNumber]);
+
+	jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
+		var data = jQuery("#savedLayers").dataTable().fnGetData(this),
+			inst_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("Institution"),
+			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
+		analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
+	});
+
 	delete requestObj.layerNumber;
 	var params = {
 			url: "requestDownload",

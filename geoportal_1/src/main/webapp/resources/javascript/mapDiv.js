@@ -33,6 +33,7 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 	this.layerStateObject = org.OpenGeoPortal.layerState;
 	this.config = org.OpenGeoPortal.InstitutionInfo;
 	this.userMapAction = false;
+	var analytics = new org.OpenGeoPortal.Analytics();
 	
 	//set default OpenLayers map options
 	var nav = new OpenLayers.Control.NavigationHistory({nextOptions: {title: "Zoom to next geographic extent"}, previousOptions:{title: "Zoom to previous geographic extent"}});
@@ -578,6 +579,8 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
     } 
     this.map.currentAttributeRequest = jQuery.ajax(ajaxParams);
     jQuery(document).trigger("showLoadIndicator");
+    var institution = (layerID.indexOf(".") > -1) ? layerID.split(".")[0] : "";
+    analytics.track("Layer Attributes Viewed", institution, layerID);
 	} else {
 		new org.OpenGeoPortal.ErrorObject(new Error(), "This layer has not been previewed. <br/>You must preview it before getting attribute information.");
 	}

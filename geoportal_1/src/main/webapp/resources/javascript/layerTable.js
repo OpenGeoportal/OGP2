@@ -892,6 +892,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
       		var savedTable = org.OpenGeoPortal.cartTableObj.getTableObj();
      		var currentData = savedTable.fnGetData();
       		var expandIndex = this.tableHeadingsObj.getColumnIndex("expandControls");
+			var institution = aData[this.tableHeadingsObj.getColumnIndex("Institution")];
       		aData[expandIndex] = aData[expandIndex].replace("org.OpenGeoPortal.resultsTableObj", "org.OpenGeoPortal.cartTableObj");
       		aData = [aData];
       		var newData = aData.concat(currentData);
@@ -904,8 +905,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 				org.OpenGeoPortal.ui.updateSavedLayersNumber();
 			});
       		org.OpenGeoPortal.ui.initSortable();
-      		if (typeof _gaq != "undefined")
-      			_gaq.push(["_trackEvent", "cartOperation", "add"]);
+			analytics.track("Layer Added to Cart", institution, layerID);
 	  };
 	  
 	  this.previewedLayers = org.OpenGeoPortal.PreviewedLayers;
@@ -1037,6 +1037,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	            	}
 	            }
 	            this.addToPreviewedLayers(tableElement);
+	            analytics.track("Layer Previewed", institution, layerID);
 	            //console.log(this);
 	        } else {
 	        	try {
@@ -1057,10 +1058,12 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	  
 	  this.removeFromCart = function(layerID){
 		  var index = this.tableHeadingsObj.getColumnIndex("LayerId");
+		  var inst_idx = this.tableHeadingsObj.getColumnIndex("Institution");
 		  var cartDataTable = jQuery('#savedLayers').dataTable();
 		  jQuery('#savedLayers > tbody > tr').each(function(){
 			  try{
 				var currentLayerID = cartDataTable.fnGetData(this)[index];
+				var institution = cartDataTable.fnGetData(this)[inst_idx];
 			  } 
 			  catch(err) {return true;}
 			  
@@ -1070,20 +1073,22 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 					org.OpenGeoPortal.layerState.setState(layerID, {"inCart": false});
 					cartDataTable.fnDeleteRow(this);
 					org.OpenGeoPortal.ui.updateSavedLayersNumber();
+					analytics.track("Layer Removed From Cart", institution, layerID);
 					return true;
 				}
 			});
-    		if (typeof _gaq != "undefined")
-      			_gaq.push(["_trackEvent", "cartOperation", "remove"]);
 	  };
 	  
 	  this.removeRows = function(){
 		  var index = this.tableHeadingsObj.getColumnIndex("LayerId");
+		  var inst_idx = this.tableHeadingsObj.getColumnIndex("Institution");
 		  jQuery('#savedLayersTable td.colChkBoxes :checked').each(function(){
 				var rowObj = jQuery(this).parentsUntil('tr').last().parent();
 				var layerID = jQuery('#savedLayers').dataTable().fnGetData(rowObj[0])[index];
+				var institution = jQuery("#savedLayers").dataTable().fnGetData(rowObj[0])[inst_idx];
 				org.OpenGeoPortal.layerState.setState(layerID, {"inCart": false});
 				jQuery('#savedLayers').dataTable().fnDeleteRow(rowObj[0]);
+				analytics.track("Layer Removed From Cart", institution, layerID);
 			});
 			org.OpenGeoPortal.ui.updateSavedLayersNumber();
 			//update layer state, synchronize save icons
