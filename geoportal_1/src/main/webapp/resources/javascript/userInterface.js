@@ -58,8 +58,19 @@ org.OpenGeoPortal.UserInterface = function(){
 		});
 		this.togglePanels();
 		jQuery('.searchBox').keypress(function(event){
+			var type, search, keyword;
+
 			if (event.keyCode == '13') {
 				that.searchSubmit();
+				type = org.OpenGeoPortal.Utility.whichSearch().type;
+				if (type == "basicSearch") {
+					search = "Basic";
+					keyword = jQuery("#basicSearchTextField").val();
+				} else if (type == "advancedSearch") {
+					search = "Advanced";
+					keyword = jQuery("#advancedKeywordText").val();
+				}
+				analytics.track("Search", search, keyword);
 			} 
 		});
 		jQuery("#geosearch").keypress(function(event){
