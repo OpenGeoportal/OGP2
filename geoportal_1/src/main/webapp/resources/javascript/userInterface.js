@@ -52,7 +52,6 @@ org.OpenGeoPortal.UserInterface = function(){
 				label = (idx == 2) && "Cart Tab" ||
 						(idx == 1) && "Search Tab" ||
 						"Getting Started Tab";
-
 				analytics.track("Interface", "Change Tab", label);
 			}
 		});

@@ -1655,14 +1655,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		if (searchType == 'basicSearch')
 		{
 			this.searchRequestBasicJsonp(solr);
-			if (typeof _gaq != 'undefined')
-				_gaq.push(["_trackEvent", "search", "basic"]);
 		}
 		else if (searchType =='advancedSearch')
 		{
 			this.searchRequestAdvancedJsonp(solr);
-			if (typeof _gaq != 'undefined')
-				_gaq.push(["_trackEvent", "search", "advanced"]);
 		}
 		//tempSolr = solr;  // for debugging
 		this.setLastSolrSearch(solr);

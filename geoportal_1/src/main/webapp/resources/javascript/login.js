@@ -196,8 +196,6 @@ this.loginStatusResponse = function(data, textStatus, jqXHR)
 	var that = this;
 	if (data.authenticated)
 	{
-		if (typeof _gaq != "undefined")
-			_gaq.push(["_trackEvent", "login", "already logged in"]);
 		var username = data.username;
 		this.userId = username || data.authenticated;
 		jQuery(document).trigger("loginSucceeded");
@@ -216,8 +214,6 @@ this.loginResponse = function(data, textStatus, jqXHR)
 	var that = this;
 	if (data.authenticated)
 	{
-		if (typeof _gaq != "undefined")
-			_gaq.push(["_trackEvent", "login", "success"]);
 		var username = data.username;
 		this.userId = username || data.authenticated;
 		jQuery("#loginDialog").dialog('close');	
@@ -233,8 +229,6 @@ this.loginResponse = function(data, textStatus, jqXHR)
 
 //callback handler invoked when if an error occurs during ajax call to authenticate a user
 this.loginResponseError = function(jqXHR, textStatus, errorThrown){
-	if (typeof _gaq != "undefined")
-		_gaq.push(["_trackEvent", "login", "failed"]);
 	this.userId = null;
 	this.loginDialog({"message": "login failed"});
 	jQuery(document).trigger("loginFailed");
