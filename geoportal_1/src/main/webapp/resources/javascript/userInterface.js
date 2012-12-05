@@ -2291,7 +2291,7 @@ org.OpenGeoPortal.UserInterface.prototype.cartOptionText = function(){
 	var that = this;
 	jQuery("#mapItButton").hover(function(){jQuery("#optionDetails").html(mapItHtml);that.getLayerList("mapIt");},
 			function(){jQuery("#optionDetails").html(noSelectionHtml);jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");});
-	jQuery("#mapItButton").click(function(){console.log(that.getLayerList("mapIt"));var geoCommonsExport = new org.OpenGeoPortal.Export.GeoCommons(that.createExportParams());
+	jQuery("#mapItButton").click(function(){var geoCommonsExport = new org.OpenGeoPortal.Export.GeoCommons(that.createExportParams());
 		geoCommonsExport.exportDialog(that);});
 	//jQuery("#mapItButton").click(function(){jQuery("#mapitNotice").dialog("open")});
 	jQuery("#shareButton").hover(function(){jQuery("#optionDetails").html(shareHtml);that.getLayerList("shareLink");},

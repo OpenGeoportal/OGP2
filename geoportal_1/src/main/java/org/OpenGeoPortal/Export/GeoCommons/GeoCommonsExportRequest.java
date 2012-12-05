@@ -14,7 +14,15 @@ public class GeoCommonsExportRequest {
 	String description;
 	String basemap;
 	String bbox;
+	String location;
+	ExportStatus exportStatus;
 	List<String> layerIds;
+	
+	public enum ExportStatus {
+		PROCESSING,
+		FAILED,
+		SUCCESS
+	}
 	
 	public UUID getRequestId() {
 		return requestId;
@@ -76,6 +84,22 @@ public class GeoCommonsExportRequest {
 		this.bbox = bbox;
 	}
 
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public ExportStatus getExportStatus() {
+		return exportStatus;
+	}
+
+	public void setExportStatus(ExportStatus exportStatus) {
+		this.exportStatus = exportStatus;
+	}
+
 	public List<String> getLayerIds() {
 		return layerIds;
 	}
@@ -88,9 +112,19 @@ public class GeoCommonsExportRequest {
 		return sessionId;
 	}
 
-	public StatusSummary getStatusSummary() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public StatusSummary getStatusSummary(){
+		//Processing or Complete for the request
+		ExportStatus exportStatus = this.getExportStatus();
 
+		if (exportStatus.equals(ExportStatus.PROCESSING)){
+			return StatusSummary.PROCESSING;
+		} else if (exportStatus.equals(ExportStatus.SUCCESS)) {
+			return StatusSummary.COMPLETE_SUCCEEDED;
+		} else if (exportStatus.equals(ExportStatus.FAILED)){
+			return StatusSummary.COMPLETE_FAILED;
+		}
+		return StatusSummary.COMPLETE_FAILED;
+
+	}
+	
 }

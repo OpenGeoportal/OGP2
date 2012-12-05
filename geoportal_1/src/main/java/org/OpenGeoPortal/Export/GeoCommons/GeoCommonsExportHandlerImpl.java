@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
-public class GeocommonsExportHandlerImpl implements GeocommonsExportHandler {
+public class GeoCommonsExportHandlerImpl implements GeoCommonsExportHandler {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private RequestStatusManager requestStatusManager;

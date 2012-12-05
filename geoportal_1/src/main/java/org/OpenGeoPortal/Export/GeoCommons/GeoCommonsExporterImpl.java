@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExportRequest.ExportStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
 	@Async
 	@Override
 	public void submitExportRequest(GeoCommonsExportRequest geoCommonsExportRequest) {
+		geoCommonsExportRequest.setExportStatus(ExportStatus.PROCESSING);
 		String username = geoCommonsExportRequest.getUsername();
     	geoCommonsClient.initializeClient(username, geoCommonsExportRequest.getPassword());
     	
@@ -29,6 +31,7 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
 			//response.sendError(500, "This request requires a valid GeoCommons username and password.");
     		//return;
     		//
+    		geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);
     	}
     	Map<String, String> dataSetLocations = new HashMap<String, String>();
     	
@@ -92,6 +95,7 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
 
     	if (dataSetStatusArray.isEmpty()){
     		logger.warn("No info returned by dataset upload request.");
+    		geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);
     		return;
     	} else {
     		
@@ -106,6 +110,7 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
     			mapId = this.geoCommonsClient.createMap(basemap, bbox, title, description);
     		} catch (Exception e){
     			logger.error("Failed to create map with basemap: " + basemap + ",bbox: " + bbox + ",title:" + title + ",description: " + description);
+        		geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);
     			return;
     		}
 
@@ -116,16 +121,14 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
     				this.geoCommonsClient.addLayerToMap(mapId, successfulLayer);
     			} catch (Exception e){
     				logger.warn("Failed to add layer to map.");
+    	    		geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);
     			}
     		}
-    		/*
-			responseJson.put("status", "complete");
-			responseJson.put("statusMessage", "Map has been created.");
-			responseJson.put("mapUrl", "http://geocommons.com/maps/" + mapId);
-			logger.info(responseJson.toString());
-			response.setContentType("application/json");
-			response.getOutputStream().print(responseJson.toString());
-			*/
+    		
+    		if (!geoCommonsExportRequest.getExportStatus().equals(ExportStatus.FAILED)){
+    			geoCommonsExportRequest.setLocation("http://geocommons.com/maps/" + mapId);
+    			geoCommonsExportRequest.setExportStatus(ExportStatus.SUCCESS);
+    		}
 
     	}	
 		

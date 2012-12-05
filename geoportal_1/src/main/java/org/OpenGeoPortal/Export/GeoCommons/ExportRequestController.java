@@ -26,7 +26,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 public class ExportRequestController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
-	private GeocommonsExportHandler geocommonsExportHandler;
+	private GeoCommonsExportHandler geoCommonsExportHandler;
+	
 
 	@RequestMapping(method=RequestMethod.POST, produces="application/json")
 	public @ResponseBody Map<String,String> handleExportRequest(HttpServletRequest request)
@@ -83,7 +84,7 @@ public class ExportRequestController {
 		exportRequest.setBbox(bbox);
 		exportRequest.setLayerIds(layers);
 		
-		UUID requestId = geocommonsExportHandler.requestExport(exportRequest);
+		UUID requestId = geoCommonsExportHandler.requestExport(exportRequest);
 		Map<String,String> map = new HashMap<String,String>();
 		map.put("requestId", requestId.toString());
 		return map;

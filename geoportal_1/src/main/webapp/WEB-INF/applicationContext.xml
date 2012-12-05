@@ -10,19 +10,18 @@
 	<context:annotation-config />
 	<context:property-placeholder location="WEB-INF/ogp.properties" />
 
-
 	<beans:bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.GenericProxyImpl" />
-	<beans:bean id="userContext.ogp"
-		class="org.OpenGeoPortal.Security.OgpUserContextImpl" />
+	<beans:bean id="userContext.ogp" class="org.OpenGeoPortal.Security.OgpUserContextImpl" />
 
 	<!-- misc -->
-	<beans:bean id="imageHandler" class="org.OpenGeoPortal.Proxy.ImageHandlerImpl"
-		scope="prototype" />
-	<beans:bean id="imageCompositor" class="org.OpenGeoPortal.Proxy.ImageCompositorImpl"
-		scope="prototype" />
-	<beans:bean id="imageDownloader" class="org.OpenGeoPortal.Proxy.ImageDownloaderImpl"
-		scope="prototype" />
+	<beans:bean id="imageHandler" class="org.OpenGeoPortal.Proxy.ImageHandlerImpl" scope="prototype" />
+	<beans:bean id="imageCompositor" class="org.OpenGeoPortal.Proxy.ImageCompositorImpl" scope="prototype" />
+	<beans:bean id="imageDownloader" class="org.OpenGeoPortal.Proxy.ImageDownloaderImpl" scope="prototype" />
 
+	<beans:bean id="exportHandler.geocommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExportHandlerImpl" scope="prototype"/>
+	<beans:bean id="exporter.geocommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExporterImpl" scope="prototype"/>
+	<beans:bean id="restClient.geocommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsJsonClient" scope="prototype" />
+	
 	<beans:bean id="requestStatusManager"
 		class="org.OpenGeoPortal.Download.RequestStatusManagerImpl" />
 
@@ -55,7 +54,6 @@
 	</beans:bean>
 
 	<beans:bean id="quickDownload" class="org.OpenGeoPortal.Utilities.QuickWfsDownload"/>
-	<beans:bean id="exporter.geoCommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsJsonClient" /> 
 	
 	<beans:bean id="directoryRetriever.simple" class="org.OpenGeoPortal.Utilities.GetDirectory">
 		<beans:property name="resource" value="WEB-INF/ogp.properties" />
@@ -79,10 +77,8 @@
 		<beans:property name="ogpHttpClient" ref="httpClient.pooling.allTrusting" />
 	</beans:bean>
 
-	<beans:bean id="httpClient.pooling"
-		class="org.OpenGeoPortal.Utilities.Http.PoolingHttpClient" />
-	<beans:bean id="httpClient.pooling.allTrusting"
-		class="org.OpenGeoPortal.Utilities.Http.AllTrustingCertPoolingHttpClient" />
+	<beans:bean id="httpClient.pooling" class="org.OpenGeoPortal.Utilities.Http.PoolingHttpClient" />
+	<beans:bean id="httpClient.pooling.allTrusting" class="org.OpenGeoPortal.Utilities.Http.AllTrustingCertPoolingHttpClient" />
 
 	<!-- Download methods -->
 	<beans:bean id="downloadMethod.wms"

@@ -46,7 +46,8 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 		var dialogDivId = this.descriptor + "Dialog";
 		//this.layerObj = uiObject.getLayerList("mapIt");
 		var buttonsObj = {
-			"Export": function(){that.exportLayers.call(that);},
+			"Export": function(){that.exportLayers.call(that);
+				jQuery(this).dialog('close');},
 			Cancel: function() {
 				jQuery(this).dialog('close');
 			}
@@ -197,7 +198,7 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 			if(basemapMap[basemapDescriptor] != "undefined"){
 				return basemapMap[basemapDescriptor];
 			} else {
-				throw new Exception('Basemap "' + basemapDescriptor + '" is undefined.');
+				throw new Error('Basemap "' + basemapDescriptor + '" is undefined.');
 			}
 		};
 		
@@ -206,26 +207,15 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 			var requestObj = this.createExportRequest();
 			var that = this;
 			var params = {
-				url: "geoCommonsExport",
+				url: "geocommons/requestExport",
 				data: JSON.stringify(requestObj),
 				processData: false,
 				dataType: "json",
 				type: "POST",
 	    		context: this,
-	    		success: that.exportSuccess
+	    		success: function(data){org.OpenGeoPortal.downloadQueue.registerExportRequest(data.requestId, requestObj);}
 			};
 			jQuery.ajax(params);
-			org.OpenGeoPortal.ui.processingMessageOn(this.descriptor + "Dialog", "Exporting Layers...");
 		};
 		
-		this.exportSuccess = function(data, responseCode, jXHR){
-			if (data != null){
-				if (data.status == "complete"){
-					var callback = window.open(data.mapUrl);
-					org.OpenGeoPortal.ui.processingMessageOff(this.descriptor + "Dialog", "Export Complete", callback);
-					}
-			} else {
-				org.OpenGeoPortal.ui.processingMessageOff(this.descriptor + "Dialog", "Error Exporting Layers");
-			}
-		};
 };
