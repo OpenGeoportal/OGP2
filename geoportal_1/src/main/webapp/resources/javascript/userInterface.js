@@ -1566,6 +1566,7 @@ org.OpenGeoPortal.UserInterface.prototype.getLayerList = function(downloadAction
 			//console.log(layerID);
 			layerInfo[layerID] = {};
 			layerInfo[layerID].name = aData[headingsObj.getColumnIndex('Name')];
+			layerInfo[layerID].title = aData[headingsObj.getColumnIndex('LayerDisplayName')];
 			layerInfo[layerID].institution = aData[headingsObj.getColumnIndex('Institution')];
 			layerInfo[layerID].dataType = aData[headingsObj.getColumnIndex('DataType')];
 			layerInfo[layerID].access = aData[headingsObj.getColumnIndex('Access')];
@@ -1791,7 +1792,7 @@ org.OpenGeoPortal.UserInterface.prototype.addSharedLayersToCart = function(){
 
 org.OpenGeoPortal.UserInterface.prototype.getLayerInfoJsonpSuccess = function(data, newContext){
 	//wrong context? not sure
-	newCartData = newContext.cartTableObject.processData(data);
+	var newCartData = newContext.cartTableObject.processData(data);
 	for(var i in newCartData){
 		newContext.addLayerToCart(newCartData[i]);
 	}
@@ -2194,7 +2195,7 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 	var that = this;
 	var layerStateObject = this.layerStateObject;
 	jQuery('.olMap').css('cursor', "-moz-grab");
-	jQuery(document).on('click', 'div.olControlZoomBoxItemInactive', function(){
+	jQuery(document).bind('zoomBoxActivated', function(){
 		jQuery('.olMap').css('cursor', "-moz-zoom-in");
 		var mapLayers = that.mapObject.layers;
 		for (var i in mapLayers){
@@ -2202,15 +2203,15 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 			if (layerStateObject.layerStateDefined(currentLayer.name)){
 				if (layerStateObject.getState(currentLayer.name, "getFeature")){
 					that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+					layerStateObject.setState(currentLayer.name, {"getFeature": false});
 				}
 			} else {
 				continue;
 			}
 		}
-		layerStateObject.resetState('getFeature');
 		jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
 	});
-	jQuery(document).on('click', '.olControlNavigationItemActive', function(){
+	jQuery(document).bind('panActivated', function(){
 		jQuery('.olMap').css('cursor', "-moz-grab");
 		//var mapLayers = org.OpenGeoPortal.map.layers;
 		var mapLayers = that.mapObject.layers;
@@ -2219,13 +2220,31 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 			if (layerStateObject.layerStateDefined(currentLayer.name)){
 				if (layerStateObject.getState(currentLayer.name, "getFeature")){
 					that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+					layerStateObject.setState(currentLayer.name, {"getFeature": false});
 				}
 			} else {
 				continue;
 			}
 		}
-		layerStateObject.resetState('getFeature');
 		jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+	});
+	jQuery(document).bind('getFeatureActivated', function(){
+		jQuery(".olControlNavigationItemActive").bind('click', function(){
+			jQuery('.olMap').css('cursor', "-moz-grab");
+			var mapLayers = that.mapObject.layers;
+			for (var i in mapLayers){
+				var currentLayer = mapLayers[i];
+				if (layerStateObject.layerStateDefined(currentLayer.name)){
+					if (layerStateObject.getState(currentLayer.name, "getFeature")){
+						that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+						layerStateObject.setState(currentLayer.name, {"getFeature": false});
+					}
+				} else {
+					continue;
+				}
+			}
+			jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+		});
 	});
 };
 
@@ -2253,10 +2272,11 @@ org.OpenGeoPortal.UserInterface.prototype.resizePanels = function(){
 
 org.OpenGeoPortal.UserInterface.prototype.createExportParams = function(){
 	var exportParams = {};
+	var that = this;
 	exportParams.layers = this.getLayerList("mapIt");
 	exportParams.extent = {};
 	exportParams.extent.global = this.mapObject.getSpecifiedExtent("global");
-	exportParams.extent.current = this.mapObject.getSpecifiedExtent("current");
+	exportParams.extent.current = function(){return that.mapObject.getSpecifiedExtent("current");};
 	exportParams.extent.maxForLayers = this.mapObject.getSpecifiedExtent("maxForLayers", exportParams.layers);
 	return exportParams;
 };

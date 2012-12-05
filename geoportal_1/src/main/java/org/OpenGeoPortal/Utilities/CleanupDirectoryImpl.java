@@ -13,7 +13,7 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 	final static Logger logger = LoggerFactory.getLogger(CleanupDirectoryImpl.class.getName());
 
 	public void cleanupDownloadDirectory(){
-		logger.info("Attempting to clean directory...");
+		logger.debug("Attempting to clean directory...");
 		//this is not great...only handles one level of directories
 		try {
 			//convert to milliseconds
@@ -50,7 +50,7 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 				
 			}
 			if (counter == 0){
-				logger.info("No items to delete.");
+				logger.debug("No items to delete.");
 			}
 		} catch (Exception e) {
 			logger.error("Attempt to delete old files was unsuccessful.");

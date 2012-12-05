@@ -16,6 +16,8 @@
     <context:component-scan base-package="org.OpenGeoPortal.Security" />
     <context:component-scan base-package="org.OpenGeoPortal.Download.Controllers" />
     <context:component-scan base-package="org.OpenGeoPortal.Proxy.Controllers" />
+    <!-- <context:component-scan base-package="org.OpenGeoPortal.Export.GeoCommons" />-->
+    
  
     <!-- Enables the Spring MVC @Controller programming model -->
     <mvc:annotation-driven />

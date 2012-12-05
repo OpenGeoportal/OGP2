@@ -223,27 +223,15 @@ org.OpenGeoPortal.LayerSettings = function(){
 						}
 						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview_down.gif"));
 						org.OpenGeoPortal.map.events.register("click", layer, org.OpenGeoPortal.map.wmsGetFeature);
+						jQuery(document).trigger("getFeatureActivated");
 						//console.log(["register layer:", layer]);
 						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.ZoomBox")[0].deactivate();
-						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].activate();
+						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].deactivate();
 					  jQuery('.olMap').css('cursor', "crosshair");
 					} else {
 						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview.gif"));
 						org.OpenGeoPortal.map.events.unregister("click", layer, org.OpenGeoPortal.map.wmsGetFeature);
-						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.ZoomBox")[0].deactivate();
-						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].activate();
-						jQuery('.olMap').css('cursor', "-moz-grab");
-						/*var mapLayers = org.OpenGeoPortal.map.layers;
-						for (var i in mapLayers){
-							var currentLayer = mapLayers[i];
-							if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
-									(currentLayer.name != updateObj.layerID)){
-									that.setState(currentLayer.name, {"getFeature": false});
-									//jQuery('.attributeInfoControl').filter('[id$="' + updateObj.layerID + '"]').attr('src', "media/icon_crosshair_off.png");
-							} else {
-								continue;
-							}
-						}*/
+
 				  }
 				  break;
 			  default:

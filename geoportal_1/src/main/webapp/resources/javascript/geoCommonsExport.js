@@ -60,10 +60,11 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 		jQuery("#" + dialogDivId).unbind("keypress");
 		jQuery("#" + dialogDivId).bind("keypress", function(event){
 			if (event.keyCode == '13') {
+				that.exportLayers();
 			} 
 		});
 		jQuery("#createGeoCommonsAccountControl").click(function(){
-			window.open("http://geocommons.com/register");
+			window.open("http://geocommons.com/register", 'geocommons', 'toolbar=0,menubar=0,status=0,location=0,height=500,width=400');
 		});
 	};
 	
@@ -117,15 +118,17 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 
 		textBoxObj.id = identifier + "Description";
 		textBoxObj.name = "Description";
-		
-		//console.log("layer object");
-		//console.log(this.layerObj);
-
-		textBoxObj.value = "OGP Map: " + this.layerObj[0];
+	
+		var layerObj = this.layerObj;
+		var titleArr = [];
+		for (var i in layerObj){
+			titleArr.push(layerObj[i].title);
+		}
+		textBoxObj.value = titleArr.join(", ");
 		content += this.getInputElement(textBoxObj);
 		
 		//dropdown for extent 
-		var extentSelectId = identifier + "Extent";
+		/*var extentSelectId = identifier + "Extent";
 		var extentSelectObj = {
 				elementType: "selectbox",
 				id: extentSelectId,
@@ -134,6 +137,7 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 				classes: ["dialog", identifier + "Form"]
 		};
 		content += this.getInputElement(extentSelectObj);
+		*/
 		//bind change event to textBoxObj value above
 		
 		//dropdown for basemap
@@ -148,7 +152,7 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 		
 		
 		content += '<fieldset>';
-		content += '<legend>GeoCommons Account Info:</legend>';
+		content += '<legend>GeoCommons Account Info</legend>';
 		textBoxObj.id = identifier + "Username";
 		textBoxObj.name = "Username";
 		textBoxObj.value = null;
@@ -176,7 +180,7 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 			requestObj.basemap = jQuery("#" + descriptor + "Basemap").val();
 			requestObj.username = jQuery("#" + descriptor + "Username").val();
 			requestObj.password = jQuery("#" + descriptor + "Password").val();
-			requestObj.extent = jQuery("#" + descriptor + "Extent").val();
+			requestObj.extent = this.extentOptions["Layer Max"];//jQuery("#" + descriptor + "Extent").val();
 			requestObj.title = jQuery("#" + descriptor + "Title").val();
 			requestObj.description = jQuery("#" + descriptor + "Description").val();
 			this.ogpids = [];

@@ -38,8 +38,12 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 	var nav = new OpenLayers.Control.NavigationHistory({nextOptions: {title: "Zoom to next geographic extent"}, previousOptions:{title: "Zoom to previous geographic extent"}});
     var zoomBox = new OpenLayers.Control.ZoomBox(
             {title:"Click or draw rectangle on map to zoom in"});
+    var zoomBoxListener = function(){jQuery(document).trigger("zoomBoxActivated")};
+    zoomBox.events.register("activate", this, zoomBoxListener);
+    var panListener = function(){jQuery(document).trigger("panActivated")};
     var panHand = new OpenLayers.Control.Navigation(
             {title:"Pan by dragging the map"});
+    panHand.events.register("activate", this, panListener);
     var globalExtent = new OpenLayers.Control.ZoomToMaxExtent({title:"Zoom to global extent"});
     var panel = new OpenLayers.Control.Panel({defaultControl: panHand});
     var that = this;
@@ -375,20 +379,22 @@ org.OpenGeoPortal.MapController.prototype.returnExtent = function(){
 	
 //method to clear the map while keeping the base layer
 org.OpenGeoPortal.MapController.prototype.clearMap = function (){
-	org.OpenGeoPortal.PreviewedLayers.clearLayers();
 	var mapLayers = this.layers;
-	for (var i in mapLayers){
-		var currentLayer = mapLayers[i];
-		if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
+	if (mapLayers.length > 0){
+		org.OpenGeoPortal.PreviewedLayers.clearLayers();
+		for (var i in mapLayers){
+			var currentLayer = mapLayers[i];
+			if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
 				(currentLayer.name != 'OpenStreetMap')&&
 				(currentLayer.name != 'layerBBox')){
-			//remove the layer from the map
-			currentLayer.setVisibility(false);
-			//we'll also need to update the state of buttons and the layer state object
-			this.layerStateObject.setState(currentLayer.name, {"preview": "off", "getFeature": false});
-		} else {
-			continue;
-		}
+				//remove the layer from the map
+				currentLayer.setVisibility(false);
+				//we'll also need to update the state of buttons and the layer state object
+				this.layerStateObject.setState(currentLayer.name, {"preview": "off", "getFeature": false});
+			} else {
+				continue;
+			}
+	}
 	}
 };
 
@@ -485,7 +491,7 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
             	}
             	var rawFeatures = response;//.getElementsByTagName("wfs:FeatureCollection");
             	var innerText = '';
-            	var featureLayer;
+            	/*var featureLayer;
             	//add or modify a layer with a vector representing the selected feature
             	if (this.map.getLayersByName("featureSelection").length > 0){
             		featureLayer = this.map.getLayersByName("featureSelection")[0];
@@ -520,7 +526,7 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
                 featureLayer.addFeatures([vector]);
                 featureLayer.redraw();
             	this.map.setLayerIndex(featureLayer, (this.map.layers.length -1));
-
+				*/
             	var linecount = 0;
             	//supports only one feature as is
             	jQuery(attributes).children().first().children().each(function(){

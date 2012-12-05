@@ -54,8 +54,9 @@
 		<beans:constructor-arg ref="configRetriever.search" />
 	</beans:bean>
 
-	<!--<bean id="exporter.geoCommons" class="org.OpenGeoPortal.Export.GeoCommonsJsonREST"> 
-		<property name="layerInfoRetriever" ref="layerInfoRetriever.solr"/> </bean> -->
+	<beans:bean id="quickDownload" class="org.OpenGeoPortal.Utilities.QuickWfsDownload"/>
+	<beans:bean id="exporter.geoCommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsJsonClient" /> 
+	
 	<beans:bean id="directoryRetriever.simple" class="org.OpenGeoPortal.Utilities.GetDirectory">
 		<beans:property name="resource" value="WEB-INF/ogp.properties" />
 	</beans:bean>

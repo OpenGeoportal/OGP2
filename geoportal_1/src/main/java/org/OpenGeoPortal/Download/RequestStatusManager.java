@@ -3,6 +3,7 @@ package org.OpenGeoPortal.Download;
 import java.util.List;
 import java.util.UUID;
 
+import org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExportRequest;
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest;
 
 public interface RequestStatusManager {
@@ -18,5 +19,10 @@ public interface RequestStatusManager {
 			ImageRequest imageRequest);
 
 	ImageRequest getImageRequest(UUID fromString);
+
+	void addExportRequest(UUID requestId, String sessionId,
+			GeoCommonsExportRequest exportRequest);
+
+	GeoCommonsExportRequest getExportRequest(UUID requestId);
 
 }
