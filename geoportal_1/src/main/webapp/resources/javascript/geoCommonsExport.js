@@ -62,6 +62,7 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 		jQuery("#" + dialogDivId).bind("keypress", function(event){
 			if (event.keyCode == '13') {
 				that.exportLayers();
+				jQuery("#" + dialogDivId).dialog('close');
 			} 
 		});
 		jQuery("#createGeoCommonsAccountControl").click(function(){

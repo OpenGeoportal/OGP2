@@ -1181,7 +1181,15 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		  //temporary...
 		  var path = "";
 		  if (layerSource == "Harvard"){
-			  path = "http://hgl.hul.harvard.edu/opengeoportal";
+			  path = "http://calvert.hul.harvard.edu:8080/opengeoportal";
+			  var shareLink = path + "/openGeoPortalHome.jsp";
+			  var layerID = this.getLayerIdFromRow(rowObj);
+			  var geodeticBbox = org.OpenGeoPortal.map.getGeodeticExtent();
+			  var queryString = '?' + jQuery.param({ layer: layerID, minX: geodeticBbox.left, minY: geodeticBbox.bottom, maxX: geodeticBbox.right, maxY: geodeticBbox.top });
+			  shareLink += queryString;
+			  previewControl += 'onclick="window.open(\'' + shareLink + '\');return false;"';
+		  } else if (layerSource == "MIT"){
+			  path = "http://arrowsmith.mit.edu/mitogp";
 			  var shareLink = path + "/openGeoPortalHome.jsp";
 			  var layerID = this.getLayerIdFromRow(rowObj);
 			  var geodeticBbox = org.OpenGeoPortal.map.getGeodeticExtent();

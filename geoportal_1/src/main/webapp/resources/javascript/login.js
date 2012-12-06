@@ -154,9 +154,11 @@ this.processFormLogin = function()
 		extraPath = pathParts[1] + "/";
 	}
         var port = window.location.port;
-	if ((port == "") || (port == null))
-		port = "8443";
-	port = ":" + "8443";
+	if ((port == "") || (port == null)){
+		port = "";
+	} else {
+		port = ":" + port;
+	}
 	var protocol = "https";
 	//if (hostname == "localhost")
 		//protocol = "http";

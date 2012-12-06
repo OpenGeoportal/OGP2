@@ -58,7 +58,7 @@ public abstract class AbstractDownloadMethod {
 		if (!contentMatch){
 			logger.error("Unexpected content type: " + contentType);
 			//If their is a mismatch with the expected content, but the response is text, we want to at least log the response
-			if (contentType.toLowerCase().contains("text")){
+			if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
 				logger.error("Returned text: " + IOUtils.toString(inputStream));
 			} 
 			
