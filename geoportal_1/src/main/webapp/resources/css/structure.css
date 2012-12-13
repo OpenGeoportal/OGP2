@@ -13,7 +13,7 @@ body {
 	text-align: center;
 	margin: 0; 
 	padding: 0;
-	/*background: #cccccc url(../media/bg_tile.gif)  repeat;*/
+	background: #cccccc url(../media/bg_tile.gif)  repeat;
 	font-family: arial, sans-serif;
 	font-size: 12px;
 	color: black;
@@ -123,8 +123,9 @@ h3 {
  	min-width: 1002px;
  	/*width: 1002px;*/
  	margin: 0 auto;
- 	background-color: #fff;
+ 	/*background-color: #fff;*/
  	text-align: left;
+ 	opacity: 0;
  }
  
 /* Header */

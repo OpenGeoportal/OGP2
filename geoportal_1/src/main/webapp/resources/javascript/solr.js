@@ -53,6 +53,15 @@ org.OpenGeoPortal.Solr.prototype.getMetadataQuery = function getMetadataQuery(la
 	return solrQuery;
 };
 
+//returns the solr query to obtain a layer's metadata document from the Solr server
+org.OpenGeoPortal.Solr.prototype.getTermQuery = function getFacetQuery(termField, requestTerm)
+{
+	var jsonClause = this.getReturnTypeClause();
+	requestTerm = requestTerm + ".*";
+	var solrQuery = "terms.fl=" + termField + "&terms.regex=" + requestTerm + "&terms.regex.flag=case_insensitive&terms.limit=-1&" +jsonClause;
+	return solrQuery;
+};
+
 //returns the solr query to obtain a layer info from the Solr server given a layerId or array of layerId's
 org.OpenGeoPortal.Solr.prototype.getInfoFromLayerIdQuery = function getInfoFromLayerIdQuery(layerId)
 {
@@ -244,10 +253,11 @@ org.OpenGeoPortal.Solr.prototype.getInstitutionFilter = function getInstitutionF
 
 //this function must be passed an array containing instances from DataType
 //e.g., getDataTypeFilter([org.OpenGeoPortal.Solr.prototype.DataType.Raster, org.OpenGeoPortal.Solr.prototype.DataType.Polygon]);
-org.OpenGeoPortal.Solr.prototype.getPublisherFilter = function getPublisherFilter(dataTypes)
+/*org.OpenGeoPortal.Solr.prototype.getPublisherFilter = function getPublisherFilter(dataTypes)
 {
 	return this.getFilter("Publisher", dataTypes);
-};
+};*/
+
 
 org.OpenGeoPortal.Solr.prototype.setAccessDisplay = function setAccessDisplay(accessValue)
 {
@@ -282,6 +292,40 @@ org.OpenGeoPortal.Solr.prototype.getFilter = function getFilter(columnName, valu
 	
 };
 
+//examine a field for quotes and parse them correctly
+org.OpenGeoPortal.Solr.prototype.tokenize = function tokenize(searchTerms)
+{
+	var arrMatch = searchTerms.match(/["]/g);
+	if (arrMatch != null){
+		if (arrMatch.length > 1){
+			return searchTerms.match(/\w+|"(?:\\"|[^"])+"/g);
+		}
+	} else {
+		arrMatch = searchTerms.match(/[']/g);
+		if (arrMatch != null){
+			if (arrMatch.length > 1){
+				return searchTerms.match(/\w+|'(?:\\'|[^'])+'/g);
+			}
+		} 
+	}
+	return searchTerms.split(" ");
+
+};
+
+
+
+org.OpenGeoPortal.Solr.prototype.escapeSolrValue = function escapeSolrValue(solrValue)
+{
+
+    solrValue = solrValue.replace(/{/g, "\\{").replace(/}/g, "\\}").replace(/\[/g, "\\[").replace(/]/g, "\\]")
+    	.replace(/!/g, "\\!").replace(/[+]/g, "\\+").replace(/&/g, "\\&").replace(/~/g, "\\~").replace(/[(]/g, "\\(")
+    	.replace(/[)]/g, "\\)").replace(/-/g, "\\-").replace(/\^/g, "\\^");
+
+    return solrValue;
+};
+
+
+
 // return a query that searches for all the passed keywords in many fields
 // for fields that include synonyms, we must cap the value since
 //  synonym can explode out to many words, layers with many matches would get 
@@ -293,12 +337,13 @@ org.OpenGeoPortal.Solr.prototype.getBasicKeywordQuery = function getBasicKeyword
 	if ((temp == null) || (temp == "") || (temp.indexOf("Search for") > -1))
 		return null;
 	temp = temp.replace(/^\s+|\s+$/g,'').replace(/\s+/g,' ');
-	var keywords = temp.split(" ");
+	temp = this.escapeSolrValue(temp);
+	var keywords = this.tokenize(temp);//temp.split(" ");
 	var keywordFilter = "";
 	var i;
 	for (i = 0 ; i < keywords.length ; i++)
 	{
-		var currentKeyword = keywords[i];
+		var currentKeyword = keywords[i].trim().replace(/["]/g, '\\"').replace(/[']/g, '\\"');
 		if (currentKeyword.length > 0)
 		{
 			if (i > 0)
@@ -352,12 +397,14 @@ org.OpenGeoPortal.Solr.prototype.getBasicKeywordFilter = function(keywords)
 	if ((temp == null) || (temp == "") || (temp.indexOf("Search for") > -1))
 		return null;
 	temp = temp.replace(/^\s+|\s+$/g,'').replace(/\s+/g,' ');
-	var keywords = temp.split(" ");
+	temp = this.escapeSolrValue(temp);
+	var keywords = this.tokenize(temp);
+	//var keywords = temp.split(" ");
 	var keywordFilter = "";
 	var i;
 	for (i = 0 ; i < keywords.length ; i++)
 	{
-		var currentKeyword = keywords[i];
+		var currentKeyword = keywords[i].trim().replace(/["]/g, '\\"').replace(/[']/g, '\\"');
 		if (i > 0)
 			keywordFilter += "+OR+";
 		if (currentKeyword.indexOf(":") > 0)
@@ -550,6 +597,7 @@ org.OpenGeoPortal.Solr.prototype.Institutions = [];
 org.OpenGeoPortal.Solr.prototype.AccessDisplay = null;
 
 org.OpenGeoPortal.Solr.prototype.Publisher = null;
+org.OpenGeoPortal.Solr.prototype.Originator = null;
 org.OpenGeoPortal.Solr.prototype.AdvancedKeywordString = null;
 
 // the OpenGeoPortal UI provides a pull-down with topics such as "Agriculture and Farming"
@@ -622,6 +670,11 @@ org.OpenGeoPortal.Solr.prototype.setPublisher = function setPublisher(publisher)
 	this.Publisher = publisher;
 };
 
+org.OpenGeoPortal.Solr.prototype.setOriginator = function setOriginator(originator)
+{
+	this.Originator = originator;
+};
+
 org.OpenGeoPortal.Solr.prototype.getPublisherFilter = function getPublisherFilter()
 {
 	if ((this.Publisher == null) || (this.Publisher == ""))
@@ -641,6 +694,28 @@ org.OpenGeoPortal.Solr.prototype.getPublisherFilter = function getPublisherFilte
 		}
 	}
 	return publishersFilter;
+};
+
+org.OpenGeoPortal.Solr.prototype.getOriginatorFilter = function getOriginatorFilter()
+{
+	if ((this.Originator == null) || (this.Originator == ""))
+		return "";
+	
+	var originators = this.Originator.split(" ");
+	var originatorsFilter = "";
+	for (var i = 0 ; i < originators.length ; i++)
+	{
+		var currentSource = originators;//[i];
+		if (currentSource.length > 0)
+		{
+			if (i == 0)
+				originatorsFilter = "fq=";
+			if (i > 0)
+				originatorsFilter += "+OR+";
+			originatorsFilter += "Originator" + ":" + currentSource;
+		}
+	}
+	return originatorsFilter;
 };
 
 /*
@@ -884,7 +959,34 @@ org.OpenGeoPortal.Solr.prototype.sendToSolr = function sendToSolr(query, success
 	jQuery.ajax(ajaxParams);
 };
 
-
+org.OpenGeoPortal.Solr.prototype.termQuery = function termQuery(query, successFunction, errorFunction)
+{
+	var url = this.getServerName().substring(0,this.getServerName().indexOf("select")) + "terms";
+	var ajaxParams = 
+		{
+			type: "GET",
+			url: url + "?" + query,
+			dataType: 'jsonp',
+			jsonp: 'json.wrf',
+	        //timeout: 5000,
+	        crossDomain: true,
+			success: function(data){
+					successFunction(data);
+				},
+			error: function(arg){
+					errorFunction(arg);
+				}
+		};
+	if (arguments.length > 3){
+		//4th parameter is context parameter
+		var newContext = arguments[3];
+		ajaxParams.context = newContext;
+		var newSuccessFunction = function(data){successFunction(data, newContext);};
+		ajaxParams.success = newSuccessFunction;
+	}
+	//console.log(this);
+	jQuery.ajax(ajaxParams);
+};
 
 // this function must be passed the name of the column to sort on and the direction to sort
 //  e.g., getSortClause("ContentDate", org.OpenGeoPortal.Solr.prototype.SortDecending);
@@ -1063,11 +1165,12 @@ org.OpenGeoPortal.Solr.prototype.getSearchQuery = function getSearchQuery()
 	var institutionFilter = this.getInstitutionFilter();
 	var accessFilter = this.getAccessFilter();
 	var publisher = this.getPublisherFilter();
+	var originator = this.getOriginatorFilter();
 	var restrictedFilter = this.getRestrictedFilter(); 
 	var shardClause = this.getShardServerNames();  // "shards=geoportal-dev.atech.tufts.edu/solr,gis.lib.berkeley.edu:8080/solr/";
 	var extras = this.combineFiltersAndClauses([spatialFilter, returnType, returnedColumns, rowCount, startRow, shardClause,
 	                                            sortClause, keywordFilter, dateFilter, dataTypeFilter, institutionFilter, 
-						    accessFilter, publisher, restrictedFilter, topicFilter]);
+						    accessFilter, publisher, originator, restrictedFilter, topicFilter]);
 
 	var query = "q=" + queryClause + "&debugQuery=false&" + extras; //spatialFilter + "&" + returnType + "&" + returnedColumns;
 	foo = query;

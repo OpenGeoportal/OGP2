@@ -42,7 +42,21 @@ org.OpenGeoPortal.UserInterface = function(){
 	 * init function
 	 */
 	this.init = function(){
-		jQuery("#tabs").tabs({selected: 1});
+		jQuery("#tabs").tabs({
+			active: 1,
+			activate: function( event, ui ) {
+				that.utility.CurrentTab = jQuery(this).tabs("option", "active");
+				var tabObj = that.utility.whichTab();
+				switch(tabObj.name){
+				case 'search':
+					that.filterResults();
+					break;
+				case 'saved':
+					jQuery('#savedLayers').dataTable().fnDraw();
+					break;
+				}
+			}	
+		});
 		this.togglePanels();
 		jQuery('.searchBox').keypress(function(event){
 			if (event.keyCode == '13') {
@@ -58,17 +72,6 @@ org.OpenGeoPortal.UserInterface = function(){
 			}
 		});
 
-		jQuery(document).bind('tabsshow', function(event, ui) {
-			var tabObj = that.utility.whichTab();
-			switch(tabObj.name){
-			case 'search':
-				that.filterResults();
-				break;
-			case 'saved':
-				jQuery('#savedLayers').dataTable().fnDraw();
-				break;
-			}
-		});
 		//info dialogs
 		
 		//temporary notice
@@ -250,6 +253,7 @@ org.OpenGeoPortal.UserInterface = function(){
 		jQuery("#advancedSearchSubmit").click(function(){
 			that.searchSubmit();
 		});
+		this.autocomplete();
 		var containerHeight = jQuery(window).height() - jQuery("#header").height() - jQuery("#footer").height() - 2;
 		containerHeight = Math.max(containerHeight, 680);
 		var containerWidth = jQuery(window).width();//Math.max((Math.floor(jQuery(window).width() * .9)), 1002);
@@ -336,6 +340,8 @@ org.OpenGeoPortal.UserInterface = function(){
 		});*/
 	};
 	this.init();
+
+	jQuery("#main").fadeTo('fast', 1);
 };
 
 /**
@@ -1786,7 +1792,7 @@ org.OpenGeoPortal.UserInterface.prototype.addSharedLayersToCart = function(){
 	});
 
 
-	jQuery("#tabs").tabs({selected: 2});
+	jQuery("#tabs").tabs("option", "active", 2);
 	this.initSortable();
 };
 
@@ -2405,3 +2411,40 @@ org.OpenGeoPortal.UserInterface.prototype.maximizeDialog = function(dialogId){
 		//>>> jQuery("#geoCommonsExportDialog").dialog("option", "position", jQuery("#geoCommonsExportDialog").data("maxPosition"))
 };
 
+org.OpenGeoPortal.UserInterface.prototype.autocomplete = function(){
+
+	jQuery( "#advancedOriginatorText" ).autocomplete({
+        source: function( request, response ) {
+        	var solr = new org.OpenGeoPortal.Solr();
+        	var fieldName = "OriginatorSort";
+        	var query = solr.getTermQuery(fieldName, request.term);
+        		var facetSuccess = function(data){
+                    var labelArr = [];
+                    var dataArr = data.terms[fieldName];
+                    for (var i in dataArr){
+                    if (i%2 != 0){
+                        continue;
+                        }
+                        var temp = {"label": dataArr[i], "value": '"' + dataArr[i] + '"'};
+                        labelArr.push(temp);
+                        i++;
+                        i++;
+                    }
+                response(labelArr);
+        		};
+        		var facetError = function(){};
+           solr.termQuery(query, facetSuccess, facetError, this);
+
+        },
+        minLength: 2,
+        select: function( event, ui ) {
+
+        },
+        open: function() {
+            jQuery( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+        },
+        close: function() {
+            jQuery( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+        }
+    });
+};

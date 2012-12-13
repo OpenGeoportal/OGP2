@@ -280,6 +280,8 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+
 				});
 			
 		}
@@ -305,6 +307,7 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 					that.userMapAction = true;
 					//really should only fire the first time
 					bgMap.events.unregister(bgMap.mapObject, "loadend");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
 				});
 		}
 		if (this.getLayersByClass('OpenLayers.Layer.Google').length > 0){
@@ -609,9 +612,9 @@ org.OpenGeoPortal.MapController.prototype.showLayerBBox = function (mapObj) {
 		featureLayer.removeAllFeatures();
 	} else {
         var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-        style_blue.strokeColor = "blue";
-        style_blue.fillColor = "blue";
-        style_blue.fillOpacity = .05;
+        style_blue.strokeColor = "blue";//'#003366';
+        style_blue.fillColor = "blue";//'#003366';
+        style_blue.fillOpacity = .1;
         style_blue.pointRadius = 10;
         style_blue.strokeWidth = 2;
         style_blue.strokeLinecap = "butt";

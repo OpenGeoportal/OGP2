@@ -36,13 +36,14 @@ org.OpenGeoPortal.Utility.getImage = function(imageName){
 	return org.OpenGeoPortal.Utility.ImageLocation + imageName;
 };
 
+org.OpenGeoPortal.Utility.CurrentTab = 1;
 org.OpenGeoPortal.Utility.whichTab = function(){
 	var tabInfo = {};
 	var tabIndex;
 	if (arguments.length > 0){
 		tabIndex = arguments[0];
 	} else {
-		tabIndex = jQuery("#tabs").tabs( "option", "selected" );
+		tabIndex = org.OpenGeoPortal.Utility.CurrentTab;
 	}
 	tabInfo.index = tabIndex;
 	switch (tabIndex){
