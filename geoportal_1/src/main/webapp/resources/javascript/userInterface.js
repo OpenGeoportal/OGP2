@@ -36,22 +36,47 @@ org.OpenGeoPortal.UserInterface = function(){
 	this.jspfDir = org.OpenGeoPortal.Utility.JspfLocation;
 	this.login = new org.OpenGeoPortal.LogIn(this.config.getHomeInstitution());
 	this.login.checkLoginStatus();
+	analytics = new org.OpenGeoPortal.Analytics();
 	var that = this;
 
 	/**
 	 * init function
 	 */
 	this.init = function(){
-		jQuery("#tabs").tabs({selected: 1});
+		jQuery("#tabs").tabs({
+			selected: 1,
+			select: function(ev, ui) {
+				var label,
+					idx = ui.index;
+
+				label = (idx == 2) && "Cart Tab" ||
+						(idx == 1) && "Search Tab" ||
+						"Getting Started Tab";
+				analytics.track("Interface", "Change Tab", label);
+			}
+		});
 		this.togglePanels();
 		jQuery('.searchBox').keypress(function(event){
+			var type, search, keyword;
+
 			if (event.keyCode == '13') {
 				that.searchSubmit();
+				type = org.OpenGeoPortal.Utility.whichSearch().type;
+				if (type == "basicSearch") {
+					search = "Basic";
+					keyword = jQuery("#basicSearchTextField").val();
+				} else if (type == "advancedSearch") {
+					search = "Advanced";
+					keyword = jQuery("#advancedKeywordText").val();
+				}
+				analytics.track("Search", search, keyword);
 			} 
 		});
 		jQuery("#geosearch").keypress(function(event){
 			if (event.keyCode == '13') {
+				var location = jQuery("#geosearch").val();
 				that.geocodeLocation();
+				analytics.track("Go To Box", location);
 			} else if (jQuery(this).val().trim() == that.geocodeText){
 				that.clearInput('geosearchDiv');
 			}
@@ -91,6 +116,11 @@ org.OpenGeoPortal.UserInterface = function(){
 		jQuery("#highlightsLink").click(function(){
 			jQuery('#highlights').dialog("open");
 		});
+
+		jQuery("#top_menu > a").on("click", function() {
+			analytics.track("Interface", "Reset Page");
+		});
+
 		jQuery('#about').dialog({
     		zIndex: 2999,
     		title: "ABOUT",
@@ -101,6 +131,7 @@ org.OpenGeoPortal.UserInterface = function(){
 		});
 		jQuery("#aboutLink").click(function(){
 			jQuery('#about').dialog("open");
+			analytics.track("Help", "Show About");
 		});
 		jQuery('#contact').dialog({
     		zIndex: 2999,
@@ -139,6 +170,7 @@ org.OpenGeoPortal.UserInterface = function(){
 			} else {
 				jQuery('#userGuide').dialog("open");
 			}
+			analytics.track("Help", "Show User Guide");
 		});
 		//buttons
 		this.createBasemapMenu();
@@ -186,7 +218,21 @@ org.OpenGeoPortal.UserInterface = function(){
 	    		jQuery(this).css("opacity", ".5");
 	    	}});
 	    jQuery("input#geosearch").click(function(){that.clearInput("geosearchDiv");});
-	    jQuery("#goButton").click(function(){that.geocodeLocation();});
+		jQuery("#goButton").click(
+			function(){
+				var location = jQuery("#geosearch").val();
+				that.geocodeLocation();
+				analytics.track("Go To Box", location);
+			}
+		);
+
+		jQuery("input[name='mapFilterCheck'],input[name='mapFilterCheck2']").on(
+			"change", function(ev) {
+				var value = this.checked ? "Checked" : "Unchecked";
+				analytics.track("Limit Results to Visible Map", value);
+			}
+		);
+
 	    this.cartOptionText();
 	    //set mouse cursor behavior
 		this.mouseCursor();
@@ -296,6 +342,19 @@ org.OpenGeoPortal.UserInterface = function(){
 
 		jQuery(document).bind("loginSucceeded", function(){
 			that.applyLoginActions();
+			analytics.track("Login", "Login Success");
+		});
+		jQuery(document).on("loginFailed", function() {
+			analytics.track("Login", "Login Failure");
+		});
+
+		jQuery("#searchResultsNavigation").on("click", "a", function() {
+			var direction,
+				label = jQuery(this).text();
+
+			direction = (label.indexOf("Next") > -1 && "Next") || "Previous";
+
+			analytics.track("Results Pagination", direction + " Results Page");
 		});
 		/*jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
 			console.log(ajaxSettings);
@@ -777,6 +836,17 @@ org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
           var rollRight = that.getImage("button_arrow_right.png");
           var tabDiv = jQuery(this).parents('.ui-tabs-panel').last();
           var userDiv = tabDiv.find('.searchBox')[0];
+
+			var button,
+				src = jQuery(this).attr("src");
+
+			button = (src == rollUp) && "Collapse Up" ||
+					(src == rollDown) && "Expand Down" ||
+					(src == rollLeft) && "Collapse Left" ||
+					(src == rollRight) && "Expand Right";
+
+			analytics.track("Interface", "Expand/Collapse Buttons", button);
+
           switch (jQuery(this).attr('src')){
           case rollUp: 
         	  jQuery(userDiv).toggle("blind",{},250, function(){that.resultsTableObject.setTableLength();});
@@ -858,11 +928,19 @@ org.OpenGeoPortal.UserInterface.prototype.chooseSort = function(columnName){
 };
 
 org.OpenGeoPortal.UserInterface.prototype.toggleColumn = function(thisObj){
-	if (jQuery(thisObj).is(':checked')) {
-		this.utility.whichTab().tableObject().showCol(jQuery(thisObj).val());
+	var action,
+		checked = jQuery(thisObj).is(":checked"),
+		column = jQuery(thisObj).val();
+
+	if (checked) {
+		this.utility.whichTab().tableObject().showCol(column);
 	} else {
-		this.utility.whichTab().tableObject().hideCol(jQuery(thisObj).val());
+		this.utility.whichTab().tableObject().hideCol(column);
 	}
+
+	action = checked ? "Column Added" : "Column Removed";
+
+	analytics.track("Change Results Columns Displayed", action, column);
 };
 
 org.OpenGeoPortal.UserInterface.prototype.updateSortMenu = function(){
@@ -1312,8 +1390,14 @@ org.OpenGeoPortal.UserInterface.prototype.requestDownloadSuccess = function(data
 org.OpenGeoPortal.UserInterface.prototype.requestDownload = function(requestObj){
 	var that = this;
 	jQuery("#downloadDialog").dialog( "option", "disabled", true );
-	if (typeof _gaq != "undefined")
-		_gaq.push(["_trackEvent", "download", requestObj.layerNumber]);
+
+	jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
+		var data = jQuery("#savedLayers").dataTable().fnGetData(this),
+			inst_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("Institution"),
+			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
+		analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
+	});
+
 	delete requestObj.layerNumber;
 	var params = {
 			url: "requestDownload",
