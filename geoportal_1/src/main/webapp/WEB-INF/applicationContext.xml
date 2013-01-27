@@ -12,8 +12,13 @@
 
 	<beans:bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.GenericProxyImpl" />
 	<beans:bean id="userContext.ogp" class="org.OpenGeoPortal.Security.OgpUserContextImpl" />
+	<beans:bean id="userDetailsMapper.custom" class="org.OpenGeoPortal.Security.SimpleLdapUserDetailsMapper" >
+		<beans:property name="admins" value="${admins}" />
+	</beans:bean>
 
 	<!-- misc -->
+	<beans:bean id="jsonpCallbackFilter" class="org.OpenGeoPortal.Utilities.JsonpCallbackFilter" />
+	
 	<beans:bean id="imageHandler" class="org.OpenGeoPortal.Proxy.ImageHandlerImpl" scope="prototype" />
 	<beans:bean id="imageCompositor" class="org.OpenGeoPortal.Proxy.ImageCompositorImpl" scope="prototype" />
 	<beans:bean id="imageDownloader" class="org.OpenGeoPortal.Proxy.ImageDownloaderImpl" scope="prototype" />

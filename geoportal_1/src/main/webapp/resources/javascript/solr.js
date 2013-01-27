@@ -101,8 +101,9 @@ org.OpenGeoPortal.Solr.prototype.getServerName = function getServerName()
 	var configInfo = org.OpenGeoPortal.InstitutionInfo.getSearch().serviceAddress;
 	var elements = configInfo.split(",");
 	var primaryServer = elements[0];
-	if (primaryServer.indexOf("http://") != 0)
+	if (!(primaryServer.indexOf("http://") == 0||primaryServer.indexOf("https://") == 0)){
 		primaryServer = "http://" + primaryServer;
+	}
 	var select = "select";
 	if ((primaryServer.substring(primaryServer.length - select.length) == select) == false)
 	{

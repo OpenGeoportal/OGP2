@@ -9,6 +9,7 @@
         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
  
+ 	<context:property-placeholder location="WEB-INF/ogp.properties" />
     <!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
     <!-- <context:property-placeholder location = "WEB-INF/ogp.properties" />-->
     <!-- Scans within the base package of the application for @Components to configure as beans -->

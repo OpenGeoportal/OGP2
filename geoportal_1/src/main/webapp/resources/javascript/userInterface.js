@@ -1929,15 +1929,20 @@ org.OpenGeoPortal.UserInterface.prototype.shareServices = function(){
     	//console.log(queryString);
     	//console.log(jQuery.param(queryString, true));
    		var serviceTypes = [{"type": "WFS", "title": "Web Feature Service (WFS):", "caption": "Creates a vector web service. Only available for vector data."}, 
-   		                    {"type":"WMS", "title": "Web Mapping Service (WMS):", "caption": "Creates a raster web service for all your data. Vector data will be converted to raster format."}];//WCS later?  		   		
-   		var path = top.location.href.substring(0, top.location.href.lastIndexOf("/"));
+   		                    {"type":"WMS", "title": "Web Mapping Service (WMS):", "caption": "Creates a raster web service for all your data. Vector data will be converted to raster format."}];//WCS later?  	
+   		var hostname = top.location.hostname;
+   		if (hostname.toLowerCase() == "localhost"){
+   			hostname = hostname + ":8080";
+   		}
+   		var path = top.location.pathname;
+   		path = path.replace("openGeoPortalHome.jsp", "");
    		dialogContent += '<p>Web Services are provided in two formats. Paste the selected link into your desktop mapping software.</p>';
 		dialogContent += '<div id="owsServicesArea">\n';
 		for (var i in serviceTypes){
 			dialogContent += '<span class="sub_headerTitle">' + serviceTypes[i].title + '</span><a href="#">?</a>';
 			dialogContent += '<br/><span>' + serviceTypes[i].caption + '</span>';
 			dialogContent += '<div class="owsServicesLinkContainer">';
-			var dynamicCapabilitiesRequest = path + "/ogp" + serviceTypes[i].type + ".jsp?OGPIDS=" + queryString.join();
+			var dynamicCapabilitiesRequest = "http://" + hostname + path + "ogp" + serviceTypes[i].type + ".jsp?OGPIDS=" + queryString.join();
 			dialogContent += '<textarea class="shareServicesText linkText" >' + dynamicCapabilitiesRequest + '</textarea> <br />\n';
 			dialogContent += '</div><br/>';
 		}

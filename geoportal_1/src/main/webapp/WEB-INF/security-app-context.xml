@@ -5,7 +5,7 @@
                     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                     http://www.springframework.org/schema/security 
                     http://www.springframework.org/schema/security/spring-security-3.1.xsd">
-
+                    
 	<security:http pattern="/resources/**" security="none" />
 
 	<security:http use-expressions="true" auto-config="true">
@@ -19,16 +19,17 @@
 			login-processing-url="/j_spring_security_logout" />
 		<security:intercept-url pattern="/**" access="permitAll" />
 	</security:http>
-	<!-- <ldap-server url="ldaps://secure-ldap-url/ou=People,dc=institution,dc=edu" 
-		/> -->
+	
+	<!-- <security:ldap-server url="ldaps://ldapUrl/base" />-->
 	<security:authentication-manager alias="authenticationManager" >
-		<!-- <ldap-authentication-provider user-dn-pattern="uid={0},ou=people"/> -->
+		<!-- <security:ldap-authentication-provider user-search-filter="(uid={0})"
+		user-context-mapper-ref="userDetailsMapper.custom" />-->
 		<security:authentication-provider>
 			<security:user-service>
-				<security:user name="testAdmin" password="koala"
-					authorities="administrator, user" />
-				<security:user name="testUser" password="wombat"
-					authorities="user" />
+				<security:user name="ogpAdmin" password="koala"
+					authorities="ROLE_ADMIN,ROLE_USER" />
+				<security:user name="ogpUser" password="wombat"
+					authorities="ROLE_USER" />
 			</security:user-service>
 		</security:authentication-provider>
 	</security:authentication-manager>

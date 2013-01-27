@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="application/xml; charset=UTF-8"
-    pageEncoding="UTF-8" import="java.util.*, javax.xml.transform.*, java.net.URLDecoder, javax.xml.transform.dom.*, javax.xml.transform.stream.*, org.OpenGeoPortal.Utilities.*, org.OpenGeoPortal.Download.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, javax.xml.parsers.DocumentBuilder, org.w3c.dom.NodeList, org.w3c.dom.Node,org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.HashSet, java.util.Map, org.springframework.context.*, org.springframework.web.context.support.*, org.springframework.beans.factory.* "%><%
+    pageEncoding="UTF-8" import="java.util.*, javax.xml.transform.*, java.net.URLDecoder, javax.xml.transform.dom.*, javax.xml.transform.stream.*, 
+    org.OpenGeoPortal.Utilities.Http.HttpRequester, org.OpenGeoPortal.Metadata.LayerInfoRetriever, org.OpenGeoPortal.Solr.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, 
+    javax.xml.parsers.DocumentBuilder, org.w3c.dom.NodeList, org.w3c.dom.Node, org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.HashSet, java.util.Map, 
+    org.springframework.context.*, org.springframework.web.context.support.*, org.springframework.beans.factory.* "%><%
     	response.setHeader("Content-disposition","attachment; filename=\"wfs.xml\"");
 
     	Enumeration<String> sentParams = request.getParameterNames();
@@ -23,15 +26,15 @@
 		
 		ApplicationContext injector = WebApplicationContextUtils.getWebApplicationContext(request.getSession().getServletContext());
 
-   		LayerInfoRetriever layerInfoRetriever = (LayerInfoRetriever) injector.getBean("layerInfoRetriever.solr");
-   		Map<String, Map<String,String>> layerInfoMap = layerInfoRetriever.getAllLayerInfo(layerIdSet);
+		LayerInfoRetriever layerInfoRetriever = (LayerInfoRetriever) injector.getBean("layerInfoRetriever.solr");
+   		List<SolrRecord> solrRecords = layerInfoRetriever.fetchAllLayerInfo(layerIdSet);
    		HttpRequester httpRequester = (HttpRequester) injector.getBean("httpRequester.generic");
    		
    		//There is some info that requires the getCapabilities doc (native epsg code),
    		//so we must request it and parse it.  The benefit is that we can just grab the appropriate FeatureType node and
    		//insert it into this response.  Eventually, if we can get the epsg code from solr reliably, solr might be the
    		//faster method, since we are parsing a potentially large xml document.
-   		String institution = layerInfoMap.get(layerIds[0]).get("Institution");
+   		String institution = solrRecords.get(0).getInstitution();
    		//String serverName = ParseJSONSolrLocationField.getWfsUrl(layerInfoMap.get(layerIds[0]).get("Location"));
 
    		String serverName = "http://geoserver01.uit.tufts.edu";
@@ -41,10 +44,9 @@
 		for (int i = 0; i < layerIds.length; i++){
 			String workspace = "sde";
    			//String workspace = layerInfoMap.get(layerIds[i]).get("WorkspaceName");
-   			String layerName = layerInfoMap.get(layerIds[i]).get("Name");
+   			String layerName = solrRecords.get(0).getName();
 
-   			URLConnection getCapabilitiesResponse = httpRequester.sendRequest(serverName + "/" + workspace + "/" + layerName + "/wfs", "request=getCapabilities&version=1.1.0", "GET");
-			InputStream inputStream = getCapabilitiesResponse.getInputStream();
+   			InputStream inputStream = httpRequester.sendRequest(serverName + "/" + workspace + "/" + layerName + "/wfs", "request=getCapabilities&version=1.1.0", "GET");
 
 			//parse the returned XML
 			// Create a factory
@@ -122,7 +124,6 @@
     <ows:Abstract>A dynamically created capabilites document including only certain layers.  For use in a mapping client that supports WFS services.</ows:Abstract>
     <ows:Keywords><ows:Keyword>WFS</ows:Keyword><ows:Keyword>OpenGeoportal</ows:Keyword></ows:Keywords><ows:ServiceType>WFS</ows:ServiceType><ows:ServiceTypeVersion>1.1.0</ows:ServiceTypeVersion><ows:Fees>NONE</ows:Fees>
     <ows:AccessConstraints>NONE</ows:AccessConstraints></ows:ServiceIdentification>
-    
     <ows:ServiceProvider>
     <ows:ProviderName>Tufts University</ows:ProviderName>
     <ows:ServiceContact>
@@ -200,8 +201,7 @@
     	<Operation>Query</Operation>
     </Operations><%
 		out.write(featureTypeInfo);
-   %> 
-    </FeatureTypeList>
+   %></FeatureTypeList>
     <ogc:Filter_Capabilities>
     <ogc:Spatial_Capabilities>
     <ogc:GeometryOperands>
