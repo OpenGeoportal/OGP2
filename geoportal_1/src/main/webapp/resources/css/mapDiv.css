@@ -107,6 +107,7 @@ div.olControlMousePosition {
 #geoportalMap {
   margin: 0px;
   padding: 0px;  
+  opacity: 0;
 }
   
 .olControlScaleLine {

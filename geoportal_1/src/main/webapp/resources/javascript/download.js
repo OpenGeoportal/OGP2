@@ -25,21 +25,25 @@ org.OpenGeoPortal.Downloader = function(){
 			"requests": {
 				"pending":{
 					"layers":[],
-					"images":[]
+					"images":[],
+					"exports":[]
 				},
 				"complete":{
 					"layers":[],
-					"images":[]
+					"images":[],
+					"exports":[]
 				},
 				"failed":{
 					"layers":[],
-					"images":[]
+					"images":[],
+					"exports":[]
 				}
 			}
 	};
 	
 	var INTERVAL_MS = 3000;
 
+	//helper functions for working with queues
 	 var removeRequest = function (requestId, srcArray){
 		var requestQueueObj;
 		for (var i in srcArray){
@@ -50,13 +54,39 @@ org.OpenGeoPortal.Downloader = function(){
 		}
 		return false;
 	};
+	
+	var getNewRequest = function(requestId, requestObj){
+		var request = {};
+		request.requestId = requestId;
+		request.status = {};
+		request.params = requestObj;
+		return request;
+	};
 		
-	this.removePendingLayerRequest = function(requestId){
-		return removeRequest(requestId, this.getLayerRequests());
+
+	//getters for queues
+	this.getImageRequests = function(){
+		return that.requestQueue.requests.pending.images;
 	};
 	
-	this.removePendingImageRequest = function(requestId){
-		return removeRequest(requestId, this.getImageRequests());
+	this.getCompleteImageRequests = function(){
+		return that.requestQueue.requests.complete.images;
+	};
+	
+	this.getFailedImageRequests = function(){
+		return that.requestQueue.requests.failed.images;
+	};
+	
+	this.getExportRequests = function(){
+		return that.requestQueue.requests.pending.exports;
+	};
+	
+	this.getCompleteExportRequests = function(){
+		return that.requestQueue.requests.complete.exports;
+	};
+	
+	this.getFailedExportRequests = function(){
+		return that.requestQueue.requests.failed.exports;
 	};
 	
 	this.getLayerRequests = function(){
@@ -71,13 +101,7 @@ org.OpenGeoPortal.Downloader = function(){
 		return that.requestQueue.requests.failed.layers;
 	};
 	
-	var getNewRequest = function(requestId, requestObj){
-		var request = {};
-		request.requestId = requestId;
-		request.status = {};
-		request.params = requestObj;
-		return request;
-	};
+	//add requests to various queues
 	
 	var addLayerRequest = function(requestId, requestObj){
 		that.requestQueue.requests.pending.layers.push(getNewRequest(requestId, requestObj));
@@ -87,11 +111,8 @@ org.OpenGeoPortal.Downloader = function(){
 		that.requestQueue.requests.pending.images.push(getNewRequest(requestId, requestObj));
 	};
 	
-	this.registerLayerRequest = function(requestId, requestObj){
-		addLayerRequest(requestId, requestObj);
-		if (!that.requestQueue.isPollRunning){
-			this.startPoll();
-		}
+	var addExportRequest = function(requestId, requestObj){
+		that.requestQueue.requests.pending.exports.push(getNewRequest(requestId, requestObj));
 	};
 	
 	this.addLayerToComplete = function(requestObj){
@@ -102,6 +123,11 @@ org.OpenGeoPortal.Downloader = function(){
 		that.requestQueue.requests.complete.images.push(requestStatus);
 	};
 	
+	this.addExportToComplete = function(requestStatus){
+		that.requestQueue.requests.complete.exports.push(requestStatus);
+	};
+	
+	
 	this.addLayerToFailed = function(requestObj){
 		that.requestQueue.requests.failed.layers.push(requestObj);
 	};
@@ -110,6 +136,51 @@ org.OpenGeoPortal.Downloader = function(){
 		that.requestQueue.requests.failed.images.push(requestStatus);
 	};
 	
+	this.addExportToFailed = function(requestStatus){
+		that.requestQueue.requests.failed.exports.push(requestStatus);
+	};
+	
+	//remove requests from various queues
+	this.removePendingLayerRequest = function(requestId){
+		return removeRequest(requestId, this.getLayerRequests());
+	};
+	
+	this.removePendingImageRequest = function(requestId){
+		return removeRequest(requestId, this.getImageRequests());
+	};
+	
+	this.removePendingExportRequest = function(requestId){
+		return removeRequest(requestId, this.getExportRequests());
+	};
+
+	
+
+	
+	//register requests in the queue
+	this.registerLayerRequest = function(requestId, requestObj){
+		addLayerRequest(requestId, requestObj);
+		if (!that.requestQueue.isPollRunning){
+			this.startPoll();
+		}
+	};
+	
+	this.registerExportRequest = function(requestId, requestObj){
+		addExportRequest(requestId, requestObj);
+		if (!that.requestQueue.isPollRunning){
+			this.startPoll();
+		}
+	};
+	
+	this.registerImageRequest = function(requestId, requestObj){
+		addImageRequest(requestId, requestObj);
+		if (!that.requestQueue.isPollRunning){
+			this.startPoll();
+		}
+	};
+	
+
+	
+	//transfer requests objects
 	this.layerRequestToComplete = function(requestStatus){
 		var requestQueueObj = this.removePendingLayerRequest(requestStatus.requestId);
 		var newObj = {};
@@ -122,6 +193,13 @@ org.OpenGeoPortal.Downloader = function(){
 		var newObj = {};
 		jQuery.extend(true, newObj, requestQueueObj, requestStatus);
 		this.addImageToComplete(newObj);
+	};
+	
+	this.exportRequestToComplete = function(requestStatus){
+		var requestQueueObj = this.removePendingExportRequest(requestStatus.requestId);
+		var newObj = {};
+		jQuery.extend(true, newObj, requestQueueObj, requestStatus);
+		this.addExportToComplete(newObj);
 	};
 	
 	this.layerRequestToFailed = function(requestStatus){
@@ -138,27 +216,19 @@ org.OpenGeoPortal.Downloader = function(){
 		this.addImageToFailed(newObj);
 	};
 	
-	this.getImageRequests = function(){
-		return that.requestQueue.requests.pending.images;
+	this.exportRequestToFailed = function(requestStatus){
+		var requestQueueObj = this.removePendingExportRequest(requestStatus.requestId);
+		var newObj = {};
+		jQuery.extend(true, newObj, requestQueueObj, requestStatus);
+		this.addExportToFailed(newObj);
 	};
 	
-	this.getCompleteImageRequests = function(){
-		return that.requestQueue.requests.complete.images;
-	};
+
 	
-	this.getFailedImageRequests = function(){
-		return that.requestQueue.requests.failed.images;
-	};
-	
-	this.registerImageRequest = function(requestId, requestObj){
-		addImageRequest(requestId, requestObj);
-		if (!that.requestQueue.isPollRunning){
-			this.startPoll();
-		}
-	};
-	
+	//convenience functions
 	this.getRequestById = function(id){
 		var requests = this.getLayerRequests().concat(this.getImageRequests());
+		requests = requests.concat(this.getExportRequests);
 		for (var i in requests){
 			var currentRequest = requests[i];
 			if (currentRequest.requestId == id){
@@ -167,6 +237,7 @@ org.OpenGeoPortal.Downloader = function(){
 			}
 		}
 		var requests = this.getCompleteLayerRequests().concat(this.getCompleteImageRequests());
+		requests = requests.concat(this.getCompleteExportRequests);
 		for (var i in requests){
 			var currentRequest = requests[i];
 			if (currentRequest.requestId == id){
@@ -175,6 +246,7 @@ org.OpenGeoPortal.Downloader = function(){
 			}
 		}
 		var requests = this.getFailedLayerRequests().concat(this.getFailedImageRequests());
+		requests = requests.concat(this.getFailedExportRequests);
 		for (var i in requests){
 			var currentRequest = requests[i];
 			if (currentRequest.requestId == id){
@@ -197,7 +269,12 @@ org.OpenGeoPortal.Downloader = function(){
 				if (requestQueueObj){
 					this.addImageToFailed(requestQueueObj);
 				} else {
-					//there's a problem
+					var requestQueueObj = this.removePendingExportRequest(requestId);
+					if (requestQueueObj){
+						this.addExportToFailed(requestQueueObj);
+					} else {
+						throw new Error("Downloader.requestToFailedById fall through");
+					}
 				}
 			}
 		}
@@ -218,11 +295,47 @@ org.OpenGeoPortal.Downloader = function(){
 				jQuery.extend(true, newObj, requestQueueObj, requestStatus);
 				this.addImageToFailed(newObj);
 			} else {
-				//there's a problem
+				var requestQueueObj = this.removePendingExportRequest(requestId);
+				if (requestQueueObj){
+					var newObj = {};
+					jQuery.extend(true, newObj, requestQueueObj, requestStatus);
+					this.addExportToFailed(newObj);
+				} else {
+					//there's a problem
+					throw new Error("Downloader.requestToFailedByStatus fall through");
+				}
 			}
 		}
 	};
 	
+	var getLayerRequestIds = function(){
+		var requestIdObjs = that.getLayerRequests();
+		var requestIds = [];
+		for (var i in requestIdObjs){
+			requestIds.push(requestIdObjs[i].requestId);
+		}
+		return requestIds;
+	};
+	
+	var getImageRequestIds = function(){
+		var requestIdObjs = that.getImageRequests();
+		var requestIds = [];
+		for (var i in requestIdObjs){
+			requestIds.push(requestIdObjs[i].requestId);
+		}
+		return requestIds;
+	};
+	
+	var getExportRequestIds = function(){
+		var requestIdObjs = that.getExportRequests();
+		var requestIds = [];
+		for (var i in requestIdObjs){
+			requestIds.push(requestIdObjs[i].requestId);
+		}
+		return requestIds;
+	};
+	
+	//poll handling
 	this.firePoll = function(){
 		var t=setTimeout('org.OpenGeoPortal.downloadQueue.pollRequestStatus()', INTERVAL_MS);
 		this.requestQueue.pollId = t;
@@ -338,36 +451,36 @@ org.OpenGeoPortal.Downloader = function(){
 			currentRequestId = statusObj.requestId;
 			that.layerRequestToComplete(statusObj);
 			url = "getDownload?requestId=" + currentRequestId;
+			jQuery('body').append('<iframe id="' + currentRequestId + '" class="download" src="' + url + '"></iframe>');
+
 		} else if (statusObj.type == "image"){
 			currentRequestId = statusObj.requestId;
 			that.imageRequestToComplete(statusObj);
 			url = "getImage?requestId=" + currentRequestId;
-		}
-		jQuery('body').append('<iframe id="' + currentRequestId + '" class="download" src="' + url + '"></iframe>');
-		//jQuery("#" + currentRequestId).load(function(){jQuery(this).remove()});
+			jQuery('body').append('<iframe id="' + currentRequestId + '" class="download" src="' + url + '"></iframe>');
 
-	};
-	
-	var getLayerRequestIds = function(){
-		var requestIdObjs = that.getLayerRequests();
-		var requestIds = [];
-		for (var i in requestIdObjs){
-			requestIds.push(requestIdObjs[i].requestId);
+		} else if (statusObj.type == "export"){
+			currentRequestId = statusObj.requestId;
+			that.exportRequestToComplete(statusObj);
+			//should open map in GeoCommons
+			url = "geocommons/getExport?requestId=" + currentRequestId;
+			var successFunction = function(data){
+				window.open(data.location);
+			};
+			var params = {
+					  url: url,
+					  dataType: "json",
+					  success: successFunction//,
+					  //error: failureFunction
+				};
+			jQuery.ajax(params);
 		}
-		return requestIds;
-	};
-	
-	var getImageRequestIds = function(){
-		var requestIdObjs = that.getImageRequests();
-		var requestIds = [];
-		for (var i in requestIdObjs){
-			requestIds.push(requestIdObjs[i].requestId);
-		}
-		return requestIds;
+
 	};
 	
 	this.pollRequestStatus = function(){
 		var ids = getLayerRequestIds().concat(getImageRequestIds());
+		ids = ids.concat(getExportRequestIds());
 		var that = this;
 		//console.log(getLayerRequestIds());
 		//console.log(getImageRequestIds());
