@@ -13,7 +13,7 @@ body {
 	text-align: center;
 	margin: 0; 
 	padding: 0;
-	/*background: #cccccc url(../media/bg_tile.gif)  repeat;*/
+	background: #cccccc url(../media/bg_tile.gif)  repeat;
 	font-family: arial, sans-serif;
 	font-size: 12px;
 	color: black;
@@ -123,8 +123,9 @@ h3 {
  	min-width: 1002px;
  	/*width: 1002px;*/
  	margin: 0 auto;
- 	background-color: #fff;
+ 	/*background-color: #fff;*/
  	text-align: left;
+ 	opacity: 0;
  }
  
 /* Header */
@@ -998,4 +999,45 @@ iframe.download {
 
 #featureInfo {
 	overflow: auto;
+}
+
+/* geocommons dialog */
+#geoCommonsExportForm > select {
+    left: 97px;
+    margin-top: 3px;
+    position: absolute;
+}
+
+#geoCommonsExportDialog > form {
+    line-height: 30px;
+    padding: 10px;
+}
+
+#geoCommonsExportForm > input[type="text"] {
+    left: 90px;
+    margin-top: 4px;
+    position: absolute;
+    width: 252px;
+    padding: 2px;
+}
+
+#geoCommonsExportForm > fieldset {
+	background-color: #F2F2F2;
+    border: 1px solid #CCCCCC;
+	padding: 15px;	
+}
+
+#geoCommonsExportForm > fieldset > input {
+	left: 108px;
+	position: absolute;
+	margin-top: 4px;
+}
+
+.linkButton {
+    color: blue;
+    text-decoration: underline;
+}
+
+#geoCommonsExportForm > fieldset .linkButton {
+	float: right;
 }

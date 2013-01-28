@@ -44,16 +44,27 @@ org.OpenGeoPortal.UserInterface = function(){
 	 */
 	this.init = function(){
 		jQuery("#tabs").tabs({
-			selected: 1,
-			select: function(ev, ui) {
-				var label,
+			active: 1,
+			activate: function( event, ui ) {
+				that.utility.CurrentTab = jQuery(this).tabs("option", "active");
+								var label,
 					idx = ui.index;
 
 				label = (idx == 2) && "Cart Tab" ||
 						(idx == 1) && "Search Tab" ||
 						"Getting Started Tab";
 				analytics.track("Interface", "Change Tab", label);
-			}
+				var tabObj = that.utility.whichTab();
+				switch(tabObj.name){
+				case 'search':
+					that.filterResults();
+					break;
+				case 'saved':
+					jQuery('#savedLayers').dataTable().fnDraw();
+					break;
+				}
+			}	
+			
 		});
 		this.togglePanels();
 		jQuery('.searchBox').keypress(function(event){

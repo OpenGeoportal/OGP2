@@ -43,6 +43,7 @@ public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		kmattr=[true|false] : whether or not kml has clickable attributes
 		The format_options is a container for parameters that are format specific. The options in it are expressed as:
 		 */
+		
 		String getFeatureRequest = "BBOX=" + bounds.toString() + "&LAYERS=" + layerName + "&format_options=kmattr:true;";
 		if (GeometryType.isVector(GeometryType.parseGeometryType(currentLayer.getLayerInfo().getDataType()))){
 			getFeatureRequest += "kmscore:100;";

@@ -39,8 +39,12 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 	var nav = new OpenLayers.Control.NavigationHistory({nextOptions: {title: "Zoom to next geographic extent"}, previousOptions:{title: "Zoom to previous geographic extent"}});
     var zoomBox = new OpenLayers.Control.ZoomBox(
             {title:"Click or draw rectangle on map to zoom in"});
+    var zoomBoxListener = function(){jQuery(document).trigger("zoomBoxActivated")};
+    zoomBox.events.register("activate", this, zoomBoxListener);
+    var panListener = function(){jQuery(document).trigger("panActivated")};
     var panHand = new OpenLayers.Control.Navigation(
             {title:"Pan by dragging the map"});
+    panHand.events.register("activate", this, panListener);
     var globalExtent = new OpenLayers.Control.ZoomToMaxExtent({title:"Zoom to global extent"});
     var panel = new OpenLayers.Control.Panel({defaultControl: panHand});
     var that = this;
@@ -85,7 +89,7 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 
     // attempt to reload tile if load fails
     OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
-    OpenLayers.ImgPath = "/resources/media/"
+    OpenLayers.ImgPath = "resources/media/"
     // make OL compute scale according to WMS spec
     //OpenLayers.DOTS_PER_INCH = 90.71428571428572;
     OpenLayers.Util.onImageLoadErrorColor = 'transparent';
@@ -158,7 +162,6 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
 
 	this.currentAttributeRequest = false;
 	this.prevExtent = this.getExtent();
-	//console.log("rendered");
 };
 
 //set inheritance for MapController
@@ -275,8 +278,11 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 				  that.render(that.userDiv);
 					jQuery(".mapClearButtonItemInactive").text("clear previews");
 					that.userMapAction = true;
+					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+
 				});
 			
 		}
@@ -302,6 +308,7 @@ org.OpenGeoPortal.MapController.prototype.changeBackgroundMap = function(bgType)
 					that.userMapAction = true;
 					//really should only fire the first time
 					bgMap.events.unregister(bgMap.mapObject, "loadend");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
 				});
 		}
 		if (this.getLayersByClass('OpenLayers.Layer.Google').length > 0){
@@ -376,20 +383,22 @@ org.OpenGeoPortal.MapController.prototype.returnExtent = function(){
 	
 //method to clear the map while keeping the base layer
 org.OpenGeoPortal.MapController.prototype.clearMap = function (){
-	org.OpenGeoPortal.PreviewedLayers.clearLayers();
 	var mapLayers = this.layers;
-	for (var i in mapLayers){
-		var currentLayer = mapLayers[i];
-		if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
+	if (mapLayers.length > 0){
+		org.OpenGeoPortal.PreviewedLayers.clearLayers();
+		for (var i in mapLayers){
+			var currentLayer = mapLayers[i];
+			if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
 				(currentLayer.name != 'OpenStreetMap')&&
 				(currentLayer.name != 'layerBBox')){
-			//remove the layer from the map
-			currentLayer.setVisibility(false);
-			//we'll also need to update the state of buttons and the layer state object
-			this.layerStateObject.setState(currentLayer.name, {"preview": "off", "getFeature": false});
-		} else {
-			continue;
-		}
+				//remove the layer from the map
+				currentLayer.setVisibility(false);
+				//we'll also need to update the state of buttons and the layer state object
+				this.layerStateObject.setState(currentLayer.name, {"preview": "off", "getFeature": false});
+			} else {
+				continue;
+			}
+	}
 	}
 };
 
@@ -486,7 +495,7 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
             	}
             	var rawFeatures = response;//.getElementsByTagName("wfs:FeatureCollection");
             	var innerText = '';
-            	var featureLayer;
+            	/*var featureLayer;
             	//add or modify a layer with a vector representing the selected feature
             	if (this.map.getLayersByName("featureSelection").length > 0){
             		featureLayer = this.map.getLayersByName("featureSelection")[0];
@@ -521,7 +530,7 @@ org.OpenGeoPortal.MapController.prototype.wmsGetFeature = function(e){
                 featureLayer.addFeatures([vector]);
                 featureLayer.redraw();
             	this.map.setLayerIndex(featureLayer, (this.map.layers.length -1));
-
+				*/
             	var linecount = 0;
             	//supports only one feature as is
             	jQuery(attributes).children().first().children().each(function(){
@@ -606,9 +615,9 @@ org.OpenGeoPortal.MapController.prototype.showLayerBBox = function (mapObj) {
 		featureLayer.removeAllFeatures();
 	} else {
         var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-        style_blue.strokeColor = "blue";
-        style_blue.fillColor = "blue";
-        style_blue.fillOpacity = .05;
+        style_blue.strokeColor = "blue";//'#003366';
+        style_blue.fillColor = "blue";//'#003366';
+        style_blue.fillOpacity = .1;
         style_blue.pointRadius = 10;
         style_blue.strokeWidth = 2;
         style_blue.strokeLinecap = "butt";

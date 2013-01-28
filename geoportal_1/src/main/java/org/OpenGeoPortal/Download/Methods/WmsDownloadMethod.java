@@ -32,6 +32,9 @@ public class WmsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	public Set<String> getExpectedContentType(){
 		Set<String> expectedContentType = new HashSet<String>();
 		expectedContentType.add("application/zip");
+		expectedContentType.add("application/vnd.google-earth.kml+xml");
+		expectedContentType.add("application/vnd.google-earth.kmz");
+		expectedContentType.add("image/geotiff");
 		return expectedContentType;
 	}
 	
@@ -87,7 +90,7 @@ The currently recognized format options are:
 	
 	@Override
 	public String getUrl(){
-		return this.currentLayer.getWfsUrl();
+		return this.currentLayer.getWmsUrl();
 	};
 	
 	 Map<String, String> getWfsDescribeLayerInfo()
@@ -108,8 +111,8 @@ The currently recognized format options are:
 	            + 	"<TypeName>" + layerName + "</TypeName>"
 	            + "</DescribeFeatureType>";
 
-		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), describeFeatureRequest, "POST");
-		System.out.println(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
+		InputStream inputStream = this.httpRequester.sendRequest(this.currentLayer.getWfsUrl(), describeFeatureRequest, "POST");
+		//System.out.println(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
 
 		//parse the returned XML and return needed info as a map
 		// Create a factory

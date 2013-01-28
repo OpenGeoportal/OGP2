@@ -58,12 +58,13 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 
 	@Override
 	public String getWMSUrl(SolrRecord solrRecord) {
-		logger.info("Has proxy url: " + Boolean.toString(hasProxy(solrRecord)));
 		if (hasProxy(solrRecord)){
 			String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
 			String accessLevel = solrRecord.getAccess();//layerInfo.get("Access")
 			try {
-				return this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
+				String proxyUrl = this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
+				logger.info("Has proxy url: " + proxyUrl);
+				return proxyUrl;
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				logger.error("Error getting proxy");

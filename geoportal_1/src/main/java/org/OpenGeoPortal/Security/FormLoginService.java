@@ -1,6 +1,7 @@
 package org.OpenGeoPortal.Security;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -34,23 +35,29 @@ public class FormLoginService implements LoginService {
 
     public LoginStatus login(String username, String password) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
-        logger.info("Attempting login.");
+        logger.debug("Attempting login.");
         try {
             Authentication auth = authenticationManager.authenticate(token);
-            logger.info("Login succeeded!");
+            logger.debug("Login succeeded!");
             SecurityContextHolder.getContext().setAuthentication(auth);
-
-            return new LoginStatus(auth.isAuthenticated(), auth.getName(), auth.getAuthorities());
+            Collection<? extends GrantedAuthority> authorities = null;
+            if (auth.getAuthorities().isEmpty()){
+            	authorities = new ArrayList<GrantedAuthority>();
+            } else {
+            	authorities = auth.getAuthorities();
+            }
+            return new LoginStatus(auth.isAuthenticated(), auth.getName(), authorities);
         } catch (BadCredentialsException e) {
-        	List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        	Collection<? extends GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
             return new LoginStatus(false, null, authorities);
         }
     }
 
 	@Override
 	public LoginStatus logout() {     
-		logger.info("Logout succeeded!");
-        SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
+		logger.debug("Logout succeeded!");
+        //SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
+        SecurityContextHolder.clearContext();
 
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         return new LoginStatus(false, null, authorities);

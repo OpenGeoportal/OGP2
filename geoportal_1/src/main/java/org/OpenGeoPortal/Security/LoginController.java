@@ -17,15 +17,14 @@ public class LoginController {
 	LoginService loginService;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@RequestMapping(value="login", method=RequestMethod.GET, produces="application/json")
+	@RequestMapping(value="loginStatus", method=RequestMethod.GET, produces="application/json")
 	@ResponseBody public LoginStatus getStatus() {
 		return loginService.getStatus();
 	}
 
-	@RequestMapping(value="login", method=RequestMethod.POST, produces="application/json")
+	@RequestMapping(value="login", method=RequestMethod.GET, produces="application/json")
 	@ResponseBody public LoginStatus login(@RequestParam("j_username") String username,
                          @RequestParam("j_password") String password) {
-		logger.info("got here");
 		return loginService.login(username, password);
 	}
 	

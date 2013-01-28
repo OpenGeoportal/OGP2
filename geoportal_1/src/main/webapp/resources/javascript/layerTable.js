@@ -614,10 +614,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
               value: opacityVal, //get value from Layer State object 
               slide: function(event, ui) {
     	  			jQuery('#opacityText' + tableID + escapedLayerID).text(ui.value + '%');
-    	  			console.log(layerID);
+    	  			//console.log(layerID);
               		for (var i in org.OpenGeoPortal.map.getLayersByName(layerID)){
               			org.OpenGeoPortal.map.getLayersByName(layerID)[0].setOpacity(ui.value * .01);
-              			console.log(org.OpenGeoPortal.map.getLayersByName(layerID)[0]);
+              			//console.log(org.OpenGeoPortal.map.getLayersByName(layerID)[0]);
               		}},
               stop: function(event, ui){                  				
               		org.OpenGeoPortal.layerState.setState(layerID, {"opacity": ui.value});
@@ -1194,7 +1194,15 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		  //temporary...
 		  var path = "";
 		  if (layerSource == "Harvard"){
-			  path = "http://hgl.hul.harvard.edu/opengeoportal";
+			  path = "http://calvert.hul.harvard.edu:8080/opengeoportal";
+			  var shareLink = path + "/openGeoPortalHome.jsp";
+			  var layerID = this.getLayerIdFromRow(rowObj);
+			  var geodeticBbox = org.OpenGeoPortal.map.getGeodeticExtent();
+			  var queryString = '?' + jQuery.param({ layer: layerID, minX: geodeticBbox.left, minY: geodeticBbox.bottom, maxX: geodeticBbox.right, maxY: geodeticBbox.top });
+			  shareLink += queryString;
+			  previewControl += 'onclick="window.open(\'' + shareLink + '\');return false;"';
+		  } else if (layerSource == "MIT"){
+			  path = "http://arrowsmith.mit.edu/mitogp";
 			  var shareLink = path + "/openGeoPortalHome.jsp";
 			  var layerID = this.getLayerIdFromRow(rowObj);
 			  var geodeticBbox = org.OpenGeoPortal.map.getGeodeticExtent();
@@ -1778,7 +1786,8 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	    	solr.setLocalRestricted(org.OpenGeoPortal.InstitutionInfo.getHomeInstitution());
 	    
 		var publisher = jQuery('#advancedOriginatorText').val().trim();
-	    solr.setPublisher(publisher);
+	   // solr.setPublisher(publisher);
+	    solr.setOriginator(publisher);
 
 	    var topicsElement = jQuery("input[type=radio][name=topicRadio]");
 	    var selectedTopic = topicsElement.filter(":checked").val();
@@ -2025,6 +2034,7 @@ org.OpenGeoPortal.LayerTable.prototype.getNextResizable = function(thisHeadingKe
 };
 
 //assigns ids to th elements in the search results table, uses jqueryUI resizable function
+//does this need to be called on redraw callback, or can it be called somewhere else, less often
 org.OpenGeoPortal.LayerTable.prototype.addColumnResize = function(){
 	var tableID = this.getTableID();
 	var that = this;
@@ -2048,7 +2058,13 @@ org.OpenGeoPortal.LayerTable.prototype.addColumnResize = function(){
 	for (var i in fieldInfo){
 		var columnClass = fieldInfo[i].columnClass;
 		var resizeSelector = jQuery("th." + columnClass + " > ." + tableID + "Cell");
-		resizeSelector.resizable("destroy");
+		if (resizeSelector.hasClass("applied")){
+			try {
+				resizeSelector.resizable("destroy");
+			} catch (e){
+				//console.log(e);
+			}
+		};
 		//if this is the last resizable column, don't add resizable
 		if (i >= numIndex){
 			return;
@@ -2056,7 +2072,7 @@ org.OpenGeoPortal.LayerTable.prototype.addColumnResize = function(){
 		var columnMinWidth = fieldInfo[i].minWidth;
 		//next resizable element class
         //var j = parseInt(i) + 1;
-        
+        resizeSelector.addClass("applied");
 		resizeSelector.resizable({ minWidth: columnMinWidth, handles: 'e',
 			helper: 'ui-resizable-helper', alsoResize: "." + columnClass + " > ." + tableID + "Cell",
 			start: function(event, ui){

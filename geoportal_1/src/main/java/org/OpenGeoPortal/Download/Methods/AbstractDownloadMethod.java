@@ -2,10 +2,8 @@ package org.OpenGeoPortal.Download.Methods;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -15,6 +13,8 @@ import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.DirectoryRetriever;
 import org.OpenGeoPortal.Utilities.OgpFileUtils;
 import org.OpenGeoPortal.Utilities.Http.HttpRequester;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,14 +54,23 @@ public abstract class AbstractDownloadMethod {
 		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), getMethod());
 		File directory = getDirectory();
 		String contentType = httpRequester.getContentType().toLowerCase();
-		if (!expectedContentTypeMatched(contentType)){
+		Boolean contentMatch = expectedContentTypeMatched(contentType);
+		if (!contentMatch){
 			logger.error("Unexpected content type: " + contentType);
+			//If their is a mismatch with the expected content, but the response is text, we want to at least log the response
+			if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
+				logger.error("Returned text: " + IOUtils.toString(inputStream));
+			} 
+			
 			throw new Exception("Unexpected content type");
+
 		}
 		File outputFile = OgpFileUtils.createNewFileFromDownload(currentLayer.getLayerInfo().getName(), contentType, directory);
-		OutputStream outputStream = new FileOutputStream(outputFile);
+		//OutputStream outputStream = new FileOutputStream(outputFile);
+		//FileUtils with a BufferedInputStream seems to be the fastest method with a small sample size.  requires more testing
 		InputStream bufferedIn = new BufferedInputStream(inputStream);
-		try {
+		FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
+		/*try {
 			int currentBytes;
 			while ((currentBytes = bufferedIn.read()) != -1) {
 				outputStream.write(currentBytes);
@@ -72,7 +81,7 @@ public abstract class AbstractDownloadMethod {
 			} finally {
 				outputStream.close();
 			}
-		}
+		}*/
 
 		return new AsyncResult<File>(outputFile);
 	}

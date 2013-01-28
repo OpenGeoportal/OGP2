@@ -5,29 +5,6 @@
     	    <label class="searchFormLabel">Topic:</label>
     		<div id="topicDropdown" class="searchFormInput">
       		</div>
-    		<!--<span class="searchFormLabel">Topic:</span>
-    		<select name="advancedSelectTopic" id="advancedSelectTopic" class="selectTopic searchFormInput">
-      					<option>Select a topic (optional)</option>
-	      				<option value="farming">Agriculture and Farming</option>
-						<option value="biota">Biology and Ecology</option>
-						<option value="boundaries">Administrative and Political Boundaries</option>
-						<option value="climatologyMeteorologyAtmosphere">Atmospheric and Climatic</option>
-						<option value="economy">Business and Economic</option>
-						<option value="elevation">Elevation and Derived Products</option>
-						<option value="environment">Environment and Conservation</option>
-						<option value="geoscientificinformation">Geological and Geophysical</option>
-						<option value="health">Human Health and Disease</option>
-						<option value="imageryBaseMapsEarthCover">Imagery and Base Maps</option>
-						<option value="intelligenceMilitary">Military</option>
-						<option value="inlandWaters">Inland Water Resources</option>
-						<option value="location">Locations and Geodetic Networks</option>
-						<option value="oceans">Oceans and Estuaries</option>
-						<option value="planningCadastre">Cadastral</option>
-						<option value="society">Cultural, Society, and Demographics</option>
-						<option value="structure">Facilities and Structure</option>
-						<option value="transportation">Transportation Networks</option>
-						<option value="utilitiesCommunications">Utilities and Communication</option>
-    		</select>-->
     	</div>
 		<div class="searchFormRow">
     		<label for="advancedKeywordText" class="searchFormLabel">Keyword(s):</label>
@@ -65,8 +42,8 @@
    			</span>
    		</div>
    		<div class="searchFormRow advancedSearchButtons">
-   			<span id="advancedSearchClear" class="styledButtonSmall" onclick="org.OpenGeoPortal.ui.clearInput('advancedSearchForm')">Clear</span>
-   			<span id="advancedSearchSubmit" class="styledButtonSmall" onclick="org.OpenGeoPortal.ui.searchSubmit()">Search</span>
+   			<span id="advancedSearchClear" class="styledButtonSmall">Clear</span>
+   			<span id="advancedSearchSubmit" class="styledButtonSmall">Search</span>
     	</div>
     	<div class="searchFormRow">			
    			<input type="checkbox" name="mapFilterCheck2" id="mapFilterCheck2" class="mapFilterFlag" onclick="org.OpenGeoPortal.ui.mapFilterStatus(this)" value="on" checked="checked" />

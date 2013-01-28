@@ -150,6 +150,7 @@ public class MetadataFromSolr implements MetadataRetriever {
 		//write this string to a file
 		OutputStream xmlFileOutputStream = new FileOutputStream (xmlFile);
 		new PrintStream(xmlFileOutputStream).print(xmlString);
+		xmlFileOutputStream.close();
 		return xmlFile;
 	}
 

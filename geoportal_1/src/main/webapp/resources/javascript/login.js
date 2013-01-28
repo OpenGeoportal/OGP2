@@ -108,6 +108,7 @@ org.OpenGeoPortal.LogIn = function(institution){
 			context: that,
 			resizable: false,
 			zIndex: 3000,
+			stack: true,
 			buttons: loginButtons });
     } else {
     	//replace dialog text/controls & open the instance of 'dialog' that already exists
@@ -127,23 +128,21 @@ org.OpenGeoPortal.LogIn = function(institution){
 	}
 	
 	jQuery("#loginDialog").dialog('open');
-	jQuery("#loginDialog").dialog("stack");
-
 };
 
 this.checkLoginStatus = function(){
 	var that = this;
-	var ajaxArgs = {url: "login", type: "GET", 
+	var url = this.getUrl() + "loginStatus";
+	var ajaxArgs = {url: url, type: "GET", 
 			context: that,
 			crossDomain: true,
+			dataType: "jsonp",
 			success: that.loginStatusResponse
 			};
 	jQuery.ajax(ajaxArgs);
 };
-// retrieve user entered values, generate https request and set login flag
-// some special processing is included for running on localhost 
-this.processFormLogin = function()
-{
+
+this.getUrl = function(){
 	var hostname = window.location.hostname;
 	var currentPathname = window.location.pathname;
 	var pathParts = currentPathname.split("/");
@@ -154,25 +153,35 @@ this.processFormLogin = function()
 		extraPath = pathParts[1] + "/";
 	}
         var port = window.location.port;
-	if ((port == "") || (port == null))
-		port = "8443";
-	port = ":" + "8443";
+	if ((port == "") || (port == null)){
+		port = "";
+	} else {
+		port = ":" + port;
+	}
 	var protocol = "https";
-	//if (hostname == "localhost")
+	if (hostname == "localhost"){
 		//protocol = "http";
+		port = ":8443";
+	}
+	var url = protocol + "://" + hostname + port + "/" + extraPath;
+	return url;
+};
+// retrieve user entered values, generate https request and set login flag
+// some special processing is included for running on localhost 
+this.processFormLogin = function()
+{
 	var that = this;
-	var url = protocol + "://" + hostname + port + "/" + extraPath + this.authenticationPage;
+	var url = this.getUrl() + this.authenticationPage;
 	//var url = this.authenticationPage;
 	var username = jQuery("#loginFormUsername").val();
 	var password = jQuery("#loginFormPassword").val();
-	var ajaxArgs = {url: url, type: "POST", 
+	var ajaxArgs = {url: url, 
 			context: that,
-	        beforeSend: function(xhr) {
-	        	xhr.withCredentials = true;
-	        },
+			   xhrFields: {
+				     withCredentials: true
+				   },
 			data: {"j_username": username, "j_password": password},
-			//dataType: "jsonp",
-			crossDomain: true,
+			dataType: "jsonp",
 			success: that.loginResponse, 
 			error: that.loginResponseError};
 	jQuery.ajax(ajaxArgs);
