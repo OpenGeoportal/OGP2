@@ -799,6 +799,38 @@ org.OpenGeoPortal.MapController.prototype.addWMSLayer = function (mapObj) {
 	this.layerExists(mapObj);
 };
 
+//thanks to Allen Lin, MN
+org.OpenGeoPortal.MapController.prototype.addArcGISRestLayer = function (mapObj) {
+	//won't actually do anything, since noMagic is true and transparent is true
+	var format;
+	if ((mapObj.dataType == "Raster")||(mapObj.dataType == "Paper Map")){
+		format = "image/jpeg";
+	} else {
+		format = "image/png";
+	}
+
+//if this is a raster layer, we should use jpeg format, png for vector (per geoserver docs)
+	var newLayer = new OpenLayers.Layer.ArcGIS93Rest( mapObj.title,
+            mapObj.location.ArcGISRest,
+            {
+			 layers: "show:" + mapObj.layerName,
+             transparent: true
+            },
+            {
+             buffer: 0,
+             transitionEffect: 'resize',
+             opacity: mapObj.opacity
+             });
+	newLayer.projection = new OpenLayers.Projection("EPSG:3857");
+    //how should this change? trigger custom events with jQuery
+    newLayer.events.register('loadstart', newLayer, function() {org.OpenGeoPortal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.name);});
+    newLayer.events.register('loadend', newLayer, function() {org.OpenGeoPortal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.name);});
+	var that = this;
+	//we do a cursory check to see if the layer exists before we add it
+	jQuery("body").bind(mapObj.layerName + 'Exists', function(){that.addLayer(newLayer);});
+	this.layerExists(mapObj);
+};
+
 org.OpenGeoPortal.MapController.prototype.addOverview = function() {
 	//add overview  options?
 	//google maps api v3 seems to have broken this

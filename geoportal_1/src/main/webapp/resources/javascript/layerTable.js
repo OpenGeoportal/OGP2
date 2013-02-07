@@ -645,19 +645,26 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     	  var totalResults = solrResponse["numFound"];
     	  if (totalResults != 1)
     	  {
-    		  throw new Error("Request for FGDC returned " + totalResults +".  Exactly 1 was expected.");
+    		  throw new Error("Request for Metadata returned " + totalResults +".  Exactly 1 was expected.");
     		  return;
     	  }
     	  var doc = solrResponse["docs"][0];  // get the first layer object
-    	  var fgdcRawText = doc["FgdcText"];
+    	  var metadataRawText = doc["FgdcText"];
     	  var layerId = doc["LayerId"];//[0];
-    	  //var fgdcText = unescape(fgdcRawText);  // text was escaped on ingest into Solr<--doesn't need to be unescaped: can cause problems if there is a space in a link
-    	  var fgdcDocument = jQuery.parseXML(fgdcRawText);
+    	  var metadataDocument = jQuery.parseXML(metadataRawText);
+    	  
     	  var xsl = null;
+    	  var xslUrl = null;
+
+    	  if (metadataDocument.firstChild.localName == "MD_Metadata"){
+        	  xslUrl = "isoBasic.xsl";
+    	  } else {
+        	  xslUrl = "FGDC_V2_a.xsl";
+    	  }
+    	  xslUrl = "resources/xml/" + xslUrl;
     	  var params = {
-    			  url: "resources/xml/FGDC_V2_a.xsl",
+    			  url: xslUrl,
     			  async: false,
-    			 // context: contextObj,
     			  dataType: 'xml',
     			  success: function(data){xsl = data;}
     	  };
@@ -665,11 +672,11 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     	  var resultDocument = "";
     	  if (xsl != null){
     		  if (jQuery.browser.msie){
-    			  resultDocument=fgdcDocument.transformNode(xsl);
+    			  resultDocument = metadataDocument.transformNode(xsl);
     		  } else {
     			  var xsltProcessor = new XSLTProcessor();
     			  xsltProcessor.importStylesheet(xsl);
-    			  resultDocument = xsltProcessor.transformToFragment(fgdcDocument, document);
+    			  resultDocument = xsltProcessor.transformToFragment(metadataDocument, window.document);
     		  }
     	  }
     	  if (typeof jQuery('#metadataDialog')[0] == 'undefined'){
@@ -678,13 +685,12 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
     		  jQuery('body').append(dialogDiv);
     	  }
     	  var dialogHeight = 400;
-    	  //jQuery('#metadataDialog').width("550");
     	  var metadataTemplate = '<div id="toMetadataTop"></div><div id="metadataContent"></div><div id="metadataFooter" title="LayerId: ' + layerId + '">' + layerId + '</div>';
     	  var metadataDialog = jQuery("#metadataDialog");
     	  metadataDialog.html(metadataTemplate)
     	  jQuery("#metadataContent").html(resultDocument);
     	  
-    	  metadataDialog.dialog({ zIndex: 9999, width: 630, height: dialogHeight, title: "<div>FGDC METADATA</div>" });  
+    	  metadataDialog.dialog({ zIndex: 9999, width: 630, height: dialogHeight, title: "<div>METADATA</div>" });  
     	  if (jQuery("#metadataDownloadButton").length == 0){
         	  var downloadButton = '<span class="styledButtonSmall" id="metadataDownloadButton">Download Metadata (XML)</span>';
     		  metadataDialog.parent().find(".ui-dialog-titlebar").first().prepend(downloadButton);
@@ -697,7 +703,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
   			if (toID.indexOf("#") == 0){
   				event.preventDefault();
     			//parse the hrefs for the anchors in this DOM element into toID
-  				//xsl uses names instead of ids; yuck
+  				//current xsl uses names instead of ids; yuck
   				toID = toID.substring(1);
     			metadataContent.scrollTo(jQuery('[name="' + toID + '"]'));
   			}
@@ -1026,7 +1032,14 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	            			//this should be triggered when layer load is complete
 	            			jQuery(thisObj).attr('title', hideLayerText);
 	            			layerState.setState(layerID, {"preview": "on", "dataType": dataType, "wmsName": layerName});
-	            		} else {
+	            		} else if (typeof location.ArcGISRest != "undefined"){
+							org.OpenGeoPortal.map.addArcGISRestLayer({"institution": institution, "layerName": layerName, "title": layerID, 
+		            			"west": minLongitude, "south": minLatitude, "east": maxLongitude, "north": maxLatitude, 
+		            			"dataType": dataType, "opacity": opacitySetting *.01, "access": access, "location": location});
+		            		//this should be triggered when layer load is complete
+		            		jQuery(thisObj).attr('title', hideLayerText);
+		            		layerState.setState(layerID, {"preview": "on", "dataType": dataType, "wmsName": layerName});
+						} else {
 	            			throw new Error("This layer is currently not previewable.");
 	            		}
 	            	} else if (availability.toLowerCase() == "offline"){
@@ -1167,6 +1180,10 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		  //needs to poll the layer state object
       	//our layer id is being used as the openlayers layer name
 		  var layerAccess = rowObj.aData[this.tableHeadingsObj.getColumnIndex("Access")];
+		  var layerLocation = rowObj.aData[this.tableHeadingsObj.getColumnIndex("Location")];
+		  if ((layerLocation.indexOf("ArcGISRest") == -1) &&(layerLocation.indexOf("wms") == -1)){
+			  return "";
+		  }
 		  if (layerAccess == "Public"){
 			  return this.getActivePreviewControl(rowObj);			  
 		  } else {

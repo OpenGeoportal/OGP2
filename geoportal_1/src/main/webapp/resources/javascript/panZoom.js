@@ -1,3 +1,15 @@
+OpenLayers.Layer.WMS.prototype.getFullRequestString = function(newParams,altUrl)
+{
+    try{
+        var projectionCode=typeof this.options.projection == 'undefined' ? this.map.getProjection() : this.options.projection;
+    }catch(err){
+        var projectionCode=this.map.getProjection();
+    }
+    this.params.SRS = projectionCode=="none" ? null : projectionCode;
+ 
+    return OpenLayers.Layer.Grid.prototype.getFullRequestString.apply(this,arguments);
+};
+
 /**
  * Function: onImageLoadError 
  */

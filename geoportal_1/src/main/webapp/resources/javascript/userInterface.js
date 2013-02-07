@@ -71,6 +71,7 @@ org.OpenGeoPortal.UserInterface = function(){
 			var type, search, keyword;
 
 			if (event.keyCode == '13') {
+				event.preventDefault();
 				that.searchSubmit();
 				type = org.OpenGeoPortal.Utility.whichSearch().type;
 				if (type == "basicSearch") {
@@ -83,6 +84,7 @@ org.OpenGeoPortal.UserInterface = function(){
 				analytics.track("Search", search, keyword);
 			} 
 		});
+		jQuery("#advancedSearchSubmit").click(function(){that.searchSubmit()});
 		jQuery("#geosearch").keypress(function(event){
 			if (event.keyCode == '13') {
 				var location = jQuery("#geosearch").val();
@@ -92,7 +94,6 @@ org.OpenGeoPortal.UserInterface = function(){
 				that.clearInput('geosearchDiv');
 			}
 		});
-
 		jQuery(document).bind('tabsshow', function(event, ui) {
 			var tabObj = that.utility.whichTab();
 			switch(tabObj.name){
@@ -219,7 +220,7 @@ org.OpenGeoPortal.UserInterface = function(){
 	    			function(){
 	    				jQuery(this).data("mouseOverInput", false); 
 	    				if(!jQuery(this).is(":focus")){
-	    					jQuery(this).css("opacity", ".5");
+	    					jQuery(this).css("opacity", ".7");
 	    				} 
 	    			});
 	    jQuery("input#geosearch").focusin(function(){
@@ -295,6 +296,7 @@ org.OpenGeoPortal.UserInterface = function(){
 					jQuery('#tabs a img').attr("src", that.utility.getImage("shoppingcart.png"));
 				};
 		});
+		this.autocomplete();
 		var containerHeight = jQuery(window).height() - jQuery("#header").height() - jQuery("#footer").height() - 2;
 		containerHeight = Math.max(containerHeight, 680);
 		var containerWidth = jQuery(window).width();//Math.max((Math.floor(jQuery(window).width() * .9)), 1002);
@@ -448,10 +450,11 @@ org.OpenGeoPortal.UserInterface.prototype.styledSelect = function(divId, paramOb
 	jQuery("#" + divId + "Select .styledSelectText").width(jQuery("#" + divId).width() - jQuery("#" + divId + "Select .styledSelectArrow").width() - 39);
 	jQuery("#" + divId + "Menu").buttonset().addClass("raised").hide();
 	//jQuery("#sourceCheckMenu").hide();
+
 	selectElement.mouseleave(function(){
 		jQuery("#" + divId + "Menu").hide();
 		});
-	selectElement.click(function(){
+	jQuery("#" + divId + "Select").click(function(event){
 		var menu = jQuery("#" + divId + "Menu");
 		if (menu.css("display") == "none"){
 			menu.show();
@@ -514,7 +517,8 @@ org.OpenGeoPortal.UserInterface.prototype.createInstitutionsMenu = function() {
 		var institutionIcon = institutionConfig[institution]["graphics"]["sourceIcon"];
 		menuHtml += '<img src="' + institutionIcon["resourceLocation"] + '" alt="' + institutionIcon["altDisplay"]; 
 		menuHtml += ' title="' + institutionIcon["tooltipText"] + '"/>';
-		menuHtml += institution + '</label>';
+		menuHtml += institution;
+		menuHtml += '</label>';
 		menuHtml += '<input type="checkbox" class="sourceCheck" id="sourceCheck' + institution + '" value="' + institution + '" checked=true />';
 		menuHtml += '</div>';
 	}
@@ -1857,7 +1861,7 @@ org.OpenGeoPortal.UserInterface.prototype.addSharedLayersToCart = function(){
 	solr.sendToSolr(query, this.getLayerInfoJsonpSuccess, this.getLayerInfoJsonpError, this);
 	var sharedExtent = params.minX + ',' + params.minY + ',' + params.maxX + ',' + params.maxY;
 	this.mapObject.zoomToLayerExtent(sharedExtent);
-	jQuery("#tabs").tabs({selected: 2});
+	jQuery("#tabs").tabs("option", "active", 2);
 	this.initSortable();
 };
 
@@ -2455,5 +2459,44 @@ org.OpenGeoPortal.UserInterface.prototype.maximizeDialog = function(dialogId){
 		jQuery("#" + dialogId).parent().css("position", "absolute");
 	}
 		//>>> jQuery("#geoCommonsExportDialog").dialog("option", "position", jQuery("#geoCommonsExportDialog").data("maxPosition"))
+};
+
+
+org.OpenGeoPortal.UserInterface.prototype.autocomplete = function(){
+
+	jQuery( "#advancedOriginatorText" ).autocomplete({
+        source: function( request, response ) {
+        	var solr = new org.OpenGeoPortal.Solr();
+        	var fieldName = "OriginatorSort";
+        	var query = solr.getTermQuery(fieldName, request.term);
+        		var facetSuccess = function(data){
+                    var labelArr = [];
+                    var dataArr = data.terms[fieldName];
+                    for (var i in dataArr){
+                    if (i%2 != 0){
+                        continue;
+                        }
+                        var temp = {"label": dataArr[i], "value": '"' + dataArr[i] + '"'};
+                        labelArr.push(temp);
+                        i++;
+                        i++;
+                    }
+                response(labelArr);
+        		};
+        		var facetError = function(){};
+           solr.termQuery(query, facetSuccess, facetError, this);
+
+        },
+        minLength: 2,
+        select: function( event, ui ) {
+
+        },
+        open: function() {
+            jQuery( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+        },
+        close: function() {
+            jQuery( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
+        }
+    });
 };
 
