@@ -1654,14 +1654,19 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		solr.setSort(sortColumn, sortObj.organizeDirection);
 		if (org.OpenGeoPortal.ui.filterState())
 		{
-			//make sure we're getting the right values for the extent
-			org.OpenGeoPortal.map.updateSize();
-			var extent = org.OpenGeoPortal.map.returnExtent();
-			var minX = extent.left;
-			var maxX = extent.right;
-			var minY = extent.bottom;
-			var maxY = extent.top;
-			solr.setBoundingBox(minX, maxX, minY, maxY);
+			if (!org.OpenGeoPortal.map.userMapAction){
+				//if search gets called before the map is fully loaded, you get strange results
+				solr.setBoundingBox(-180.0, 180.0, -85.051128779807, 85.051128779807);
+			} else {
+				//make sure we're getting the right values for the extent
+				org.OpenGeoPortal.map.updateSize();
+				var extent = org.OpenGeoPortal.map.returnExtent();
+				var minX = extent.left;
+				var maxX = extent.right;
+				var minY = extent.bottom;
+				var maxY = extent.top;
+				solr.setBoundingBox(minX, maxX, minY, maxY);
+			}
 		}
 		return solr;
 	};

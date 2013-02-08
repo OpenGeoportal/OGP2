@@ -80,7 +80,7 @@ org.OpenGeoPortal.Solr.prototype.getInfoFromLayerIdQuery = function getInfoFromL
 	} else {
 		solrQuery = "q=" + "LayerId" + ":" + layerId;
 	}
-	solrQuery += extras;
+	solrQuery += extras + "&rows=10000";
 	return solrQuery;
 };
 
@@ -956,7 +956,6 @@ org.OpenGeoPortal.Solr.prototype.sendToSolr = function sendToSolr(query, success
 		var newSuccessFunction = function(data){successFunction(data, newContext);};
 		ajaxParams.success = newSuccessFunction;
 	}
-	//console.log(this);
 	jQuery.ajax(ajaxParams);
 };
 
