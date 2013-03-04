@@ -11,6 +11,7 @@
 	"Berkeley":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_berkeley.png", "altDisplay": "Berkeley", "tooltipText": "UC Berkeley"}}}, 
 	"MIT":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_mit.png", "altDisplay": "MIT", "tooltipText": "Massachusetts Institute of Technology"}}},
 	"Maryland":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_maryland.png", "altDisplay": "University of Maryland", "tooltipText": "University of Maryland"}}},
+			"UN":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_un.png", "altDisplay": "United Nations", "tooltipText": "United Nations"}}}, 
 		"UNWFP":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_un.png", "altDisplay": "UN World Food Program", "tooltipText": "UN World Food Program"}}},  
 	"MassGIS":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_massgis.png", "altDisplay": "MassGIS", "tooltipText": "MassGIS"}}}
 	}}}

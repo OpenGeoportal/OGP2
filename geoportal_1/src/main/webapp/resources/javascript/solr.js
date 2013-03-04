@@ -1,4 +1,3 @@
-
 // This code provides an interface to the spatial data in the OpenGeoServer Solr server
 
 // To use it, first create an instance.  Then call member functions to set 
@@ -162,7 +161,7 @@ org.OpenGeoPortal.Solr.prototype.getServerPort = function getServerPort()
 	return "executeQuery.jsp";
 };*/
 
-org.OpenGeoPortal.Solr.prototype.DataType = {Raster: "Raster", PaperMap: "Paper+Map", Point: "Point", Line: "Line", Polygon: "Polygon"};
+org.OpenGeoPortal.Solr.prototype.DataType = {Raster: "Raster", PaperMap: "Paper+Map", Point: "Point", Line: "Line", Polygon: "Polygon", Unknown: "Unknown"};
 
 
 // set the data types to search for, vector is shorthand for point, line and polygon
@@ -218,6 +217,10 @@ org.OpenGeoPortal.Solr.prototype.setDataTypes = function setDataTypes(rasterFlag
 	{
 		this.DataTypes[i] = this.DataType.PaperMap;
 		i = i + 1;
+	}
+	//console.log(i);
+	if (i == 0 || i == 5){
+		this.DataTypes.push(this.DataType.Unknown);
 	}
 };
 
@@ -798,8 +801,17 @@ org.OpenGeoPortal.Solr.prototype.layerMatchesArea = function layerMatchesArea(ma
 	var mapDeltaX = Math.abs(mapMaxX - mapMinX);
 	var mapDeltaY = Math.abs(mapMaxY - mapMinY);
 	var mapArea = (mapDeltaX * mapDeltaY);
-	var layerMatchesArea = "product(" + this.LayerMatchesScaleBoost 
+	var layerMatchesArea;
+	/*if (mapArea > 59000)
+		{// here if we are dealing with a global search
+		// all layers with global or nearly global coverage should get the same score
+		layerMatchesArea = "product(100"// + this.LayerMatchesScaleBoost
+							+ ",recip(map(abs(sub(Area," + mapArea + ")),0,8000,.01,sum(abs(sub(Area," + mapArea + ")),.01)),1,1000,1000))";
+									//"sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000)))";
+		}else{*/
+		layerMatchesArea= "product(" + this.LayerMatchesScaleBoost 
 				+ ",recip(sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000))";
+		//}
 	//var layerMatchesArea = "_val_:\"" + layerMatchesArea + "\"";
 
 	return layerMatchesArea;
@@ -1172,7 +1184,7 @@ org.OpenGeoPortal.Solr.prototype.getSearchQuery = function getSearchQuery()
 	                                            sortClause, keywordFilter, dateFilter, dataTypeFilter, institutionFilter, 
 						    accessFilter, publisher, originator, restrictedFilter, topicFilter]);
 
-	var query = "q=" + queryClause + "&debugQuery=false&" + extras; //spatialFilter + "&" + returnType + "&" + returnedColumns;
+	var query = "q=" + queryClause + "&debugQuery=true&" + extras; //spatialFilter + "&" + returnType + "&" + returnedColumns;
 	foo = query;
 	return query;
 };	

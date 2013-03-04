@@ -1110,13 +1110,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	//maps returned data type to appropriate image
 	  this.getTypeIcon = function (rowObj){
 		  var typeIcon = org.OpenGeoPortal.InstitutionInfo.icons.dataTypes;
-		  /*var oldtypeIcon = {
-				  "Point": '<img class="typeIcon" src="media/type_dot.png" alt="Point" title="point"/>',
-				  "Line": '<img class="typeIcon" src="media/type_arc.png" alt="Line" title="line" />',
-				  "Polygon": '<img class="typeIcon" src="media/type_polygon.png" alt="Polygon" title="polygon" />',
-				  "Raster": '<img class="typeIcon" src="media/type_raster.png" alt="Raster" title="raster" />',
-				  "Paper Map": '<img class="typeIcon" src="media/type_map.png" alt="Scanned Map" title="scanned map" />'
-		  };*/
+
 		  var dataType = rowObj.aData[that.tableHeadingsObj.getColumnIndex("DataType")];
 		  if (dataType == "Paper Map"){
 			  dataType = "PaperMap";
@@ -1181,7 +1175,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
       	//our layer id is being used as the openlayers layer name
 		  var layerAccess = rowObj.aData[this.tableHeadingsObj.getColumnIndex("Access")];
 		  var layerLocation = rowObj.aData[this.tableHeadingsObj.getColumnIndex("Location")];
-		  if ((layerLocation.indexOf("ArcGISRest") == -1) &&(layerLocation.indexOf("wms") == -1)){
+		  if ((layerLocation.indexOf("ArcGISRest") == -1) &&(layerLocation.indexOf('"wms":') == -1)){
 			  return "";
 		  }
 		  if (layerAccess == "Public"){
@@ -1199,6 +1193,14 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 				  return this.getExternalPreviewControl(rowObj);
 			  }
 		  }
+	  };
+	  
+	  this.renderDate = function(rowObj){
+		  var year = rowObj.aData[rowObj.iDataColumn].substr(0, 4);
+		  if (year == "0001"){
+			  year = "?";
+		  }
+		  return year
 	  };
 	  
 	  this.getExternalPreviewControl = function(rowObj){
@@ -1245,7 +1247,6 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		  jQuery(document).undelegate(".login");
 		  
 		  jQuery(document).delegate(".loginButton", "click.login",function(e){org.OpenGeoPortal.ui.promptLogin(e);}); 
-			  //$(elements).delegate(selector, events, data, handler);  // jQuery 1.4.3+
 	  };
 	  
 	  this.getActivePreviewControl = function(rowObj){
@@ -1656,7 +1657,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		{
 			if (!org.OpenGeoPortal.map.userMapAction){
 				//if search gets called before the map is fully loaded, you get strange results
-				solr.setBoundingBox(-180.0, 180.0, -85.051128779807, 85.051128779807);
+				solr.setBoundingBox(-180.0, 180.0, -90.0, 90.0);
 			} else {
 				//make sure we're getting the right values for the extent
 				org.OpenGeoPortal.map.updateSize();
@@ -1665,6 +1666,17 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 				var maxX = extent.right;
 				var minY = extent.bottom;
 				var maxY = extent.top;
+				var mapDeltaX = Math.abs(maxX - minX);
+				var mapDeltaY = Math.abs(maxY - minY);
+				if (mapDeltaX > 350){
+					minX = -180.0;
+					maxX = 180.0;
+				}
+				if (mapDeltaY > 165){
+					minY = -90;
+					maxY = 90;
+				}
+
 				solr.setBoundingBox(minX, maxX, minY, maxY);
 			}
 		}
@@ -1787,11 +1799,17 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		var fromDate = jQuery('#advancedDateFromText').val().trim();
 		var toDate = jQuery('#advancedDateToText').val().trim();
 		solr.setDates(fromDate, toDate);
+		var i = jQuery(".dataTypeCheck").length;
+		var j = 0;
 		jQuery(".dataTypeCheck").each(function(){
 			if(jQuery(this).is(":checked")){
 				solr.addDataType(jQuery(this).val());
+				j++;
 			}
 		});
+		if (j==0 || j == i){
+			solr.addDataType("Unknown");
+		}
 		jQuery(".sourceCheck").each(function(){
 					if(jQuery(this).is(":checked")){
 						solr.addInstitution(jQuery(this).val());
@@ -2310,7 +2328,7 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 		            	{"sName": "Publisher", "sTitle": "Publisher", "bVisible": false, "aTargets": [ 9 ], "sClass": "colPublisher", "bSortable": false}},
 		     "ContentDate": {"ajax": true, "resizable": false, "organize": "numeric", "displayName": "Date", "columnConfig": 
 		            	{"sName": "ContentDate", "sTitle": "Date", "bVisible": false, "aTargets": [ 10 ], "sClass": "colDate", "sWidth": "25px", "bSortable": false, "bUseRendered": true,
-		            		"fnRender": function(oObj){return oObj.aData[oObj.iDataColumn].substr(0, 4);}}},
+		            		"fnRender": function(oObj){return thisObj.renderDate(oObj);/*return oObj.aData[oObj.iDataColumn].substr(0, 4);*/}}},
 		     "Institution": {"ajax": true, "resizable": false, "organize": "alpha", "displayName": "Repository", "columnConfig": 
 		            	{"sName": "Institution", "sTitle": "Rep", "bVisible": true, "aTargets": [ 11 ], "sClass": "colSource", "sWidth": "19px", "bSortable": false, "bUseRendered": false, 
 		            		"fnRender": function(oObj){return thisObj.getSourceIcon(oObj);}}},  

@@ -67,13 +67,21 @@ public class GetFeatureInfoController {
    bbox=a1,b1,a2,b2
    bbox should be determined by the client.  the size of a pixel?
 	     */
-	    String layerName = layerInfo.getWorkspaceName() + ":" + layerInfo.getName();
+	    
+	    String workspaceName = layerInfo.getWorkspaceName();
+	    if (!workspaceName.trim().isEmpty()){
+	    	workspaceName = workspaceName + ":";
+	    }
+	    String layerName = workspaceName + layerInfo.getName();
 	    String query = "service=wms&version=1.1.1&request=GetFeatureInfo&info_format=" + format 
 				+ "&SRS=EPSG:900913&feature_count=" + NUMBER_OF_FEATURES + "&styles=&height=" + height + "&width=" + width +"&bbox=" + bbox 
 				+ "&x=" + xCoord + "&y=" + yCoord +"&query_layers=" + layerName + "&layers=" + layerName;
 	    
 	    /*String query = "service=wfs&version=1.1.0&request=GetFeature&typeName=" + layerName + "&maxFeatures=" + NUMBER_OF_FEATURES 
 	    		+ "&srsName=EPSG:900913&bbox=" + bbox;*/
+	    if (previewUrl.contains("?")){
+	    	previewUrl = previewUrl.substring(0, previewUrl.indexOf("?"));
+	    }
 		logger.info("executing WMS getFeatureRequest: " + previewUrl + "?" + query);
 		if (!previewUrl.contains("http")){
 			

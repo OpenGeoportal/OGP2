@@ -1203,6 +1203,13 @@ org.OpenGeoPortal.UserInterface.prototype.downloadContinue = function(){
 		arrBbox = [-180,-90,180,90];
 		layerObj = this.getLayerList("download");
 	}
+	for (var layer in layerObj){
+		if (layerObj[layer].directDownload){
+			console.log(layerObj);
+			jQuery("body").append('<iframe style="display:none" src="' + layerObj[layer].directDownloadUrl + '" ></iframe>');
+			delete layerObj[layer];
+		}
+	}
 	var layerIds = [];
 	var needEmailInput = 0;
 	var layerNumber = 0;
@@ -1216,6 +1223,10 @@ org.OpenGeoPortal.UserInterface.prototype.downloadContinue = function(){
 		} else if (this.isRaster(layerObj[layer].dataType)){
 			layerIds.push(layer + "=" + rasterFormat);
 		}
+	}
+	if (layerNumber == 0){
+		 jQuery("#downloadDialog").dialog('close');
+		 return;
 	}
 	var requestObj = {};
 	if (arrBbox.length > 0){
@@ -1255,6 +1266,10 @@ org.OpenGeoPortal.UserInterface.prototype.downloadContinue = function(){
 			buttons: {
 				Download: function() {
 		  			requestObj.layerNumber = layerNumber;
+		  			if (layerNumber == 0){
+						jQuery(this).dialog('close');
+		  				return;
+		  			}
 		  			var emailAddress = "";
 					if (needEmailInput > 0){
 						emailAddress = jQuery("#emailAddress").val();
@@ -1414,8 +1429,8 @@ org.OpenGeoPortal.UserInterface.prototype.requestDownload = function(requestObj)
 			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
 		analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
 	});
-
 	delete requestObj.layerNumber;
+
 	var params = {
 			url: "requestDownload",
 			data: requestObj,
@@ -1652,6 +1667,16 @@ org.OpenGeoPortal.UserInterface.prototype.getLayerList = function(downloadAction
 			layerInfo[layerID].dataType = aData[headingsObj.getColumnIndex('DataType')];
 			layerInfo[layerID].access = aData[headingsObj.getColumnIndex('Access')];
 			layerInfo[layerID].bounds = [minX, minY, maxX, maxY];
+			var locationObj = jQuery.parseJSON(aData[headingsObj.getColumnIndex("Location")]);
+			console.log(locationObj);
+			var downloadLinkExists = false;
+			var directDownloadUrl = "";
+			if (typeof locationObj["fileDownload"] != undefined){
+				downloadLinkExists = true;
+				directDownloadUrl = locationObj["fileDownload"]
+			}
+			layerInfo[layerID].directDownload = downloadLinkExists;
+			layerInfo[layerID].directDownloadUrl = directDownloadUrl;
 		} else {
 			that.cartTableObject.downloadActionSelectRow(aPos, false);
 		}
@@ -2270,7 +2295,8 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 	var that = this;
 	var layerStateObject = this.layerStateObject;
 	jQuery('.olMap').css('cursor', "-moz-grab");
-	jQuery(document).on('click', 'div.olControlZoomBoxItemInactive', function(){
+	jQuery(document).bind('zoomBoxActivated', function(){
+	//jQuery(document).on('click', 'div.olControlZoomBoxItemInactive', function(){
 		jQuery('.olMap').css('cursor', "-moz-zoom-in");
 		var mapLayers = that.mapObject.layers;
 		for (var i in mapLayers){
@@ -2278,6 +2304,7 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 			if (layerStateObject.layerStateDefined(currentLayer.name)){
 				if (layerStateObject.getState(currentLayer.name, "getFeature")){
 					that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+					layerStateObject.setState(currentLayer.name, {"getFeature": false});
 				}
 			} else {
 				continue;
@@ -2286,7 +2313,8 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 		layerStateObject.resetState('getFeature');
 		jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
 	});
-	jQuery(document).on('click', '.olControlNavigationItemActive', function(){
+	jQuery(document).bind('panActivated', function(){
+//	jQuery(document).on('click', '.olControlNavigationItemActive', function(){
 		jQuery('.olMap').css('cursor', "-moz-grab");
 		//var mapLayers = org.OpenGeoPortal.map.layers;
 		var mapLayers = that.mapObject.layers;
@@ -2295,6 +2323,7 @@ org.OpenGeoPortal.UserInterface.prototype.mouseCursor = function(){
 			if (layerStateObject.layerStateDefined(currentLayer.name)){
 				if (layerStateObject.getState(currentLayer.name, "getFeature")){
 					that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+					layerStateObject.setState(currentLayer.name, {"getFeature": false});
 				}
 			} else {
 				continue;
