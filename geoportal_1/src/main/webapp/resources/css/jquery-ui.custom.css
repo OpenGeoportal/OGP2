@@ -57,11 +57,11 @@
 
 /* Interaction states
 ----------------------------------*/
-.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #999999; background: #ffffff url(../media/tab_bg.gif) 50% 50% repeat-x; font-weight: normal; color: #555555; }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #999999; background: #eeeeee /*url(../media/tab_bg.gif) 50% 50% repeat-x*/; font-weight: normal; color: #555555; }
 .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited { text-decoration: none; }
 .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { border: 1px solid #999999; background: #dadada url(../media/ui-bg_glass_75_dadada_1x400.png) 50% 50% repeat-x; font-weight: normal; color: #212121; }
 /*.ui-state-hover a, .ui-state-hover a:hover { color: #212121; text-decoration: none; }*/
-.ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #999999; background: #ffffff url(../media/tab_bg.gif) 50% 50% repeat-x; font-weight: normal; color: #212121; }
+.ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { border: 1px solid #999999; background: #eeeeee /*url(../media/tab_bg.gif) 50% 50% repeat-x*/; font-weight: normal; color: #212121; }
 /*.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited { color: #212121; text-decoration: none; }*/
 .ui-widget :active { outline: none; }
 
@@ -441,14 +441,14 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
 ----------modified: Chris Barnett------------------------*/
 .ui-tabs { color: #333333; position: relative; padding: 0; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
 .ui-tabs .ui-tabs-nav { margin: 0; padding: 0; }
-.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; margin: 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
+.ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; margin: 0 3px 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; z-index: 99;}
 .ui-tabs .ui-tabs-nav li a { float: left; padding: 0 1em; padding-top: .25em; text-decoration: none; }
-.ui-tabs .ui-tabs-nav li.ui-tabs-active { margin-bottom: 0; padding-bottom: 1px;}
+.ui-tabs .ui-tabs-nav li.ui-tabs-active { margin-bottom: 0; padding-bottom: 3px;}
 li.ui-tabs a {color: #300f00;}
 li.ui-tabs-active a {color: #417dc1;}
 .ui-tabs .ui-tabs-nav li.ui-tabs-active a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a { cursor: default; }
 .ui-tabs .ui-tabs-nav li a, .ui-tabs.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-active a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */
-.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 0; background: none; width: 100%; position: relative; height: 100%;}
+.ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 0; background: none; width: 100%; position: absolute; height: 100%;margin-top: -1px;}
 
 .ui-accordion-content { border-bottom: 1px solid #CCCCCC; border-left: 1px solid #CCCCCC; border-right: 1px solid #CCCCCC; padding: 5px;}
 .ui-accordion-header { height: 26.2px; padding: 0; position: relative; border: 1px solid #CCCCCC !important; border-radius:0 0 0 0;}

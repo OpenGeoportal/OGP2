@@ -44,14 +44,14 @@ org.OpenGeoPortal.UserInterface = function(){
 	 */
 	this.init = function(){
 		jQuery("#tabs").tabs({
-			active: 1,
+			active: 0,
 			activate: function( event, ui ) {
 				that.utility.CurrentTab = jQuery(this).tabs("option", "active");
 								var label,
 					idx = ui.index;
 
-				label = (idx == 2) && "Cart Tab" ||
-						(idx == 1) && "Search Tab" ||
+				label = (idx == 1) && "Cart Tab" ||
+						(idx == 0) && "Search Tab" ||
 						"Getting Started Tab";
 				analytics.track("Interface", "Change Tab", label);
 				var tabObj = that.utility.whichTab();
@@ -675,7 +675,7 @@ org.OpenGeoPortal.UserInterface.prototype.createColumnsMenu = function() {
  * function that removes the welcome message from the search tab and shows the search results table
  */
 org.OpenGeoPortal.UserInterface.prototype.showSearchResults = function(){
-	jQuery("div#welcomeTextSearchTab").remove();	
+	//jQuery("div#welcomeTextSearchTab").remove();	
 	jQuery("#resultsSubHeader > span").css("display", "inline");
 	jQuery("#resultsSubHeader > div").css("display", "inline-block");
 

@@ -59,8 +59,8 @@ org.OpenGeoPortal.MapController = function(userDiv, userOptions) {
                        nav.previous,
                        nav.next,
                        zoomBox,
-                       panHand,
-                       clearMap
+                       panHand
+                       //clearMap
         ]);
     //display mouse coords in lon-lat
     var displayCoords = new OpenLayers.Control.MousePosition({displayProjection: new OpenLayers.Projection("EPSG:4326")});

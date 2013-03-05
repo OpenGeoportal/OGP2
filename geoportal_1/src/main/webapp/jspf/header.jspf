@@ -1,13 +1,18 @@
 <div id="header"> 
-	<div id="logo" onclick="location.href='openGeoPortalHome.jsp'">
- 	</div>
- 	<div id="top_menu"> 
- 		<a href="">Reset</a> &nbsp;&nbsp;&nbsp;
- 		<span id="userGuideLink" class="infoLinks">User Guide</span> 
-		 &nbsp;&nbsp;&nbsp;
- 		<span id="highlightsLink" class="infoLinks">Highlights</span> 
-		 &nbsp;&nbsp;&nbsp;
- 		<span id="headerLogin" class="infoLinks login">Login</span>
-   		<div id="welcome">Welcome!</div>
+	<div id="header_top">
+		<div id="logo" onclick="location.href=location.href">
+			<span>GeoData</span>
+			<span class="offsetColor"> at Tufts</span>
+ 		</div>
+ 		<div id="top_menu"> 
+ 			<a href="">Reset</a> 
+ 			<span class="separator">|</span>
+ 			<span id="userGuideLink" class="infoLinks">Help</span> 
+ 			<span class="separator">|</span>
+ 			<span id="highlightsLink" class="infoLinks">About</span> 
+ 			<span class="separator">|</span>
+ 			<span id="headerLogin" class="infoLinks login">Login</span>
+   		</div>
    	</div>
+    <%@include file="search.jspf"%> 
 </div> 

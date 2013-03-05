@@ -141,12 +141,12 @@ div.olControlMousePosition {
   position: relative;
 }
 
-.olControlNavigationHistory {
+/*.olControlNavigationHistory {
    background-repeat: no-repeat;
    width:  24px;
    height: 24px;
 
-}
+}*/
 
 .olControlNavToolbar .olControlNavigationItemActive { 
   background-repeat: no-repeat;

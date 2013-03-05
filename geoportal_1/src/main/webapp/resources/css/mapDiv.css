@@ -17,57 +17,8 @@
 
 #map_tabs {
   	float:right; 
-  	height: 25px;
-  	margin-right:5px;
-}
-
-#geosearchDiv {
-	position: absolute;
-	top: 5px;
-	right: 4px;
-	width: 253px;
-	z-index: 1001;
-}
-
-#geosearchDiv > input {
-	background: none repeat scroll 0 0 transparent;
-	border: 1px solid #AAAAAA;
-	color: #FFFFFF;
-	height: 17px;
-	width: 220px;
-	opacity: .7;
-	filter:Alpha(Opacity=70);
-	padding-left: 3px;
-	padding-right: 3px;
-}
-
-#geosearchDiv > span {
-	color: white;
-	font-size: 10px;
-	visibility: hidden;
-}
-
-#goButton {
-	float: right;
-	height: 19px;
-	width: 19px;
-	background: #cccccc url(../media/bg_grayfade.png)  repeat-x;
-	color: #666666;
-	border:1px solid #AEAEAE;
-	font-family:tahoma;
-	font-size:12px;
-	/*margin-top:4px;
-	padding:0 4px;*/
-	-moz-border-radius: 0px 4px 4px 0px;
-	border-radius: 0px 4px 4px 0px;
-	position: absolute;
-	right: 0px;
-	top: 0px;
-	box-shadow: -1px -1px 2px -1px #AEAEAE inset;
-}
-
-div#goButton:hover {
-	color:#417dc1; 
+  	margin-right:20px;
+  	margin-top: 5px;
 }
 
 .mapClearButtonItemInactive {
@@ -119,7 +70,7 @@ div.olControlMousePosition {
 }
 
 .olControlPanel {
-  left: 5px;
+  left: 50px;
   top: 5px;
 }
 
@@ -135,9 +86,9 @@ div.olControlMousePosition {
 	height: 31px;
 	width: 100%;
 	position: absolute;
-	background-color: #000000;
+	/*background-color: #000000;
 	opacity: .35;	
-	filter:Alpha(Opacity=35);
+	filter:Alpha(Opacity=35);*/
 	z-index: 1000;
 }
 
@@ -198,79 +149,80 @@ div.olControlMousePosition {
 .olControlNavigationHistory {
 	background-image: none;
 	background-repeat:no-repeat;
-	height:24px;
-	width:24px;
+	height:31px;
+	width:30px;
   	cursor: pointer;
 }
+
 .olControlNavigationHistoryPreviousItemActive { 
-  background: url("../media/arrow_back.png") no-repeat scroll 0 0 transparent;
+  background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
 }
 .olControlNavigationHistoryPreviousItemActive:hover { 
-  background: url("../media/arrow_back_blue.png") no-repeat scroll 0 0 transparent;
+  background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
 }
 .olControlNavigationHistoryPreviousItemInactive { 
-   background: url("../media/arrow_back_disable.png") no-repeat scroll 0 0 transparent;
+   background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
 }
 .olControlNavigationHistoryNextItemActive { 
-   background: url("../media/arrow_forward.png") no-repeat scroll 0 0 transparent;
+   background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
 }
 
 .olControlNavigationHistoryNextItemActive:hover { 
-   background: url("../media/arrow_forward_blue.png") no-repeat scroll 0 0 transparent;
+   background: url("../media/geodata-sprite.png") no-repeat scroll -61px -161px transparent;
 }
 
 .olControlNavigationHistoryNextItemInactive { 
-   background: url("../media/arrow_forward_disable.png") no-repeat scroll 0 0 transparent;
+   background: url("../media/geodata-sprite.png") no-repeat scroll -61px -161px transparent;
 }
 
 .olControlPanel .olControlNavigationItemActive { 
-  background: url("../media/pan_on.png") no-repeat scroll 0 0 transparent;
-  width: 24px;
-  height: 24px;
+  background: url("../media/geodata-sprite.png") no-repeat scroll -122px -161px transparent;
+  width: 33px;
+  height: 31px;
   cursor: pointer;
 }
 .olControlPanel .olControlNavigationItemInactive { 
-  background: url("../media/pan_off.png") no-repeat scroll 0 0 transparent;
-  width: 24px;
-  height: 24px;
+  background: url("../media/geodata-sprite.png") no-repeat scroll -122px -161px transparent;
+  width: 33px;
+  height: 31px;
   cursor: pointer;
 }
 .olControlPanel .olControlZoomBoxItemActive { 
-  background: url("../media/zoom_on.png") no-repeat scroll 0 0 transparent;
-  width: 24px;
-  height: 24px;
+  background: url("../media/geodata-sprite.png") no-repeat scroll -91px -161px transparent;
+  width: 31px;
+  height: 31px;
   cursor: pointer;
 }
 .olControlPanel .olControlZoomBoxItemInactive { 
-  background: url("../media/zoom_off.png") no-repeat scroll 0 0 transparent;
-  width: 24px;
-  height: 24px;
+  background: url("../media/geodata-sprite.png") no-repeat scroll -91px -161px transparent;
+  width: 31px;
+  height: 31px;
   cursor: pointer;
 }
 
 div.olControlZoomBoxItemInactive:hover {
-	background-image: url("../media/zoom_off.png");
+	background-image: url("../media/geodata-sprite.png");
 }
 
 .olControlPanel .olControlZoomToMaxExtentItemInactive { 
-  background: url("../media/full_extent.png") no-repeat scroll 0 0 transparent;
-  width: 24px;
-  height: 24px;
+  background: url("../media/geodata-sprite.png") no-repeat scroll 0 -161px transparent;
+  width: 31px;
+  height: 31px;
   cursor: pointer;
 }
 
 div.olControlZoomToMaxExtentItemInactive:hover {
-	background-image: url("../media/full_extent_hover.png") !important; 
+	background-image: url("../media/geodata-sprite.png") !important; 
 }
 
 .olControlZoomToMaxExtentItemInactiveHover {
-	 background-image: url("../media/full_extent_hover.png") !important;
+	 background-image: url("../media/geodata-sprite.png") !important;
 	 cursor: pointer;
 	 
 } 
 
 .olControlPanel .olControlZoomToMaxExtentItemActive { 
-  background: url("../media/full_extent_hover.png") no-repeat scroll 0 0 transparent;
+  background: url("../media/geodata-sprite.png") no-repeat scroll 0 0 transparent;
   width: 24px;
   height: 24px;
 }

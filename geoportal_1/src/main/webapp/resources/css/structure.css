@@ -13,7 +13,7 @@ body {
 	text-align: center;
 	margin: 0; 
 	padding: 0;
-	background: #cccccc url(../media/bg_tile.gif)  repeat;
+	background: #cccccc;/* url(../media/bg_tile.gif)  repeat;*/
 	font-family: arial, sans-serif;
 	font-size: 12px;
 	color: black;
@@ -62,10 +62,33 @@ h3 {
     display: inline-block;
 }
 
+
+.mapStyledButton {
+	-moz-border-radius: 2px 2px 2px 2px;
+	border-radius: 2px 2px 2px 2px;
+    background: #EEEEEE;
+    border: 1px solid #AEAEAE;
+    color: #000;
+    cursor: pointer;
+    font-family: arial;
+    font-size: 12px;
+    margin: 0.5em 0.4em 0.5em 0;
+    padding: 3px 11px;
+   /* min-width: 88px;*/
+    text-align: center;
+    display: inline-block;
+}
+
 .raised {
     -webkit-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
     box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
+}
+
+.shadowDown {
+  -moz-box-shadow:    0px 3px 4px 0px #888888 inset;
+  -webkit-box-shadow: 0px 3px 4px 0px #888888 inset;
+  box-shadow:         0px 3px 4px 0px #888888 inset;
 }
 
 .styledButton:hover {
@@ -75,22 +98,32 @@ h3 {
 .styledButtonSmall {
 	-moz-border-radius: 4px 4px 4px 4px;
 	border-radius: 4px 4px 4px 4px;
-    background: url("../media/tab_bg.gif") repeat-x scroll 50% 50% #FFFFFF;
-    border: 1px solid #AEAEAE;
-    color: #333333;
+	border: 1px solid #999999;
+    background: #EEE;
+    color: #000;
     cursor: pointer;
-    font-family: tahoma;
+    font-family: arial;
    /* margin: 0.5em 0.4em 0.5em 0;*/
     min-width: 66px;
+    height: 20px;
     text-align: center;
     display: inline-block;
-    font-size: 10px;
-    line-height: 16px;
+    font-size: 11px;
     font-weight: normal;
 }
 
+.searchButton {
+    background: #307DB9;
+    color: #FFF;
+    border: 0;
+   /* margin: 0.5em 0.4em 0.5em 0;*/
+    min-width: 66px;
+    height: 22px;
+    font-size: 12px;    
+}
+
 .styledButtonSmall:hover {
-	color: #417DC1;
+	/*color: #417DC1;*/
 	}
 	
 .owsServicesButton {
@@ -130,46 +163,53 @@ h3 {
  
 /* Header */
 #header {
-	height: 92px;
-  	background-color: #edf4fa;
+	height: 120px;
+  	/*background-color: #edf4fa;*/
+  	background-color: #ffffff;
 	border-right: #333 solid 1px;
 	border-left: #333 solid 1px;
 	border-bottom: #999999 solid 1px;
 }
 
 #logo {
-	float:left;
-	margin-left: 40px;
-	background: no-repeat transparent;
-	height: 75px;
 	cursor: pointer;
+	color: #492318;
+	font-size: 35px;
+    padding-left: 49px;
+    padding-top: 25px;
+    display: inline-block;
 }
- 
+
+.offsetColor {
+	color: #307DB9;
+}
+
 #top_menu {
  	float:right;
- 	height: 26px;
- 	width: 252px;
- 	background: url(../media/top_menu_bg.png) no-repeat transparent;
- 	padding-top: 5px;
- 	padding-left: 20px;
+ 	margin-top: 18px;
+ 	margin-right: 17px;
  }
 
+.separator {
+	padding: 0 5px;
+}
+
 #top_menu a {
- 	color:#FFFFFF; 
+ 	color:#000; 
  	text-decoration: none;
 }
 
 #top_menu a:hover {
-	color:#FFFF66;
+	color:#0755AC;
 }
 
 span.infoLinks {
 	cursor: pointer;
-	color:#FFFFFF;
+	color:#000;
 }
 
 span.infoLinks:hover {
-	color:#FFFF66;
+	color:#0755AC;
 }
 
 #welcome {
@@ -197,11 +237,10 @@ span.infoLinks:hover {
 
 .styledSelect {
 	line-height: 10px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	background-color: #ffffff;
-	font-family: tahoma;
-	color: #222222 !important;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	font-family: Arial;
+	color: #000000 !important;
 	z-index: 999;
 	padding-left: 11px;
 	text-align: left;
@@ -209,8 +248,8 @@ span.infoLinks:hover {
 }
 
 .styledSelect:hover{
-	color:#417DC1 !important;
-	background: #ffffff url(../media/tab_bg.gif) 50% 50% repeat-x;
+	/*color:#417DC1 !important;
+	background: #ffffff url(../media/tab_bg.gif) 50% 50% repeat-x;*/
 }
 
 .styledSelect > span {
@@ -284,12 +323,13 @@ span.infoLinks:hover {
 }
 
 #basemapSelect {
-	height: 24px;
+	/*height: 24px;
 	-moz-border-radius: 4px 4px 0px 0px;
 	border-radius: 4px 4px 0px 0px;
 	background-color: #ffffff;
 	z-index: 2500;
-	border-bottom: none;
+	border-bottom: none;*/
+	line-height: 10px;
 }
 
 #basemapSelect:hover{
@@ -304,11 +344,9 @@ span.infoLinks:hover {
 #basemapMenu {
 	display: none;
 	position: absolute;
-	background-color: #ffffff;
+	background-color: #eeeeee;
 	border: #999999 solid 1px;
 	z-index: 2499;
-	right: 0px;
-	margin-right: 1px;
 	top: 29px;
 	width: 100px;
 }
@@ -321,7 +359,7 @@ span.infoLinks:hover {
 	border-radius: 0px;
 	margin: 0px;
 	padding: 2px 5px;
-	background-color: #ffffff;
+	background-color: #eeeeee;
 }
 
 #basemapMenu label.ui-state-active {
@@ -339,6 +377,7 @@ span.infoLinks:hover {
 
 #sortDropdown {
 	display: inline-block;
+	margin-left: 10px;
 }
 
 #sortDropdownMenu {
@@ -348,15 +387,13 @@ span.infoLinks:hover {
 }
 
 .subHeaderDropdownSelect {
-    font-size: 11px;
-    height: 18px;
-    line-height: 9px;
+    font-size: 12px;
     margin: 0;
     top: 0px;
 }
 
 #columnDropdown {
-    float: right;
+    /*float: right;*/
     margin-top: 1px;
     padding-right: 5px;
 }
@@ -408,12 +445,13 @@ span.infoLinks:hover {
   	background: none !important;
   	background-color: transparent !important;
   	height: 100%;
+  	margin-top: 7px;
 }
 
 #tabs > ul {
-	padding-left: 10px;
-	position: absolute;
-	top: -20px;
+	padding-left: 15px;
+	/*position: absolute;*/
+	/*top: -20px;*/
 }
 
 #tabs > ul > li > a {
@@ -421,9 +459,9 @@ span.infoLinks:hover {
 }
 
 .sub_header {
-	height: 25px;
-	line-height: 25px;
-	background: #cccccc url(../media/bg_grayfade.png)  repeat-x;
+	height: 32px;
+	line-height: 32px;
+	background: #eeeeee;
 	border-top:1px solid #CCC;
 	font-size: 12px;
 	clear: both;
@@ -434,11 +472,37 @@ span.infoLinks:hover {
 	max-width: 88px;
 }
 
-.sub_header .arrow_buttons {
-	display: inline;
-	position: absolute;
-	right: 5px;
-	margin-top: 4px;
+.arrow_buttons {
+    float: right;
+    margin-top: 3px;
+ }
+ 
+ .shoppingCartIcon {
+    background: url("../media/geodata-sprite.png") no-repeat scroll -127px -81px transparent;
+ 	width: 31px;
+ 	height: 22px;
+ 	display: inline-block;
+ 	float: left;
+ }
+ 
+ .arrow_left {
+   background: url("../media/geodata-sprite.png") no-repeat scroll 0 -77px transparent;
+ 	width: 30px;
+ 	height: 26px;
+ 	display: inline-block;
+ }
+ 
+ .arrow_separator {
+    background: url("../media/geodata-sprite.png") no-repeat scroll -29px -77px transparent;
+  	width: 10px;
+ 	height: 26px;
+ 	display: inline-block;
+ }
+ .arrow_right {
+   background: url("../media/geodata-sprite.png") no-repeat scroll -39px -77px transparent;
+  	width: 27px;
+ 	height: 26px;
+ 	display: inline-block;
  }
 
 .tabImage {
@@ -447,13 +511,23 @@ span.infoLinks:hover {
 }
 
 .tabText {
-	font-size: 12px;
-	line-height: 12px;
-	font-family: tahoma, sans-serif;
-	height: 15px;
+	font-size: 14px;
+	font-family: Arial, sans-serif;
+	font-weight: bold;
 	width: 86px;
 	display: block;
 	text-align:center;
+	color: #404143;
+	height: 20px;
+    line-height: 20px;
+}
+
+#searchTabText {
+	width: 119px;
+}
+
+#cartTabText {
+	width: 107px;
 }
 
 .tabText > img {
@@ -507,13 +581,15 @@ span.infoLinks:hover {
 
 /* search area */
 
-form input[type=text] {
+/*form input[type=text] {
 	border: 1px solid #CCCCCC;
+	height: 15px;
+    padding: 2px;
 }
 
 form input[type=text]:focus {
 	border: 1px solid #417DC1;
-}
+}*/
 
 form input[type=password] {
 	border: 1px solid #CCCCCC;
@@ -532,31 +608,91 @@ textarea:focus {
 }
 
 .searchBox {
-	padding-top: 20px;
-	padding-bottom: 20px;
-	padding-left: 35px;
+	padding-top: 2px;
+	padding-left: 50px;
 	font-family: arial,sans-serif;
-	font-size: 12px;
-	width: 345px;
+	font-size: 14px;
+	/*width: 345px;*/
 }
+
+.basicSearch {
+	display: inline-block;
+	line-height: 22px;
+	padding-right: 6px;
+}
+
+.labelText {
+	padding-right: 5px;
+}
+
+.basicSearch input[type="text"] {
+	width: 218px;
+}
+
+#geosearchDiv {
+	/*position: absolute;
+	top: 5px;
+	right: 4px;
+	width: 253px;
+	z-index: 1001;*/
+}
+
+#geosearchDiv > input {
+	/*background: none repeat scroll 0 0 transparent;
+	border: 1px solid #AAAAAA;
+	color: #FFFFFF;
+	height: 17px;
+	width: 220px;
+	opacity: .7;
+	filter:Alpha(Opacity=70);
+	padding-left: 3px;
+	padding-right: 3px;*/
+}
+
+/*#geosearchDiv > span {
+	color: white;
+	font-size: 10px;
+	visibility: hidden;
+}
+
+#goButton {
+	float: right;
+	height: 19px;
+	width: 19px;
+	background: #cccccc url(../media/bg_grayfade.png)  repeat-x;
+	color: #666666;
+	border:1px solid #AEAEAE;
+	font-family:tahoma;
+	font-size:12px;
+	/*margin-top:4px;
+	padding:0 4px;*/
+/*	-moz-border-radius: 0px 4px 4px 0px;
+	border-radius: 0px 4px 4px 0px;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	box-shadow: -1px -1px 2px -1px #AEAEAE inset;
+}
+
+div#goButton:hover {
+	color:#417dc1; 
+}*/
 
 #basicSearchBox {
 	display: block;
 }
 
 #basicSearchTextField {
-    height: 15px;
-    padding: 2px;
-    width: 264px;
+   /* width: 264px;*/
 }
 
 #basicSearchSubmit {
-    float: right;
-    font-size: 11px;
-    line-height: 19px;
+    /*font-size: 11px;
+    line-height: 19px;*/
 }
 
 #basicSearchMapFilterContainer {
+	display: none;
 	margin-top: 5px;
 	display: inline-block;
 	visibility: hidden;	
@@ -596,9 +732,9 @@ textarea:focus {
 }
 
 #moreSearchOptions {
-	margin-top: 5px;
+	/*margin-top: 5px;*/
 	/*margin-left: 55px;*/
-	float: right;
+	/*float: right;*/
 }
 
 #lessSearchOptions {
@@ -607,9 +743,10 @@ textarea:focus {
 }
 
 .searchToggle {
-	color: blue;
 	text-decoration: underline;
 	white-space: nowrap;
+	font-size: 11px;
+	display: inline-block;
 }
 
 .searchToggle span:hover {
@@ -617,10 +754,9 @@ textarea:focus {
 	} 
 
 .searchFormLabel {
+    color: #0755AC;
     display: inline-block;
-    margin-right: 15px;
-    text-align: right;
-    width: 95px;
+    font-weight: bold;
 }
 
 .formCheckbox {
@@ -708,7 +844,7 @@ textarea:focus {
  	/*text-align: center;
  	vertical-align:middle;*/
 	height: 30px;
-	background: #003366;
+	background: #FFF;
 	border-right: #333 solid 1px;
 	border-left: #333 solid 1px;
 	border-bottom: #333 solid 1px;
@@ -811,6 +947,22 @@ div.colorCell:hover {
 	overflow: auto;
 	height: 100%;
 	/*word-wrap: break-word;*/
+}
+
+.metadataButton {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -131px -55px transparent;
+	height: 17px;
+	width: 17px;	
+}
+
+.saveControl {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -102px -33px transparent;
+	height: 17px;
+	width: 17px;	
+}
+
+.saveControlChecked {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -125px -33px transparent;	
 }
 
 .dialog {

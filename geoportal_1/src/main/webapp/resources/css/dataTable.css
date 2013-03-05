@@ -285,7 +285,7 @@ table.display tr td {
 }
 
 table.display tr.row_selected td {
-	background-color:#EDF4FA;
+	background-color:#ebf6ff;
 }
 
 table.display tr.downloadSelection td {
@@ -360,8 +360,8 @@ div.box {
 	}
 	
 .colorPalette {
-	width:15px;
-	height:15px;
+	width:12px;
+	height:12px;
 	border:1px solid #666666;
 	display: inline-block;
 	-moz-border-radius: 1px;
@@ -378,6 +378,7 @@ td.colTitle {
 	
 .tableCheckBox {
 	/*margin-bottom: 0px;*/
+	display: none;
 	max-height: 13px;
 }
 
@@ -405,10 +406,32 @@ td.colTitle {
 
 .zoomToLayerControlCell {
 	left: 290px;
+	background: url("../media/geodata-sprite.png") no-repeat scroll -9px -110px transparent;
+    height: 17px;
+	width: 17px;
 }
 
 .attributeInfoControlCell {
 	left: 312px;
+	background: url("../media/geodata-sprite.png") no-repeat scroll -36px -110px transparent;
+    height: 17px;
+	width: 17px;
+}
+
+.cartIconTable {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -102px -82px transparent;
+    height: 17px;
+	width: 17px;
+}
+
+.repositoryIcon {
+    height: 17px;
+	width: 17px;
+}
+
+.typeIcon {
+	height: 17px;
+	width: 17px;
 }
 
 .typeIcon {
@@ -433,7 +456,7 @@ table.display > tbody > tr > td > div {
 }
 
 table.display tr.previewedLayer td {
-	background-color:#DDDDDD;
+	background-color:#f8f8e4;
 }
 
 .previewLock {
@@ -448,7 +471,7 @@ tr.previewedLayer .previewLock {
 }
 
 .previewSeparator {
-	border-bottom: 1px solid #666666;
+	border-bottom: 1px solid #7E7E7E;
 }
 
  

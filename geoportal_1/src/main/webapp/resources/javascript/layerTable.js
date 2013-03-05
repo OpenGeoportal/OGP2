@@ -367,9 +367,9 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		    //sOut += '" onclick="org.OpenGeoPortal.ui.toggleOutline(this, \'' + layerID + '\', \'' + dataType + '\')"/><label for="outlineCheckBox' + tableID + layerID + '" title="Add an outline to polygon layer">outline</label>';
 	    	sOut += '</div>';
 	    	sOut += '<div class="colorControlCell"><div class="colorPalette button" title="Change the layer color" id="colorPalette' + tableID + layerID + '" onclick="org.OpenGeoPortal.ui.colorDialog(\'' + layerID + '\', \'' + dataType + '\')"></div></div>';
-	    	sOut += '<div class="zoomToLayerControlCell"><img src="' + this.getImage("zoomextent.gif") + '" class="button zoomToLayerControl" alt="Zoom to geographic extent of layer" title="Zoom to geographic extent of layer" onclick="org.OpenGeoPortal.map.zoomToLayerExtent(\'' + extent.join() + '\')" /></div>';
-	    	sOut += '<div class="attributeInfoControlCell">';
-	    	sOut +=	'<img src="' + attributeToolImg + '" id="attributeInfoControl' + tableID + layerID + '"class="button attributeInfoControl" alt="Show Attributes" title="Click a previewed feature on the map to view its attributes" onclick="org.OpenGeoPortal.ui.toggleFeatureInfo(this, \'' + layerID + '\', \'' + displayName + '\')" /></div>';
+	    	sOut += '<div class="zoomToLayerControlCell" class="button zoomToLayerControl" title="Zoom to geographic extent of layer" onclick="org.OpenGeoPortal.map.zoomToLayerExtent(\'' + extent.join() + '\')"></div>';
+	    	sOut += '<div class="attributeInfoControlCell" id="attributeInfoControl' + tableID + layerID + '"class="button attributeInfoControl" alt="Show Attributes" title="Click a previewed feature on the map to view its attributes" onclick="org.OpenGeoPortal.ui.toggleFeatureInfo(this, \'' + layerID + '\', \'' + displayName + '\')" >';
+	    	sOut += '</div>';
 	    }
 
 	    sOut += '</div>';
@@ -1119,7 +1119,8 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 			  return '?';
 		  } else {
 			  var iconInfo = typeIcon[dataType];
-			  var typeHtml = '<img class="typeIcon" src="' + iconInfo.source + '" alt="' + iconInfo.displayName + '" title="' + iconInfo.displayName + '"/>';
+			  //var typeHtml = '<img class="typeIcon" src="' + iconInfo.source + '" alt="' + iconInfo.displayName + '" title="' + iconInfo.displayName + '"/>';
+			  var typeHtml = '<div class="typeIcon ' + iconInfo.source + '" title="' + iconInfo.displayName + '"></div>';
 			  return typeHtml;
 		  }
 	  };
@@ -1150,9 +1151,13 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 		  }
 		  var rowNum = rowObj.iDataRow;
 		  if (stateVal == true){
-			  return '<input type="checkbox" onclick="' + context + '.saveLayer(this, ' + rowNum + ')" alt="Save" class="tableCheckBox saveControl" title="Remove this layer from your cart." checked=true />';
+			  var value = '<input type="checkbox" onclick="' + context + '.saveLayer(this, ' + rowNum + ')" alt="Save" class="tableCheckBox saveControl" title="Remove this layer from your cart." checked=true />';
+			  value += '<div class="saveControl saveControlChecked" onclick="' + context + '.saveLayer(this, ' + rowNum + ')"></div>';
+			  return value;
 		  } else {
-			  return '<input type="checkbox" onclick="' + context + '.saveLayer(this, ' + rowNum + ')" alt="Save" class="tableCheckBox saveControl" title="Add this layer to your cart for download." />';
+			  var value =  '<input type="checkbox" onclick="' + context + '.saveLayer(this, ' + rowNum + ')" alt="Save" class="tableCheckBox saveControl" title="Add this layer to your cart for download." />';
+			  value += '<div class="saveControl" onclick="' + context + '.saveLayer(this, ' + rowNum + ')"></div>';
+			  return value;
 		  }  
 	  };
 	  
@@ -1287,18 +1292,19 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 			  return '?';
 		  } else {
 			  var iconInfo = institutionInfo[institution].graphics.sourceIcon;
-			  return '<img alt="' + iconInfo.altDisplay + '" src="' + iconInfo.resourceLocation + '" title="' + iconInfo.tooltipText + '" />';
+			  return '<div class="repositoryIcon ' + iconInfo.resourceLocation + '" title="' + iconInfo.tooltipText + '" ></div>';
+			  /*return '<img alt="' + iconInfo.altDisplay + '" src="' + iconInfo.resourceLocation + '" title="' + iconInfo.tooltipText + '" />';*/
 		  }
 	  };
 	  
 	  this.getMetadataIcon = function(rowObj){
 		  var context = this.getContextAsString();
 		  var dataType = rowObj.aData[that.tableHeadingsObj.getColumnIndex("DataType")];
-		  var metadataIcon = this.getImage("icon_meta.png");
+		  //var metadataIcon = this.getImage("icon_meta.png");
 		  if (dataType.toLowerCase() == "libraryrecord"){
-			  return '<img src="' + metadataIcon + '" title="show record" class="button metadataButton" onclick="' + context + '.showLibraryRecord(this)" />';
+			  return '<div title="show record" class="button metadataButton" onclick="' + context + '.showLibraryRecord(this)" ></div>';
 		  } else {
-			  return '<img src="' + metadataIcon + '" title="show metadata" class="button metadataButton" onclick="' + context + '.showMetadataJsonp(this)" />';
+			  return '<div title="show metadata" class="button metadataButton" onclick="' + context + '.showMetadataJsonp(this)" ></div>';
 		  }
 	  };
 	  
@@ -1858,7 +1864,7 @@ org.OpenGeoPortal.LayerTable = function(userDiv, tableName){
 	};
 	
 	this.setResultNumber = function(numFound){
-        jQuery('#' + this.getTableDiv()).parents('.ui-tabs-panel').last().find('.resultsNumber')
+        jQuery('.resultsNumber')
 		   .text(numFound);
 		if (parseInt(numFound) == 0){
 			//set some html below the search results table
@@ -2311,7 +2317,7 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 			            {"sName": "expandControls", "sTitle": "", "bVisible": true, "aTargets": [ 2 ], "sClass": "colExpand", "sWidth": "8px", "bSortable": false,
 							"fnRender": function(oObj){return thisObj.getExpandIcon(oObj);}}},  
 			"Save": {"ajax": false, "resizable": false, "organize": false, "columnConfig": 
-		                {"sName": "Save", "sTitle": "<img src=\"resources/media/shoppingcart.png\" alt=\"Add to cart\" title=\"Add layers to your cart for download.\" />", "bVisible": true, "aTargets": [ 3 ], "sClass": "colSave", "sWidth": "19px", "bSortable": false,
+		                {"sName": "Save", "sTitle": "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>", "bVisible": true, "aTargets": [ 3 ], "sClass": "colSave", "sWidth": "19px", "bSortable": false,
 		              		"fnRender": function(oObj){return thisObj.getSaveControl(oObj);}}},
 		    "score": {"ajax": true, "resizable": true, "minWidth": 27, "currentWidth": 27, "organize": true, "displayName": "Relevancy", "columnConfig": 
 		                    {"sName": "score", "sTitle": "Relevancy", "bVisible": false, "aTargets": [ 4 ], "sClass": "colScore", "sWidth": "27px", "bSortable": false }},
@@ -2333,12 +2339,12 @@ org.OpenGeoPortal.LayerTable.TableHeadings = function(thisObj){
 		            	{"sName": "Institution", "sTitle": "Rep", "bVisible": true, "aTargets": [ 11 ], "sClass": "colSource", "sWidth": "19px", "bSortable": false, "bUseRendered": false, 
 		            		"fnRender": function(oObj){return thisObj.getSourceIcon(oObj);}}},  
 		     "Metadata": {"ajax": false, "resizable": false, "organize": false, "columnConfig": 
-		                {"sName": "Metadata", "sTitle": "<img src=\"resources/media/icon_meta.png\" alt=\"Metadata\" title=\"show metadata\" />", "bVisible": true, "aTargets": [ 12 ], "sClass": "colMetadata", "sWidth": "17px", "bSortable": false, "bUseRendered": false, 
+		                {"sName": "Metadata", "sTitle": "Meta", "bVisible": true, "aTargets": [ 12 ], "sClass": "colMetadata", "sWidth": "17px", "bSortable": false, "bUseRendered": false, 
 		                 	"fnRender": function(oObj){return thisObj.getMetadataIcon(oObj);}}},       		
 		     "Access": {"ajax": true, "resizable": false, "organize": "alpha", "displayName": "Access", "columnConfig": 
 		                 {"sName": "Access", "sTitle": "Access", "bVisible": false, "aTargets": [ 13 ], "sClass": "colAccess", "sWidth": "53px", "bSortable": false}},
 		     "View": {"ajax": false, "resizable": false, "organize": false, "columnConfig": 
-		            	{"sName": "View", "sTitle": "Preview", "bVisible": true, "aTargets": [ 14 ], "sClass": "colPreview", "sWidth": "39px", "bSortable": false,
+		            	{"sName": "View", "sTitle": "View", "bVisible": true, "aTargets": [ 14 ], "sClass": "colPreview", "sWidth": "39px", "bSortable": false,
 		            			"fnRender": function(oObj){return thisObj.getPreviewControl(oObj);}}},
 		     "Location": {"ajax": true, "resizable": false, "organize": false, "columnConfig": 
 		            	{"sName": "Location", "sTitle": "WmsURL", "bVisible": false, "aTargets": [ 15 ], "bSortable": false}},

@@ -5,7 +5,7 @@
 		<span id="contactLink" class="infoLinks">Contact</span> 
 	</span>
 	<div id="footerLogos"> 
-		<div class="itLogo" title="UIT" onclick="location.href='http://uit.tufts.edu/'">
+		<div class="itLogo" title="UNGIWG" onclick="location.href='http://uit.tufts.edu/'">
 	    </div>
 	    <div class="gisLogo" title="GIS@Tufts" onclick="location.href='http://gis.tufts.edu/'">
 	    </div>
