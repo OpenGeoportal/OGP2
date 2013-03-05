@@ -843,28 +843,83 @@ org.OpenGeoPortal.UserInterface.prototype.setSearchPanelWidth = function(newValu
 	this.searchPanelWidth = newValue;
 };
 
-
-org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
+org.OpenGeoPortal.UserInterface.prototype.rollRightHandler = function(){
 	var that = this;
-    	jQuery('.arrow_buttons > img').click( function () {
-          var rollUp = that.getImage("button_arrow_up.png");
-          var rollDown = that.getImage("button_arrow_down.png");
-          var rollLeft = that.getImage("button_arrow_left.png");
-          var rollRight = that.getImage("button_arrow_right.png");
+	jQuery('.arrow_right').click( function () {
+		analytics.track("Interface", "Expand/Collapse Buttons", "Expand Right");
+
+    	  var panelSelector = jQuery("#left_col");
+    	  var mapSelector = jQuery("#map");
+    	  if (panelSelector.css("display") == "none"){
+    		  //map is full width; go back to combo display
+    		  jQuery("#roll_right").css('display', 'none');
+    		  jQuery(".ui-resizable-handle").css("display", "block");
+    		  panelSelector.width(that.getSearchPanelWidth());
+    		  mapSelector.width(jQuery('#container').width() - panelSelector.width() - 1);
+              panelSelector.css('display', 'block');
+              that.filterResults();
+    	  } else if (mapSelector.css("display") == "none"){
+    		  //don't do anything; search panel is already full width
+    	  } else {
+    		  //go to full width search panel
+    		  mapSelector.add("#menu").css("display", "none");
+    		  panelSelector.width(jQuery('#container').width() - 1);
+        	  that.resultsTableObject.showCol('ContentDate');
+    	  }
+	});
+};
+
+org.OpenGeoPortal.UserInterface.prototype.rollLeftHandler = function(){
+	var that = this;
+	jQuery('.arrow_left').click( function () {
+		analytics.track("Interface", "Expand/Collapse Buttons", "Collapse Left");
+      	//logic to expand map to full size
+  	  var panelSelector = jQuery("#left_col");
+  	  var mapSelector = jQuery("#map");
+  	  if (panelSelector.css("display") == "none"){
+  		  //don't do anything; map is already full width
+  	  } else if (mapSelector.css("display") == "none"){
+  		  //go back to previous left column width; search panels are full width
+  		  panelSelector.width(that.getSearchPanelWidth());
+  		  panelSelector.css("display", "block");
+      	  that.resultsTableObject.hideCol('ContentDate');
+  		  mapSelector.width(jQuery('#container').outerWidth() - panelSelector.outerWidth());
+  		  mapSelector.add("#menu").css("display", "inline-block");
+  	  } else {
+  		  //display full width map
+  		  panelSelector.css("display", "none");
+  		  jQuery("#roll_right").css("display", "block");
+  		  jQuery(".ui-resizable-handle").css("display", "none");
+  		  mapSelector.width(jQuery('#container').outerWidth() - jQuery("#roll_right").outerWidth());
+  	  }
+	});
+};
+	
+	
+org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
+	this.rollRightHandler();
+	this.rollLeftHandler();
+};
+	/*var that = this;
+    	jQuery('.arrow_buttons > div').click( function () {
+          //var rollUp = that.getImage("button_arrow_up.png");
+          //var rollDown = that.getImage("button_arrow_down.png");
+          var rollLeft = jQuery(this).hasClass("arrow_left");
+          var rollRight = jQuery(this).hasClass("arrow_right");
           var tabDiv = jQuery(this).parents('.ui-tabs-panel').last();
           var userDiv = tabDiv.find('.searchBox')[0];
 
-			var button,
-				src = jQuery(this).attr("src");
+			var button;
+			//	src = jQuery(this).attr("src");
 
-			button = (src == rollUp) && "Collapse Up" ||
-					(src == rollDown) && "Expand Down" ||
-					(src == rollLeft) && "Collapse Left" ||
-					(src == rollRight) && "Expand Right";
+			/*button = (src == rollUp) && "Collapse Up" ||
+					(src == rollDown) && "Expand Down" ||*/
+			/*button = rollLeft && "Collapse Left" ||
+					rollRight && "Expand Right";
 
-			analytics.track("Interface", "Expand/Collapse Buttons", button);
+			analytics.track("Interface", "Expand/Collapse Buttons", button);*/
 
-          switch (jQuery(this).attr('src')){
+         /* switch (jQuery(this).attr('src')){
           case rollUp: 
         	  jQuery(userDiv).toggle("blind",{},250, function(){that.resultsTableObject.setTableLength();});
         	  jQuery(this).attr('src', rollDown);
@@ -876,8 +931,8 @@ org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
         	  that.resultsTableObject.adjustTableLength(adjRows);
   			  jQuery(userDiv).toggle("blind",{},250, function(){that.resultsTableObject.setTableLength();});
   			  jQuery(this).attr('src', rollUp);
-          break;	
-          case rollLeft:
+          break;	*/
+          /*if (rollLeft) {
           	//logic to expand map to full size
         	  var panelSelector = jQuery("#left_col");
         	  var mapSelector = jQuery("#map");
@@ -901,8 +956,8 @@ org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
         		  //org.OpenGeoPortal.map.updateSize();
         		  //that.mapObject.updateSize();
         	  }
-          	break;
-          case rollRight:
+          	//break;
+          } else if (rollRight){
         	  var panelSelector = jQuery("#left_col");
         	  var mapSelector = jQuery("#map");
         	  if (panelSelector.css("display") == "none"){
@@ -923,13 +978,12 @@ org.OpenGeoPortal.UserInterface.prototype.togglePanels = function(){
         		  panelSelector.width(jQuery('#container').width() - 1);
             	  that.resultsTableObject.showCol('ContentDate');
         	  }
-          	break;
-          default:
+          } else {
           	alert('searchBoxResize fall-through.');
           }
     	});
 };
-
+*/
 org.OpenGeoPortal.UserInterface.prototype.mapFilterStatus = function(eventObj){
 	if (jQuery(eventObj).is(":checked")){
 		jQuery(".mapFilterFlag").attr("checked", "checked");

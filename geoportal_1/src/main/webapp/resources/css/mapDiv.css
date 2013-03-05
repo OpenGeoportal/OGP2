@@ -227,6 +227,24 @@ div.olControlZoomToMaxExtentItemInactive:hover {
   height: 24px;
 }
 
+.zoomPlus { 
+  background: url("../media/geodata-sprite.png") no-repeat scroll -11px -207px transparent;
+}
+
+.zoomMinus { 
+  background: url("../media/geodata-sprite.png") no-repeat scroll -11px -432px transparent;
+}
+
+.zoomSlideBar { 
+  background: url("../media/geodata-sprite.png") no-repeat scroll -16px -229px transparent;
+}
+
+.zoomSlider { 
+	background-color: #ffffff;
+	border: 1px solid #555555;
+	z-index: 9;
+}
+
 .olHandlerBoxZoomBox {
     border: 2px solid red;
     position: absolute;

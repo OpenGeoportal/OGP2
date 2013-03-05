@@ -475,6 +475,8 @@ span.infoLinks:hover {
 .arrow_buttons {
     float: right;
     margin-top: 3px;
+    position: relative;
+    z-index: 9;
  }
  
  .shoppingCartIcon {
@@ -543,7 +545,7 @@ span.infoLinks:hover {
 #roll_right {
 	float:left;
 	min-height:680px;
-	width:17px;
+	width:21px;
 	border-right: 1px solid #999999;
 	background: #cccccc url(../media/bg_grayfade_vert.png)  repeat-y;
 	display: none;
@@ -1193,4 +1195,93 @@ iframe.download {
 
 #geoCommonsExportForm > fieldset .linkButton {
 	float: right;
+}
+/********
+Preview controls
+*********/
+.previewOff {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -61px -109px transparent;
+	width: 25px;
+	height: 17px;
+}
+
+.previewOn {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -84px -109px transparent;
+	width: 25px;
+	height: 17px;
+}
+
+.loginButton {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -67px -32px transparent;
+	width: 25px;
+	height: 17px;
+}
+
+/*******
+DataTypes
+********/
+
+.polygonIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -101px -56px transparent;
+	width: 17px;
+	height: 17px;
+}
+
+.pointIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -80px -56px transparent;
+	width: 17px;
+	height: 17px;
+}
+
+.lineIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -10px -56px transparent;
+	width: 17px;
+	height: 17px;
+}
+
+.rasterIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -35px -56px transparent;
+	width: 17px;
+	height: 17px;
+}
+
+.mapIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -58px -56px transparent;
+	width: 17px;
+	height: 17px;
+}
+
+/*************
+Repositories
+*************/
+.tuftsIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -33px -10px transparent;
+}
+
+.mitIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -129px -10px transparent;
+}
+
+.harvardIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -79px -10px transparent;
+}
+
+.berkeleyIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -35px -35px transparent;
+}
+
+.marylandIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -12px -35px transparent;
+}
+
+.unIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -10px -10px transparent;
+}
+
+.massgisIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -102px -10px transparent;
+}
+
+.princetonIcon {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -56px -10px transparent;
 }

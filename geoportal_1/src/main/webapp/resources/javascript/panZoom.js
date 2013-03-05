@@ -1,15 +1,53 @@
-OpenLayers.Layer.WMS.prototype.getFullRequestString = function(newParams,altUrl)
-{
-    try{
-        var projectionCode=typeof this.options.projection == 'undefined' ? this.map.getProjection() : this.options.projection;
-    }catch(err){
-        var projectionCode=this.map.getProjection();
-    }
-    this.params.SRS = projectionCode=="none" ? null : projectionCode;
- 
-    return OpenLayers.Layer.Grid.prototype.getFullRequestString.apply(this,arguments);
-};
+    /**
+     * Function: createBackgroundImage
+     * Creates an img element with specific attribute values.
+     *  
+     * Parameters:
+     * id - {String} The id field for the img.  If none assigned one will be
+     *               automatically generated.
+     * px - {<OpenLayers.Pixel>} The left and top positions.
+     * sz - {<OpenLayers.Size>} The style.width and style.height values.
+     * uiClass - {String} The css class that describes the div background
+     * position - {String} The style.position value.
+     * border - {String} The border to place around the image.
+     * opacity - {Float} Fractional value (0.0 - 1.0)
+     * delayDisplay - {Boolean} If true waits until the image has been
+     *                          loaded.
+     * 
+     * Returns:
+     * {DOMElement} A DOM Image created with the specified attributes.
+     */
+    OpenLayers.Util.createBackgroundImage = function(id, px, sz, uiClass, position, border,
+                                           opacity, delayDisplay) {
 
+        var bgimage = document.createElement("div");
+        jQuery(bgimage).addClass(uiClass);
+
+        //set generic properties
+        if (!id) {
+            id = OpenLayers.Util.createUniqueID("OpenLayersDiv");
+        }
+        if (!position) {
+            position = "relative";
+        }
+        OpenLayers.Util.modifyDOMElement(bgimage, id, px, sz, position, 
+                                         border, null, opacity);
+
+        if(delayDisplay) {
+            bgimage.style.display = "none";
+            OpenLayers.Event.observe(bgimage, "load", 
+                OpenLayers.Function.bind(OpenLayers.Util.onImageLoad, bgimage));
+            OpenLayers.Event.observe(bgimage, "error", 
+                OpenLayers.Function.bind(OpenLayers.Util.onImageLoadError, bgimage));
+            
+        }
+        
+        //set special properties
+        bgimage.style.alt = id;
+        bgimage.galleryImg = "no";
+            
+        return bgimage;
+    };
 /**
  * Function: onImageLoadError 
  */
@@ -165,11 +203,11 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
         this.draw();
     },
     /**
-     * Method: _addButton
+     * Method: _addButtonDiv
      * 
      * Parameters:
      * id - {String} 
-     * img - {String} 
+     * uiClass - {String} 
      * xy - {<OpenLayers.Pixel>} 
      * sz - {<OpenLayers.Size>} 
      * 
@@ -177,20 +215,39 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
      * {DOMElement} A Div (an alphaImageDiv, to be precise) that contains the
      *     image of the button, and has all the proper event handlers set.
      */
-    _addButton:function(id, img, xy, sz) {
-        var btn = OpenLayers.Util.createAlphaImageDiv(
-                                    this.id + "_" + id, 
-                                    xy, sz, this.imgLocation + img, "absolute");
+    _addButtonDiv:function(id, uiClass, xy, sz) {
+    	//        this._addButtonDiv("zoomin", "zoomPlus", centered2.add(3, sz2.h*3), sz2);
+    	var btn = OpenLayers.Util.createDiv();
+    	var bgimage = OpenLayers.Util.createBackgroundImage(this.id + "_" + id, 
+                xy, sz, uiClass, "absolute");
+    	btn.appendChild(bgimage);
+
+        
+        OpenLayers.Util.modifyDOMElement(btn, id, xy, sz, "static",
+                null, null, 1);
+
+        var innerDiv = btn.childNodes[0];
+        OpenLayers.Util.modifyDOMElement(innerDiv, btn.id + "_innerImage", null, sz, 
+                "absolute", null);
+        
         btn.style.cursor = "pointer";
         //we want to add the outer div
         this.div.appendChild(btn);
         btn.action = id;
         btn.className = "olButton";
-    
+        OpenLayers.Event.observe(btn, "mousedown", 
+                OpenLayers.Function.bindAsEventListener(this.buttonDown, btn));
+            OpenLayers.Event.observe(btn, "dblclick", 
+                OpenLayers.Function.bindAsEventListener(this.doubleClick, btn));
+            OpenLayers.Event.observe(btn, "click", 
+                OpenLayers.Function.bindAsEventListener(this.doubleClick, btn));
+            btn.action = id;
+            btn.map = this.map;
         //we want to remember/reference the outer div
         this.buttons.push(btn);
         return btn;
     },
+
     /**
     * Method: draw 
     *
@@ -208,7 +265,7 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
         var sz = new OpenLayers.Size(9,13);
         var szNS = new OpenLayers.Size(13,9);
 
-        var sz2 = new OpenLayers.Size(18,20);
+        var sz2 = new OpenLayers.Size(24,20);
 
         var centered = new OpenLayers.Pixel(px.x+sz.w/2, px.y);
         var centered2 = new OpenLayers.Pixel(px.x+sz2.w/2, px.y);
@@ -228,9 +285,10 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
         }
         this._addButton("panright", "east-mini.png", px.add(28, 15));
         this._addButton("pandown", "south-mini.png", px.add(15, 28));*/
-        this._addButton("zoomin", "zoom-plus-mini.png", centered2.add(3, sz2.h*3), sz2);
+        this._addButtonDiv("zoomin", "zoomPlus", centered2.add(3, sz2.h*3), sz2);
         centered2 = this._addZoomBar(centered2.add(3, sz2.h*4));
-        this._addButton("zoomout", "zoom-minus-mini.png", centered2, sz2);
+        this._addButtonDiv("zoomout", "zoomMinus", centered2, new OpenLayers.Size(24,25));
+
         return this.div;
     },
 
@@ -245,11 +303,12 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
         
         var id = this.id + "_" + this.map.id;
         var zoomsToEnd = this.map.getNumZoomLevels() - 1 - this.map.getZoom();
-        var slider = OpenLayers.Util.createAlphaImageDiv(id,
-                       centered.add(2, zoomsToEnd * this.zoomStopHeight +4), 
-                       new OpenLayers.Size(14,7), 
-                       this.imgLocation+"slider.png",
+        var slider = OpenLayers.Util.createBackgroundImage(id,
+                       centered.add(2, zoomsToEnd * this.zoomStopHeight + 6), 
+                       new OpenLayers.Size(12,10), 
+                       "zoomSlider",
                        "absolute");
+
         this.slider = slider;
         
         this.sliderEvents = new OpenLayers.Events(this, slider, null, true,
@@ -264,24 +323,24 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
         
         var sz = new OpenLayers.Size();
         sz.h = this.zoomStopHeight * this.map.getNumZoomLevels();
-        sz.w = 7;//this.zoomStopWidth;
+        sz.w = 13;//this.zoomStopWidth;
         var div = null;
         
-        if (OpenLayers.Util.alphaHack()) {
+      //  if (OpenLayers.Util.alphaHack()) {
             var id = this.id + "_" + this.map.id;
-            div = OpenLayers.Util.createAlphaImageDiv(id, centered,
+            div = OpenLayers.Util.createBackgroundImage(id, centered.add(5,0),
                                       new OpenLayers.Size(sz.w, 
                                               this.zoomStopHeight),
-                                      this.imgLocation + "slider_bar.png", 
+                                      "zoomSlideBar", 
                                       "absolute", null, "crop");
             div.style.height = sz.h + "px";
-        } else {
+        /*} else {
             div = OpenLayers.Util.createDiv(
                         'OpenLayers_Control_PanZoomBar_Zoombar' + this.map.id,
                         centered.add(6,0),
                         sz,
                         this.imgLocation+"slider_bar.png");
-        }
+        }*/
         
         this.zoombarDiv = div;
         

@@ -135,11 +135,11 @@ org.OpenGeoPortal.InstitutionInfo.imagePath = org.OpenGeoPortal.Utility.ImageLoc
 
 org.OpenGeoPortal.InstitutionInfo.icons = {
 		"dataTypes": {
-				  "Point": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_dot.png", "displayName":"point"},
-				  "Line": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_arc.png", "displayName":"line"},
-				  "Polygon": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_polygon.png", "displayName":"polygon"},
-				  "Raster": {"source":  org.OpenGeoPortal.InstitutionInfo.imagePath + "type_raster.png", "displayName":"raster"},
-				  "PaperMap": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_map.png", "displayName":"scanned map"}/*,
+				  "Point": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_dot.png", "uiClass": "pointIcon", "displayName":"point"},
+				  "Line": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_arc.png", "uiClass": "lineIcon", "displayName":"line"},
+				  "Polygon": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_polygon.png", "uiClass": "polygonIcon", "displayName":"polygon"},
+				  "Raster": {"source":  org.OpenGeoPortal.InstitutionInfo.imagePath + "type_raster.png", "uiClass": "rasterIcon", "displayName":"raster"},
+				  "PaperMap": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_map.png", "uiClass": "mapIcon", "displayName":"scanned map"}/*,
 				  "LibraryRecord": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_library.png", "displayName":"library record"}*/
 	}
 };

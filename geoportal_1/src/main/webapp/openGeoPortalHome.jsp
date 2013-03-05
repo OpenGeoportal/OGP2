@@ -9,7 +9,7 @@
 <div id="main">
 	<%@include file="jspf/header.jspf"%>
 	<div id="container" class="shadowDown">
-		<div id="roll_right"><img src="resources/media/button_arrow_right.png" class="button" /></div>
+		<div id="roll_right"><div class="arrow_right button" ></div></div>
 		<div id="left_col">
 			<%@include file="jspf/leftPanel.jspf"%>
 		</div>
