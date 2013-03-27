@@ -1,30 +1,17 @@
-<div id="basicSearchDiv">
- 	<div id="resultsSubHeader" class="sub_header"> 
- 	 	<!-- <span class="sub_headerTitle">
- 	   		<span id="resultsNumber" class="resultsNumber">
-    			0
-    		</span>
-
- 			RESULTS
-    		<!--<img src="resources/media/header_searchresults.png" alt="Search Results" /> -->
-    	<!-- </span>-->
-
-    	<!-- <span id="sortDropdownLabel">by</span>-->
+<div id="searchResults">
+ 	<div id="resultsSubHeader" class="sub_header tableHeader"> 
     	<div id="sortDropdown">
-    	Sort Results
+    		Sort Results
       	</div>
     	<div id="columnDropdown">
     		Columns
-		</div>
-			
+		</div>	
     	<div class="mapClearButton styledButtonSmall" title="Clear all layers from the map" >
     		Clear Views
 		</div>			
  	</div>
- 	<div id="resultsTable"></div>
- 	<div id="searchResultsMessage"></div>
- 	<div id="searchResultsNavigation"></div>
-
+ 	<div id="searchResultsMessage" class="tableFooter"></div>
+ 	<!--<div id="searchResultsNavigation"></div>-->
 </div>
 
 

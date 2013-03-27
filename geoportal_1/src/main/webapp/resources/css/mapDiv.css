@@ -149,7 +149,7 @@ div.olControlMousePosition {
 .olControlNavigationHistory {
 	background-image: none;
 	background-repeat:no-repeat;
-	height:31px;
+	height:38px;
 	width:30px;
   	cursor: pointer;
 }
@@ -164,7 +164,7 @@ div.olControlMousePosition {
    background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
 }
 .olControlNavigationHistoryNextItemActive { 
-   background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
+   background: url("../media/geodata-sprite.png") no-repeat scroll -61px -161px transparent;
 }
 
 .olControlNavigationHistoryNextItemActive:hover { 
@@ -177,26 +177,26 @@ div.olControlMousePosition {
 
 .olControlPanel .olControlNavigationItemActive { 
   background: url("../media/geodata-sprite.png") no-repeat scroll -122px -161px transparent;
-  width: 33px;
-  height: 31px;
+  width: 38px;
+  height: 38px;
   cursor: pointer;
 }
 .olControlPanel .olControlNavigationItemInactive { 
   background: url("../media/geodata-sprite.png") no-repeat scroll -122px -161px transparent;
-  width: 33px;
-  height: 31px;
+  width: 38px;
+  height: 38px;
   cursor: pointer;
 }
 .olControlPanel .olControlZoomBoxItemActive { 
   background: url("../media/geodata-sprite.png") no-repeat scroll -91px -161px transparent;
   width: 31px;
-  height: 31px;
+  height: 38px;
   cursor: pointer;
 }
 .olControlPanel .olControlZoomBoxItemInactive { 
   background: url("../media/geodata-sprite.png") no-repeat scroll -91px -161px transparent;
   width: 31px;
-  height: 31px;
+  height: 38px;
   cursor: pointer;
 }
 
@@ -207,7 +207,7 @@ div.olControlZoomBoxItemInactive:hover {
 .olControlPanel .olControlZoomToMaxExtentItemInactive { 
   background: url("../media/geodata-sprite.png") no-repeat scroll 0 -161px transparent;
   width: 31px;
-  height: 31px;
+  height: 38px;
   cursor: pointer;
 }
 
@@ -224,7 +224,7 @@ div.olControlZoomToMaxExtentItemInactive:hover {
 .olControlPanel .olControlZoomToMaxExtentItemActive { 
   background: url("../media/geodata-sprite.png") no-repeat scroll 0 0 transparent;
   width: 24px;
-  height: 24px;
+  height: 38px;
 }
 
 .zoomPlus { 
@@ -243,6 +243,9 @@ div.olControlZoomToMaxExtentItemInactive:hover {
 	background-color: #ffffff;
 	border: 1px solid #555555;
 	z-index: 9;
+	-moz-box-shadow:    3px 0px 5px -1px #777777;
+  	-webkit-box-shadow: 3px 0px 5px -1px #777777;
+  	box-shadow:         3px 0px 5px -1px #777777;
 }
 
 .olHandlerBoxZoomBox {

@@ -1,17 +1,18 @@
 <div id="footer">
-	<span id="footerInfo">
-		<span id="aboutLink" class="infoLinks">About</span> 
-		|  
-		<span id="contactLink" class="infoLinks">Contact</span> 
-	</span>
 	<div id="footerLogos"> 
-		<div class="itLogo" title="UNGIWG" onclick="location.href='http://uit.tufts.edu/'">
+		<div class="institutionLogo" title="Tufts" onclick="location.href='http://tufts.edu'">
 	    </div>
-	    <div class="gisLogo" title="GIS@Tufts" onclick="location.href='http://gis.tufts.edu/'">
+		<div class="itLogo infoLinks" title="UIT" onclick="location.href='http://uit.tufts.edu'">
+			University Information Technology
+	    </div>
+	    <div class="gisLogo infoLinks" title="GIS@Tufts" onclick="location.href='http://gis.tufts.edu'">
+	    	GIS@Tufts.edu
 	    </div>
 	</div> 
+	<span id="footerInfo">
+		<span id="ogpLink" class="infoLinks" onclick="location.href='http://www.opengeoportal.org'">Powered by OpenGeoportal</span> 
+	</span>
 </div>
 <%@include file="about.jspf"%> 
 <%@include file="contact.jspf"%> 
-<%@include file="highlights.jspf"%> 
     	

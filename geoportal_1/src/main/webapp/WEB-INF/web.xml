@@ -2,12 +2,12 @@
 <web-app id="OGP_Tufts" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 	<display-name>OpenGeoPortal</display-name>
 		<welcome-file-list>
-		<welcome-file>openGeoPortalHome.jsp</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 	
  <context-param>
   		<param-name>contextConfigLocation</param-name>
-  		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml</param-value>
+  		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/tufts-security-app-context.xml</param-value>
 	</context-param>
 <filter>
 	<filter-name>jsonpCallbackFilter</filter-name>
@@ -58,4 +58,24 @@
         <servlet-name>appServlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+        <filter>
+<filter-name>CORS</filter-name>
+<filter-class>com.thetransactioncompany.cors.CORSFilter</filter-class>
+
+<init-param>
+   <param-name>cors.supportedMethods</param-name>
+   <param-value>GET, HEAD, POST, PUT, DELETE, OPTIONS</param-value>
+</init-param>
+
+<init-param>
+   <param-name>cors.supportedHeaders</param-name>
+   <param-value>Content-Type, X-Requested-With, Origin, Accept</param-value>
+</init-param>
+
+    </filter>
+
+    <filter-mapping>
+<filter-name>CORS</filter-name>
+<url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

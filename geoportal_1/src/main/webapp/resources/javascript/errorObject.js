@@ -1,17 +1,10 @@
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-// Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
-}
-
-org.OpenGeoPortal.ErrorObject = function(errObj, customMessage){
+OpenGeoportal.ErrorObject = function(errObj, customMessage){
 	var debug = false;
 	if (typeof jQuery('#errorDialog')[0] == 'undefined'){
 		var div = '<div id="errorDialog" class="dialog">';
@@ -38,5 +31,5 @@ org.OpenGeoPortal.ErrorObject = function(errObj, customMessage){
 	jQuery('#errorDialog').dialog('open');
 };
 
-org.OpenGeoPortal.ErrorObject.prototype = new Error();
+OpenGeoportal.ErrorObject.prototype = new Error();
 

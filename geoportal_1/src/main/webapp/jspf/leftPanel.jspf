@@ -2,17 +2,10 @@
     	<div class="arrow_left button" title="collapse left"></div>
     	<div class="arrow_separator"></div>
     	<div class="arrow_right button" title="expand right"></div>
-    	
-    	<!-- <img src="resources/media/button_arrow_left.png" class="button" alt="collapse left" />
-    	<img src="resources/media/button_arrow_right.png" class="button" alt="expand right" />-->
  	</div>
 <div id="left_tabs"> 
 	<div id="tabs" class="ui-tabs">
 		<ul>
-			<!--<li><a href="#gettingStartedTab"><span class="tabText">
-				Getting Started
-				</span></a> 
-			</li>-->
 			<li><a href="#searchTab"><span id="searchTabText" class="tabText">
 			    <span id="resultsNumber" class="resultsNumber">
     			0
@@ -20,20 +13,18 @@
 				Results
 				</span></a> 
 			</li>				
-			<li><a href="#savedLayersTab">
+			<li><a href="#cartTab">
 				<div id="cartTabText" class="tabText">
 				<div class="shoppingCartIcon"></div>
 				<div>Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span></div>
 				</div></a> 
 			</li>
 		</ul>
-   		<!-- <div id="gettingStartedTab" class="ui-tabs-hide">
-    	</div>-->
     	<div id="searchTab" class="ui-tabs-hide">
 			<%@include file="results.jspf"%>
     	</div>
-    	<div id="savedLayersTab" class="ui-tabs-hide">
-			<%@include file="savedLayersTab.jspf"%>
+    	<div id="cartTab" class="ui-tabs-hide">
+			<%@include file="cart.jspf"%>
     	</div>
 	</div>
 </div>  

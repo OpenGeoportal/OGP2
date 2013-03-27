@@ -1,20 +1,72 @@
-   	<div class="searchBox">
+   	<div id="searchBox" class="searchBox">
 		<form id="searchForm" onsubmit="return false;">
-		   	<div class="basicSearch" id="geosearchDiv">
-		   		<label for="geosearch" class="searchFormLabel"><span class="labelText">Where:</span><input id="geosearch" type="text"/></label>
+			<div id="searchCol1" class="searchCol">
+		   		<div id="geosearchDiv" class="basicSearch whereBox searchFormRow searchRow1">
+		   			<label for="geosearch"><span class="labelText">Where:</span></label>
+		   			<input id="geosearch" type="text"/>
+				</div>
+				<div class="advancedSearch searchFormRow searchRow2">
+				    <span class="formCheckbox searchFormInput">		
+   						<input type="checkbox" name="mapFilterCheck" id="mapFilterCheck" class="mapFilterFlag" value="ignore" />
+    					<label for="mapFilterCheck">Ignore map extent (Where)</label>
+    				</span>
+    			</div>
+    			<div class="advancedSearch searchFormRow searchRow3">
+    	    		<label>Topic:</label>
+    				<div id="topicDropdown" class="searchFormInput">
+      				</div>
+    			</div>
 			</div>
-			<div class="basicSearch">
-				<label for="basicSearchTextField" class="searchFormLabel"><span class="labelText">What:</span><input id="basicSearchTextField" type="text" /></label>
+			<div id="searchCol2" class="searchCol">
+				<div class="basicSearch whatBox searchFormRow">
+					<label for="basicSearchTextField">
+						<span class="labelText">What:</span>
+					</label>
+					<input id="basicSearchTextField" type="text" />
+				</div>
+				<div class="advancedSearch searchFormRow searchRow1">
+    				<label for="advancedKeywordText">Keyword:</label>
+    				<input name="advancedKeywordText" type="text" class="searchFormInput" id="advancedKeywordText"/>
+    			</div>
+    			<div class="advancedSearch searchFormRow searchRow2">
+   					<label>Data Type:</label>    	
+   					<div id="dataTypeDropdown" class="styledDropdown searchFormInput">
+      				</div>
+      			</div>
+      			<div class="advancedSearch searchFormRow searchRow3">
+   			    	<label>Repository:</label>
+   					<div id="sourceDropdown" class="searchFormInput">
+      				</div>
+      			</div>
+      			<div class="advancedSearch searchFormRow searchRow4">
+    				<span class="formCheckbox searchFormInput">
+    					<input type="checkbox" name="restrictedCheck" id="restrictedCheck" />
+   						<label for="restrictedCheck">Include Restricted Data</label>
+   					</span>
+   				</div>
 			</div>
-			<div class="basicSearch">
-				<span id="basicSearchSubmit" class="styledButtonSmall searchButton" onclick="org.OpenGeoPortal.ui.searchSubmit()">Search</span>
-			</div>
-    		<!--<div id="basicSearchMapFilterContainer">
-    			<input type="checkbox" name="mapFilterCheck" id="basicSearchMapFilter" class="mapFilterFlag" onclick="org.OpenGeoPortal.ui.mapFilterStatus(this)" value="on" checked="checked" />
-    			<label for="basicSearchMapFilter">Limit results to visible map area</label>
-    		</div>-->
-    		<div class="basicSearch">	
-				<span id="moreSearchOptions" class="searchToggle button offsetColor" onclick="org.OpenGeoPortal.ui.toggleSearch(this)">Advanced Search</span>
+			<div id="searchCol3" class="searchCol">
+				<div class="basicSearch searchFormRow">
+					<span id="basicSearchSubmit" class="styledButtonSmall searchButton" >Search</span>	
+					<span id="moreSearchOptions" class="searchToggle button offsetColor" >Advanced Search</span>
+				</div>
+				<div class="advancedSearch searchFormRow searchRow1">
+   					<label for="advancedOriginatorText">Originator:</label>    				
+   					<input name="advancedOriginatorText" type="text" class="searchFormInput" id="advancedOriginatorText"/>
+				</div>
+				<div class="advancedSearch searchFormRow searchRow2">
+    				<label for="advancedDateFromText">Year(s):</label>
+    					<span class="searchFormInput">
+    						<input name="advancedDateFromText" type="text" id="advancedDateFromText" size="4" />
+      						to 
+        					<input name="advancedDateToText" type="text" id="advancedDateToText" size="4" />
+        				</span>
+        		</div>
+        		<div class="advancedSearch searchFormRow advancedSearchButtons searchRow4">
+   					<span id="advancedSearchClear" class="styledButtonSmall">Clear</span>
+   					<span id="advancedSearchSubmit" class="styledButtonSmall searchButton">Search</span>
+   					<span id="lessSearchOptions" class="searchToggle button offsetColor" >Basic Search</span>
+    			</div>
 			</div>
   		</form>
 	</div>

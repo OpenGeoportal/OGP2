@@ -1,19 +1,12 @@
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
-
-// Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
-}
-/*org.OpenGeoPortal.LayerSettings
+/*OpenGeoportal.LayerSettings
 *	object to hold display setting info, where it exists (opacity, etc.)
 */
-org.OpenGeoPortal.LayerSettings = function(){
+OpenGeoportal.LayerSettings = function(){
 	var settings = {};
 	var that = this;
 	this.getGenericDefaults = function(){
@@ -47,7 +40,7 @@ org.OpenGeoPortal.LayerSettings = function(){
 			throw new Error("dataType (Point, Line, Polygon, or Raster) must be specified to create a new layer.");
 		}
 		if (this.layerStateDefined(layerID)){
-			throw new Error("org.OpenGeoPortal.LayerState.addNewLayer: This layer already exists.");
+			throw new Error("OpenGeoportal.LayerState.addNewLayer: This layer already exists.");
 		}
 		settings[layerID] = this.getGenericDefaults();
 		settings[layerID].dataType = dataType;
@@ -103,7 +96,7 @@ org.OpenGeoPortal.LayerSettings = function(){
 		//no layer info set....check defaults
 		if (typeof this.getGenericDefaults()[key] == 'undefined'){
 			//what can we do in this case, w/out dataType info?
-			throw new Error("org.OpenGeoPortal.LayerSettings.getState(): Requested Parameter\"" + key +"\":State information for the layer has not been set and the default cannot be determined without a Data Type (Point, Line, Polygon, Raster, Paper Map)");
+			throw new Error("OpenGeoportal.LayerSettings.getState(): Requested Parameter\"" + key +"\":State information for the layer has not been set and the default cannot be determined without a Data Type (Point, Line, Polygon, Raster, Paper Map)");
 		} else {
 			return this.getGenericDefaults()[key];
 		}
@@ -132,7 +125,7 @@ org.OpenGeoPortal.LayerSettings = function(){
 	};
 	
 	this.getImage = function(imageName){
-		return org.OpenGeoPortal.Utility.ImageLocation + imageName;
+		return OpenGeoportal.Utility.ImageLocation + imageName;
 	};
 	
 	this.resetState = function(columnName){
@@ -178,38 +171,49 @@ org.OpenGeoPortal.LayerSettings = function(){
 						var tableObj = jQuery(this).closest('table.display');
 						var dataTableObj = tableObj.dataTable();
 						var aData = dataTableObj.fnGetData(this.parentNode);
-						var layerID = aData[org.OpenGeoPortal.resultsTableObj.tableHeadingsObj.getColumnIndex("LayerId")];
+						var layerID = aData[OpenGeoportal.LayerTable.tableHeadingsObj.getColumnIndex("LayerId")];
 						if (layerID == updateObj.layerID){
+							var previewControl$ = jQuery(this).find("div.previewControl");
 							if (updateObj.preview == 'on'){
-								jQuery(this).find("input").attr("checked", true);
+								previewControl$.triggerHandler("view.showPreviewOn");
 							} else if (updateObj.preview == 'off'){
-								jQuery(this).find("input").attr("checked", false);
+								previewControl$.triggerHandler("view.showPreviewOff");
 							}
-							//clauses for login and external needed
 						}
 					}
 				}); 
 				break;
-				case "opacity":
-					var stateVal = that.getState(updateObj.layerID, "opacity");
-		    		var escapedLayerID = org.OpenGeoPortal.Utility.idEscape(updateObj.layerID);
+			case "inCart":
+				if (updateObj.inCart){
+					jQuery(document).trigger("view.showInCart", {"layerId": updateObj.layerID});
+				} else {
+					jQuery(document).trigger("view.showNotInCart", {"layerId": updateObj.layerID});
+				}
+				break;	
+			case "opacity":
+				jQuery(document).trigger("map.opacityChange", {"layerId": updateObj.layerID, "opacity": updateObj.opacity})
+					/*var stateVal = that.getState(updateObj.layerID, "opacity");
+		    		var escapedLayerID = OpenGeoportal.Utility.idEscape(updateObj.layerID);
 
 					jQuery('#opacitysearchResults' + escapedLayerID).slider("value", stateVal);
-					jQuery('#opacitysavedLayers' + escapedLayerID).slider("value", stateVal);
+					jQuery('#opacitysavedLayers' + escapedLayerID).slider("value", stateVal);*/
 					break;
-				case "color":
-					break;
-					//since we are wiping state when we click getFeature, I think
-					//we only need to sync icons for expanded rows. register events?
-				case "getFeature":
-				    if (org.OpenGeoPortal.map.currentAttributeRequest){
-				    	org.OpenGeoPortal.map.currentAttributeRequest.abort();
+			case "color":
+			case "graphicWidth":
+				//both handled by sld change
+				jQuery(document).trigger("map.styleChange", {"layerId": updateObj.layerID});
+				break;
+			//since we are wiping state when we click getFeature, I think
+			//we only need to sync icons for expanded rows. register events?
+			case "getFeature":
+				    if (OpenGeoportal.map.currentAttributeRequest){
+				    	OpenGeoportal.map.currentAttributeRequest.abort();
 				    }
 					var stateVal = that.getState(updateObj.layerID, "getFeature");
-					var layer = org.OpenGeoPortal.map.getLayersByName(updateObj.layerID)[0];
-		    		var escapedLayerID = org.OpenGeoPortal.Utility.idEscape(updateObj.layerID);
+					var layer = OpenGeoportal.map.getLayersByName(updateObj.layerID)[0];
+		    		var escapedLayerID = OpenGeoportal.Utility.idEscape(updateObj.layerID);
 					if (stateVal === true){
-						var mapLayers = org.OpenGeoPortal.map.layers;
+						var mapLayers = OpenGeoportal.map.layers;
 						for (var i in mapLayers){
 							var currentLayer = mapLayers[i];
 							if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
@@ -222,15 +226,15 @@ org.OpenGeoPortal.LayerSettings = function(){
 							}
 						}
 						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview_down.gif"));
-						org.OpenGeoPortal.map.events.register("click", layer, org.OpenGeoPortal.map.wmsGetFeature);
+						OpenGeoportal.map.events.register("click", layer, OpenGeoportal.map.wmsGetFeature);
 						jQuery(document).trigger("getFeatureActivated");
 						//console.log(["register layer:", layer]);
-						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.ZoomBox")[0].deactivate();
-						org.OpenGeoPortal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].deactivate();
+						OpenGeoportal.map.getControlsByClass("OpenLayers.Control.ZoomBox")[0].deactivate();
+						OpenGeoportal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].deactivate();
 					  jQuery('.olMap').css('cursor', "crosshair");
 					} else {
 						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview.gif"));
-						org.OpenGeoPortal.map.events.unregister("click", layer, org.OpenGeoPortal.map.wmsGetFeature);
+						OpenGeoportal.map.events.unregister("click", layer, OpenGeoportal.map.wmsGetFeature);
 
 				  }
 				  break;

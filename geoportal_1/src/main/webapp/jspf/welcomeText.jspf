@@ -1,6 +1,14 @@
-<div id="welcomeTextSearchTab" class="welcomeText">
-	<h1><%@include file="institutionWelcome.jspf"%></h1>
+<div id="welcomeText" class="welcomeText">
+	<h1>Welcome</h1>
 	<p>
-	Enter a keyword and/or interact with the map to discover geospatial data
+	There are two ways to begin your search:
 	</p> 
+	<ol>
+	<li>
+	Enter information using one or both search fields.
+	</li>
+	<li>
+	Zoom in on a location using the map. 
+	</li>
+	</ol>
 </div>

@@ -163,12 +163,13 @@ table.display tr.heading2 td {
 }
 
 table.display > tbody > tr > td {
-	padding: 3px;
+	padding: 4px 3px;
 	overflow: hidden;
 	font-size: 12px;
 	color: #333333;
 	height: 17px;
 	border: 0px;
+	border-color: #FFFFFF;
 	white-space: nowrap;	
 }
 
@@ -359,7 +360,7 @@ div.box {
 .sizeText {
 	}
 	
-.colorPalette {
+.colorControl {
 	width:12px;
 	height:12px;
 	border:1px solid #666666;
@@ -404,18 +405,37 @@ td.colTitle {
 	left: 250px;
 }
 
-.zoomToLayerControlCell {
+.expandControl {
+	height: 17px;
+	width: 11px;
+}
+
+.expanded {
+		background: url("../media/geodata-sprite.png") no-repeat scroll -66px -83px transparent;
+}
+
+.notExpanded {
+		background: url("../media/geodata-sprite.png") no-repeat scroll -83px -83px transparent;
+}
+
+.zoomToLayerControl {
 	left: 290px;
 	background: url("../media/geodata-sprite.png") no-repeat scroll -9px -110px transparent;
     height: 17px;
 	width: 17px;
 }
 
-.attributeInfoControlCell {
+.attributeInfoControl {
 	left: 312px;
-	background: url("../media/geodata-sprite.png") no-repeat scroll -36px -110px transparent;
     height: 17px;
 	width: 17px;
+}
+
+.attributeInfoControlOn {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -36px -110px transparent;
+}
+.attributeInfoControlOff {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -36px -110px transparent;
 }
 
 .cartIconTable {
@@ -443,8 +463,9 @@ td.colTitle {
 }
 
 table.display > thead > tr > th > div {
-	height: 17px;
+/*	height: 17px;
 	line-height: 17px;
+	*/
 }
 
 table.display > tbody > tr > td > div {

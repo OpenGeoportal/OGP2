@@ -5,27 +5,20 @@
  * @author Chris Barnett
  */
 
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
-}
-
-// Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
 
 //Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal.Export == 'undefined'){
-	org.OpenGeoPortal.Export = {};
-} else if (typeof org.OpenGeoPortal.Export != "object"){
-    throw new Error("org.OpenGeoPortal.Export already exists and is not an object");
+if (typeof OpenGeoportal.Export == 'undefined'){
+	OpenGeoportal.Export = {};
+} else if (typeof OpenGeoportal.Export != "object"){
+    throw new Error("OpenGeoportal.Export already exists and is not an object");
 }
 
-org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
+OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 	//console.log(exportObj);
 	this.layerObj = exportObj.layers;
 	this.descriptor = "geoCommonsExport";
@@ -214,7 +207,7 @@ org.OpenGeoPortal.Export.GeoCommons = function GeoCommons(exportObj){
 				dataType: "json",
 				type: "POST",
 	    		context: this,
-	    		success: function(data){org.OpenGeoPortal.downloadQueue.registerExportRequest(data.requestId, requestObj);}
+	    		success: function(data){OpenGeoportal.downloadQueue.registerExportRequest(data.requestId, requestObj);}
 			};
 			jQuery.ajax(params);
 		};

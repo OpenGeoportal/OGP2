@@ -8,27 +8,21 @@
 /**
  * create the namespace objects if they don't already exist
  */
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
+
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-// Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
-}
-
-org.OpenGeoPortal.LogIn = function(institution){
-	this.TYPE = org.OpenGeoPortal.InstitutionInfo.getLoginType(institution); //"iframe"; other choice is "form"; would be nice to get this from ogp config
+OpenGeoportal.LogIn = function(institution){
+	this.TYPE = OpenGeoportal.InstitutionInfo.getLoginType(institution); //"iframe"; other choice is "form"; would be nice to get this from ogp config
 
 	this.userNameLabel = institution + " Username:";
 	this.passwordLabel = institution + " Password:";
 	this.dialogTitle = "LOGIN";
 	
-	this.authenticationPage = org.OpenGeoPortal.InstitutionInfo.getAuthenticationPage(institution);;
+	this.authenticationPage = OpenGeoportal.InstitutionInfo.getAuthenticationPage(institution);;
 	this.ogpBase = window.location.protocol + "//" + window.location.host;
 	//this.responseObject = null;
 	// userId is null if no user is logged in
@@ -136,7 +130,7 @@ this.checkLoginStatus = function(){
 	var ajaxArgs = {url: url, type: "GET", 
 			context: that,
 			crossDomain: true,
-			dataType: "jsonp",
+			dataType: "json",
 			success: that.loginStatusResponse
 			};
 	jQuery.ajax(ajaxArgs);
@@ -175,13 +169,16 @@ this.processFormLogin = function()
 	//var url = this.authenticationPage;
 	var username = jQuery("#loginFormUsername").val();
 	var password = jQuery("#loginFormPassword").val();
-	var ajaxArgs = {url: url, 
+	var ajaxArgs = {
+			type: "POST",
+			url: url, 
 			context: that,
-			   xhrFields: {
-				     withCredentials: true
-				   },
-			data: {"j_username": username, "j_password": password},
-			dataType: "jsonp",
+			crossDomain: true,
+			xhrFields: {
+				withCredentials: true
+				},
+			data: {"username": username, "password": password},
+			dataType: "json",
 			success: that.loginResponse, 
 			error: that.loginResponseError};
 	jQuery.ajax(ajaxArgs);
@@ -195,6 +192,23 @@ this.processIframeLogin = function(){
 				that.loginResponse(jQuery.parseJSON(e.data));
 				},
 			that.ogpBase);
+};
+
+
+this.processLogout = function(){
+	//for logout capability
+	var that = this;
+	var url = this.getUrl() + "logout";
+	var ajaxArgs = {url: url, 
+		crossDomain: true,
+		xhrFields: {
+			withCredentials: true
+			},
+		context: that,
+		dataType: "json",
+		success: that.logoutResponse
+		};
+	jQuery.ajax(ajaxArgs);
 };
 
 //callback handler invoked with response to authenticate server call
@@ -217,25 +231,30 @@ this.loginStatusResponse = function(data, textStatus, jqXHR)
 };
 //callback handler invoked with response to authenticate server call
 //sets the userId variable to hold the id of the logged in user
-this.loginResponse = function(data, textStatus, jqXHR)
-{
-
+this.loginResponse = function(data, textStatus, jqXHR){
 	var that = this;
-	if (data.authenticated)
-	{
+	if (data.authenticated){
 		var username = data.username;
 		this.userId = username || data.authenticated;
 		jQuery("#loginDialog").dialog('close');	
 		jQuery(document).trigger("loginSucceeded");
 	}
-	else
-	{
+	else{
 		that.loginResponseError(data,textStatus,jqXHR);
 
 	}
 };
 
+this.logoutResponse = function(data, textStatus, jqXHR) {
+	var that = this;
+	if (!data.authenticated) {
+		this.userId = null;
+		jQuery(document).trigger("logoutSucceeded");
+	} else {
+		jQuery(document).trigger("logoutFailed");
+	}
 
+};
 //callback handler invoked when if an error occurs during ajax call to authenticate a user
 this.loginResponseError = function(jqXHR, textStatus, errorThrown){
 	this.userId = null;

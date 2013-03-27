@@ -101,6 +101,28 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		return requestId;
 	}
 
+	private Boolean isAuthorizedToDownload(SolrRecord solrRecord){
+		if (solrRecord.getAccess().equalsIgnoreCase("public")){
+			return true;
+		} else {
+			try {
+				if (solrRecord.getInstitution().equalsIgnoreCase(searchConfigRetriever.getHome())){
+					//check if the user is locally authenticated
+					if (this.getLocallyAuthenticated()){
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			} catch (Exception e) {
+				logger.error(e.getMessage());
+				return false;
+			}
+		}
+	}
+	
 	private Map <String, List<LayerRequest>> createDownloadRequestMap (Map<String, String> layerMap, String[] bounds) throws Exception {
 		this.layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerMap.keySet());
 		Map <String, List<LayerRequest>> downloadMap = new HashMap<String, List<LayerRequest>>(); 
@@ -108,6 +130,11 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 			logger.debug("Requested format: " + layerMap.get(record.getLayerId()));
 			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()), bounds);
 			String currentClassKey = null;
+			if (!isAuthorizedToDownload(record)){
+				layerRequest.setStatus(Status.FAILED);
+				logger.info("User is not authorized to download: '" + record.getLayerId() +"'");
+				continue;	
+			}
 			try {
 				currentClassKey = this.downloadConfigRetriever.getClassKey(layerRequest);
 				logger.info("DownloadKey: " + currentClassKey);

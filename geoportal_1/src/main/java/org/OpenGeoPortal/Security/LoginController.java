@@ -22,9 +22,9 @@ public class LoginController {
 		return loginService.getStatus();
 	}
 
-	@RequestMapping(value="login", method=RequestMethod.GET, produces="application/json")
-	@ResponseBody public LoginStatus login(@RequestParam("j_username") String username,
-                         @RequestParam("j_password") String password) {
+	@RequestMapping(value="login", method=RequestMethod.POST, produces="application/json")
+	@ResponseBody public LoginStatus login(@RequestParam("username") String username,
+                         @RequestParam("password") String password) {
 		return loginService.login(username, password);
 	}
 	

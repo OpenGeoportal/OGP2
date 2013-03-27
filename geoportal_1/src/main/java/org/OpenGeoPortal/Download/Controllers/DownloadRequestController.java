@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.OpenGeoPortal.Download.DownloadHandler;
+import org.OpenGeoPortal.Security.OgpUserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,9 @@ public class DownloadRequestController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	private DownloadHandler downloadHandler;
-
+	@Autowired
+	private OgpUserContext ogpUserContext;
+	
 	@RequestMapping(method=RequestMethod.POST, produces="application/json")
 	public @ResponseBody Map<String,String> processDownload(@RequestParam("layers[]") String[] layers, @RequestParam("email") String email, 
 			@RequestParam("bbox") String bbox) throws Exception {
@@ -43,8 +46,12 @@ public class DownloadRequestController {
 			String[] layerInfo = layers[i].split("=");
 			layerMap.put(layerInfo[0], layerInfo[1]);
 		}
+		Boolean authenticated = false;
+		if (ogpUserContext.isAuthenticatedLocally()){
+			authenticated = true;
+		}
 		String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
-		UUID requestId = downloadHandler.requestLayers(sessionId, layerMap, arrBbox, email, true);
+		UUID requestId = downloadHandler.requestLayers(sessionId, layerMap, arrBbox, email, authenticated);
 		Map<String,String> map = new HashMap<String,String>();
 		map.put("requestId", requestId.toString());
 		return map;

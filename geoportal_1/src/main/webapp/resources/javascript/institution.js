@@ -10,60 +10,60 @@ if (typeof org == 'undefined'){
 }
 
 // Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-if (typeof org.OpenGeoPortal.InstitutionInfo == 'undefined'){
-	org.OpenGeoPortal.InstitutionInfo = {};
-} else if (typeof org.OpenGeoPortal.InstitutionInfo !== "object"){
-    throw new Error("org.OpenGeoPortal.InstitutionInfo already exists and is not an object");
+if (typeof OpenGeoportal.InstitutionInfo == 'undefined'){
+	OpenGeoportal.InstitutionInfo = {};
+} else if (typeof OpenGeoportal.InstitutionInfo !== "object"){
+    throw new Error("OpenGeoportal.InstitutionInfo already exists and is not an object");
 }
 
-org.OpenGeoPortal.InstitutionInfo.Config = {};
-org.OpenGeoPortal.InstitutionInfo.Search = {};
-org.OpenGeoPortal.InstitutionInfo.homeInstitution = "";
-org.OpenGeoPortal.InstitutionInfo.institutionSpecificCss = "";
-org.OpenGeoPortal.InstitutionInfo.institutionSpecificJavaScript = "";
-org.OpenGeoPortal.InstitutionInfo.institutionSpecificGoogleAnalyticsId = "";
+OpenGeoportal.InstitutionInfo.Config = {};
+OpenGeoportal.InstitutionInfo.Search = {};
+OpenGeoportal.InstitutionInfo.homeInstitution = "";
+OpenGeoportal.InstitutionInfo.institutionSpecificCss = "";
+OpenGeoportal.InstitutionInfo.institutionSpecificJavaScript = "";
+OpenGeoportal.InstitutionInfo.institutionSpecificGoogleAnalyticsId = "";
 
-org.OpenGeoPortal.InstitutionInfo.getHomeInstitution = function(){	
-	var institution = org.OpenGeoPortal.InstitutionInfo.homeInstitution;
+OpenGeoportal.InstitutionInfo.getHomeInstitution = function(){	
+	var institution = OpenGeoportal.InstitutionInfo.homeInstitution;
 	//return homeInstitution if it is not empty
 	if (institution.length > 0){
 		return institution;
 	} else {
-		org.OpenGeoPortal.InstitutionInfo.requestInfo();
-		return org.OpenGeoPortal.InstitutionInfo.homeInstitution;
+		OpenGeoportal.InstitutionInfo.requestInfo();
+		return OpenGeoportal.InstitutionInfo.homeInstitution;
 	}
 };
 
 
-org.OpenGeoPortal.InstitutionInfo.getCustomCss = function(){	
-	var institution = org.OpenGeoPortal.InstitutionInfo.institutionSpecificCss;
+OpenGeoportal.InstitutionInfo.getCustomCss = function(){	
+	var institution = OpenGeoportal.InstitutionInfo.institutionSpecificCss;
 	//return institutionSpecificCss if it is not empty
 	if (institution.length > 0){
 		return institution;
 	} else {
-		org.OpenGeoPortal.InstitutionInfo.requestInfo();
-		return org.OpenGeoPortal.InstitutionInfo.institutionSpecificCss;
+		OpenGeoportal.InstitutionInfo.requestInfo();
+		return OpenGeoportal.InstitutionInfo.institutionSpecificCss;
 	}
 };
 
-org.OpenGeoPortal.InstitutionInfo.getCustomJavaScript = function(){	
-	var javaScriptFileName = org.OpenGeoPortal.InstitutionInfo.institutionSpecificJavaScript;
+OpenGeoportal.InstitutionInfo.getCustomJavaScript = function(){	
+	var javaScriptFileName = OpenGeoportal.InstitutionInfo.institutionSpecificJavaScript;
 	return javaScriptFileName;
 };
 
-org.OpenGeoPortal.InstitutionInfo.getGoogleAnalyticsId = function(){	
-	var googleAnalyticsId = org.OpenGeoPortal.InstitutionInfo.institutionSpecificGoogleAnalyticsId;
+OpenGeoportal.InstitutionInfo.getGoogleAnalyticsId = function(){	
+	var googleAnalyticsId = OpenGeoportal.InstitutionInfo.institutionSpecificGoogleAnalyticsId;
 	return googleAnalyticsId;
 };
 
-org.OpenGeoPortal.InstitutionInfo.getWMSProxy = function(institution, accessLevel) {
-	var configObj = org.OpenGeoPortal.InstitutionInfo.Config[institution];
+OpenGeoportal.InstitutionInfo.getWMSProxy = function(institution, accessLevel) {
+	var configObj = OpenGeoportal.InstitutionInfo.Config[institution];
 	if (typeof configObj.proxy != "undefined"){
 		if (jQuery.inArray(accessLevel.toLowerCase(), configObj.proxy.accessLevel) > -1){
 			return configObj.proxy.wms;
@@ -74,40 +74,40 @@ org.OpenGeoPortal.InstitutionInfo.getWMSProxy = function(institution, accessLeve
 	
 };
 
-org.OpenGeoPortal.InstitutionInfo.getLoginType = function(institution){
-	var info = org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
+OpenGeoportal.InstitutionInfo.getLoginType = function(institution){
+	var info = OpenGeoportal.InstitutionInfo.getInstitutionInfo();
 	return info[institution]["login"]["loginType"];
 };
 
-org.OpenGeoPortal.InstitutionInfo.getAuthenticationPage = function(institution){
-	var info = org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo();
+OpenGeoportal.InstitutionInfo.getAuthenticationPage = function(institution){
+	var info = OpenGeoportal.InstitutionInfo.getInstitutionInfo();
 	return info[institution]["login"]["authenticationPage"];
 };
 
-org.OpenGeoPortal.InstitutionInfo.getSearch = function(){	
-	var search = org.OpenGeoPortal.InstitutionInfo.Search;
+OpenGeoportal.InstitutionInfo.getSearch = function(){	
+	var search = OpenGeoportal.InstitutionInfo.Search;
 	//return Search if it is not empty
 	for (var i in search){
 		return search;
 	}
 
-	org.OpenGeoPortal.InstitutionInfo.requestInfo();
-	return org.OpenGeoPortal.InstitutionInfo.Search;
+	OpenGeoportal.InstitutionInfo.requestInfo();
+	return OpenGeoportal.InstitutionInfo.Search;
 	
 };
 
-org.OpenGeoPortal.InstitutionInfo.getInstitutionInfo = function(){
-	var configObj = org.OpenGeoPortal.InstitutionInfo.Config;
+OpenGeoportal.InstitutionInfo.getInstitutionInfo = function(){
+	var configObj = OpenGeoportal.InstitutionInfo.Config;
 	//return the configObj if it is not empty
 	for (var i in configObj){
 		return configObj;
 	}
 	//otherwise, get set the configObj from the xml config file
-	org.OpenGeoPortal.InstitutionInfo.requestInfo();
-	return org.OpenGeoPortal.InstitutionInfo.Config;
+	OpenGeoportal.InstitutionInfo.requestInfo();
+	return OpenGeoportal.InstitutionInfo.Config;
 };
 
-org.OpenGeoPortal.InstitutionInfo.requestInfo = function(){
+OpenGeoportal.InstitutionInfo.requestInfo = function(){
 	var params = {
 		url: "resources/ogpConfig.json",
 		async: false,
@@ -115,12 +115,12 @@ org.OpenGeoPortal.InstitutionInfo.requestInfo = function(){
 		dataType: 'json',
 		success: function(data){
 			var institutions = data["config"]["institutions"];
-			org.OpenGeoPortal.InstitutionInfo.Search = data["config"]["search"];
-			org.OpenGeoPortal.InstitutionInfo.institutionSpecificCss = data["config"]["institutionSpecificCss"];
-			org.OpenGeoPortal.InstitutionInfo.institutionSpecificJavaScript = data["config"]["institutionSpecificJavaScript"];
-			org.OpenGeoPortal.InstitutionInfo.institutionSpecificGoogleAnalyticsId = data["config"]["googleAnalyticsId"];
-			org.OpenGeoPortal.InstitutionInfo.Config = institutions;
-			org.OpenGeoPortal.InstitutionInfo.homeInstitution = data["config"]["homeInstitution"];
+			OpenGeoportal.InstitutionInfo.Search = data["config"]["search"];
+			OpenGeoportal.InstitutionInfo.institutionSpecificCss = data["config"]["institutionSpecificCss"];
+			OpenGeoportal.InstitutionInfo.institutionSpecificJavaScript = data["config"]["institutionSpecificJavaScript"];
+			OpenGeoportal.InstitutionInfo.institutionSpecificGoogleAnalyticsId = data["config"]["googleAnalyticsId"];
+			OpenGeoportal.InstitutionInfo.Config = institutions;
+			OpenGeoportal.InstitutionInfo.homeInstitution = data["config"]["homeInstitution"];
 		},
 		error: function(jqXHR, textStatus, errorThrown){
 			alert(textStatus);
@@ -131,21 +131,20 @@ org.OpenGeoPortal.InstitutionInfo.requestInfo = function(){
 	jQuery.ajax(params);
 };
 
-org.OpenGeoPortal.InstitutionInfo.imagePath = org.OpenGeoPortal.Utility.ImageLocation;
-
-org.OpenGeoPortal.InstitutionInfo.icons = {
-		"dataTypes": {
-				  "Point": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_dot.png", "uiClass": "pointIcon", "displayName":"point"},
-				  "Line": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_arc.png", "uiClass": "lineIcon", "displayName":"line"},
-				  "Polygon": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_polygon.png", "uiClass": "polygonIcon", "displayName":"polygon"},
-				  "Raster": {"source":  org.OpenGeoPortal.InstitutionInfo.imagePath + "type_raster.png", "uiClass": "rasterIcon", "displayName":"raster"},
-				  "PaperMap": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_map.png", "uiClass": "mapIcon", "displayName":"scanned map"}/*,
-				  "LibraryRecord": {"source": org.OpenGeoPortal.InstitutionInfo.imagePath + "type_library.png", "displayName":"library record"}*/
-	}
+OpenGeoportal.InstitutionInfo.getIcons = function(){
+	var dataTypes = {"dataTypes": {
+			  "Point": {"uiClass": "pointIcon", "displayName":"point"},
+			  "Line": {"uiClass": "lineIcon", "displayName":"line"},
+			  "Polygon": {"uiClass": "polygonIcon", "displayName":"polygon"},
+			  "Raster": {"uiClass": "rasterIcon", "displayName":"raster"},
+			  "PaperMap": {"uiClass": "mapIcon", "displayName":"scanned map"}/*,
+			  "LibraryRecord": {"source": OpenGeoportal.InstitutionInfo.imagePath + "type_library.png", "displayName":"library record"}*/
+			}
+	};
+	return dataTypes;
 };
 
-
-org.OpenGeoPortal.InstitutionInfo.dataTypes = {	dataTypeArray : [{"DisplayName":"Point", "value": "point"}, 
+OpenGeoportal.InstitutionInfo.dataTypes = {	dataTypeArray : [{"DisplayName":"Point", "value": "point"}, 
                                                	                 {"DisplayName":"Line", "value": "line"},
                                             	                 {"DisplayName":"Polygon", "value": "polygon"}, 
                                             	                 {"DisplayName":"Raster", "value": "raster"},

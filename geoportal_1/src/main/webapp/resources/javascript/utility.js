@@ -1,5 +1,5 @@
 /* This javascript module includes utility functions for OpenGeoPortal plus
- * extra functions with no current home. org.OpenGeoPortal.Utility is a
+ * extra functions with no current home. OpenGeoportal.Utility is a
  * namespace rather than an object.  The XML functions might go away when we
  * upgrade to a newer version of jQuery, as it contains functions to parse XML.
  * 
@@ -7,43 +7,36 @@
  * 
  */
 
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-// Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
+if (typeof OpenGeoportal.Utility == 'undefined'){
+	OpenGeoportal.Utility = {};
+} else if (typeof OpenGeoportal.Utility != "object"){
+    throw new Error("OpenGeoportal.Utility already exists and is not an object");
 }
 
-if (typeof org.OpenGeoPortal.Utility == 'undefined'){
-	org.OpenGeoPortal.Utility = {};
-} else if (typeof org.OpenGeoPortal.Utility != "object"){
-    throw new Error("org.OpenGeoPortal.Utility already exists and is not an object");
-}
-
-org.OpenGeoPortal.Utility.ImageLocation = "resources/media/";
-org.OpenGeoPortal.Utility.CssLocation = "resources/css/";
-org.OpenGeoPortal.Utility.JspfLocation = "jspf/"
+OpenGeoportal.Utility.ImageLocation = "resources/media/";
+OpenGeoportal.Utility.CssLocation = "resources/css/";
+OpenGeoportal.Utility.JspfLocation = "jspf/"
 	
-org.OpenGeoPortal.Utility.InitSet = false;
+OpenGeoportal.Utility.InitSet = false;
 
-org.OpenGeoPortal.Utility.getImage = function(imageName){
-	return org.OpenGeoPortal.Utility.ImageLocation + imageName;
+OpenGeoportal.Utility.getImage = function(imageName){
+	return OpenGeoportal.Utility.ImageLocation + imageName;
 };
 
-org.OpenGeoPortal.Utility.CurrentTab = 1;
-org.OpenGeoPortal.Utility.whichTab = function(){
+OpenGeoportal.Utility.CurrentTab = 1;
+OpenGeoportal.Utility.whichTab = function(){
 	var tabInfo = {};
 	var tabIndex;
 	if (arguments.length > 0){
 		tabIndex = arguments[0];
 	} else {
-		tabIndex = org.OpenGeoPortal.Utility.CurrentTab;
+		tabIndex = OpenGeoportal.Utility.CurrentTab;
 	}
 	tabInfo.index = tabIndex;
 	switch (tabIndex){
@@ -55,13 +48,13 @@ org.OpenGeoPortal.Utility.whichTab = function(){
 		break;
 	case 1:
 		tabInfo.name = 'search';
-		tabInfo.tableObject = function(){return org.OpenGeoPortal.resultsTableObj;};
+		tabInfo.tableObject = function(){return OpenGeoportal.ogp.resultsTableObj;};
 		tabInfo.tableDiv = 'resultsTable';
 		tabInfo.tableName = 'searchResults';
 		break;
 	case 2:
 		tabInfo.name = 'saved';
-		tabInfo.tableObject = function(){return org.OpenGeoPortal.cartTableObj;};
+		tabInfo.tableObject = function(){return OpenGeoportal.ogp.cartTableObj;};
 		tabInfo.tableDiv = 'savedLayersTable';
 		tabInfo.tableName = 'savedLayers';
 		break;
@@ -72,7 +65,7 @@ org.OpenGeoPortal.Utility.whichTab = function(){
 };
 
 
-org.OpenGeoPortal.Utility.whichSearch = function(){
+OpenGeoportal.Utility.whichSearch = function(){
 	var activeSearchDiv = null;
 	jQuery(".searchBox > div").each(function(){
 		if (jQuery(this).css("display") == 'block'){
@@ -94,7 +87,7 @@ org.OpenGeoPortal.Utility.whichSearch = function(){
 	return searchInfo;
 };
 
-org.OpenGeoPortal.Utility.rgb2hex = function(rgb) {
+OpenGeoportal.Utility.rgb2hex = function(rgb) {
     rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
     function hex(x) {
         return ("0" + parseInt(x).toString(16)).slice(-2);
@@ -102,7 +95,7 @@ org.OpenGeoPortal.Utility.rgb2hex = function(rgb) {
     return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
 };
 
-org.OpenGeoPortal.Utility.hexFromRGB = function(r, g, b) {
+OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	var hex = [
 		r.toString(16),
 		g.toString(16),
@@ -116,11 +109,11 @@ org.OpenGeoPortal.Utility.hexFromRGB = function(r, g, b) {
 	return hex.join('').toUpperCase();
 };
 
-org.OpenGeoPortal.Utility.idEscape = function (domElementID) { 
+OpenGeoportal.Utility.idEscape = function (domElementID) { 
 	   return domElementID.replace(/(:|\.)/g,'\\$1');
 };
 
-org.OpenGeoPortal.Utility.getMetadata = function (layerId){
+OpenGeoportal.Utility.getMetadata = function (layerId){
 	var params = {
 			url: "getMetadata.jsp?layer=" + layerId,
 			dataType: 'xml',
@@ -131,19 +124,19 @@ org.OpenGeoPortal.Utility.getMetadata = function (layerId){
 		jQuery.ajax(params);
 };
 
-org.OpenGeoPortal.Utility.escapeQuotes = function(stringOfInterest){
+OpenGeoportal.Utility.escapeQuotes = function(stringOfInterest){
 	return stringOfInterest.replace("'", "\\'").replace('"', '\\"');
 	
 };
 
-org.OpenGeoPortal.Utility.stripExtraSpaces = function(stringOfInterest){
+OpenGeoportal.Utility.stripExtraSpaces = function(stringOfInterest){
 	stringOfInterest = stringOfInterest.replace("\n", "");
 	return stringOfInterest.replace(/\s+/g, ' ');
 };
 
-org.OpenGeoPortal.Utility.loadIndicatorStatus = {"intervalId": "", "currentRequests": 0};
+OpenGeoportal.Utility.loadIndicatorStatus = {"intervalId": "", "currentRequests": 0};
 
-org.OpenGeoPortal.Utility.indicatorAnimationStart = function(div){
+OpenGeoportal.Utility.indicatorAnimationStart = function(div){
 	var indicatorFunction = function(){
 		try{
 			indicator.css("background-position", 
@@ -155,12 +148,12 @@ org.OpenGeoPortal.Utility.indicatorAnimationStart = function(div){
 		} catch (e){}
 	};
 	var indicator = jQuery('#' + div);
-	indicator.css("background-image", "url('" + org.OpenGeoPortal.Utility.getImage("progress.png") + "')");
+	indicator.css("background-image", "url('" + OpenGeoportal.Utility.getImage("progress.png") + "')");
 	var intervalId = setInterval(indicatorFunction, 84);
 	return intervalId;
 };
 
-org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
+OpenGeoportal.Utility.showLoadIndicator = function(div){
 	var that = this;
 	/*var indicatorFunction = function(){
 		try{
@@ -176,9 +169,9 @@ org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
 		//var j = 1;
 		//no current ajax requests, so we can start a new indicator
 		if (that.loadIndicatorStatus["currentRequests"] == 0){
-			//indicator.css("background-image", "url('" + org.OpenGeoPortal.Utility.getImage("progress.png") + "')");
+			//indicator.css("background-image", "url('" + OpenGeoportal.Utility.getImage("progress.png") + "')");
 
-			that.loadIndicatorStatus["intervalId"] = org.OpenGeoPortal.Utility.indicatorAnimationStart(div);
+			that.loadIndicatorStatus["intervalId"] = OpenGeoportal.Utility.indicatorAnimationStart(div);
 			indicator.fadeIn();
 			that.loadIndicatorStatus["currentRequests"] = 1;
 		} else {
@@ -197,7 +190,7 @@ org.OpenGeoPortal.Utility.showLoadIndicator = function(div){
 		//console.log(that.loadIndicatorStatus["currentRequests"]);
 	};
 	
-org.OpenGeoPortal.Utility.hideLoadIndicator = function(div){
+OpenGeoportal.Utility.hideLoadIndicator = function(div){
 	var that = this;
 	var indicator = jQuery('#' + div);
 

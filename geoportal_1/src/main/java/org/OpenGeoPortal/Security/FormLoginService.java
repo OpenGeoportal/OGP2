@@ -36,9 +36,17 @@ public class FormLoginService implements LoginService {
     public LoginStatus login(String username, String password) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
         logger.debug("Attempting login.");
+        Authentication auth = null;
         try {
-            Authentication auth = authenticationManager.authenticate(token);
+            auth = authenticationManager.authenticate(token);
             logger.debug("Login succeeded!");
+        } catch (BadCredentialsException e){
+        	logger.error(e.getMessage());
+        	Collection<? extends GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+            return new LoginStatus(false, null, authorities);
+
+        }
+        try{
             SecurityContextHolder.getContext().setAuthentication(auth);
             Collection<? extends GrantedAuthority> authorities = null;
             if (auth.getAuthorities().isEmpty()){
@@ -47,9 +55,11 @@ public class FormLoginService implements LoginService {
             	authorities = auth.getAuthorities();
             }
             return new LoginStatus(auth.isAuthenticated(), auth.getName(), authorities);
-        } catch (BadCredentialsException e) {
+        } catch (Exception e) {
+        	logger.error(e.getMessage());
         	Collection<? extends GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
             return new LoginStatus(false, null, authorities);
+
         }
     }
 

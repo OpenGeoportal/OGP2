@@ -1,0 +1,29 @@
+<div id="cartDiv">
+	<div class="sub_header">
+			<span class="sub_headerTitle">
+			OPTIONS
+			</span>
+	</div>
+	<div id="cartOptions">
+		<span id="downloadButton" class="styledButton">Download</span>
+		<span id="webServiceButton" class="styledButton">Web Service</span>
+		<span id="shareButton" class="styledButton">Share</span>
+		<span id="mapItButton" class="styledButton">Map It</span>
+		<div id="optionDetails"></div>
+	</div> 
+	
+	<div id="cart">
+		<div class="sub_header tableHeader">
+			<span class="sub_headerTitle">
+			LAYERS
+			</span>
+
+			<span class="savedLayersNumber"></span>
+			<span class="sub_headerButtons">	
+				<span id="removeFromCartButton" class="deleteButton styledButtonSmall" title="Remove selected layers from the cart">
+    				Remove
+				</span>
+			</span>
+		</div>
+	</div>
+</div>

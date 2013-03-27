@@ -1,19 +1,11 @@
-
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
-}
-
-// Repeat the creation and type-checking code for the next level
-if (typeof org.OpenGeoPortal == 'undefined'){
-	org.OpenGeoPortal = {};
-} else if (typeof org.OpenGeoPortal != "object"){
-    throw new Error("org.OpenGeoPortal already exists and is not an object");
+if (typeof OpenGeoportal == 'undefined'){
+	OpenGeoportal = {};
+} else if (typeof OpenGeoportal != "object"){
+    throw new Error("OpenGeoportal already exists and is not an object");
 }
 
 
-org.OpenGeoPortal.Downloader = function(){
+OpenGeoportal.Downloader = function(){
 	jQuery("body").append('<div id="requestTickerContainer" class="raised"></div>');
 	var that = this;
 	this.requestQueue = {
@@ -337,7 +329,7 @@ org.OpenGeoPortal.Downloader = function(){
 	
 	//poll handling
 	this.firePoll = function(){
-		var t=setTimeout('org.OpenGeoPortal.downloadQueue.pollRequestStatus()', INTERVAL_MS);
+		var t=setTimeout('OpenGeoportal.downloadQueue.pollRequestStatus()', INTERVAL_MS);
 		this.requestQueue.pollId = t;
 		this.requestQueue.isPollRunning = true;
 		this.setTickerText();
@@ -364,7 +356,7 @@ org.OpenGeoPortal.Downloader = function(){
 
 		//jQuery("#requestTicker").text(this.getTickerText());
 
-		this.requestQueue.processingIndicatorId = org.OpenGeoPortal.Utility.indicatorAnimationStart("processingIndicator");
+		this.requestQueue.processingIndicatorId = OpenGeoportal.Utility.indicatorAnimationStart("processingIndicator");
 	};
 	
 	this.stopTicker = function(){
@@ -527,7 +519,7 @@ org.OpenGeoPortal.Downloader = function(){
 			layers.push(layerObj);
 		}
 		//get some info from solr about the layer
-        var solr = new org.OpenGeoPortal.Solr();
+        var solr = new OpenGeoportal.Solr();
     	var query = solr.getInfoFromLayerIdQuery(layerIds);
     	solr.sendToSolr(query, this.errorInfoSuccess, this.errorInfoError);
     	//create message box here, but keep it hidden until solr callback

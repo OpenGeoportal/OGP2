@@ -1,11 +1,10 @@
 <div id="mapToolBar" class="shadowDown">
-    <!--<div id="mapClearButton" class="button ui-button" title="Clear all layers from the map" >
-    	clear map
-	</div>-->
 	<div id="mapLoadIndicator" class="loadIndicator"></div> 
 		<div id="map_tabs"> 
-			<span class="mapStyledButton" title="Save map image" onclick="org.OpenGeoPortal.ui.saveImage();">Save Image</span>
-			<span class="mapStyledButton" title="Print map" onclick="org.OpenGeoPortal.ui.printImage();">Print</span>
+			<!-- <span class="mapStyledButton" title="Save map image" onclick="org.OpenGeoPortal.ui.saveImage();">Save Image</span>
+			<span class="mapStyledButton" title="Print map" onclick="org.OpenGeoPortal.ui.printImage();">Print</span>-->
+			<span class="mapStyledButton saveImageButton" title="Save map image">Save Image</span>
+			<span class="mapStyledButton printButton" title="Print map">Print</span>
 			<div id="basemapDropdown">
 				<button id="basemapSelect" class="mapStyledButton" title="Select base map"><span>Basemap<img src="resources/media/arrow_down.png" alt="Select base map" /></span></button>
 				<div id="basemapMenu">

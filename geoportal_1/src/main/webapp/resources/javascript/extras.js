@@ -39,6 +39,34 @@ org.OpenGeoPortal.UserInterface.prototype.geoSearch = function() {
 	});
 };
 
+
+/*jQuery(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
+console.log(ajaxSettings);
+
+if (jqXHR.status == 401){
+	//if (ajaxSettings.url.indexOf("authenticate") > -1){
+		that.promptLogin();
+		jQuery(document).unbind("loginSucceeded.retry");
+		jQuery(document).bind("loginSucceeded.retry", function(){
+			jQuery.ajax(ajaxSettings);
+		});
+	//}
+}
+/*console.log(event);
+console.log(jqXHR);
+console.log(ajaxSettings);
+console.log(thrownError);*/
+//});
+//this.checkUserInput();			
+/*jQuery("body").delegate(".ui-dialog-titlebar", "dblclick", function(){
+var id = jQuery(this).parent().children(".dialog").attr("id");
+if (that.isDialogMinimized(id)){
+	that.maximizeDialog(id);
+} else {
+	that.minimizeDialog(id);
+}
+});*/
+
 //used?
 org.OpenGeoPortal.UserInterface.prototype.createQueryString = function(){
 	var searchType = this.whichSearch().type;
