@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<groups xmlns="http://www.isdc.ro/wro">
+  <group name='ogpLib'>
+    <css>/resources/css/google.css</css>
+    <css>/resources/css/jquery-ui.custom.css</css>
+    <css>/resources/css/structure.css</css>
+    <css>/resources/css/mapDiv.css</css>
+    <css>/resources/css/dataTable.css</css>
+  
+    <js>/resources/javascript/lib/errorObject.js</js>
+    <js>/resources/javascript/lib/analytics.js</js>
+    <js>/resources/javascript/lib/utility.js</js>
+    <js>/resources/javascript/lib/template.js</js>
+    <js>/resources/javascript/lib/institution.js</js>
+    <js>/resources/javascript/lib/tableConfig.js</js>
+    <js>/resources/javascript/lib/tableLayerSettings.js</js>
+    <js>/resources/javascript/lib/tableSortSettings.js</js>
+    <js>/resources/javascript/lib/tableSettings.js</js>
+    <js>/resources/javascript/lib/previewedLayers.js</js>
+    <js>/resources/javascript/lib/layerSettings.js</js>
+    <js>/resources/javascript/lib/appSettings.js</js>
+    <js>/resources/javascript/lib/layerTable.js</js>
+    <js>/resources/javascript/lib/solr.js</js>
+    <js>/resources/javascript/lib/search.js</js>
+    <js>/resources/javascript/lib/searchResultsTable.js</js>
+    <js>/resources/javascript/lib/cartTable.js</js>
+    <js>/resources/javascript/lib/download.js</js>
+    <js>/resources/javascript/lib/login.js</js>
+    <js>/resources/javascript/lib/geoCommonsExport.js</js>
+    <js>/resources/javascript/lib/mapDiv.js</js>
+    <js>/resources/javascript/lib/userInterface.js</js>
+  </group>
+  <group name='ogp'>
+	<group-ref>ogpLib</group-ref>
+    <js>/resources/javascript/lib/main.js</js>
+  </group>
+</groups>

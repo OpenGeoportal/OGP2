@@ -7,12 +7,15 @@ if (typeof OpenGeoportal == 'undefined'){
 *	object to hold display setting info for the application
 */
 
-OpenGeoportal.OgpSettings = function(){
+OpenGeoportal.OgpSettings = function OgpSettings(){
 	
 	this.layerState = new OpenGeoportal.LayerSettings();
-
+	this.template = new OpenGeoportal.Template();
+	
 	var settings = {"loggedIn": false,
-			"previousExtent": ""
+			"previousExtent": "",
+			"spatialSearch": true, 
+			"currentTab": 0
 	};
 	var that = this;
 

@@ -24,13 +24,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
 /**
- * This is an abstract class that provides the logic to determine which concrete class 
+ * class that provides the logic to determine which concrete class 
  * should be selected to download a layer.
  * 
  * 
  * @author Chris Barnett
  *
  */
+
 public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	private List<SolrRecord> layerInfo;
 	private Boolean locallyAuthenticated = false;

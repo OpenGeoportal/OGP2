@@ -3,12 +3,6 @@
  * 
  * */
 
-if (typeof org == 'undefined'){ 
-	org = {};
-} else if (typeof org != "object"){
-	throw new Error("org already exists and is not an object");
-}
-
 // Repeat the creation and type-checking code for the next level
 if (typeof OpenGeoportal == 'undefined'){
 	OpenGeoportal = {};

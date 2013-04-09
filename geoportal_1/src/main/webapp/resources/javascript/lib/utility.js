@@ -29,7 +29,7 @@ OpenGeoportal.Utility.getImage = function(imageName){
 	return OpenGeoportal.Utility.ImageLocation + imageName;
 };
 
-OpenGeoportal.Utility.CurrentTab = 1;
+OpenGeoportal.Utility.CurrentTab = 0;
 OpenGeoportal.Utility.whichTab = function(){
 	var tabInfo = {};
 	var tabIndex;
@@ -41,18 +41,12 @@ OpenGeoportal.Utility.whichTab = function(){
 	tabInfo.index = tabIndex;
 	switch (tabIndex){
 	case 0:
-		tabInfo.name = 'welcome';
-		tabInfo.tableObject = false;
-		tabInfo.tableDiv = false;
-		tabInfo.tableName = false;
-		break;
-	case 1:
 		tabInfo.name = 'search';
 		tabInfo.tableObject = function(){return OpenGeoportal.ogp.resultsTableObj;};
 		tabInfo.tableDiv = 'resultsTable';
 		tabInfo.tableName = 'searchResults';
 		break;
-	case 2:
+	case 1:
 		tabInfo.name = 'saved';
 		tabInfo.tableObject = function(){return OpenGeoportal.ogp.cartTableObj;};
 		tabInfo.tableDiv = 'savedLayersTable';
@@ -109,8 +103,8 @@ OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	return hex.join('').toUpperCase();
 };
 
-OpenGeoportal.Utility.idEscape = function (domElementID) { 
-	   return domElementID.replace(/(:|\.)/g,'\\$1');
+OpenGeoportal.Utility.idEscape = function (domElementId) { 
+	   return domElementId.replace(/(:|\.)/g,'\\$1');
 };
 
 OpenGeoportal.Utility.getMetadata = function (layerId){
@@ -211,4 +205,47 @@ OpenGeoportal.Utility.hideLoadIndicator = function(div){
 		}
 	
 };
+
+
+OpenGeoportal.Utility.isRaster = function(dataType){
+		dataType = dataType.toLowerCase();
+		if ((dataType == "raster")||(dataType == "paper map")){
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+OpenGeoportal.Utility.isVector = function(dataType){
+		//console.log(dataType);
+		dataType = dataType.toLowerCase();
+		//console.log(dataType);
+		if ((dataType == "line")||(dataType == "point")||(dataType == "polygon")){
+			return true;
+		} else {
+			return false;
+		}
+	};
+	
+OpenGeoportal.Utility.checkAddress = function(emailAddress){
+		var stringArray = emailAddress.split("@");
+		if (stringArray.length < 2) {
+			return false;
+		} else {
+			var domainArray = stringArray[1].split(".");
+			var userString = stringArray[0];
+			if (domainArray.length < 2) {
+				return false;
+			} else if ((domainArray[0].length + domainArray[1].length + userString.length) < 3){
+				return false;
+			} 
+		}
+		return true;
+
+	};
+ 
+OpenGeoportal.Utility.doPrint = function(){
+		window.print();
+		//jQuery('head > link[href="css/print.css"]').remove();
+	};
 

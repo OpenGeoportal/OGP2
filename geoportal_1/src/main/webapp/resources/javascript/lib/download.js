@@ -329,7 +329,7 @@ OpenGeoportal.Downloader = function(){
 	
 	//poll handling
 	this.firePoll = function(){
-		var t=setTimeout('OpenGeoportal.downloadQueue.pollRequestStatus()', INTERVAL_MS);
+		var t=setTimeout('OpenGeoportal.ogp.downloadQueue.pollRequestStatus()', INTERVAL_MS);
 		this.requestQueue.pollId = t;
 		this.requestQueue.isPollRunning = true;
 		this.setTickerText();

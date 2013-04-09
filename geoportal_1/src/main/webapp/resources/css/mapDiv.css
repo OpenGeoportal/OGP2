@@ -1,22 +1,30 @@
 /* map panel */
 #map {
- 	min-width: 415px;
- 	height: 512px;
- 	display: inline-block;
+	height: 100%;
+    margin: 0;
+  /*  width: 100%;*/
+ 	/*min-width: 415px;*/
+ 	float: right;
 }
 
 .map_expanded {
-	width: 1000px !important;
+	/*width: 1000px !important;*/
 	z-index: 500;
-	position:absolute;
+	/*position:absolute;*/
 }
  
 .clearfloats {
 	clear:both;
 }
 
-#map_tabs {
-  	float:right; 
+#mapToolBar {
+    height: 31px;
+    position: absolute;
+    right: 0;
+    z-index: 1000;
+}
+
+#ogpMapButtons {
   	margin-right:20px;
   	margin-top: 5px;
 }
@@ -80,16 +88,6 @@ div.olControlMousePosition {
 
 .olControlPanel div {
   float: left;
-}
-    
-#mapToolBar {
-	height: 31px;
-	width: 100%;
-	position: absolute;
-	/*background-color: #000000;
-	opacity: .35;	
-	filter:Alpha(Opacity=35);*/
-	z-index: 1000;
 }
 
 .olControlOverviewMapContainer {

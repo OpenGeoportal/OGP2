@@ -9,6 +9,12 @@ This file has been heavily modified from the original template
 
 :focus {outline:none;}
 
+html, body {
+    height: 100%;
+    margin: 0;
+    width: 100%;
+}
+
 body {
 	text-align: left;
 	margin: 0; 
@@ -560,14 +566,13 @@ h3 {
 }
 
 #roll_right {
-	float:left;
 	min-height:680px;
 	width:25px;
 	border-right: 1px solid #999999;
 	background-color: #eeeeee;
-	display: block;
+	vertical-align: top;
+	float: left;
     padding: 0px;
-  	margin-left: 0px;
   	height: 100%;
 }
 

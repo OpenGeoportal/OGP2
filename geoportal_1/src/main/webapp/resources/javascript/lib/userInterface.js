@@ -14,22 +14,21 @@ if (typeof OpenGeoportal == 'undefined'){
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-OpenGeoportal.UserInterface = function(){
-	//default text for the geocoder input box
-	this.geocodeText = "Find Place (Example: Boston, MA)";
+OpenGeoportal.UserInterface = function(appState){
+
 	//default text for the search input box
 	this.searchText = "(Example: Buildings)";
 
+	this.appState = appState;
 	this.ogp = OpenGeoportal.ogp;
 	this.mapObject = this.ogp.map;
-	this.resultsTableObject = this.ogp.resultsTableObj;
-	this.cartTableObject = this.ogp.cartTableObj;
-	this.layerStateObject = this.ogp.layerState;
+	this.layerStateObject = this.appState.layerState;
+	
 	this.utility = OpenGeoportal.Utility;
 	this.config = OpenGeoportal.InstitutionInfo;
 	this.jspfDir = OpenGeoportal.Utility.JspfLocation;
-	this.login = new OpenGeoportal.LogIn(this.config.getHomeInstitution());
-	this.login.checkLoginStatus();
+	this.login = new OpenGeoportal.LogIn(this.config.getHomeInstitution());//does it make sense for this to be a "child" of UI?
+	//this.login.checkLoginStatus();
 	var analytics = new OpenGeoportal.Analytics();
 	var that = this;
 
@@ -38,10 +37,12 @@ OpenGeoportal.UserInterface = function(){
 	 */
 
 	this.initializeTabs = function(){
+		var that = this;
 		jQuery("#tabs").tabs({
 			active: 0,
 			activate: function( event, ui ) {
-				that.utility.CurrentTab = jQuery(this).tabs("option", "active");
+				var tabIndex = jQuery(this).tabs("option", "active");
+				that.appState.setState("currentTab", tabIndex);
 				var label,
 				idx = ui.index;
 
@@ -49,7 +50,7 @@ OpenGeoportal.UserInterface = function(){
 				(idx == 0) && "Search Tab" ||
 				"Getting Started Tab";
 				analytics.track("Interface", "Change Tab", label);
-				var tabObj = that.utility.whichTab();
+				/*var tabObj = that.utility.whichTab();
 				switch(tabObj.name){
 				case 'search':
 					that.filterResults();
@@ -57,13 +58,23 @@ OpenGeoportal.UserInterface = function(){
 				case 'saved':
 					jQuery('#savedLayers').dataTable().fnDraw();
 					break;
-				}
+				}*/
 			}	
 
 		});
+		
+		jQuery('#tabs a').bind("mousedown", function(){
+			//console.log(jQuery(this));
+			var tabImage = jQuery(this).find("img");
+			if (tabImage.length > 0){
+				tabImage.attr("src", that.utility.getImage("shoppingcart_on.png"));
+			} else {
+				jQuery('#tabs a img').attr("src", that.utility.getImage("shoppingcart.png"));
+			};
+		});
 	};
-
-	this.tabShowHandler = function(){
+//TODO:  do we need tabshow? or is activate (above) a replacement?
+/*	this.tabShowHandler = function(){
 		jQuery(document).bind('tabsshow', function(event, ui) {
 			var tabObj = that.utility.whichTab();
 			switch(tabObj.name){
@@ -76,17 +87,9 @@ OpenGeoportal.UserInterface = function(){
 			}
 		});
 
-		jQuery('#tabs a').bind("mousedown", function(){
-			//console.log(jQuery(this));
-			var tabImage = jQuery(this).find("img");
-			if (tabImage.length > 0){
-				tabImage.attr("src", that.utility.getImage("shoppingcart_on.png"));
-			} else {
-				jQuery('#tabs a img').attr("src", that.utility.getImage("shoppingcart.png"));
-			};
-		});
-	};
 
+	};
+*/
 	this.searchBoxKeypressHandler = function(){
 		jQuery('.searchBox').keypress(function(event){
 			var type, search, keyword;
@@ -111,7 +114,7 @@ OpenGeoportal.UserInterface = function(){
 		jQuery("#geosearch").keypress(function(event){
 			if (event.keyCode == '13') {
 				var location = jQuery("#geosearch").val();
-				that.geocodeLocation();
+				//that.geocodeLocation();
 				analytics.track("Go To Box", location);
 			} else if (jQuery(this).val().trim() == that.geocodeText){
 				that.clearInput('geosearchDiv');
@@ -137,13 +140,7 @@ OpenGeoportal.UserInterface = function(){
 		    		jQuery(this).css("opacity", ".5");
 		    	}});*/
 		jQuery("input#geosearch").click(function(){that.clearInput("geosearchDiv");});
-		jQuery("#goButton").click(
-				function(){
-					var location = jQuery("#geosearch").val();
-					that.geocodeLocation();
-					analytics.track("Go To Box", location);
-				}
-		);
+
 	};
 
 	this.searchSubmitHandler = function(){
@@ -231,7 +228,7 @@ OpenGeoportal.UserInterface = function(){
 	};
 
 	this.mapFilterHandler = function(){
-		jQuery("input[name='mapFilterCheck'],input[name='mapFilterCheck2']").on(
+		jQuery("input[name='mapFilterCheck']").on(
 				"change", function(ev) {
 					var value = this.checked ? "Checked" : "Unchecked";
 					analytics.track("Limit Results to Visible Map", value);
@@ -259,14 +256,11 @@ OpenGeoportal.UserInterface = function(){
 		jQuery('#left_tabs').height(containerHeight);
 		jQuery("#left_col").outerWidth(this.getSearchPanelWidth());
 		jQuery('#map').width(jQuery("#container").width() - this.getSearchPanelWidth());
-		if (parseInt(jQuery("#map").width()) >= 1024) {
-			if (this.mapObject.zoom == 0){
-				this.mapObject.zoomTo(1);
-			}
-		}
+
 		jQuery('#container').resize(function() {
 			//OpenGeoportal.map.events.triggerEvent('zoomend');
-			that.mapObject.events.triggerEvent('zoomend');
+			jQuery(document).trigger("containerResize");
+			//that.mapObject.events.triggerEvent('zoomend');
 		});
 
 		jQuery(window).resize(function(){
@@ -280,13 +274,13 @@ OpenGeoportal.UserInterface = function(){
 			} else if (jQuery("#map").css("display") != "none"){
 				//jQuery("#left_col").width(OpenGeoportal.ui.searchPanelWidth);
 				var mapWidth = jQuery("#container").width() - jQuery("#left_col").outerWidth();
-				var mapZoom = that.mapObject.getZoom();
+				//var mapZoom = that.mapObject.getZoom();
 				var minMapWidth;
-				if (mapZoom == 0){
+				//if (mapZoom == 0){
 					minMapWidth = 512;
-				} else {
-					minMapWidth = 1024;
-				}
+				//} else {
+				//	minMapWidth = 1024;
+				//}
 				var containerWidth = jQuery("#container").width();
 				//console.log("spw: " + that.getSearchPanelWidth());
 				var searchPanelWidth = that.getSearchPanelWidth() || (containerWidth - minMapWidth);
@@ -317,47 +311,17 @@ OpenGeoportal.UserInterface = function(){
 		});	
 	};
 
-	//this should probably move
-	this.mapControlUIHandler = function(){
-		//'hover' for graphics that are not background graphics
-		var zoomPlusSelector = '.olControlModPanZoomBar img[id*="zoomin"]';
-		jQuery(document).on("mouseenter", zoomPlusSelector, function(){
-			jQuery(this).attr("src", that.utility.getImage("slider_plus_hover.png"));
-			//jQuery(this).css("cursor", "pointer");
-		});
 
-		jQuery(document).on("mouseleave", zoomPlusSelector, function(){
-			jQuery(this).attr("src", that.utility.getImage("zoom-plus-mini.png"));
-		});
-
-		jQuery(document).on("click", zoomPlusSelector, function(){
-			that.mapObject.zoomIn();
-		});
-
-		var zoomMinusSelector = '.olControlModPanZoomBar img[id*="zoomout"]';
-		jQuery(document).on("mouseenter", zoomMinusSelector, function(){
-			jQuery(this).attr("src", that.utility.getImage("slider_minus_hover.png"));
-			//jQuery(this).css("cursor", "pointer");
-		});
-
-		jQuery(document).on("mouseleave", zoomMinusSelector, function(){
-			jQuery(this).attr("src", that.utility.getImage("zoom-minus-mini.png"));
-		});
-
-		jQuery(document).on("click", zoomMinusSelector, function(){
-			that.mapObject.zoomOut();
-		});	
-
-	};
 
 	this.init = function(){
+		//initial map width
+		jQuery("#map").width(jQuery("#container").width() - jQuery("#roll_right").outerWidth());
+		
 		this.initializeTabs();
-		this.tabShowHandler();
 
 		this.togglePanels();
-		this.resizePanels();
+		//this.resizePanels();
 		this.searchToggleHandler();
-		this.updateSortMenuHandler();
 		this.colorDialogHandler();
 
 		this.loginHandler();
@@ -369,7 +333,7 @@ OpenGeoportal.UserInterface = function(){
 		this.mouseCursor();
 
 		this.searchBoxKeypressHandler();
-		this.whereHandler();
+		//this.whereHandler();
 		this.searchSubmitHandler();
 		this.mapFilterHandler();
 
@@ -382,66 +346,34 @@ OpenGeoportal.UserInterface = function(){
 		});
 
 		//buttons
-		this.createBasemapMenu();
 		this.createDataTypesMenu();
 		this.createInstitutionsMenu();
 		this.createTopicsMenu();
-		this.createSortMenu();
-		this.createColumnsMenu();
 
 		this.loadIndicatorHandler();
 
-		this.mapControlUIHandler();
-
-		this.autocomplete();
-
-		this.previewViewHandler();
+		this.autocomplete(jQuery("#advancedOriginatorField"), "OriginatorSort");
 
 		//need to test if user has done anything before binding this event
-		jQuery(document).bind("eventMoveEnd", function(){
+		/*jQuery(document).bind("eventMoveEnd", function(){
 			if (that.utility.whichTab().name == 'search'){
 				that.filterResults();
 			}
-		});
+		});*/
 
 		jQuery(document).on('click', '#downloadHeaderCheck', that.toggleChecksSaved);
 
 
 
-		jQuery("#searchResultsNavigation").on("click", "a", function() {
+		/*jQuery("#searchResultsNavigation").on("click", "a", function() {
 			var direction,
 			label = jQuery(this).text();
 
 			direction = (label.indexOf("Next") > -1 && "Next") || "Previous";
 
 			analytics.track("Results Pagination", direction + " Results Page");
-		});
+		});*/
 		jQuery("#main").fadeTo('fast', 1);
-	};
-
-	/**
-	 * creates the basemap menu from the backgroundMaps object in OpenGeoportal.MapController
-	 */
-	this.createBasemapMenu = function() {
-		//var backgroundMapsConfig = OpenGeoportal.map.backgroundMaps("all");
-		var backgroundMapsConfig = this.mapObject.backgroundMaps("all");
-		var radioHtml = "";
-		for (var mapType in backgroundMapsConfig){
-			var isDefault = "";
-			//if (mapType == OpenGeoportal.map.getCurrentBackgroundMap()){
-			if (mapType == this.mapObject.getCurrentBackgroundMap()){
-				isDefault = ' checked="checked"';
-			} 
-			radioHtml += '<input type="radio" id="basemapRadio' + mapType + '" name="basemapRadio" value="' + mapType + '"' + isDefault + ' onchange="OpenGeoportal.ui.baseMapChanged()" />';
-			radioHtml += '<label for="basemapRadio' + mapType + '">' + backgroundMapsConfig[mapType].name + '</label>';
-		}
-		jQuery("#basemapMenu").html(radioHtml);
-		jQuery("[name=basemapRadio]").attr("checked", false);
-		//jQuery("[name=basemapRadio]").filter("[value=" + OpenGeoportal.map.getCurrentBackgroundMap() + "]").attr("checked", "checked");
-		jQuery("[name=basemapRadio]").filter("[value=" + this.mapObject.getCurrentBackgroundMap() + "]").attr("checked", "checked");
-		jQuery("#basemapSelect").button();
-		jQuery("#basemapMenu").buttonset();
-		jQuery("#basemapDropdown").hover(function(){jQuery("#basemapMenu").show();}, function(){jQuery("#basemapMenu").hide();});
 	};
 
 	/**
@@ -480,46 +412,6 @@ OpenGeoportal.UserInterface = function(){
 				menu.hide();
 			}
 		});
-	};
-
-	/**
-	 * uses styledSelect to create the menu that allows a user to sort the results table by column name; dynamically created from the table object
-	 */
-	this.createSortMenu = function() {
-		var tableObj = this.utility.whichTab().tableObject();
-		var fields = tableObj.tableHeadingsObj.getTableHeadings();
-		var defaultField = "Relevancy";
-		var menuHtml = "";
-		for (var sortIndex in fields){
-			if (fields[sortIndex].organize){
-				var currentField = fields[sortIndex];
-				menuHtml += '<label for="sortDropdownRadio' + currentField.columnConfig.sName + '">';
-				menuHtml += currentField.displayName;
-				menuHtml += '</label>';
-				var checked = "";
-				if (currentField.displayName.toLowerCase().trim() == defaultField.toLowerCase()){
-					checked += " checked=true";
-				}
-				menuHtml += '<input type="radio" class="sortDropdownRadio" name="sortDropdownRadio" id="sortDropdownRadio' + currentField.columnConfig.sName + '" value="' + currentField.columnConfig.sName + '"' + checked + ' />';
-			}
-		}
-		var params = {
-				"menuHtml": menuHtml,
-				"text": defaultField
-		};
-		this.styledSelect("sortDropdown", params);
-		jQuery('.sortDropdownRadio').hide();
-
-		var buttonHtml = defaultField; 
-		jQuery(".sortDropdownSelect > span > span").html(buttonHtml);
-		var that = this;
-		jQuery("#sortDropdownMenu span.ui-button-text").bind("click", function(){
-			var selectedField = jQuery(this).closest("label").next().val();
-			var buttonHtml = fields[selectedField].displayName;
-			jQuery("#sortDropdownSelect > span > span").html(buttonHtml);
-			that.chooseSort(selectedField);
-		});
-		jQuery("#sortDropdownSelect").addClass("subHeaderDropdownSelect");
 	};
 
 	/**
@@ -628,102 +520,30 @@ OpenGeoportal.UserInterface = function(){
 		});
 	};
 
-	/**
-	 * uses styledSelect to create the menu above the results table that allows the user to select which columns to display; dynamically created
-	 * from the table object
-	 */
-	this.createColumnsMenu = function() {
-		var menuHtml = "";
-		var tableObj = this.utility.whichTab().tableObject();
-		var fields = tableObj.tableHeadingsObj.getTableHeadings();			
-		for (var i in fields){
-			if (fields[i].organize){
-				if(i == "score"){
-					continue;
-				}
-				menuHtml += '<div>';
-				menuHtml += '<label for="columnCheck' + i + '">';
-				menuHtml += fields[i].displayName + '</label>';
-				var checked = "";
-				if (fields[i].columnConfig.bVisible){
-					checked = ' checked="checked"';
-				}
-				menuHtml += '<input type="checkbox" class="columnCheck columnVisibility" id="columnCheck' + i + '" value="' + i + '"' + checked + ' />';
-				menuHtml += '</div>';
-			}
-		}
-		var params = {
-				"menuHtml": menuHtml,
-				"text": "Columns"
-		};
-		this.styledSelect("columnDropdown", params);
-		var that = this;
-		jQuery("#columnDropdownMenu input.columnCheck").bind("change", function(){
-			//alert("changed");
-			that.toggleColumn(this);
-		});
-		/*jQuery("#columnDropdownMenu").bind("mousedown", function(event){
-		//IE workaround
-		//make the checked attribute match the highlight state
-		//if (typeof event.target == 'undefined'){
-			var highlightedLabel = jQuery(event.srcElement).parent();
-			//var labelId = highlightedLabel.length;
-			//jQuery(event.srcElement);
-			var thisCheckBox = highlightedLabel.next();
-			alert("before:  " + thisCheckBox.attr("checked"));
-			//if (highlightedLabel.hasClass("ui-state-active")){
-				if (typeof thisCheckBox.attr("checked") != "undefined"){
-					thisCheckBox.filter("input").attr("checked", false);
-					alert(thisCheckBox.filter("input").attr("checked"));
-				//} else {}
-			} else {
-				//if (typeof thisCheckBox.attr("checked") == "undefined"){
-					thisCheckBox.attr("checked", "checked");
-				}
-				//thisCheckBox.trigger("change");
-
-			//}
-		//}
-	});*/
-		//this.updateOrganize();
-		jQuery("#columnDropdownSelect").addClass("subHeaderDropdownSelect");
-	};
-
-	/**
-	 * function that removes the welcome message from the search tab and shows the search results table
-	 */
-	this.showSearchResults = function(){
-		jQuery("#resultsSubHeader > span").css("display", "inline");
-		jQuery("#resultsSubHeader > div").css("display", "inline-block");
-
-		jQuery("#resultsTable").css("display", "block");
-		jQuery("#searchResultsNavigation").css("display", "block");
-	};
 
 	/**
 	 * checks the state of the map filter
 	 * 
 	 * @returns a boolean that is true if the map filter is on
 	 */
-	this.filterState = function(){
-		//return jQuery('#basicSearchMapFilter').is(":checked");
-		return true;
+	this.isSpatialSearchOn = function(){
+		this.appState.getState("spatialSearch");
 	};
 
 	/**
 	 * submits a search if the map extent has changed
 	 */
 //	also call when switching tabs to a search tab, onchange of mapfilter select boxes
-	this.filterResults = function(){
+	/*this.filterResults = function(){
 		//check if extent has changed
 		if (this.mapObject.userMapAction){
 			if (this.mapObject.extentChanged()){
-				if ((this.filterState())&&(jQuery("#map").css("display") != "none")&&(jQuery("#left_col").css("display") != "none")){
+				if ((this.isSpatialSearchOn)&&(jQuery("#map").css("display") != "none")&&(jQuery("#left_col").css("display") != "none")){
 					this.searchSubmit();
 				}
 			}
 		}
-	};
+	};*/
 
 	this.userInputFlag = false;
 
@@ -737,43 +557,7 @@ OpenGeoportal.UserInterface = function(){
 
 };*/
 
-	/**
-	 * sets the background map to the value in the background map dropdown menu.  called by onchange for the basemap radio button set
-	 */
-	this.baseMapChanged = function(){
-		var value = jQuery('input:radio[name=basemapRadio]:checked').val();
-		//OpenGeoportal.map.setBackgroundMap(value);
-		this.mapObject.setBackgroundMap(value);
-	};
 
-	/**
-	 * geocodes the value typed into the geocoder text input using the Google maps geocoder,
-	 * then zooms to the returned extent.  also animates the response
-	 */
-	this.geocodeLocation = function(){
-		var value = jQuery("#geosearch").val();
-		geocoder = new google.maps.Geocoder();
-		var that = this;
-		geocoder.geocode( { 'address': value}, function(results, status) {
-			if (status != 'OK'){
-				jQuery("#geosearch").val("Place name not found");
-			} else {
-				jQuery("#geosearch").val(results[0].formatted_address);
-				var	maxY = results[0].geometry.viewport.getNorthEast().lat();
-				var	maxX = results[0].geometry.viewport.getNorthEast().lng();
-				var	minY = results[0].geometry.viewport.getSouthWest().lat();
-				var	minX = results[0].geometry.viewport.getSouthWest().lng();
-				var extent = minX + "," + minY + "," + maxX + "," + maxY;
-				//zooms to actual extent, rather than a latitude delta
-				that.mapObject.zoomToLayerExtent(extent);
-
-			}
-			var currentFontSize = jQuery("#geosearch").css("font-size");
-			var currentOpacity = jQuery("#geosearch").css("opacity");
-			jQuery("#geosearch").animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500).delay(1500)
-			.animate({ "font-size": 0 }, 300, function(){jQuery("#geosearch").val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity});} );
-		});
-	};
 
 	this.clearInput = function(divName){
 		jQuery('#' + divName + ' :input').each(function(){
@@ -791,6 +575,7 @@ OpenGeoportal.UserInterface = function(){
 
 	this.clearDefault = function(inputFieldName){
 		var searchTextElement = document.getElementById(inputFieldName);
+		
 		if (searchTextElement == null)
 			return;
 		var currentValue = searchTextElement.value;
@@ -800,7 +585,7 @@ OpenGeoportal.UserInterface = function(){
 
 	this.searchSubmit = function(){
 		//console.log("searchSubmit");
-		this.resultsTableObject.searchRequest(0);
+		//this.resultsTableObject.searchRequest(0);
 		this.userInputFlag = true;
 	};
 
@@ -814,15 +599,6 @@ OpenGeoportal.UserInterface = function(){
 		return value;
 	};
 
-//	really, this should probably go elsewhere
-	this.adjustTableLength = function(tableID){
-		var tableID = 'searchResults';
-		if (tableID == 'searchResults'){
-			this.resultsTableObject.setTableLength();
-		} else {
-			throw new Error("The specified table is not applicable.");
-		}
-	};
 
 	this.searchToggleHandler = function(){
 		var that = this;
@@ -830,8 +606,8 @@ OpenGeoportal.UserInterface = function(){
 	};
 
 	this.toggleSearch = function(thisObj){
-		var thisID = jQuery(thisObj).attr('id');
-		if (thisID == 'moreSearchOptions'){
+		var thisId = jQuery(thisObj).attr('id');
+		if (thisId == 'moreSearchOptions'){
 			jQuery("#searchForm .basicSearch").hide();
 			jQuery("#geosearchDiv").removeClass("basicSearch").addClass("advancedSearch");
 			jQuery("#searchForm .advancedSearch.searchRow1").show();
@@ -854,7 +630,7 @@ OpenGeoportal.UserInterface = function(){
 
 
 
-		} else if (thisID == 'lessSearchOptions'){
+		} else if (thisId == 'lessSearchOptions'){
 			//jQuery("#searchForm .advancedSearch").hide();
 			jQuery("#searchForm .advancedSearch.searchRow4").hide();
 			jQuery('#header').animate(
@@ -907,7 +683,8 @@ OpenGeoportal.UserInterface = function(){
 				panelSelector.css('display', 'block');
 				mapSelector.animate({'width': '-=' + panelOffset}, { queue: false, duration: 500 });
 				panelSelector.animate({'margin-left':'+=' + panelOffset}, { queue: false, duration: 500 }, function(){    		  
-					that.filterResults();});
+					//that.filterResults();
+					});
 
 			} else if (mapSelector.css("display") == "none"){
 				//don't do anything; search panel is already full width
@@ -919,7 +696,7 @@ OpenGeoportal.UserInterface = function(){
 				});
 
 				panelSelector.animate({'width': jQuery('#container').width() -2}, { queue: false, duration: 500 }, function(){    		  
-					that.resultsTableObject.showCol('ContentDate');
+					//that.resultsTableObject.showCol('ContentDate'); //the table should have this logic if we want it
 				});        	 
 			}
 		});
@@ -938,206 +715,24 @@ OpenGeoportal.UserInterface = function(){
 				//go back to previous left column width; search panels are full width
 				panelSelector.outerWidth(that.getSearchPanelWidth());
 				panelSelector.css("display", "block");
-				that.resultsTableObject.hideCol('ContentDate');
+				//that.resultsTableObject.hideCol('ContentDate'); //the table should have this logic if we want it
 				mapSelector.width(jQuery('#container').width() - panelSelector.outerWidth());
-				mapSelector.add("#menu").css("display", "inline-block");
+				mapSelector.add("#menu").css("display", "block");
 			} else {
 				//display full width map
 				panelSelector.css("display", "none");
 				jQuery("#roll_right").css("display", "block");
 				jQuery(".ui-resizable-handle").css("display", "none");
-				mapSelector.width(jQuery('#container').outerWidth() - jQuery("#roll_right").outerWidth());
+				mapSelector.width(jQuery('#container').width() - jQuery("#roll_right").outerWidth());
 			}
 		});
 	};
-
 
 	this.togglePanels = function(){
 		this.rollRightHandler();
 		this.rollLeftHandler();
 	};
-	/*var that = this;
-    	jQuery('.arrow_buttons > div').click( function () {
-          //var rollUp = that.getImage("button_arrow_up.png");
-          //var rollDown = that.getImage("button_arrow_down.png");
-          var rollLeft = jQuery(this).hasClass("arrow_left");
-          var rollRight = jQuery(this).hasClass("arrow_right");
-          var tabDiv = jQuery(this).parents('.ui-tabs-panel').last();
-          var userDiv = tabDiv.find('.searchBox')[0];
 
-			var button;
-			//	src = jQuery(this).attr("src");
-
-			/*button = (src == rollUp) && "Collapse Up" ||
-					(src == rollDown) && "Expand Down" ||*/
-	/*button = rollLeft && "Collapse Left" ||
-					rollRight && "Expand Right";
-
-			analytics.track("Interface", "Expand/Collapse Buttons", button);*/
-
-	/* switch (jQuery(this).attr('src')){
-          case rollUp: 
-        	  jQuery(userDiv).toggle("blind",{},250, function(){that.resultsTableObject.setTableLength();});
-        	  jQuery(this).attr('src', rollDown);
-          break;
-          case rollDown:
-				var searchHeight = jQuery(userDiv).height() + parseFloat(jQuery(userDiv).css("padding-top")) + parseFloat(jQuery(userDiv).css("padding-bottom"));
-				var searchRowHeight = tabDiv.find('table.display > tbody > tr').first().height() || 23;
-				var adjRows = Math.floor(searchHeight/searchRowHeight) * -1;
-        	  that.resultsTableObject.adjustTableLength(adjRows);
-  			  jQuery(userDiv).toggle("blind",{},250, function(){that.resultsTableObject.setTableLength();});
-  			  jQuery(this).attr('src', rollUp);
-          break;	*/
-	/*if (rollLeft) {
-          	//logic to expand map to full size
-        	  var panelSelector = jQuery("#left_col");
-        	  var mapSelector = jQuery("#map");
-        	  if (panelSelector.css("display") == "none"){
-        		  //don't do anything; map is already full width
-        	  } else if (mapSelector.css("display") == "none"){
-        		  //go back to previous left column width; search panels are full width
-        		  panelSelector.width(that.getSearchPanelWidth());
-        		  panelSelector.css("display", "block");
-            	  that.resultsTableObject.hideCol('ContentDate');
-        		  mapSelector.width(jQuery('#container').width() - panelSelector.width() - 1);
-        		  mapSelector.add("#menu").css("display", "inline-block");
-        		  //OpenGeoportal.map.updateSize();
-        		  //that.mapObject.updateSize();
-        	  } else {
-        		  //display full width map
-        		  panelSelector.css("display", "none");
-        		  jQuery("#roll_right").css("display", "block");
-        		  jQuery(".ui-resizable-handle").css("display", "none");
-        		  mapSelector.width(jQuery('#container').width() - 18);
-        		  //OpenGeoportal.map.updateSize();
-        		  //that.mapObject.updateSize();
-        	  }
-          	//break;
-          } else if (rollRight){
-        	  var panelSelector = jQuery("#left_col");
-        	  var mapSelector = jQuery("#map");
-        	  if (panelSelector.css("display") == "none"){
-        		  //map is full width; go back to combo display
-        		  jQuery("#roll_right").css('display', 'none');
-        		  jQuery(".ui-resizable-handle").css("display", "block");
-        		  panelSelector.width(that.getSearchPanelWidth());
-        		  mapSelector.width(jQuery('#container').width() - panelSelector.width() - 1);
-            	  //OpenGeoportal.map.updateSize();
-        		  //that.mapObject.updateSize();
-                  panelSelector.css('display', 'block');
-                  that.filterResults();
-        	  } else if (mapSelector.css("display") == "none"){
-        		  //don't do anything; search panel is already full width
-        	  } else {
-        		  //go to full width search panel
-        		  mapSelector.add("#menu").css("display", "none");
-        		  panelSelector.width(jQuery('#container').width() - 1);
-            	  that.resultsTableObject.showCol('ContentDate');
-        	  }
-          } else {
-          	alert('searchBoxResize fall-through.');
-          }
-    	});
-};
-	 */
-	this.mapFilterStatus = function(eventObj){
-		if (jQuery(eventObj).is(":checked")){
-			jQuery(".mapFilterFlag").attr("checked", "checked");
-		} else {
-			jQuery(".mapFilterFlag").removeAttr("checked");
-		}
-
-		this.searchSubmit();
-	};
-
-	this.chooseSort = function(columnName){
-		this.utility.whichTab().tableObject().sortColumns(columnName, false);
-	};
-
-	this.toggleColumn = function(thisObj){
-		var action,
-		checked = jQuery(thisObj).is(":checked"),
-		column = jQuery(thisObj).val();
-
-		if (checked) {
-			this.utility.whichTab().tableObject().showCol(column);
-		} else {
-			this.utility.whichTab().tableObject().hideCol(column);
-		}
-
-		action = checked ? "Column Added" : "Column Removed";
-
-		analytics.track("Change Results Columns Displayed", action, column);
-	};
-
-	this.updateSortMenuHandler = function(){
-		var that = this;
-		jQuery(document).on("view.updateSortMenu", that.updateSortMenu());
-	};
-
-	this.updateSortMenu = function(){
-		//these pieces should be also called when updated elsewhere
-		var tableObj = this.utility.whichTab().tableObject();
-
-		var organize = tableObj.tableOrganize.getState();
-
-		var fields = tableObj.tableHeadingsObj.getTableHeadings();
-		var buttonHtml = fields[organize.organizeBy].displayName;
-		jQuery("#sortDropdownSelect > span > span").html(buttonHtml);
-		jQuery("#sortDropdownMenu").find("input:radio").each(function(){
-			if (jQuery(this).val() == organize.organizeBy){
-				jQuery(this).attr("checked", true);
-			}
-		});
-
-	};
-
-//	should add to cartTable code
-	this.initSortable = function(){
-		var that = this;
-		jQuery( "#savedLayers > tbody" ).sortable({helper: "original", opacity: .5, containment: "parent", 
-			items: "tr", tolerance: "pointer", cursor: "move",
-			start: function(event, ui){
-				//this code is ugly...optimize
-				jQuery("#savedLayers .resultsControls").each(function(){
-					var rowObj = jQuery(this).parent()[0];
-					//console.log(rowObj);
-					var tableObj = jQuery("#savedLayers").dataTable();
-					tableObj.fnClose(rowObj);
-					//why doesn't this close the row?
-					tableObj.fnDraw(false);
-				});
-			},
-			stop: function(event, ui){
-				var dataArr = [];
-				var tableObj = jQuery("#savedLayers").dataTable();
-				dataArr = tableObj.fnGetData();
-				var newArr = [];
-				var openCount = 0;
-				jQuery("#savedLayers > tbody > tr").each(function(index, Element){
-					var dataTableIndex = tableObj.fnGetPosition(Element);
-					if (typeof dataTableIndex == 'number'){
-						newArr[index - openCount] = dataArr[dataTableIndex];
-					} else {
-						openCount += 1;
-					}
-				});
-				tableObj.fnClearTable(false);
-				tableObj.fnAddData(newArr);
-				var tableLength = newArr.length;
-				for (var i in newArr){
-
-					if (typeof that.mapObject.getLayersByName(newArr[i][0])[0] != 'undefined'){
-						var layer = that.mapObject.getLayersByName(newArr[i][0])[0];
-						that.mapObject.setLayerIndex(layer, tableLength - (i+1));
-					}
-				}
-
-				that.cartTableObject.callbackExpand();
-
-			}
-		});
-	};
 
 	this.toggleChecksSaved = function(eventObj){
 		var target = eventObj.target;
@@ -1466,7 +1061,7 @@ OpenGeoportal.UserInterface = function(){
 	};
 
 	this.requestDownloadSuccess = function(data){
-		//this will simply be a request ID.  add it to the  request queue.
+		//this will simply be a request Id.  add it to the  request queue.
 		OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId);
 
 		//will also have status info for requested layers in this returned object
@@ -1539,12 +1134,13 @@ OpenGeoportal.UserInterface = function(){
 		var that = this;
 		jQuery("#downloadDialog").dialog( "option", "disabled", true );
 
-		jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
+		//TODO: move this somewhere else
+		/*jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
 			var data = jQuery("#savedLayers").dataTable().fnGetData(this),
 			inst_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("Institution"),
 			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
 			analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
-		});
+		});*/
 		delete requestObj.layerNumber;
 
 		var params = {
@@ -1775,14 +1371,14 @@ OpenGeoportal.UserInterface = function(){
 			}
 			if (isValidLayer){
 				that.cartTableObject.downloadActionSelectRow(aPos, true);
-				var layerID = aData[headingsObj.getColumnIndex('LayerId')];
-				//console.log(layerID);
-				layerInfo[layerID] = {};
-				layerInfo[layerID].name = aData[headingsObj.getColumnIndex('Name')];
-				layerInfo[layerID].institution = aData[headingsObj.getColumnIndex('Institution')];
-				layerInfo[layerID].dataType = aData[headingsObj.getColumnIndex('DataType')];
-				layerInfo[layerID].access = aData[headingsObj.getColumnIndex('Access')];
-				layerInfo[layerID].bounds = [minX, minY, maxX, maxY];
+				var layerId = aData[headingsObj.getColumnIndex('LayerId')];
+				//console.log(layerId);
+				layerInfo[layerId] = {};
+				layerInfo[layerId].name = aData[headingsObj.getColumnIndex('Name')];
+				layerInfo[layerId].institution = aData[headingsObj.getColumnIndex('Institution')];
+				layerInfo[layerId].dataType = aData[headingsObj.getColumnIndex('DataType')];
+				layerInfo[layerId].access = aData[headingsObj.getColumnIndex('Access')];
+				layerInfo[layerId].bounds = [minX, minY, maxX, maxY];
 				var locationObj = jQuery.parseJSON(aData[headingsObj.getColumnIndex("Location")]);
 				console.log(locationObj);
 				var downloadLinkExists = false;
@@ -1791,8 +1387,8 @@ OpenGeoportal.UserInterface = function(){
 					downloadLinkExists = true;
 					directDownloadUrl = locationObj["fileDownload"]
 				}
-				layerInfo[layerID].directDownload = downloadLinkExists;
-				layerInfo[layerID].directDownloadUrl = directDownloadUrl;
+				layerInfo[layerId].directDownload = downloadLinkExists;
+				layerInfo[layerId].directDownloadUrl = directDownloadUrl;
 			} else {
 				that.cartTableObject.downloadActionSelectRow(aPos, false);
 			}
@@ -1846,131 +1442,7 @@ OpenGeoportal.UserInterface = function(){
 		});
 	};
 
-	this.saveImage = function(imageFormat, resolution){
-		imageFormat = 'png';
-		var format;
-		switch (imageFormat){
-		case 'jpeg':
-			format = "image/jpeg";
-			break;
-		case 'png':
-			format = "image/png";
-			break;
-		case 'bmp':
-			format = "image/bmp";
-			break;
-		default: throw new Error("This image format (" + imageFormat + ") is unavailable.");
-		}
 
-		var requestObj = {};
-		requestObj.layers = [];
-
-		for (var layer in this.mapObject.layers){
-			var currentLayer = this.mapObject.layers[layer];
-			if (currentLayer.CLASS_NAME != "OpenLayers.Layer.WMS"){
-				continue;
-			}
-			if (currentLayer.visibility == false){
-				continue;
-			}
-
-			var sld = this.layerStateObject.getState(currentLayer.name, "sld");
-			var opacity = this.layerStateObject.getState(currentLayer.name, "opacity");
-			if (opacity == 0){
-				continue;
-			}
-			//insert this opacity value into the sld to pass to the wms server
-			var layerObj = {};
-			var storedName = this.layerStateObject.getState(currentLayer.name, "wmsName");
-			if (storedName == ''){
-				layerObj.name = currentLayer.params.LAYERS;
-			} else {
-				layerObj.name = storedName;
-			}
-			layerObj.opacity = opacity;
-			layerObj.zIndex = this.mapObject.getLayerIndex(currentLayer);
-			if ((typeof sld != 'undefined')&&(sld !== null)&&(sld != "")){
-				var sldParams = [{wmsName: layerObj.name, layerStyle: sld}];
-				//layerObj.sld = escape(this.mapObject.createSLDFromParams(sldParams));
-				layerObj.sld = this.mapObject.createSLDFromParams(sldParams);
-			}
-			layerObj.layerId = currentLayer.name;
-			requestObj.layers.push(layerObj);
-		}
-
-		var bbox;
-		bbox = this.mapObject.getExtent().toBBOX();
-
-		requestObj.format = format;
-		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:900913';
-		requestObj.width = jQuery('#map').width();
-		requestObj.height = jQuery('#map').height();
-		//return a url from the servlet
-		var params = {
-				url: "requestImage",
-				data: JSON.stringify(requestObj),
-				dataType: "json",
-				type: "POST",
-				context: this,
-				complete: function(){
-				},
-				success: function(data){
-					OpenGeoportal.ogp.downloadQueue.registerImageRequest(data.requestId, requestObj);
-
-					//should parse errors
-					//will also have status info for requested layers in this returned object
-					/*var line = "";
-				for (var failedToDownload in data.errors){
-					line += "<tr>";
-					//for (var infoElement in data.failed[failedToDownload]){
-						line += "<td>";
-						line += '<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>';
-						line += "</td>";
-						line += "<td>";
-						//line += data.failed[failedToDownload]["institution"];
-						line += "</td>";						
-						line += "<td>";
-						//line += data.failed[failedToDownload]["title"];
-						line += "</td>";						
-						line += "<td>";
-						//line += data.failed[failedToDownload]["layerId"];
-						line += "</td>";
-						line += '<td><span class="warning">';
-						//line += data.failed[failedToDownload]["message"];
-						line += "</span></td>";
-					//}
-					line += "</tr>";
-				}
-				if (line.length > 0){
-					var message = '<table class="downloadStatus">';
-					message += line;
-					message += "</table>";
-					this.genericModalDialog(message, "DOWNLOAD ERRORS");
-				}*/
-					//check packageLink
-					/*if (typeof data.imageLink != 'undefined'){
-						var downloadFrameId;
-						do {
-							downloadFrameId = "downloadFrame" + parseInt(Math.random() * 10000);
-						} while (jQuery("#" + downloadFrameId).length > 0)
-						var that = this;
-						this.utility.showLoadIndicator("mapLoadIndicator", downloadFrameId);
-						jQuery("body").append('<iframe id="' + downloadFrameId + '" style="display:none" src="' + data.imageLink + '"></iframe>');
-						jQuery("#" + downloadFrameId).bind("load", function(e){
-							that.utility.hideLoadIndicator("mapLoadIndicator", downloadFrameId);
-						});
-				}*/
-
-
-				}
-		};
-
-		jQuery.ajax(params);
-		this.toProcessingAnimation(jQuery("#map_tabs > span").first());
-
-
-	};
 
 //	based on Dave's code
 	this.getParamsFromUrl = function() {
@@ -2003,7 +1475,6 @@ OpenGeoportal.UserInterface = function(){
 		var sharedExtent = params.minX + ',' + params.minY + ',' + params.maxX + ',' + params.maxY;
 		this.mapObject.zoomToLayerExtent(sharedExtent);
 		jQuery("#tabs").tabs("option", "active", 2);
-		this.initSortable();
 	};
 
 	this.getLayerInfoJsonpSuccess = function(data, newContext){
@@ -2015,8 +1486,9 @@ OpenGeoportal.UserInterface = function(){
 	};
 
 	this.getLayerInfoJsonpError = function(){
-		throw new Error("The attempt to retrieve layer information from layerIDs failed.");
+		throw new Error("The attempt to retrieve layer information from layerIds failed.");
 	};
+
 //	solr query against layerIds
 //	process data functions, pass to this function
 	this.addLayerToCart = function(layerData){
@@ -2030,15 +1502,15 @@ OpenGeoportal.UserInterface = function(){
 		//jQuery('#savedLayersNumber').text('(' + OpenGeoportal.cartTableObject.numberOfResults() + ')');
 		//console.log(layerData);
 		var headingsObj = this.cartTableObject.tableHeadingsObj;
-		var layerID = layerData[0][headingsObj.getColumnIndex('LayerId')];
+		var layerId = layerData[0][headingsObj.getColumnIndex('LayerId')];
 		var dataType = layerData[0][headingsObj.getColumnIndex('DataType')];
-		if (!this.layerStateObject.layerStateDefined(layerID)){
-			this.layerStateObject.addNewLayer(layerID, {"dataType": dataType, "inCart": true});
+		if (!this.layerStateObject.layerStateDefined(layerId)){
+			this.layerStateObject.addNewLayer(layerId, {"dataType": dataType, "inCart": true});
 		} else {
-			this.layerStateObject.setState(layerID, {"inCart": true});
+			this.layerStateObject.setState(layerId, {"inCart": true});
 		}
 	};
-
+	
 	this.shortenLink = function(longLink){
 		var request = {"link": longLink};
 		var url = "shortenLink";
@@ -2217,50 +1689,6 @@ OpenGeoportal.UserInterface = function(){
 		this.login.loginDialog();
 	};
 
-
-	this.changeLoginButtonsToControls = function(){
-		//change login button to checkbox for institution logged in
-		var that = this;
-		//loginButton login
-		//previewControl previewOff
-		jQuery(".colPreview .loginButton").each(function(){
-			var node = jQuery(this).closest("tr");
-			var tableObject = node.closest("table");
-			var tableName = tableObject.attr("id");
-			tableObject = tableObject.dataTable();
-			var pos = tableObject.fnGetPosition(node[0]);
-			var row = tableObject.fnGetData(pos);
-			var rowObj = {};
-			rowObj.aData = row;
-			if (tableName == "searchResults"){
-				jQuery(this).parent().html(that.resultsTableObject.getActivePreviewControl(rowObj));
-			} else if (tableName == "savedLayers"){
-				jQuery(this).parent().html(that.cartTableObject.getActivePreviewControl(rowObj));	
-			}
-		});
-	};
-
-	this.changeControlsToLoginButtons = function(logoutInstitution){
-		//change checkbox to login button for institution logged out
-		var that = this;
-		jQuery(".colPreview .previewControl").each(function(){
-			var node = jQuery(this).closest("tr");
-			var tableObject = node.closest("table");
-			var tableName = tableObject.attr("id");
-			tableObject = tableObject.dataTable();
-			var pos = tableObject.fnGetPosition(node[0]);
-			var row = tableObject.fnGetData(pos);
-			var rowObj = {};
-			rowObj.aData = row;
-			if (tableName == "searchResults"){
-				jQuery(this).parent().html(that.resultsTableObject.getPreviewControl(rowObj));
-			} else if (tableName == "savedLayers"){
-				jQuery(this).parent().html(that.cartTableObject.getPreviewControl(rowObj));	
-			}
-
-		});
-	};
-
 	this.applyLoginActions = function(){
 		// how do we update the UI so the user know login succeeded?
 		this.changeLoginButtonsToControls();
@@ -2298,26 +1726,26 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 	 */
 
 //	toggle the attribute info button & functionality
-	this.toggleFeatureInfo = function(thisObj, layerID, displayName){
+	this.toggleFeatureInfo = function(thisObj, layerId, displayName){
 		var layerStateObject = this.layerStateObject;
-		if (!layerStateObject.getState(layerID, "getFeature")){
+		if (!layerStateObject.getState(layerId, "getFeature")){
 			//update layer state
-			layerStateObject.setState(layerID, {"getFeature": true});
+			layerStateObject.setState(layerId, {"getFeature": true});
 			layerStateObject.getFeatureTitle = displayName;
 		} else {
 			//update layer state, turn off get feature 
-			layerStateObject.setState(layerID, {"getFeature": false});
+			layerStateObject.setState(layerId, {"getFeature": false});
 		}
 
 	};
 
 //	get the color from the layer state object to use for the shown swatch
-	this.setPaletteColor = function(layerID){
-		var paletteColor = this.layerStateObject.getState(layerID, "color");
-		var escapedLayerID = this.utility.idEscape(layerID);
+	this.setPaletteColor = function(layerId){
+		var paletteColor = this.layerStateObject.getState(layerId, "color");
+		var escapedLayerId = this.utility.idEscape(layerId);
 		jQuery(".colorPalette").each(function(){
 			//console.log(["iterate", paletteColor]);
-			if (jQuery(this).is('[id$=' + escapedLayerID + ']')){
+			if (jQuery(this).is('[id$=' + escapedLayerId + ']')){
 				//console.log("match");
 				jQuery(this).css("background-color", paletteColor);
 			}
@@ -2331,7 +1759,7 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 		});
 	};
 //	create the color picker dialog box
-	this.colorDialog = function(layerID){
+	this.colorDialog = function(layerId){
 		//create a hidden div w/ the dialog info
 		//create a new dialog instance, or just open the dialog if it already exists
 		//if it already exists, function should reset color picker to match layer
@@ -2352,7 +1780,7 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 		allColors.violet = ["#4c0073", "#8400a8", "#a900e6", "#c500ff", "#df73ff", "#e8beff"];
 		allColors.pink = ["#780f52", "#a80084", "#e00fa7", "#ff00c5", "#ff73df", "#ffbee8"];
 
-		var currentColorSelection = this.layerStateObject.getState(layerID, "color");
+		var currentColorSelection = this.layerStateObject.getState(layerId, "color");
 		
 		var colorDialog$ = jQuery('#colorDialog');
 		if (colorDialog$.length == 0){
@@ -2392,7 +1820,7 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 		colorDialog$.dialog('open');
 		
 		//until someone thinks of something better
-		colorDialog$.data("data", {"layerId": layerID});
+		colorDialog$.data("data", {"layerId": layerId});
 	};
 
 	this.selectColorCellHandler = function(){
@@ -2403,35 +1831,31 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 				selectedColor = that.utility.rgb2hex(selectedColor);
 			}
 			var colorDialog$ = jQuery('#colorDialog');
-			var layerID = colorDialog$.data("data").layerId;
-			//console.log("setting color state: " + layerID + " " + selectedColor);
+			var layerId = colorDialog$.data("data").layerId;
+			//console.log("setting color state: " + layerId + " " + selectedColor);
 			
-			that.layerStateObject.setState(layerID, {color: selectedColor});	//here's where things happen
+			that.layerStateObject.setState(layerId, {color: selectedColor});	//here's where things happen
 		});
 	};
 
-	this.viewChangeColorCell = function(layerID, selectedColor){
+	this.viewChangeColorCell = function(layerId, selectedColor){
 		//needs TLC
-		
-		//thisObj, layerID, dataType
+		//thisObj, layerId, dataType
 		jQuery('.colorCell').removeClass('colorCellSelected');
 		jQuery(thisObj).addClass('colorCellSelected');
-		this.setPaletteColor(layerID);
-		//OpenGeoportal.map.changeStyle(layerID, dataType);
-		this.mapObject.changeStyle(layerID, dataType);
+		this.setPaletteColor(layerId);
+		this.mapObject.changeStyle(layerId, dataType);
 	};
 
 //	toggle whether the applied style has an outline
-	this.toggleOutline = function(thisObj, layerID, dataType){
+	this.toggleOutline = function(thisObj, layerId, dataType){
 		//sets state object to match checkbox value, calls map function to apply the style to the layer
 		var layerStateObject = this.layerStateObject;
 		if (jQuery(thisObj).is(':checked') == true){
-			layerStateObject.setState(layerID, {"graphicWidth": 1});
+			layerStateObject.setState(layerId, {"graphicWidth": 1});
 		} else {
-			layerStateObject.setState(layerID, {"graphicWidth": 0}); 
+			layerStateObject.setState(layerId, {"graphicWidth": 0}); 
 		}
-		//OpenGeoportal.map.changeStyle(layerID, dataType); 
-		this.mapObject.changeStyle(layerID, dataType);  
 	};
 
 	this.mouseCursor = function(){
@@ -2439,41 +1863,40 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 		var layerStateObject = this.layerStateObject;
 		jQuery('.olMap').css('cursor', "-moz-grab");
 		jQuery(document).bind('zoomBoxActivated', function(){
-			//jQuery(document).on('click', 'div.olControlZoomBoxItemInactive', function(){
-			jQuery('.olMap').css('cursor', "-moz-zoom-in");
+			/*jQuery('.olMap').css('cursor', "-moz-zoom-in");
 			var mapLayers = that.mapObject.layers;
 			for (var i in mapLayers){
 				var currentLayer = mapLayers[i];
 				if (layerStateObject.layerStateDefined(currentLayer.name)){
 					if (layerStateObject.getState(currentLayer.name, "getFeature")){
-						that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+						//that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
 						layerStateObject.setState(currentLayer.name, {"getFeature": false});
 					}
 				} else {
 					continue;
 				}
-			}
+			}*/
 			layerStateObject.resetState('getFeature');
-			jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
 		});
+		
 		jQuery(document).bind('panActivated', function(){
-//			jQuery(document).on('click', '.olControlNavigationItemActive', function(){
 			jQuery('.olMap').css('cursor', "-moz-grab");
 			//var mapLayers = OpenGeoportal.map.layers;
-			var mapLayers = that.mapObject.layers;
+			/*var mapLayers = that.mapObject.layers;
 			for (var i in mapLayers){
 				var currentLayer = mapLayers[i];
 				if (layerStateObject.layerStateDefined(currentLayer.name)){
 					if (layerStateObject.getState(currentLayer.name, "getFeature")){
-						that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+						//that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
 						layerStateObject.setState(currentLayer.name, {"getFeature": false});
 					}
 				} else {
 					continue;
 				}
-			}
+			}*/
 			layerStateObject.resetState('getFeature');
-			jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
 		});
 	};
 
@@ -2493,8 +1916,8 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 				jQuery("#left_col").outerWidth(newWidth);
 				that.setSearchPanelWidth(newWidth);
 
-				that.utility.whichTab().tableObject().getTableObj().fnDraw();
-				that.mapObject.updateSize();
+				//that.utility.whichTab().tableObject().getTableObj().fnDraw();
+				//that.mapObject.updateSize();//the handler in mapDiv.js should pick this up
 			}
 		});
 	};
@@ -2542,9 +1965,9 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 	this.anchorsToNiceScroll = function(affectedDiv, offsetHash){
 		jQuery("#" + affectedDiv + " a.niceScroll").click(function(event){
 			event.preventDefault();
-			//parse the hrefs for the anchors in this DOM element into toID
-			var toID = jQuery(this).attr("href");
-			jQuery("#" + affectedDiv).scrollTo(jQuery(toID), {offset: offsetHash });
+			//parse the hrefs for the anchors in this DOM element into toId
+			var toId = jQuery(this).attr("href");
+			jQuery("#" + affectedDiv).scrollTo(jQuery(toId), {offset: offsetHash });
 		});
 	};
 
@@ -2633,35 +2056,7 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 		//>>> jQuery("#geoCommonsExportDialog").dialog("option", "position", jQuery("#geoCommonsExportDialog").data("maxPosition"))
 	};
 
-	this.previewControlShowOn = function(thisObj){
-		var previewControl$ = jQuery(thisObj);
-		previewControl$.removeClass("previewOff").addClass("previewOn");
-		var hideLayerText = "Turn off layer preview on the map";
-		previewControl$.attr("title", hideLayerText);
-	};
-
-	this.previewControlShowOff = function(thisObj){
-		var previewControl$ = jQuery(thisObj);
-		previewControl$.removeClass("previewOn").addClass("previewOff");
-		var showLayerText = "Preview layer on the map";
-		previewControl$.attr("title", showLayerText);
-	};
-
-	this.previewViewHandler = function(){
-		var that = this;
-		jQuery(document).on("view.showPreviewOn", function(event){
-			//console.log(event);
-			that.previewControlShowOn(event.target);
-		});
-		jQuery(document).on("view.showPreviewOff", function(event){
-			//console.log(event);
-			that.previewControlShowOff(event.target);
-		});
-	};
-
-
 	this.autocomplete = function(){
-
 		jQuery( "#advancedOriginatorText" ).autocomplete({
 			source: function( request, response ) {
 				var solr = new OpenGeoportal.Solr();
@@ -2719,6 +2114,45 @@ OpenGeoportal.UserInterface.prototype.loginResponseError = function(jqXHR, textS
 		infoBubble$.on("click", ".closeBubble", function(){infoBubble$.hide();}).show();
 
 		return infoBubble$;
+	};
+	
+	this.showInfoBubble = function(){
+		var welcome = '<div id="welcomeText" class="welcomeText">'
+			+ '<h1>Welcome</h1>'
+			+ '<p>'
+			+ 'There are two ways to begin your search:'
+			+	'</p>' 
+			+ '<ol>'
+			+ '<li>'
+			+ 'Enter information using one or both search fields.'
+			+ '</li>'
+			+ '<li>'
+			+ 'Zoom in on a location using the map.'
+			+ '</li>'
+			+ '</ol>'
+			+ '</div>';
+		var params = {"height": 335,
+					"width": 700,
+					"top": 259,
+					"left": 269,
+					"arrow": "top"};
+		this.infoBubble(welcome, params);
+	};
+	
+	this.showDowntimeNotice = function(){
+		/*downtime notice */
+		var downtimeText = "Layers will be unavailable until later this afternoon while we perform server maintenance. We apologize for the inconvenience.";
+		var downtimeDiv = '<div id="downtimeNotice" class="dialog infoDialog"><p>' + downtimeText + '</p></div>';
+		jQuery("body").append(downtimeDiv);
+		jQuery('#downtimeNotice').dialog({
+			zIndex: 2999,
+			title: "Downtime",
+			resizable: false,
+			minWidth: 415,
+			autoOpen: false		
+		});
+		jQuery("#downtimeNotice").dialog("open");
+		
 	};
 
 };

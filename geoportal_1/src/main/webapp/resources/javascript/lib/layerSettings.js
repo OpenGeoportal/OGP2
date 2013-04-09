@@ -6,7 +6,9 @@ if (typeof OpenGeoportal == 'undefined'){
 /*OpenGeoportal.LayerSettings
 *	object to hold display setting info, where it exists (opacity, etc.)
 */
-OpenGeoportal.LayerSettings = function(){
+OpenGeoportal.LayerSettings = function LayerSettings(){
+
+	this.previewedLayers = new OpenGeoportal.PreviewedLayers();
 	var settings = {};
 	var that = this;
 	this.getGenericDefaults = function(){
@@ -25,25 +27,25 @@ OpenGeoportal.LayerSettings = function(){
 		return {"opacity": 100};
 	};
 	
-	this.layerStateDefined = function(layerID){
-		if (typeof settings[layerID] == 'undefined'){
+	this.layerStateDefined = function(layerId){
+		if (typeof settings[layerId] == 'undefined'){
 			return false;
 		} else {
 			return true;
 		}
 	};
 	
-	this.addNewLayer = function(layerID, params){
+	this.addNewLayer = function(layerId, params){
 		var dataType = params.dataType;
 
 		if ((typeof dataType == 'undefined')||(dataType == '')){
 			throw new Error("dataType (Point, Line, Polygon, or Raster) must be specified to create a new layer.");
 		}
-		if (this.layerStateDefined(layerID)){
+		if (this.layerStateDefined(layerId)){
 			throw new Error("OpenGeoportal.LayerState.addNewLayer: This layer already exists.");
 		}
-		settings[layerID] = this.getGenericDefaults();
-		settings[layerID].dataType = dataType;
+		settings[layerId] = this.getGenericDefaults();
+		settings[layerId].dataType = dataType;
 		var typeSpecificDefaults = {};
 		switch(dataType){
 		case "Point":
@@ -62,10 +64,10 @@ OpenGeoportal.LayerSettings = function(){
 			break;
 		};
 		for (var key in typeSpecificDefaults){
-			settings[layerID][key] = typeSpecificDefaults[key];
+			settings[layerId][key] = typeSpecificDefaults[key];
 		}
 		for (var key in params){
-			settings[layerID][key] = params[key];
+			settings[layerId][key] = params[key];
 		}
 	};
 	
@@ -79,12 +81,12 @@ OpenGeoportal.LayerSettings = function(){
 		return layers;
 	};
 	
-	this.getState = function(layerID, key){
+	this.getState = function(layerId, key){
 		//this checks to see if a layer has a particular value for a particular parameter, returns true or false
 		//if state info exists for the layer, key & value are matched against that value
 		//otherwise, it is matched against defaults...
 		for (var layer in settings){
-			if (layer == layerID){
+			if (layer == layerId){
 				if (typeof settings[layer][key] == 'undefined'){
 					return null;
 					//throw new Error("The given parameter\"" + key + "\" is not valid for the layer \"" + layer + "\".");
@@ -103,24 +105,24 @@ OpenGeoportal.LayerSettings = function(){
 		
 	};
 	
-	this.setState = function(layerID, updateObj){
+	this.setState = function(layerId, updateObj){
 		var sync = false;
 		//if the layer has no state info, try to add it (dataType must be in updateObj to succeed)
-		if (typeof settings[layerID] == 'undefined'){
-			this.addNewLayer(layerID, updateObj);
+		if (typeof settings[layerId] == 'undefined'){
+			this.addNewLayer(layerId, updateObj);
 		}
 		for (var key in updateObj){
-			var currentValue = settings[layerID][key];
+			var currentValue = settings[layerId][key];
 			if (updateObj[key] != currentValue){
 				//state has changed
-				settings[layerID][key] = updateObj[key];
+				settings[layerId][key] = updateObj[key];
 				sync = true;
 			};
 		}
-		updateObj.layerID = layerID;
+		updateObj.layerId = layerId;
 		//if state has changed, propogate the change
 		if (sync){
-			syncUi(updateObj);
+			this.syncUi(updateObj);
 		}
 	};
 	
@@ -158,60 +160,57 @@ OpenGeoportal.LayerSettings = function(){
 		}
 	};
 	
-	var syncUi = function (updateObj){
-		//console.log('syncUi');
-		//return true;
+	this.fireEvent = function(customEvent, layerId){
+		console.log(customEvent + " triggered for layerId: " + layerId);
+		jQuery(document).trigger(customEvent, {"layerId": layerId});
+	};
+	
+	this.syncUi = function(updateObj){
+		var layerId = updateObj.layerId;
 		for (var key in updateObj){
 			switch(key){
 			case "preview":
-			//this needs to check or uncheck a checkbox in another table
-			//the checkbox itself will hold state in the current table
-				jQuery('.colPreview').each(function(){
-					if (this.tagName == 'TD'){
-						var tableObj = jQuery(this).closest('table.display');
-						var dataTableObj = tableObj.dataTable();
-						var aData = dataTableObj.fnGetData(this.parentNode);
-						var layerID = aData[OpenGeoportal.LayerTable.tableHeadingsObj.getColumnIndex("LayerId")];
-						if (layerID == updateObj.layerID){
-							var previewControl$ = jQuery(this).find("div.previewControl");
-							if (updateObj.preview == 'on'){
-								previewControl$.triggerHandler("view.showPreviewOn");
-							} else if (updateObj.preview == 'off'){
-								previewControl$.triggerHandler("view.showPreviewOff");
-							}
-						}
-					}
-				}); 
+				
+				if (updateObj.preview == 'on'){
+					this.fireEvent("view.previewOn", layerId);
+				} else if (updateObj.preview == 'off'){
+					this.fireEvent("view.previewOff", layerId);
+				}
+				
 				break;
 			case "inCart":
+				
 				if (updateObj.inCart){
-					jQuery(document).trigger("view.showInCart", {"layerId": updateObj.layerID});
+					this.fireEvent("view.showInCart", layerId);
 				} else {
-					jQuery(document).trigger("view.showNotInCart", {"layerId": updateObj.layerID});
+					this.fireEvent("view.showNotInCart", layerId);
 				}
+				
 				break;	
 			case "opacity":
-				jQuery(document).trigger("map.opacityChange", {"layerId": updateObj.layerID, "opacity": updateObj.opacity})
-					/*var stateVal = that.getState(updateObj.layerID, "opacity");
-		    		var escapedLayerID = OpenGeoportal.Utility.idEscape(updateObj.layerID);
-
-					jQuery('#opacitysearchResults' + escapedLayerID).slider("value", stateVal);
-					jQuery('#opacitysavedLayers' + escapedLayerID).slider("value", stateVal);*/
-					break;
+				this.fireEvent("map.opacityChange", layerId);
+				break;
 			case "color":
 			case "graphicWidth":
 				//both handled by sld change
-				jQuery(document).trigger("map.styleChange", {"layerId": updateObj.layerID});
+				this.fireEvent("map.styleChange", layerId);
 				break;
 			//since we are wiping state when we click getFeature, I think
 			//we only need to sync icons for expanded rows. register events?
 			case "getFeature":
+				
+				if (updateObj.getFeature){
+					this.fireEvent("map.getFeatureInfoOn", layerId);
+				} else {
+					this.fireEvent("map.getFeatureInfoOff", layerId);
+				}
+				/*
 				    if (OpenGeoportal.map.currentAttributeRequest){
 				    	OpenGeoportal.map.currentAttributeRequest.abort();
 				    }
-					var stateVal = that.getState(updateObj.layerID, "getFeature");
-					var layer = OpenGeoportal.map.getLayersByName(updateObj.layerID)[0];
-		    		var escapedLayerID = OpenGeoportal.Utility.idEscape(updateObj.layerID);
+					var stateVal = that.getState(updateObj.layerId, "getFeature");
+					var layer = OpenGeoportal.map.getLayersByName(updateObj.layerId)[0];
+		    		var escapedLayerId = OpenGeoportal.Utility.idEscape(updateObj.layerId);
 					if (stateVal === true){
 						var mapLayers = OpenGeoportal.map.layers;
 						for (var i in mapLayers){
@@ -219,13 +218,13 @@ OpenGeoportal.LayerSettings = function(){
 							if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
 									(currentLayer.name != 'OpenStreetMap')&&
 									(currentLayer.CLASS_NAME != 'OpenLayers.Layer.Vector')&&
-									(currentLayer.name != updateObj.layerID)){
+									(currentLayer.name != updateObj.layerId)){
 								that.setState(currentLayer.name, {"getFeature": false});
 							} else {
 								continue;
 							}
 						}
-						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview_down.gif"));
+						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerId + '"]').attr("src", that.getImage("preview_down.gif"));
 						OpenGeoportal.map.events.register("click", layer, OpenGeoportal.map.wmsGetFeature);
 						jQuery(document).trigger("getFeatureActivated");
 						//console.log(["register layer:", layer]);
@@ -233,10 +232,10 @@ OpenGeoportal.LayerSettings = function(){
 						OpenGeoportal.map.getControlsByClass("OpenLayers.Control.Navigation")[0].deactivate();
 					  jQuery('.olMap').css('cursor', "crosshair");
 					} else {
-						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerID + '"]').attr("src", that.getImage("preview.gif"));
+						jQuery('.attributeInfoControl').filter('[id$="' + escapedLayerId + '"]').attr("src", that.getImage("preview.gif"));
 						OpenGeoportal.map.events.unregister("click", layer, OpenGeoportal.map.wmsGetFeature);
 
-				  }
+				  }*/
 				  break;
 			  default:
 				  break;				  

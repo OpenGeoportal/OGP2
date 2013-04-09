@@ -8,6 +8,37 @@ OpenGeoportal.Template = function() {
 	 
 	this.dataTable = _.template('<table id="<%= tableId %>" class="display"></table>');
 	
+	var mapToolBarHtml = '<div id="mapToolBar">'
+		+ '<div id="mapLoadIndicator" class="loadIndicator"></div>'
+		+ '<div id="ogpMapButtons"></div>'
+		+ '</div>';
+	
+	this.map = _.template(mapToolBarHtml + '<div id="<%= mapId %>OLMap"></div>');
+			
+	this.mapButton = _.template('<span class="mapStyledButton <%= displayClass %>" title="<%= title %>"><%= buttonText %></span>');
+
+
+	
+	
+	
+	/*
+	 * <div id="mapToolBar" class="shadowDown">
+	<div id="mapLoadIndicator" class="loadIndicator"></div> 
+	<div id="ogpMapButtons"> 
+		<!-- <span class="mapStyledButton saveImageButton" title="Save map image">Save Image</span>
+		<span class="mapStyledButton printButton" title="Print map">Print</span>
+		<div id="basemapDropdown">
+			<button id="basemapSelect" class="mapStyledButton" title="Select base map">
+				<span>Basemap<img src="resources/media/arrow_down.png" alt="Select base map" /></span>
+			</button>
+			<div id="basemapMenu">
+			</div>
+		</div>-->
+	</div>  
+</div>	
+<div id="mapOpenLayersMap" class="openlayersMap"></div>
+	 */
+	
 	/*this.getPreviewControlText = function(){
 		var pcText = '<div class="previewControls">';
 		pcText += '<div class="opacityControlCell">';

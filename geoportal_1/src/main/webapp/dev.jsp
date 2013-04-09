@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>GeoData@Tufts</title>
-<%@include file="jspf/includes.jspf"%>
+<%@include file="jspf/devincludes.jspf"%>
 </head>
 <body>
 <div id="main">
@@ -13,7 +13,8 @@
 		<div id="left_col">
 			<%@include file="jspf/leftPanel.jspf"%>
 		</div>
-		<div id="map"></div>
+		<div id="map">
+		</div>
 	</div>
 	<%@include file="jspf/footer.jspf"%>	
 </div>
