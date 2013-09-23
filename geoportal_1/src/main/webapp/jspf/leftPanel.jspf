@@ -1,32 +1,36 @@
-    <div class="arrow_buttons">
+    <div class="arrow_buttons slideVertical">
     	<div class="arrow_left button" title="collapse left"></div>
     	<div class="arrow_separator"></div>
     	<div class="arrow_right button" title="expand right"></div>
  	</div>
-<div id="left_tabs"> 
-	<div id="tabs" class="ui-tabs">
+<!--  <div id="left_tabs" class=""> -->
+	<div id="tabs" class="shadowDown slideVertical">
 		<ul>
-			<li><a href="#searchTab"><span id="searchTabText" class="tabText">
-			    <span id="resultsNumber" class="resultsNumber">
-    			0
-    		   </span>
-				Results
-				</span></a> 
+			<li><a href="#searchTab">
+				<div id="searchTabText" class="tabText">
+					<div>
+			    	<span id="resultsNumber" class="resultsNumber">
+    				0
+    		   		</span>
+					Results
+					</div>
+				</div></a> 
 			</li>				
 			<li><a href="#cartTab">
 				<div id="cartTabText" class="tabText">
-				<div class="shoppingCartIcon"></div>
-				<div>Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span></div>
-				</div></a> 
+					<div class="shoppingCartIcon"></div>
+					<div>Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span></div>
+				</div>
+				</a> 
 			</li>
 		</ul>
-    	<div id="searchTab" class="ui-tabs-hide">
+    	<div id="searchTab">
 			<%@include file="results.jspf"%>
     	</div>
-    	<div id="cartTab" class="ui-tabs-hide">
+    	<div id="cartTab">
 			<%@include file="cart.jspf"%>
     	</div>
 	</div>
-</div>  
+<!--  </div>-->  
 
   

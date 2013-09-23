@@ -19,17 +19,15 @@ if (typeof OpenGeoportal == 'undefined'){
  * 
  * @param object OpenGeoportal.OgpSettings
  */
-OpenGeoportal.LayerTable = function LayerTable(stateObj){
+OpenGeoportal.LayerTable = function LayerTable(){
 
-	//we only want one copy of this;  we can make this a singleton or call it from main.
-	this.appState = stateObj;
+	this.appState = OpenGeoportal.ogp.appState;
 
-	//really, we're just checking to make sure something was passed in
-	if (typeof this.appState === "undefined"){
-		throw new Error("An appropriate state object must be passed to the constructor of LayerTable.");
-	}
-	this.layerState = stateObj.layerState;
-
+	this.previewed = this.appState.get("previewed");
+	this.template = this.appState.get("template");	
+	this.controls = this.appState.get("controls");	
+	
+	this.tableLayerState = new OpenGeoportal.TableRowSettings();
 	this.analytics = new OpenGeoportal.Analytics();
 	
 	var that = this;
@@ -47,14 +45,227 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 	this.getTableObj = function(){
 		return jQuery('#' + this.getTableId()).dataTable();
 	};
-
-	//are these different depending on table?
-	this.tableSettings = new OpenGeoportal.TableSettings(this);
-	this.tableHeadingsObj = this.tableSettings.tableConfig;
-	this.tableLayerState = this.tableSettings.tableLayerState;
-	this.previewedLayers = this.layerState.previewedLayers;
-	this.template = this.appState.template;	//this should be app-wide
 	
+	this.backingData;
+	this.addControlColumns = function(tableConfigCollection){
+		var that = this;
+		tableConfigCollection.add([
+		                           {
+		                        	   order: 0,
+		                        	   columnName: "expandControls",
+		                        	   solr: false, 
+		                        	   resizable: false, 
+		                        	   organize: false, 
+		                        	   visible: true,
+		                        	   hidable: false,
+		                        	   header: "",
+		                        	   columnClass: "colExpand",
+		                        	   width: 10,
+		                        	   renderFunction: function(data, type, full){
+		                        			   var layerId = full.LayerId; 
+		                        				if ((typeof layerId == "undefined")||(layerId === null)){
+		                        					return "";
+		                        				}
+		                        				var layerExpanded = that.tableLayerState.isExpanded(layerId);
+		                        				return that.controls.renderExpandControl(layerExpanded);
+		                        		   }
+		                           },
+		                           {
+		                        	   order: 13,
+		                        	   columnName: "Metadata",
+		                        	   solr: false, 
+		                        	   resizable: false,
+		                        	   organize: false,
+		                        	   visible: true,
+		                        	   hidable: false,
+		                        	   header: "Meta",
+		                        	   columnClass: "colMetadata",
+		                        	   width: 30,
+		                        	   renderFunction: function(data, type, full){var dataType = that.getColumnData(full, "DataType"); return that.controls.renderMetadataControl(dataType);}
+		                        
+		                           },
+		                           {
+		                        	   order: 14,
+		                        	   columnName: "View",
+		                        	   solr: false, 
+		                        	   resizable: false, 
+		                        	   organize: false,
+		                        	   visible: true,
+		                        	   hidable: false,
+		                        	   header: "View",
+		                        	   columnClass: "colPreview",
+		                        	   width: 39,
+		                        	   renderFunction: function(data, type, full){	
+		                        			   var layerId = full.LayerId;
+		                        			   var access = full.Access.toLowerCase();
+		                        			   var institution = full.Institution;
+		                        			   return that.controls.renderPreviewControl(layerId, access, institution);
+		                        		   }		                        	   
+		                           }
+		                           ]);
+	};
+	
+	this.addDataColumns = function(tableConfigCollection){
+		tableConfigCollection.add([
+
+		                           {
+		                        	   order: 2,
+		                        	   columnName: "DataType",
+		                        	   solr: true, 
+		                        	   resizable: false, 
+		                        	   organize: "group",
+		                        	   visible: true,
+		                        	   hidable: true,
+		                        	   displayName: "Data Type",
+		                        	   header: "Type",
+		                        	   columnClass: "colType",
+		                        	   width: 29,
+		                        	   renderFunction: function(data, type, full){return that.controls.renderTypeIcon(data);}
+		                        		   
+		                           },
+		                           {
+		                        	   order: 3,
+		                        	   columnName: "score", 
+		                        	   solr: true, 
+		                        	   resizable: true, 
+		                        	   minWidth: 27, 
+		                        	   width: 27, 
+		                        	   organize: "numeric", 
+		                        	   visible: false,
+		                        	   hidable: false,
+		                        	   displayName: "Relevancy", 
+		                        	   header: "Relev",
+		                        	   columnClass: "colScore"
+		                           },
+		                           {
+		                        	   order: 4,
+		                        	   columnName: "LayerId",
+		                        	   solr: true, 
+		                        	   resizable: false, 
+		                        	   organize: false, 
+		                        	   visible: false,
+		                        	   hidable: false
+		                           },
+		                       		{
+		                        	   	order: 6,
+		                       			columnName: "Name",
+		                       			solr: true, 
+		                       			resizable: false, 
+		                       			organize: false, 
+		                       			visible: false,
+		                       			hidable: false
+									},
+			                           {
+										order: 5,
+		                       			columnName: "WorkspaceName",
+		                       			solr: true, 
+		                       			resizable: false, 
+		                       			organize: false, 
+		                       			visible: false,
+		                       			hidable: false
+		                       		},
+		                           {
+		                       		   order: 7,
+		                        	   columnName: "LayerDisplayName",
+		                        	   solr: true, 
+		                        	   resizable: true,
+		                        	   minWidth: 35,
+		                        	   organize: "alpha",
+		                        	   visible: true,
+		                        	   hidable: true,
+		                        	   displayName: "Name",
+		                        	   header: "Name",
+		                        	   columnClass: "colTitle"
+		                           },
+		                           {
+		                        	   order: 8,
+		                        	   columnName: "Originator",
+		                        	   solr: true, 
+		                        	   resizable: true, 
+		                        	   minWidth: 59,
+		                        	   width: 86,
+		                        	   organize: "group",
+		                        	   visible: true,
+		                        	   hidable: true,
+		                        	   displayName: "Originator",
+		                        	   header: "Originator",
+		                        	   columnClass: "colOriginator"
+
+		                           },
+		                           {
+		                        	   order: 9,
+		                        	   columnName: "Publisher",
+		                        	   solr: true, 
+		                        	   resizable: true, 
+		                        	   minWidth: 55,
+		                        	   width: 80,
+		                        	   organize: "group",
+		                        	   visible: false,
+		                        	   hidable: true,
+		                        	   displayName: "Publisher",
+		                        	   header: "Publisher",
+		                        	   columnClass: "colPublisher"
+
+		                           },
+		                           {
+		                        	   order: 10,
+		                        	   columnName: "ContentDate",
+		                        	   solr: true, 
+		                        	   organize: "numeric",
+		                        	   visible: false,
+		                        	   displayName: "Date",
+		                        	   resizable: true,
+		                        	   minWidth: 30,
+		                        	   width: 30,
+		                        	   hidable: true,
+		                        	   header: "Date",
+		                        	   columnClass: "colDate",
+		                        	   renderFunction: function(data, type, full){return that.controls.renderDate(data);}
+		                        		   
+		                           },
+		                           {
+		                        	   order: 11,
+		                        	   columnName: "Institution",
+		                        	   solr: true, 
+		                        	   organize: "alpha",
+		                        	   visible: true,
+		                        	   hidable: true,
+		                        	   resizable: false,
+		                        	   displayName: "Repository",
+		                        	   header: "Rep",
+		                        	   columnClass: "colSource",
+		                        	   width: 24,
+		                        	   renderFunction: function(data, type, full){return that.controls.renderRepositoryIcon(data);}
+		                        		   
+		                           },
+		                           {
+		                        	    order: 12,
+		                       			columnName: "Access",
+		                       			solr: true, 
+		                       			resizable: false, 
+		                       			organize: false, 
+		                       			visible: false,
+		                       			hidable: false,
+		                       			header: "Access"
+		                       		}
+
+		                           
+		         ]);
+	};
+	
+	this.createTableHeadings = function(){
+		var that = this;
+		var tableConfigCollection = new OpenGeoportal.TableConfig();
+		this.addControlColumns(tableConfigCollection);
+		this.addDataColumns(tableConfigCollection);
+		tableConfigCollection.listenTo(tableConfigCollection, "change:visible", function(){that.toggleColumn.apply(that, arguments);});
+		tableConfigCollection.listenTo(tableConfigCollection, "change:width", function(){that.changeColumnWidth.apply(that, arguments);});
+		return tableConfigCollection;
+	};
+	
+	
+	this.tableHeadingsObj = this.createTableHeadings();
+
 	this.getImage = function(imageName){
 		return OpenGeoportal.Utility.getImage(imageName);
 	};
@@ -85,7 +296,6 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		return jQuery("#" + tableName);
 	};
 	
-	//definitely table specific
 	this.createDataTable = function(table$, params){
 		var tableObj = table$.dataTable(params);
 		return tableObj;
@@ -93,9 +303,45 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 
 	this.dataTableParams = {};
 			
+	this.getColumnDefinitions = function(){
+		var columnDefinitions = [];
+		this.tableHeadingsObj.each(function(model){
+			var config = {};
+			if (model.has("columnConfig")){
+				config = model.get("columnConfig");
+			}
+			if (model.has("header")){
+				config.sTitle = model.get("header");
+			}
+			if (model.has("columnClass")){
+				config.sClass = model.get("columnClass");
+			}
+			if (model.has("width")){
+				config.sWidth = model.get("width") + "px";
+			}
+			if (model.has("visible")){
+				config.bVisible = model.get("visible");
+			}
+			if (model.has("columnName")){
+				config.mData = model.get("columnName");
+			}
+			if (model.has("organize")){
+				config.bSortable = model.get("organize") == true;
+			}
+			if (model.has("order")){
+				config.aTargets = [model.get("order")];
+			}
+			if (model.has("renderFunction")){
+				config.mRender = model.get("renderFunction");
+			}
+			columnDefinitions.push(config);
+		});
+		return columnDefinitions;
+	};
+	
 	this.getDataTableParams = function(){
+		var that = this;
 
-		var columnDefinitions = this.tableHeadingsObj.getColumns();
 		//initialize table
 		var tableData = [];
 
@@ -103,7 +349,7 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		var params = {
 			"aaData": tableData,
 			"bSort": false,
-			"aoColumnDefs": columnDefinitions,
+			"aoColumnDefs": that.getColumnDefinitions(),
 			"fnDrawCallback": that.runTableDrawCallbacks,
 			"bAutoWidth": false,
 			"sDom": 'rt',
@@ -156,29 +402,38 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 			console.log("createTable Error");
 			console.log(e);
 		}
-		this.initControlHandlers();
+		try{
+			this.initControlHandlers();
+		} catch (e){
+			console.log("initControlHandlers Error");
+			console.log(e);
+		}
+
 	};
 	
-	/*this.tableDrawCallbacks = {
-			callbacks: {"wrapCells": function(){this.wrapCells();}, "tooltips": function(){this.createTooltips();}, "colResize": function(){this.addColumnResize();}}
-	};*/
-	
 	this.tableDrawCallbacks = {
-			callbacks: {"wrapCells": function(){this.wrapCells();}, "tooltips": function(){this.createTooltips();}}
+			callbacks: {
+				wrapCells: function(){this.wrapCells();}, 
+				tooltips: function(){this.createTooltips();},
+				expandRows: function(){this.callbackExpand();},
+				colResize: function(){this.resizeColumnsCallback();}
+			}
 	};
 	
 	this.addTableDrawCallback = function(label, callbackFunction){
 		this.tableDrawCallbacks.callbacks[label] = callbackFunction;
+		
 	};
 	
 	this.runTableDrawCallbacks = function(){
-		//TODO: is this working correctly?  make sure
 		console.log("table draw callbacks");
-
-		for (var i in that.tableDrawCallbacks.callbacks){
-			console.log(i);
-			that.tableDrawCallbacks.callbacks[i].call(that);
+		var callbacks = that.tableDrawCallbacks.callbacks;
+		for (var i in callbacks){
+			if (callbacks.hasOwnProperty(i)){
+				callbacks[i].call(that);
+			}
 		}
+		console.log("finished table draw callbacks");
 	};
 
 	/************
@@ -194,27 +449,30 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		var tableObj = this.getTableObj();	         
 		//Get the data array for this row 
 		var rowData = {};
-		rowData.node = jQuery(thisObj).closest("tr")[0];
+		if (jQuery(thisObj).is("tr")){
+			rowData.node = jQuery(thisObj)[0];
+		} else {
+			rowData.node = jQuery(thisObj).closest("tr")[0];
+		}
 		rowData.index = tableObj.fnGetPosition(rowData.node);
-		rowData.data = tableObj.fnGetData( rowData.index );
+		if (rowData.index === null){
+			throw new Error("RowData not found.  Bad element passed to function['getRowData'].");
+		} else {
+			rowData.data = tableObj.fnGetData( rowData.index );	
+		}
 		return rowData;
 	};
 	
-	/*
-	 * helper function to get backing data from DataTable, expects to be passed a dom element from the table
-	 * from a click event, for example
-	 * returns an array of data corresponding to the row in the table
-	 */
-	this.getDataObjFromRowData = function(rowData){
-		//Get the data array for this row 
-		var dataObj = {};
-		var tableConfig = this.tableHeadingsObj.getTableConfig();
-		for (var heading in tableConfig){
-			dataObj[heading] = rowData[tableConfig[heading].columnConfig.aTargets[0]];
-		}
-		return dataObj;
+	this.getColumnsIndex = function(){
+			var tableObj = this.getTableObj();
+			var colSettingsArr = tableObj.fnSettings().aoColumns;
+			var columnsIndex = {};
+			for (var i in colSettingsArr){
+				columnsIndex[colSettingsArr[i].mData] = i;
+			}
+		
+		return columnsIndex;
 	};
-	
 
 	/*
 	 * helper function to get backing data from DataTable, expects to be passed an array of data and 
@@ -222,31 +480,65 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 	 * returns the data value for the specified column
 	 */
 	this.getColumnData = function(rowData, colName){
-		var columnIndex = this.tableHeadingsObj.getColumnTargetIndex(colName);
-		var columnData = rowData[columnIndex];
-		/*if ((typeof columnData == "undefined")||(columnData === null)){
-			throw new Error("Data is undefined for ['" + colName + "'] for the table ['" + this.getTableId() + "']");
-			//columnData = ""; 
-		}*/
+		//probably don't need this anymore
+		var columnData = rowData[colName];
 		return columnData;
 	};
 
-	this.getLayerIdFromRow = function(rowObj){
-		return rowObj.aData[this.tableHeadingsObj.getColumnTargetIndex('LayerId')];
-	};
+	this.getLayerIdFromTableCell = function(td){
 
-	//restrict to current table
-	this.findTableControl = function(layerId, columnClass, controlClass){
+		var td$ = jQuery(td);
+		var dataRow = td$.closest("tr");
+		return this.getLayerIdFromTableRow(dataRow[0]);
+		
+	};
+	
+	this.getLayerIdFromTableRow = function(tr){
+		var tr$ = jQuery(tr);		
+
+		if (tr$.children().first().hasClass("previewTools")){
+			//this is a preview tools row, not a data row
+			tr$ = tr$.prev();
+		}
+		var rowData = this.getRowData(tr$[0]).data;
+
+		var layerId = rowData.LayerId;
+		return layerId;
+	};
+	
+	this.findTableRow = function(layerId){
 		var that = this;
-		var control$ = [];
-		jQuery("#" + this.getTableId() + " " + columnClass).each(function(){
-			var aData = that.getTableObj().fnGetData(this.parentNode);
-			var currentLayerId = aData[that.tableHeadingsObj.getColumnTargetIndex("LayerId")];
-			if (currentLayerId == layerId){
-				control$ = jQuery(this).find(controlClass).first();
-				return;
+		var row$ = "";
+		jQuery("#" + this.getTableId() + " tr").each(function(){
+			if (jQuery(this).children("th").length === 0){//skip header rows
+				var currentLayerId = that.getLayerIdFromTableRow(this);
+				if (currentLayerId == layerId){
+					row$ = jQuery(this);
+					return; //this exits the each loop
+				}
 			}
 		}); 
+		if (row$.length === 0){
+			console.log(layerId);
+			console.log("table row not found for ['" + this.getTableId() + "']!");
+		}
+		return row$;
+		
+	};
+	
+	this.findTableControl = function(layerId, columnClass, controlClass){
+		var that = this;
+		var control$ = "";
+		jQuery("#" + this.getTableId() + " " + columnClass).each(function(){
+			var currentLayerId = that.getLayerIdFromTableCell(this);
+			if (currentLayerId == layerId){
+				control$ = jQuery(this).find(controlClass).first();
+				return; //this just exits the each function
+			}
+		}); 
+		if (control$.length === 0){
+			console.log("table control not found for ['" + this.getTableId() + "']!");
+		}
 		return control$;	
 	};
 
@@ -257,64 +549,191 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 	this.findPreviewControl = function(layerId){
 		return this.findTableControl(layerId, "td.colPreview", "div.previewControl");
 	};
-	
-	this.getVisibleColumns = function(){
-		//returns an array of column keys visible on the page
-		var arrReturn = [];
-		//should get this from dataTable object
-		var visibleTable = this.getTableId();
-
-		if (!visibleTable){
-			return arrReturn;
-		}
-		var arrColumns = jQuery('#' + visibleTable).dataTable().fnSettings().aoColumns;
-		for (var i in arrColumns){
-
-			if (arrColumns[i].bVisible == true){
-				arrReturn.push(arrColumns[i].sName);
-			}
-		}
-
-		return arrReturn;
-	};
 
 	/******
 	 * column sizing
 	 *******/
+	
+	
+
+	this.wrapCell = function(td){
+		var tableCell$ = jQuery(td);
+		tableCell$.wrapInner('<div class="cellWrapper" />');
+	};
 	//wrap the content of each table cell in a div so we can control the size
 	this.wrapCells = function(){
 		console.log("wrapping cells");
-		var tableName = that.getTableId();
+		var tableName = this.getTableId();
 		//jQuery('#' + tableName + ' th').each(function (iPosition, Element){
 		jQuery('#' + tableName + ' td').add('#' + tableName + ' th').each(function (iPosition, Element){
 
 			//reference the column, so we can set the width of each div
 			var tableCell = jQuery(this);
-			if (!tableCell.children().first().hasClass(tableName + "Cell")){
-				tableCell.wrapInner('<div class="' + tableName + 'Cell" />');
+			if (!tableCell.children().first().hasClass("cellWrapper")){
+				tableCell.wrapInner('<div class="cellWrapper" />');
 			}
 		});
-		that.sizeCells();
+		//this.sizeCells();
 	};
 
+	this.resizeColumnsCallback = function(){
+		this.markResizableColumns();
+		this.resizeColumns();
+	};
+	
+	this.markResizableColumns = function(){
+		var matches = this.tableHeadingsObj.where({resizable: true});
+		for (var i in matches){
+			var sel$ = jQuery("#"+ this.getTableId() + "_wrapper th." + matches[i].get("columnClass"));
+			if (sel$.length !== 0){
+				if (!sel$.hasClass("resizableCol")){
+					sel$.addClass("resizableCol");
+					matches[i].set({headerSelector: sel$});
+				}
+			}
+		}
+	};
+	
+	this.getResizableColumns = function(){
+		var resizables = jQuery("#searchResultsTable_wrapper .dataTables_scrollHead .resizableCol");
+		var columns = [];
+		var that = this;
+		resizables.each(function(){
+			var possibleMatches = that.tableHeadingsObj.filter(
+					function(model){
+						return model.has("headerSelector");
+					}
+			);
+			for (var i in possibleMatches){
+				var sel = possibleMatches[i].get("headerSelector");
+				if (sel[0] === this){
+					columns.push(possibleMatches[i]);
+				}
+			}
+		});
+		//return models for resizable columns
+		return columns;
+	};
+	
+	  
+	  this.getVisibleColumns = function(){
+		//returns an array of column keys visible on the page
+		var arrReturn = [];
+
+		var arrColumns = this.getTableObj().fnSettings().aoColumns;
+		for (var i in arrColumns){
+			if (arrColumns[i].bVisible == true){
+				arrReturn.push(arrColumns[i].mData);
+			}
+		}
+		return arrReturn;
+	  };
+	  
+	  this.getFixedColumnsWidth = function(){
+		  	var visibleColumns = this.getVisibleColumns();
+		  	var fixedWidth = 0;
+		  	for (var i in visibleColumns){
+		  		var currentModel = this.tableHeadingsObj.get(visibleColumns[i]);
+		  		if (!currentModel.get("resizable")){
+		  			var currentClass = currentModel.get("columnClass");
+		  			var sel$ = jQuery("#"+ this.getTableId() + "_wrapper th." + currentClass);
+		  			fixedWidth += sel$.outerWidth();
+		  		}
+		  	}
+		  	//TODO: store this value, since it should be the same each time
+		  	return fixedWidth;
+
+		  };
+		  
+		
+		this.removeExtraColumn = function(arrColumns){
+				//if the width of the table is too narrow, columns may need to be removed;
+				//this should only happen with all columns on and minimum width;
+				//columns that can be removed in order of least importance
+				var removableColumns = ["Access", "Publisher", "ContentDate", "Originator"];
+				
+				while (removableColumns.length > 0){
+					var currentRemovable = removableColumns.shift();
+					for (var i in arrColumns){
+						if (arrColumns[i].get("columnName") == currentRemovable){
+							this.hideCol(arrColumns.splice(i,1)[0]);
+							return arrColumns;
+						}	
+					}
+				}
+			};
+			
+		this.getTotalMinWidths = function(arrColumns){
+			var totalMinWidth = 0;
+			var offset = 7;//padding plus border...should get this value dynamically
+			for (var j in arrColumns){
+				totalMinWidth += arrColumns[j].get("minWidth") + offset;
+			}
+			
+			return totalMinWidth;
+		};
+		
+		this.changeColumnWidth = function(model){
+			var width = model.get("width");
+			this.setDataTableColWidth(model.get("columnName"), width);
+			//get the selector and resize the column with jQuery.width
+			var colClass = model.get("columnClass");
+			//".dataTables_scrollBody th." + model.get("columnClass")
+			var sel$ = jQuery("#"+ this.getTableId() + "_wrapper th." + colClass).add(".dataTables_scrollBody th." + colClass);
+			sel$.width(width);
+		};
 	//dynamically size the table depending on visible columns & the width of the container
-	this.sizeCells = function(){
+	this.adjustColumnSizes = function(){
 		/*determine which fields are showing, set widths from header object
 		  	if they add up to the total width, we're done.  otherwise we need to adjust
 			we need to maintain minimum widths
 		 */
-		var currentTab = OpenGeoportal.Utility.whichTab();
-		var tableId = this.getTableId();
-		var adjustObj;
-
-		if (!currentTab.tableObject){
-			return;
+		var resizables = this.getResizableColumns();
+	
+		var numColumns = resizables.length;
+		if (numColumns == 0){
+			return;	//we're done.  exit the function 
 		}
-		if (currentTab.tableName != tableId){
-			return;
+		
+		//remaining width must be distributed among visible resizable columns
+		//outerWidth of visible resizable columns must total remaining width
+		var remainingWidth = jQuery('#left_col').width() - this.getFixedColumnsWidth();
+		//at this point, remainingWidth must be a positive value.  make sure minWidth of the panel is set to ensure this.
+		if (remainingWidth < 0){
+			throw new Error("Minimum column width is less than panel width.  Adjust minWidth for the panel to ensure this does not happen.");
 		}
-		var totalWidth = jQuery('#left_col').width();
-
+		
+		var totalMinWidth = this.getTotalMinWidths(resizables);
+		
+		while ((remainingWidth - totalMinWidth) < 0){
+			//we need to remove columns until remainingWidth is a positive value
+			resizables = this.removeExtraColumn(resizables);
+			totalMinWidth = this.getTotalMinWidths(resizables);
+		}
+			
+		console.log(totalMinWidth);
+		console.log(remainingWidth);
+		
+		numColumns = resizables.length;
+		if (numColumns == 0){
+			return;	//we're done.  exit the function 
+		}
+		
+		remainingWidth -= totalMinWidth;
+		var colOffset = Math.floor(remainingWidth / numColumns);
+		var colRemainder = remainingWidth % numColumns;
+	
+		for (var i in resizables){
+			var newWidth = resizables[i].get("minWidth") + colOffset + colRemainder - 7;
+			console.log(newWidth);
+			colRemainder = 0;
+			resizables[i].set({width: newWidth});
+		}
+		 
+		
+		
+		
+	/*	
 		var arrColumns = this.getVisibleColumns();
 		//	totalWidth = totalWidth - (arrColumns.length * 7) + 1;//account for cell padding plus right borders of cells, leftmost border
 		//var divWidth = totalWidth;
@@ -324,10 +743,10 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		for (var i in arrColumns){
 			var currentColumn = arrColumns[i];
 			//var currentWidth = headingsObj.getWidth(currentColumn);
-			var currentClass = headingsObj.getValue(currentColumn, "sClass");
+			var currentClass = headingsObj.getDataTablesValue(currentColumn, "sClass");
 			var columnWidth = jQuery('#' + tableId + ' .' + currentClass).outerWidth();
 
-			if (headingsObj.getValue(currentColumn, "resizable")){
+			if (headingsObj.findWhere({columnName: currentColumn}).get("resizable")){
 				sizableWidth += columnWidth;
 				arrSizable.push(currentColumn);
 			} else {
@@ -343,8 +762,8 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		//at this point, totalWidth should be the width we have to work with for sizable columns
 
 		if (numberSizable == 1){
-			var currentClass = headingsObj.getValue(arrSizable[0], "sClass");
-			var currentMinWidth = headingsObj.getValue(arrSizable[0], "minWidth");
+			var currentClass = headingsObj.getDataTablesValue(arrSizable[0], "sClass");
+			var currentMinWidth = headingsObj.getValueByColumn(arrSizable[0], "minWidth");
 			var cell$ = jQuery('#' + tableId + ' .' + currentClass);
 			var adj = cell$.outerWidth() - cell$.width();
 
@@ -352,10 +771,10 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 				jQuery('#' + tableId + ' .' + currentClass + ' > div').outerWidth(totalWidth - adj);
 			} else {
 				this.removeExtraColumn();
-				/* what can we do here?  I think we have to remove columns to make things fit.
-					 this will fail to adjust columns properly if the visible resizable column is not
-					 removed by the above function
-				 */
+				// what can we do here?  I think we have to remove columns to make things fit.
+				//	 this will fail to adjust columns properly if the visible resizable column is not
+				//	 removed by the above function
+				 
 			}
 
 			//should also update the currentWidth;
@@ -363,11 +782,12 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 			return;	//we're done.  exit the function
 		}
 
-		/* following is executed if numberSizable is > 1
-			 determine if the total width currently set for the sizable columns is equal to the 
-			 width available on the page.
-		 */
+		// following is executed if numberSizable is > 1
+		//	 determine if the total width currently set for the sizable columns is equal to the 
+		//	 width available on the page.
+		 
 		var remainingWidth = totalWidth - sizableWidth;
+		*/
 		/* if (remainingWidth == 0){
 				  //set columns to currentWidth values
 				  console.log("remaining width = 0");
@@ -382,6 +802,7 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 					  headingsObj.setWidth(currentSizable, currentWidth);
 				  }
 			  } else {*/
+		/*
 		//split the difference between columns and add to each currentWidth, taking care not to go below minWidth
 		var remainder = remainingWidth % numberSizable;
 		// widthDifference * numberSizable will always be <= remainingWidth
@@ -390,9 +811,9 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		var adjustArr = [];
 		for (var j in arrSizable){
 			var currentSizable = arrSizable[j];
-			var currentMinWidth = headingsObj.getValue(currentSizable, "minWidth");
-			var currentWidth = headingsObj.getValue(currentSizable, "currentWidth") + widthDifference - propagate;
-			var currentClass = headingsObj.getValue(currentSizable, "sClass");
+			var currentMinWidth = headingsObj.getValueByColumn(currentSizable, "minWidth");
+			var currentWidth = headingsObj.getValueByColumn(currentSizable, "currentWidth") + widthDifference - propagate;
+			var currentClass = headingsObj.getDataTablesValue(currentSizable, "sClass");
 
 			//we only want to apply the remainder to the first field if possible
 			if (remainder > 0){
@@ -414,9 +835,9 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 				headingsObj.setWidth(currentSizable, currentWidth);
 				propagate = 0;
 			} else {	  
-				/*if we set the column to the currentMinWidth, we have to propagate the difference to 
-					another column.
-				 */
+				//if we set the column to the currentMinWidth, we have to propagate the difference to 
+				//	another column.
+				 //
 				propagate = currentMinWidth - currentWidth;
 				jQuery('#' + tableId + ' .' + currentClass + ' > div').outerWidth(currentMinWidth - adj);
 				headingsObj.setWidth(currentSizable, currentMinWidth);  
@@ -452,19 +873,127 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		}
 		//}
 		//totalWidth must be shared between all visible columns
+		*/
 	};
 
+	
+	this.setDataTableColWidth = function(colName, width){
+		var columns = this.getTableObj().fnSettings().aoColumns;
+		for (var i in columns){
+			if (columns[i].mData == colName){
+				console.log("width set!");
+				columns[i].sWidth = width;
+			}
+		}
+	};
+	
+	this.resizeColumns = function(){
+		console.log("resizeColumns called");
+		var columns = this.getResizableColumns();
+		
+		//we need at least 2 columns for resizing to work
+		if (columns.length < 2){
+			return;
+		}
+				
+		for (var i = 0; i < (columns.length - 1); i++){
+			var currentModel = columns[i];
+			var remainingColumns = columns.slice(i);
+
+			//reset column resizable state
+			try{
+				var sel$ = currentModel.get("headerSelector")
+				if (sel$.hasClass("resizable-applied")){
+					sel$.resizable("destroy");
+				}
+			} catch (e){
+				//ignore.  I'm not sure how to detect which elements have "resizable" initialized
+				//console.log(e);
+			}
+
+			this.addResizableColumn(currentModel, remainingColumns);
+		}
+	};
+
+	this.addResizableColumn = function(model, remainingColumns){
+		var that = this;
+		model.get("headerSelector").addClass("resizable-applied").resizable({
+  			alsoResize: ".dataTables_scrollBody th." + model.get("columnClass"),
+  			handles: "e",
+  			minWidth: model.get("minWidth"),
+  			start: function(event, ui){
+  				var remainingWidth = 0;
+  				var remainingMinWidth = 0;
+  				for (var j in remainingColumns){
+  					var currentCol = remainingColumns[j];
+  					var measuredWidth = currentCol.get("headerSelector").width();
+  					//that.setDataTableColWidth(currentCol.get("columnName"), measuredWidth);
+  					currentCol.set({width: measuredWidth});
+  					remainingWidth += measuredWidth;
+  					remainingMinWidth += currentCol.get("minWidth");
+  				}
+  				var maxWidth = remainingWidth - (remainingMinWidth - model.get("minWidth"));
+  				model.get("headerSelector").resizable("option", "maxWidth", maxWidth);
+  			},
+
+  			resize: function(event, ui){
+  				var totalPlay = ui.size.width - ui.originalSize.width;
+
+  				for (var k in remainingColumns){
+  					if (remainingColumns[k] === model){
+  						continue;
+  					}
+  					//no room to adjust
+  					if (totalPlay === 0){
+  						break;
+  					}
+  					var colModel = remainingColumns[k];
+  					var currentWidth = colModel.get("width");
+
+  					var header$ = colModel.get("headerSelector");
+  					/*var measuredWidth = header$.width();
+  					//offset is the number of extra pixels for padding, borders
+  					var offset = header$.outerWidth() - measuredWidth; //offset should only come into play when we add/remove columns*/
+  					var currentMinWidth = colModel.get("minWidth");		
+  					var newWidth = 0;
+  					var proposedNewWidth = currentWidth - totalPlay;
+
+  					if (proposedNewWidth <= currentMinWidth){
+  						totalPlay -= (currentWidth - currentMinWidth);
+  						newWidth = currentMinWidth;
+  					} else {
+  						newWidth = proposedNewWidth;
+  						totalPlay = 0;
+  					}
+
+  					colModel.get("headerSelector").add(".dataTables_scrollBody th." + colModel.get("columnClass")).width(newWidth);
+  				}
+  				//adjust all remaining resizables a little (difference/num remaining resizables).  apply any remainder to the next resizable
+  				//we also have to keep track of deltas that don't get applied since we hit minWidth
+  			}, 
+  			
+  			stop: function(event, ui){
+  				
+  				for (var j in remainingColumns){
+  					var currentCol = remainingColumns[j];
+  					var measuredWidth = currentCol.get("headerSelector").width();
+  					//that.setDataTableColWidth(currentCol.get("columnName"), measuredWidth);
+  					currentCol.set({width: measuredWidth});
+  				}
+  				
+  			}
+  			
+  });
+	};
+	
 	//shows a column in the table, given its name, adds appropriate classes
-	this.showCol = function(columnKey){
-		//should update the organize dialog
-		//update the tableHeadings object?
-		//TODO: getColumnIndex or getColumnTargetIndex?
-		var iCol = this.tableHeadingsObj.getColumnIndex(columnKey);
+	this.showCol = function(model){
+		var iCol = this.getColumnsIndex()[model.get("columnName")];
 		var tableObj = this.getTableObj();
 		tableObj.fnSetColumnVis( iCol, true);
 		//the title & class
-		var columnTitle = this.tableHeadingsObj.getValue(columnKey, "sTitle");
-		var columnClass = this.tableHeadingsObj.getValue(columnKey, "sClass");
+		var columnTitle = model.get("header");
+		var columnClass = model.get("columnClass");
 		//add class from tableHeadings to th element (dataTables won't do it)
 		var tableId = this.getTableId();
 		jQuery('#' + tableId + ' > thead > tr > th').each(function(){
@@ -476,399 +1005,34 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 	};
 
 	//hides a column in the table, given its name
-	this.hideCol = function(columnKey){
-		//should update the organize dialog
-		//TODO: getColumnIndex or getColumnTargetIndex?
-		var iCol = this.tableHeadingsObj.getColumnIndex(columnKey);
+	this.hideCol = function(model){
+		var iCol = this.getColumnsIndex()[model.get("columnName")];
 		var tableObj = this.getTableObj();
 		tableObj.fnSetColumnVis( iCol, false);
 	};
+	
+	this.toggleColumn = function(model){
+		console.log(arguments);
+		var action;
+		var visible = model.get("visible");
+		var column = model.get("columnName");
 
-	this.removeExtraColumn = function(){
-		//if the width of the table is too narrow, columns may need to be removed;
-		//this should only happen with all columns on and minimum width;
-		var visibleColumns = this.getVisibleColumns();
-		//columns that can be removed in order of least importance
-		var removableColumns = ["Access", "score", "Institution", "Publisher", "ContentDate", "Originator"];
-		while (removableColumns.length > 0){
-			var currentRemovable = removableColumns.shift();
-			for (var i in visibleColumns){
-				if (currentRemovable == visibleColumns[i]){
-					this.hideCol(currentRemovable);
-					return;
-				}	
-			}
+		if (visible) {
+			this.showCol(model);
+		} else {
+			this.hideCol(model);
 		}
-	};
+		
+		this.resizeColumnsCallback();
+		
+		action = visible ? "Column Added" : "Column Removed";
 
-	this.getResizeInfoFromTitle = function(columnTitle){
-		//returns needed info about resizable columns
-		var headingsObj = this.tableHeadingsObj;
-		var fields = headingsObj.getTableConfig();
-		var heading = {};
-		for (var key in fields){
-			if (headingsObj.getValue(key, "resizable")){
-				if (columnTitle == headingsObj.getValue(key, "sTitle")){
-					heading.columnClass = headingsObj.getValue(key, "sClass");
-					heading.minWidth = headingsObj.getValue(key, "minWidth");
-					heading.currentWidth = headingsObj.getValue(key, "currentWidth");
-					heading.key = key;
-					continue;
-				}
-			} 
-		}
-		return heading;
-	};
-
-	//returns needed info about the next resizable column visible on the page
-	//not currently used
-	this.getNextResizable = function(thisHeadingKey){	
-		var headingsObj = this.tableHeadingsObj;
-		var currentIndex = headingsObj.getValue(thisHeadingKey, "aTargets")[0];
-		var fields = headingsObj.getTableConfig();
-		for (var indexValue = 1;indexValue <= 20;indexValue += 1){
-			for (var key in fields){
-				if (headingsObj.getValue(key, "aTargets")[0] == (currentIndex + indexValue)){
-					if (headingsObj.getValue(key, "resizable")){
-						//this is the one we want
-						var heading = {};
-						heading.key = key;
-						heading.columnClass = headingsObj.getValue(key, "sClass");
-						if (jQuery('.' + heading.columnClass).length == 0){
-							return false;
-						}
-						heading.minWidth = headingsObj.getValue(key, "minWidth");
-						return heading;
-					} else {
-						continue;//give control back to the outer loop
-					}
-				}
-			} 
-		} 
-		return false;
-	};
-
-	//assigns ids to th elements in the search results table, uses jqueryUI resizable function
-	//does this need to be called on redraw callback, or can it be called somewhere else, less often
-	this.addColumnResize = function(){
-		var tableId = this.getTableId();
-		var that = this;
-		var fieldInfo ={};
-
-		//populate fieldInfo with needed info for currently viewable resizable th elements
-		var numIndex = 0;
-		jQuery('#' + tableId + ' > thead > tr > th').each(function(index, Element){
-			var infoFromTitle = that.getResizeInfoFromTitle(jQuery(this).find("." + tableId + "Cell").text());
-			if (typeof infoFromTitle.key != 'undefined'){
-				numIndex += 1;
-				fieldInfo[numIndex] = infoFromTitle;
-				fieldInfo[numIndex].columnIndex = index;
-			}
-		});
-
-		if (numIndex < 2){
-			//if there's nothing in the object, or only one resizeable column, stop here
-			return;
-		}
-		for (var i in fieldInfo){
-			var columnClass = fieldInfo[i].columnClass;
-			var resizeSelector = jQuery("th." + columnClass + " > ." + tableId + "Cell");
-			if (resizeSelector.hasClass("applied")){
-				try {
-					resizeSelector.resizable("destroy");
-				} catch (e){
-					//console.log(e);
-				}
-			};
-			//if this is the last resizable column, don't add resizable
-			if (i >= numIndex){
-				return;
-			}
-			var columnMinWidth = fieldInfo[i].minWidth;
-			//next resizable element class
-			//var j = parseInt(i) + 1;
-			resizeSelector.addClass("applied");
-			resizeSelector.resizable({ minWidth: columnMinWidth, handles: 'e',
-				helper: 'ui-resizable-helper', alsoResize: "." + columnClass + " > ." + tableId + "Cell",
-				start: function(event, ui){
-					var thisColumn = that.getResizeInfoFromTitle(jQuery(event.target).text());
-					var thisColumnIndex = that.tableHeadingsObj.getValue(thisColumn.key, "aTargets")[0];
-					var tableId = that.getTableId();
-					var resizeSelector = jQuery("th." + thisColumn.columnClass + " > ." + tableId + "Cell");
-
-					//write width to currentWidth in tableHeadings
-					var visibleColumns = that.getVisibleColumns();
-					var resizablesWidth = 0;
-					for (var index in visibleColumns){
-						var colClass = that.tableHeadingsObj.getValue(visibleColumns[index], "sClass");
-						var colIndex = that.tableHeadingsObj.getValue(visibleColumns[index], "aTargets")[0];
-						var col$ = jQuery('#' + tableId + ' .' + colClass);
-						var colWidthOuter = col$.outerWidth();
-						var colWidthInner = col$.width();
-						var colDiff = colWidthOuter - colWidthInner;
-						var isResizable = that.tableHeadingsObj.getValue(visibleColumns[index], "resizable");
-						//once we know how many resizable columns are on-screen, we know how much width we have to adjust
-						//it's a little more complex than this...count only columns that appear after the target column
-						if ((isResizable)&&(colIndex >= thisColumnIndex)){
-							resizablesWidth += colWidthInner;
-							if (colClass != thisColumn.columnClass){
-								resizablesWidth -= that.tableHeadingsObj.getValue(visibleColumns[index], "minWidth");
-							}
-						}
-						//width is set for each visible resizable column so that we have a reliable number to calculate with
-						that.tableHeadingsObj.setWidth(visibleColumns[index], colWidthOuter);
-					}
-					resizeSelector.resizable( "option", "maxWidth", resizablesWidth);
-
-
-				},
-				stop: function(event, ui){
-					//a correction, in case things go awry
-					//write width to currentWidth in tableHeadings
-					var visibleColumns = that.getVisibleColumns();
-					for (var index in visibleColumns){
-						var colClass = that.tableHeadingsObj.getValue(visibleColumns[index], "sClass");
-						that.tableHeadingsObj.setWidth(visibleColumns[index], jQuery('#' + tableId + ' .' + colClass).outerWidth());
-					}
-					that.sizeCells();
-					for (var index in visibleColumns){
-						var colClass = that.tableHeadingsObj.getValue(visibleColumns[index], "sClass");
-						that.tableHeadingsObj.setWidth(visibleColumns[index], jQuery('#' + tableId + ' .' + colClass).outerWidth());
-					}
-				},
-				resize: function(event, ui){
-					//add the widths of the resized column plus the next resizable. max width for the current
-					//resizable is this total width - the minimum width of the next resizable.  If there is
-					//another resizable, then the process can continue.  else it is done
-					var thisColumn = that.getResizeInfoFromTitle(jQuery(event.target).text());
-					var originalWidth = that.tableHeadingsObj.getWidth(thisColumn.key);
-					var currentWidth = jQuery(event.target).outerWidth();
-					var currentWidthAdj = currentWidth - jQuery(event.target).width();
-
-					var widthDelta = originalWidth - currentWidth;
-					var thisColumnIndex = that.tableHeadingsObj.getValue(thisColumn.key, "aTargets")[0];
-					var carryOver = 0;
-					var visibleColumns = that.getVisibleColumns();
-					for (var index in visibleColumns){
-						var colIndex = that.tableHeadingsObj.getValue(visibleColumns[index], "aTargets")[0];
-						var isResizable = that.tableHeadingsObj.getValue(visibleColumns[index], "resizable");
-						//we can only adjust columns that are resizable, visible, and after the target column
-						if ((isResizable)&&(colIndex > thisColumnIndex)){
-							var colClass = that.tableHeadingsObj.getValue(visibleColumns[index], "sClass");
-							var currentMinWidth = that.tableHeadingsObj.getValue(visibleColumns[index], "minWidth");
-							var currentColumnObj = jQuery('#' + tableId + ' .' + colClass);
-							var currentColumnInnerDiv = currentColumnObj.find("div." + tableId + "Cell");
-							var currentColumnWidth = that.tableHeadingsObj.getWidth(visibleColumns[index]);
-							var currentWidthAdj = currentColumnObj.outerWidth() - currentColumnObj.width();
-							var newWidth = currentColumnWidth + widthDelta + carryOver - currentWidthAdj - 3;
-
-							if (newWidth <= currentMinWidth){
-								//console.log("less");
-								currentColumnObj.width(currentMinWidth);
-								currentColumnInnerDiv.width(currentMinWidth);
-								carryOver += that.tableHeadingsObj.getWidth(visibleColumns[index]) - (currentMinWidth + currentWidthAdj) ;
-
-							} else {
-								//console.log("more");
-								currentColumnObj.width(newWidth);
-								currentColumnInnerDiv.width(newWidth);
-								break;
-							}
-						}
-					}			
-				}
-			});		
-		}
+		//analytics.track("Change Results Columns Displayed", action, column);
 	};
 
 	
-	
-	/**
-	 * uses styledSelect to create the menu above the results table that allows the user to select which columns to display; dynamically created
-	 * from the table object
-	 */
-	//TODO: fix this, once the styled select widget is created
-	this.createColumnsMenu = function() {
-		var menuHtml = "";
-		var tableObj = this.utility.whichTab().tableObject();
-		var fields = tableObj.tableHeadingsObj.getTableConfig();			
-		for (var i in fields){
-			if (fields[i].organize){
-				if(i == "score"){
-					continue;
-				}
-				menuHtml += '<div>';
-				menuHtml += '<label for="columnCheck' + i + '">';
-				menuHtml += fields[i].displayName + '</label>';
-				var checked = "";
-				if (fields[i].columnConfig.bVisible){
-					checked = ' checked="checked"';
-				}
-				menuHtml += '<input type="checkbox" class="columnCheck columnVisibility" id="columnCheck' + i + '" value="' + i + '"' + checked + ' />';
-				menuHtml += '</div>';
-			}
-		}
-		var params = {
-				"menuHtml": menuHtml,
-				"text": "Columns"
-		};
-		this.styledSelect("columnDropdown", params);
-		var that = this;
-		jQuery("#columnDropdownMenu input.columnCheck").bind("change", function(){
-			//alert("changed");
-			that.toggleColumn(this);
-		});
-		/*jQuery("#columnDropdownMenu").bind("mousedown", function(event){
-		//IE workaround
-		//make the checked attribute match the highlight state
-		//if (typeof event.target == 'undefined'){
-			var highlightedLabel = jQuery(event.srcElement).parent();
-			//var labelId = highlightedLabel.length;
-			//jQuery(event.srcElement);
-			var thisCheckBox = highlightedLabel.next();
-			alert("before:  " + thisCheckBox.attr("checked"));
-			//if (highlightedLabel.hasClass("ui-state-active")){
-				if (typeof thisCheckBox.attr("checked") != "undefined"){
-					thisCheckBox.filter("input").attr("checked", false);
-					alert(thisCheckBox.filter("input").attr("checked"));
-				//} else {}
-			} else {
-				//if (typeof thisCheckBox.attr("checked") == "undefined"){
-					thisCheckBox.attr("checked", "checked");
-				}
-				//thisCheckBox.trigger("change");
 
-			//}
-		//}
-	});*/
-		//this.updateOrganize();
-		jQuery("#columnDropdownSelect").addClass("subHeaderDropdownSelect");
-	};
-	
-	this.toggleColumn = function(thisObj){
-		var action,
-		checked = jQuery(thisObj).is(":checked"),
-		column = jQuery(thisObj).val();
-
-		if (checked) {
-			this.utility.whichTab().tableObject().showCol(column);
-		} else {
-			this.utility.whichTab().tableObject().hideCol(column);
-		}
-
-		action = checked ? "Column Added" : "Column Removed";
-
-		analytics.track("Change Results Columns Displayed", action, column);
-	};
-	/***************
-	 * Preview Tools
-	 **************/
-	//html content/formatting for expanded row
-	this.getPreviewToolHTML = function(rowNode){
-		var tableId = this.getTableId();
-		var tableObj = this.getTableObj();
-		var rowData = tableObj.fnGetData(rowNode);
-		//layerIds returned from the search are used as OpenLayers layer names
-		var layerId = this.getColumnData(rowData, "LayerId");
-		var dataType = this.getColumnData(rowData, "DataType");
-		var displayName = OpenGeoportal.Utility.escapeQuotes(this.getColumnData(rowData, "LayerDisplayName"));
-
-		var sOut = '<div class="previewControls">';
-		//read state
-		if (!this.layerState.layerStateDefined(layerId)){
-			this.layerState.addNewLayer(layerId, {"dataType": dataType});
-		}
-		var opacityVal = this.layerState.getState(layerId, "opacity") + '%';
-		sOut += this.getOpacityControl(opacityVal);
-
-		if ((dataType == "Raster")||(dataType == "Paper Map")||(dataType == "PaperMap")||(dataType == "LibraryRecord")){
-			sOut += this.getZoomToLayerControl();
-		} else {
-			var sizeVal = this.layerState.getState(layerId, "graphicWidth") + 'px';
-			sOut += this.getSizeControl(dataType, sizeVal);
-			var colorVal = this.layerState.getState(layerId, "color");
-			sOut += this.getColorControl(colorVal);
-			sOut += this.getZoomToLayerControl();
-			sOut += this.getAttributeInfoControl(layerId);
-		}
-
-		sOut += '</div>';
-		return sOut;
-	};
-
-	this.getOpacityControl = function(opacityVal){		    
-		var sOut = '<div class="opacityControlCell">';
-		sOut += '<div class="opacityControl">opacity: ';
-		sOut += '<div class="controlText opacityText">' + opacityVal + '</div>';
-		sOut += '<img src="' + this.getImage("arrow_down.png") + '" class="controlExpand button" />';
-		sOut += '</div>';
-		sOut += '<div class="controlContainer"><div class="opacitySlider" title="Adjust layer transparency">';
-		sOut += '<img src="' + this.getImage("opacity_bg.png") + '" /></div></div>';
-		sOut += '</div>';
-		return sOut;
-	};
-
-	this.getSizeControl = function(dataType, sizeVal){
-		var sOut = '<div class="sizeControlCell">';
-		sOut += '<div class="sizeControl" >';
-		switch (dataType){
-		case "Polygon":
-			sOut += "border: ";
-			break;
-		case "Point":
-			sOut += "pt size: ";
-			break;
-		case "Line":
-			sOut += "ln width: ";
-			break;
-		}
-		sOut += '<div class="controlText sizeText">' + sizeVal + '</div>';
-		sOut += '<img src="' + this.getImage("arrow_down.png") + '" class="controlExpand button" />';
-		sOut += '</div>';
-		sOut += '<div class="controlContainer"><div class="sizeSlider" title="Adjust size">';
-		sOut += '<img src="' + this.getImage("opacity_bg.png") + '" /></div></div>';
-		sOut += '</div>';
-		return sOut;
-	};
-
-	this.getColorControl = function(colorVal){
-		var colorControl = '<div class="colorControlCell"><div class="colorControl button" title="Change the layer color" style="background-color:' + colorVal + '"></div></div>';
-		return colorControl;
-	};
-
-	this.getZoomToLayerControl = function(){
-		var zoomToLayerControl = '<div class="button zoomToLayerControl" title="Zoom to geographic extent of layer"></div>';
-		return zoomToLayerControl;
-	};
-
-	this.getAttributeInfoControl = function(layerId) {
-		var attributeToolClass;
-		if (this.layerState.getState(layerId, "getFeature")){
-			attributeToolClass = "attributeInfoControlOn";
-		} else {
-			attributeToolClass = "attributeInfoControlOff";
-		}
-		var attrInfoControl = '<div class="button attributeInfoControl ' + attributeToolClass + '" title="Click a previewed feature on the map to view its attributes"></div>';
-		return attrInfoControl;
-	};
-
-	//toggle the attribute info button & functionality
-	this.toggleFeatureInfo = function(rowData){
-		var layerStateObject = this.layerState;
-		var layerId = this.getColumnData(rowData, "LayerId");
-		var displayName = this.getColumnData(rowData, "LayerDisplayName");
-
-		if (!layerStateObject.getState(layerId, "getFeature")){
-			//update layer state
-			layerStateObject.setState(layerId, {"getFeature": true});
-			layerStateObject.getFeatureTitle = displayName;
-		} else {
-			//update layer state, turn off get feature 
-			layerStateObject.setState(layerId, {"getFeature": false});
-		}
-
-	};
-	
+	//should be part of a view on a user model
 	this.changeLoginButtonsToControls = function(){
 		//change login button to checkbox for institution logged in
 		var that = this;
@@ -876,14 +1040,8 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		//previewControl previewOff
 		jQuery(".colPreview .loginButton").each(function(){
 			var node = jQuery(this).closest("tr");
-			var tableObject = node.closest("table");
-			var tableName = tableObject.attr("id");
-			tableObject = that.getTableObj();
-			var pos = tableObject.fnGetPosition(node[0]);
-			var row = tableObject.fnGetData(pos);
-			var rowObj = {};
-			rowObj.aData = row;
-			jQuery(this).parent().html(tableObject.getActivePreviewControl(rowObj));
+			var layerId = that.getRowData(node).LayerId;
+			jQuery(this).parent().html(tableObject.controls.renderActivePreviewControl(layerId));
 		});
 	};
 
@@ -892,634 +1050,70 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		var that = this;
 		jQuery(".colPreview .previewControl").each(function(){
 			var node = jQuery(this).closest("tr");
-			var tableObject = node.closest("table");
-			var tableName = tableObject.attr("id");
-			tableObject = that.getTableObj();
-			var pos = tableObject.fnGetPosition(node[0]);
-			var row = tableObject.fnGetData(pos);
-			var rowObj = {};
-			rowObj.aData = row;
+			var layerId = that.getRowData(node).LayerId;
 
-			jQuery(this).parent().html(tableObject.getPreviewControl(rowObj));
+			jQuery(this).parent().html(tableObject.controls.renderPreviewControl(layerId));
 		});
 	};
 
-	//click-handler to expand row, expose preview controls
+	//function to expand row, expose preview controls
 	this.expandRow = function(thisObj){
-		//set the previewCount variable, so we know that a layer has been expanded before
-		if (typeof this.layerState.previewCount == "undefined"){
-			this.layerState.previewCount = true;
-		}
-
-		var rowData = this.getRowData(thisObj);
-		var layerId = this.getColumnData(rowData.data, "LayerId");
-		if (this.tableLayerState.getState(layerId, "expanded")){
-			this.tableLayerState.setState(layerId, {"expanded": false});
-		} else {
-			this.tableLayerState.setState(layerId, {"expanded": true});
-		}
+		var layerId = this.getRowData(thisObj).LayerId;
+		this.tableLayerState.setExpandState(layerId, true);
 	};
 
-	this.smallSliderHandler = function(){
-		var that = this;
-		jQuery(document).on("view.openSlider", function(event){
-			that.openControl(event.target);
-		});
-		jQuery(document).on("view.closeSlider", function(event){
-			that.closeControl(event.target);
-		});
-	};
-
-	this.openControl = function(thisObj){
-		var control = jQuery(thisObj).find("div.controlContainer");
-		if (control.css("display") == "none"){
-			var offsetRight = control.prev().position().left - (control.width() - control.prev().width()) - 12;
-			control.css("left", offsetRight);
-			control.css("display", "block");
-		}
-	};
-
-	this.closeControl = function(thisObj){
-		var control = jQuery(thisObj).find("div.controlContainer");
-		control.css("display", "none");
-	};
-
-	this.closePreviewTools = function(expandControl$){
-		console.log("trying to close");
-
-		expandControl$.removeClass("expanded").addClass("notExpanded");
-		var tableObj = this.getTableObj();
-		var tableId = this.getTableId();
-		var rowNode = expandControl$.closest("tr")[0];
-		tableObj.fnClose(rowNode);
-
-		jQuery(".previewedLayer").removeClass('previewSeparator');
-		jQuery(".previewedLayer").last().addClass('previewSeparator');
-	};
-
-	this.createOpacitySlider = function(opacitySlider$, layerId){
-		var that = this;
-		//retrieve opacity if it has been defined
-		var opacityVal = this.layerState.getState(layerId, "opacity");
-		//class = opacitySlider
-		opacitySlider$.slider({
-			min: 0,
-			max: 100,
-			step: 5,
-			value: opacityVal, //get value from Layer State object 
-			slide: function(event, ui) {
-				that.layerState.setState(layerId, {"opacity": ui.value});
-				var text$ = jQuery(this).parent().parent().find(".opacityText");
-				text$.text(ui.value + '%');
-			},
-			stop: function(event, ui){                  				
-				that.layerState.setState(layerId, {"opacity": ui.value});
-			}
-		});
-	};
-
-	this.sliderHoverHandler = function(){
-		var sliderControl = [".opacityControlCell", ".sizeControlCell"];
-		jQuery(document).on("mouseenter", sliderControl.join(), function(){
-			jQuery(this).trigger("view.openSlider"); 
-		});
-		jQuery(document).on("mouseleave", sliderControl.join(), function(){
-			jQuery(this).trigger("view.closeSlider"); 
-		});
-	};
-
-	this.createSizeSlider = function(sizeSlider$, layerId, dataType){
-		var minSize = 1;
-		var maxSize = 6;
-		if (dataType == "Polygon"){
-			minSize = 0;
-			maxSize = 5;
-		}
-		var that = this;
-		var widthVal = this.layerState.getState(layerId, "graphicWidth");
-		sizeSlider$.slider({
-			min: minSize,
-			max: maxSize,
-			step: 1,
-			value: widthVal, //get value from Layer State object 
-			slide: function(event, ui) {
-				var text$ = jQuery(this).parent().parent().find(".sizeText");
-				text$.text(ui.value + 'px');
-			},
-			stop: function(event, ui){                  				
-				that.layerState.setState(layerId, {"graphicWidth": ui.value});
-			}
-		});
-	};
-
-	this.openPreviewTools = function(expandControl$){
-		/* Open this row */
-		console.log("trying to open");
-		expandControl$.removeClass("notExpanded").addClass("expanded");
-		var tableObj = this.getTableObj();
-		var tableId = this.getTableId();
-		var rowData = this.getRowData(expandControl$[0]);
-		var rowNode = rowData.node;
-		var layerId = this.getColumnData(rowData.data, "LayerId");
-		var escapedLayerId = OpenGeoportal.Utility.idEscape(layerId);
-		tableObj.fnOpen(rowNode, this.getPreviewToolHTML(rowNode), 'previewTools'); 
-
-		var dataType = this.getColumnData(rowData.data, "DataType");
-		if (!this.layerState.layerStateDefined(layerId)){
-			this.layerState.addNewLayer(layerId, {"dataType": dataType});
-		}
-
-		var controlRow$ = jQuery(rowNode).next();
-		this.createOpacitySlider(controlRow$.find(".opacitySlider"), layerId);
-		this.createSizeSlider(controlRow$.find(".sizeSlider"), layerId, dataType);
-
-		if (jQuery(rowNode).hasClass("previewedLayer")){
-			jQuery(rowNode).next().addClass("previewedLayer");
-		}
-		if (jQuery(rowNode).hasClass("row_selected")){
-			jQuery(rowNode).next().addClass("row_selected");
-		}
-
-		jQuery(".previewedLayer").removeClass('previewSeparator');
-		jQuery(".previewedLayer").last().addClass('previewSeparator');
-	};
-
-	/*this.selectPreviewedRow = function(){
-		  var tableName = this.getTableId();	  		
-	      jQuery(document).on("click", '#' + tableName + ' td.colPreview > div > input:checkbox', function(event) {
-	          var rowObj = jQuery(event.target).closest("tr");
-	          if (jQuery(event.target).is(":checked")){
-	        	  rowObj.addClass('previewedLayer');
-	        	  if (rowObj.next().children('td').hasClass('resultsControls')){
-	        		  rowObj.next().addClass('previewedLayer');
-	        	  }
-	          } else {
-	        	  rowObj.removeClass('previewedLayer');
-	        	  if (rowObj.next().children('td').hasClass('resultsControls')){
-	        		  rowObj.next().removeClass('previewedLayer');
-	        	  }
-	          }
-
-	      });
-	  };*/
 
 	//adds class to row for highlighting current row
 	this.highlightRow = function(){
 		var tableName = this.getTableId();
 		jQuery(document).on("mouseout", '#' + tableName + ' > tbody', function(event) {
 			var currentNode = jQuery(event.target).parentsUntil('#' + tableName).last();
-			jQuery(currentNode).children().removeClass('row_selected');
+			jQuery(currentNode).children().removeClass('row_selected').removeClass('row_selected_top').removeClass('row_selected_bottom');
 			jQuery(document).trigger("map.hideBBox");
 		});
 
 		var tableObj = this.getTableObj();
-		var tableHeadingsObj = this.tableHeadingsObj;
 		var that = this;
 		jQuery(document).on("mouseover", '#' + tableName + ' > tbody', function(event) {
-			var rowObj = jQuery(event.target).parentsUntil('#' + tableName + ' > tbody').last();
-			rowObj.addClass('row_selected');
-			if (rowObj.children('td').hasClass('previewTools')){
-				rowObj.prev().addClass('row_selected');
-			}
-			if (rowObj.next().children('td').hasClass('previewTools')){
-				rowObj.next().addClass('row_selected');
+			var row$ = jQuery(event.target).parentsUntil('#' + tableName + ' > tbody').last();
+			
+			if (row$.children('td').hasClass('previewTools')){
+				//moused over previewTools row
+				var prevRow$ = row$.prev();
+				prevRow$.addClass('row_selected');
+				//since borders are collapsed, we have to set the bottom border of the previous row
+				prevRow$.prev().addClass('row_selected_top');
+				row$.addClass('row_selected').addClass('row_selected_bottom');
+				row$ = prevRow$;//we need to get the layerId from the previous row
+			} else if (row$.next().children('td').hasClass('previewTools')){
+				//moused over regular row, but previewTools are open
+				row$.addClass('row_selected');
+				row$.prev().addClass('row_selected_top');
+				row$.next().addClass('row_selected').addClass('row_selected_bottom');
+			} else {
+				//moused over regular row, preview tools closed
+				row$.addClass('row_selected').addClass('row_selected_bottom');
+				row$.prev().addClass('row_selected_top');
 			}
 			//if next sibling is details row, then add class 'row_selected' to it as well
 			//set first tr ancestor to class row_selected
-			var aData = tableObj.fnGetData(rowObj[0]);
-			//console.log(aData);
-			if (aData == null){
-				rowObj = rowObj.prev();
-				aData = tableObj.fnGetData(rowObj[0]);
+			var aData = tableObj.fnGetData(row$[0]);
+			//in case the table is empty
+			if ((aData === null) || (typeof aData.LayerId == "undefined")){
+				return;
 			}
 			var bbox = {};
-			bbox.south = that.getColumnData(aData, "MinY");
-			bbox.north = that.getColumnData(aData, "MaxY");
-			bbox.west = that.getColumnData(aData, "MinX");
-			bbox.east = that.getColumnData(aData, "MaxX");
-			jQuery(document).trigger("map.showBBox", bbox);
-		});
-	};
-
-	/*
-	 * Metadata control
-	 * 
-	 */
-	// handles jsonp response from request for metadata call
-	this.viewMetadataJsonpSuccess = function(data){
-		var solrResponse = data["response"];
-		var totalResults = solrResponse["numFound"];
-		if (totalResults != 1)
-		{
-			throw new Error("Request for Metadata returned " + totalResults +".  Exactly 1 was expected.");
-			return;
-		}
-		var doc = solrResponse["docs"][0];  // get the first layer object
-		var metadataRawText = doc["FgdcText"];
-		var layerId = doc["LayerId"];//[0];
-		var metadataDocument = jQuery.parseXML(metadataRawText);
-
-		var xsl = null;
-		var xslUrl = null;
-
-		if (metadataDocument.firstChild.localName == "MD_Metadata"){
-			xslUrl = "isoBasic.xsl";
-		} else {
-			xslUrl = "FGDC_V2_a.xsl";
-		}
-		xslUrl = "resources/xml/" + xslUrl;
-		var params = {
-				url: xslUrl,
-				async: false,
-				dataType: 'xml',
-				success: function(data){xsl = data;}
-		};
-		jQuery.ajax(params);
-		var resultDocument = "";
-		if (xsl != null){
-			if (window.ActiveXObject){
-				resultDocument = metadataDocument.transformNode(xsl);
-			} else {
-				var xsltProcessor = new XSLTProcessor();
-				xsltProcessor.importStylesheet(xsl);
-				resultDocument = xsltProcessor.transformToFragment(metadataDocument, window.document);
-			}
-		}
-		if (typeof jQuery('#metadataDialog')[0] == 'undefined'){
-			var dialogDiv = '<div id="metadataDialog" class="dialog"> \n';
-			dialogDiv += '</div> \n';
-			jQuery('body').append(dialogDiv);
-		}
-		var dialogHeight = 400;
-		var metadataTemplate = '<div id="toMetadataTop"></div><div id="metadataContent"></div><div id="metadataFooter" title="LayerId: ' + layerId + '">' + layerId + '</div>';
-		var metadataDialog = jQuery("#metadataDialog");
-		metadataDialog.html(metadataTemplate)
-		jQuery("#metadataContent").html(resultDocument);
-
-		metadataDialog.dialog({ zIndex: 9999, width: 630, height: dialogHeight, title: "METADATA" });  
-		if (jQuery("#metadataDownloadButton").length == 0){
-			var downloadButton = '<span class="styledButtonSmall" id="metadataDownloadButton">Download Metadata (XML)</span>';
-			metadataDialog.parent().find(".ui-dialog-titlebar").first().prepend(downloadButton);
-		}
-		var metadataContent = jQuery("#metadataContent");
-		metadataContent[0].scrollTop = 0;
-		metadataDialog.dialog("open");
-		metadataContent.find("a").click(function(event){
-			var toId = jQuery(this).attr("href");
-			if (toId.indexOf("#") == 0){
-				event.preventDefault();
-				//parse the hrefs for the anchors in this DOM element into toId
-				//current xsl uses names instead of ids; yuck
-				toId = toId.substring(1);
-				metadataContent.scrollTo(jQuery('[name="' + toId + '"]'));
+			var currModel = that.backingData.get(aData.LayerId);
+			if (typeof currModel != "undefined"){
+				bbox.south = currModel.get("MinY");
+				bbox.north = currModel.get("MaxY");
+				bbox.west = currModel.get("MinX");
+				bbox.east = currModel.get("MaxX");
+				jQuery(document).trigger("map.showBBox", bbox);
 			}
 		});
-		jQuery("#metadataDownloadButton").unbind();
-		var iframeSource = "getMetadata/download?id=" + layerId;
-		var downloadFunction = function(){
-			if (typeof jQuery('#metadataDownloadIframe')[0] == 'undefined'){
-				var downloadIframe = '<iframe id="metadataDownloadIframe" src="' + iframeSource + '"> \n';
-				jQuery("#metadataDialog").append(downloadIframe);
-			} else {
-				jQuery("#metadataDownloadIframe").attr("src", iframeSource); 
-			}
-			this.analytics.track("Metadata", "Download Metadata", layerId);
-		};
-		jQuery("#metadataDownloadButton").on("click", downloadFunction);
-		jQuery("#toMetadataTop").off();
-		jQuery("#toMetadataTop").on("click", function(){jQuery("#metadataContent")[0].scrollTop = 0;});
 	};
 
-	this.downloadMetadata = function downloadMetadata(event){
-		var layerId = event.data.layerId;
-		var params = {
-				url: "getMetadata/download?id=" + layerId,
-				dataType: 'xml',
-				success: function(data){
-					jQuery(document).append(data);
-				}
-		};
-		jQuery.ajax(params);
-	};
-
-	// handles jsonp response from request for metadata call
-	this.viewMetadataJsonpError = function(){
-		throw new Error("The attempt to retrieve FGDC layer information failed.");
-	};
-
-	// obtain layer's metadata via jsonp call
-	this.viewMetadata = function(thisObj){
-		var tableElement = jQuery(thisObj).parents('tr').last();
-		var tableObj = tableElement.parent().parent().dataTable();	
-		//Get the position of the current data from the node 
-		var aPos = tableObj.fnGetPosition( tableElement[0] );
-		//Get the data array for this row
-		var aData = tableObj.fnGetData(aPos);
-		//make an ajax call to retrieve metadata
-		var layerId = this.getColumnData(aData, "LayerId");
-		var solr = new OpenGeoportal.Solr();
-		var query = solr.getMetadataQuery(layerId);
-		solr.sendToSolr(query, this.viewMetadataJsonpSuccess, this.viewMetadataJsonpError, this);
-
-		this.analytics.track("Metadata", "Display Metdata", layerId);
-	};	
-
-	this.showLibraryRecord = function(thisObj){
-		var tableElement = jQuery(thisObj).parents('tr').last();
-		var tableObj = tableElement.parent().parent().dataTable();	
-		//Get the position of the current data from the node 
-		var aPos = tableObj.fnGetPosition( tableElement[0] );
-		//Get the data array for this row
-		var aData = tableObj.fnGetData(aPos);
-		//make an ajax call to retrieve metadata
-		var location = jQuery.parseJSON(this.getColumnData(aData, "Location"));
-		//open info in location
-		var that = this;
-		for (var urlType in location){
-			if (urlType.toLowerCase() == "maprecord"){
-				var params = {
-						url: location[urlType],
-						dataType: 'jsonp',
-						success: that.openMapRecordSuccess
-				};
-				jQuery.ajax(params);
-			} else if (urlType.toLowerCase() == "librecord"){
-				window.open(location[urlType]);
-			}
-		}
-	};	
-
-	this.openMapRecordSuccess = function(data){
-		if (data.sys_id.length > 0){
-			window.open("http://library.mit.edu/item/" + data.sys_id);
-			return;
-		} 
-
-		if (data.row_id.length > 0) {
-			var lookupHTML = "<div><span>Title: </span>";
-			if (data.title.length > 0){
-				lookupHTML += data.title;
-			} else {
-				lookupHTML += 'Unknown';
-			}
-			lookupHTML += '</div>';
-
-			lookupHTML += '<div><span>Publisher: </span>';
-			if (data.publisher.length > 0){
-				lookupHTML += data.publisher;}
-			else {
-				lookupHTML += 'Unknown';}
-			lookupHTML += '</div>';
-
-			if (data.cartographer.length > 0){
-				lookupHTML += '<div><span>Cartographer: </span>';
-				lookupHTML += data.cartographer;
-				lookupHTML += '</div>';
-			}
-			lookupHTML += '<div><span>Geographic Area: </span>' + data.geoarea + '</div>';
-			var arrYears = [];
-			if (data.cont_year.length > 0){
-				arrYears.push({"label": "Content Date", "value": data.cont_year});
-			}
-			if (data.pub_year.length > 0){
-				arrYears.push({"label": "Publication Date", "value": data.pub_year});
-			}
-			if (data.mit_year.length > 0){
-				arrYears.push({"label": "Date Acquired", "value": data.mit_year});
-			}
-			if (data.est_year.length > 0){
-				arrYears.push({"label": "Estimated Content Date", "value": data.est_year});
-			}
-			if (arrYears.length > 0){
-				var yearObj = arrYears.shift();
-				lookupHTML += '<div><span>' + yearObj.label + ': </span>' + yearObj.value + '</div>' 
-			}
-			if (arrYears.length > 0){
-				var yearObj = arrYears.shift();
-				lookupHTML += '<div<span>>' + yearObj.label + ': </span>' + yearObj.value + '</div>' 
-			}
-			if (data.notes.length > 0){
-				lookupHTML += '<div><span>Notes: </span>' + data.notes + '</div>';
-			}
-
-			if (data.library == 'Rotch'){
-				lookupHTML += '<div><span>Location: </span>Rotch Library - Map Room, Building 7-238</div>';}
-			else{
-				lookupHTML += '<div><span>Location: </span>' + data.library + '</div>';}
-
-			lookupHTML += '<div><span>Drawer: </span>' + data.drawer + '</div>';
-			lookupHTML += '<div><span>Folder: </span>' + data.folder + '</div>';
-
-		} else {
-			lookupHTML = 'Error: Please contact GIS Help.';;
-		}
-
-		if (typeof jQuery('#mapRecordDialog')[0] == 'undefined'){
-			var dialogDiv = '<div id="mapRecordDialog" class="dialog"> \n';
-			dialogDiv += '</div> \n';
-			jQuery('body').append(dialogDiv);
-		}
-		var libRecordDialog = jQuery("#mapRecordDialog");
-		libRecordDialog.dialog({ zIndex: 9999, width: 572, height: 266, title: "<div>MAP RECORD</div>" });  
-		libRecordDialog[0].scrollTop = 0;
-		jQuery("#mapRecordDialog").html(lookupHTML);
-		libRecordDialog.dialog("open");
-	};
-
-	/*  var cartDataTable = jQuery('#savedLayers').dataTable();
-		  jQuery('#savedLayers > tbody > tr').each(function(){
-			  try{
-				var currentLayerId = cartDataTable.fnGetData(this)[index];
-				var institution = cartDataTable.fnGetData(this)[inst_idx];
-			  } 
-			  catch(err) {return true;}
-
-				if (currentLayerId == layerId){
-					//close tool row if open
-					OpenGeoportal.cartTableObj.closeToolBar(this);
-					cartDataTable.fnDeleteRow(this);
-					OpenGeoportal.ui.updateSavedLayersNumber();
-					return true;
-				}
-			});
-	  };*/
-
-
-	
-	this.previewLayer = function(thisObj){
-		//set the previewCount variable, so we know that a layer has been expanded before
-		if (typeof this.layerState.previewCount == "undefined"){
-			this.layerState.previewCount = true;
-		}
-
-		var rowData = this.getRowData(thisObj);
-		var layerId = this.getColumnData(rowData.data, "LayerId");
-		if (!this.layerState.layerStateDefined(layerId)){
-			var dataType = this.getColumnData(rowData.data, "DataType");
-			this.layerState.addNewLayer(layerId, {"dataType": dataType});
-		}
-		if (this.layerState.getState(layerId, "preview") == "on"){
-			this.layerState.setState(layerId, {"preview": "off"});
-		} else {
-			this.layerState.setState(layerId, {"preview": "on"});
-		}
-	};
-	
-
-
-	/*********
-	 *  Render table columns
-	 *********/
-
-	//maps returned data type to appropriate image
-	this.getTypeIcon = function (rowObj){
-		var typeIcon = OpenGeoportal.InstitutionInfo.getIcons().dataTypes;
-
-		var dataType = this.getColumnData(rowObj.aData, "DataType");
-		if ((typeof dataType == "undefined")||(dataType === null)){
-			return "";
-		}
-		if (dataType == "Paper Map"){
-			dataType = "PaperMap";
-		}
-		if (typeof typeIcon[dataType] == 'undefined'){
-			return '<div class="typeIcon">?</div>';
-
-		} else {
-			var iconInfo = typeIcon[dataType];
-			var typeHtml = '<div class="typeIcon ' + iconInfo.uiClass + '" title="' + iconInfo.displayName + '"></div>';
-			return typeHtml;
-		}
-	};
-
-	this.getExpandControl = function (rowObj){
-		var layerId = this.getLayerIdFromRow(rowObj);
-		if ((typeof layerId == "undefined")||(layerId === null)){
-			return "";
-		}
-		var layerExpanded = this.tableLayerState.getState(layerId, "expanded");
-		if (layerExpanded){
-			return '<div class="expandControl expanded button" title="Hide preview controls"/>';
-		} else {
-			return '<div class="expandControl notExpanded button" title="Show preview controls"/>';
-		}
-	};
-	
-	  //the layer table should handle creating the control;  the preview obj should handle the logic to determine which
-	  this.getPreviewControl = function(rowObj){
-		  var dataObj = this.getDataObjFromRowData(rowObj.aData);
-		  return this.getActivePreviewControl(dataObj);
-	  };
-		//TODO: fix this
-	/*	this.getExternalPreviewControl = function(rowObj){
-			//what defines external?
-			var imgSource = this.getImage("view_external.png");
-			var layerSource = this.getColumnData(rowObj.aData, "Institution");
-			var imgText = "Click to go to " + layerSource;
-			// previewControl = '<img class="button" onclick="' + context + '.previewLayer(this)" src="' + imgSource + '" title="' + imgText + '" />';
-			var previewControl = '<img class="button goExternalButton" src="' + imgSource + '" title="' + imgText + '" ';//open sharecart link in new tab
-			//temporary...
-			var path = "";
-			if (layerSource == "Harvard"){
-				path = "http://calvert.hul.harvard.edu:8080/opengeoportal";
-				var shareLink = path + "/openGeoPortalHome.jsp";
-				var layerId = this.getLayerIdFromRow(rowObj);
-				var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
-				var queryString = '?' + jQuery.param({ layer: layerId, minX: geodeticBbox.left, minY: geodeticBbox.bottom, maxX: geodeticBbox.right, maxY: geodeticBbox.top });
-				shareLink += queryString;
-				previewControl += 'onclick="window.open(\'' + shareLink + '\');return false;"';
-			} else if (layerSource == "MIT"){
-				path = "http://arrowsmith.mit.edu/mitogp";
-				var shareLink = path + "/openGeoPortalHome.jsp";
-				var layerId = this.getLayerIdFromRow(rowObj);
-				var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
-				var queryString = '?' + jQuery.param({ layer: layerId, minX: geodeticBbox.left, minY: geodeticBbox.bottom, maxX: geodeticBbox.right, maxY: geodeticBbox.top });
-				shareLink += queryString;
-				previewControl += 'onclick="window.open(\'' + shareLink + '\');return false;"';
-			}
-			previewControl += '/>';
-			return previewControl;
-		};
-*/
-		this.getLoginPreviewControl = function(dataObj){
-			var layerSource = dataObj["Institution"];
-			var tooltipText = "Login to " + layerSource + " to access this layer";
-			var previewControl = '<div class="button loginButton login" title="' + tooltipText + '" ></div>';
-			return previewControl;
-		};
-
-		this.getActivePreviewControl = function(dataObj){
-			var layerId = dataObj["LayerId"];
-			var stateVal = this.layerState.getState(layerId, "preview");
-			var controlText = "";
-			var previewClass = "";
-			switch (stateVal){
-			case "off":
-				controlText = "Preview layer on the map";
-				previewClass = "previewOff"; 
-				break;
-			case "on":
-				controlText = "Turn off layer preview on the map";
-				previewClass = "previewOn";
-				break;
-			default:
-				break;
-			}
-			var previewControl = '<div class="previewControl ' + previewClass + '" title="' + controlText + '"></div>';
-
-			return previewControl;
-		};
-
-	this.renderDate = function(rowObj){
-		var year = rowObj.aData[rowObj.iDataColumn];
-		if (typeof year == "undefined"){
-			return "";
-		}
-		if (year.length > 4){
-			year = year.substr(0, 4);
-		}
-		if (year == "0001"){
-			year = "?";
-		}
-		return year
-	};
-
-	//maps returned source type to appropriate image
-	this.getSourceIcon = function(rowObj){
-
-		var institution = this.getColumnData(rowObj.aData, "Institution");
-		var institutionInfo = OpenGeoportal.InstitutionInfo.getInstitutionInfo();
-
-		if ((typeof institution == "undefined")||(institution === null)){
-			return "";
-		}
-		if (institution.length == 0){
-			return "";
-		}
-		var unknownSource = '<div class="repositoryIcon">?</div>';
-		if (typeof institutionInfo[institution] == 'undefined'){
-			return unknownSource;
-		} else if (typeof institutionInfo[institution].graphics == 'undefined'){
-			return unknownSource;
-		} else if (typeof institutionInfo[institution].graphics.sourceIcon == 'undefined'){
-			return unknownSource;
-		} else {
-			var iconInfo = institutionInfo[institution].graphics.sourceIcon;
-			return '<div class="repositoryIcon ' + iconInfo.uiClass + '" title="' + iconInfo.tooltipText + '" ></div>';
-		}
-	};
-
-	this.getMetadataIcon = function(rowObj){
-		var dataType = this.getColumnData(rowObj.aData, "DataType");
-		if ((typeof dataType == "undefined")||(dataType === null)){
-			return "";
-		}
-		if (dataType.toLowerCase() == "libraryrecord"){
-			return '<div title="show record" class="button viewLibraryRecordControl"></div>';
-		} else {
-			return '<div title="show metadata" class="button viewMetadataControl"></div>';
-		}
-	};
 
 	/*********
 	 * Table callbacks and event handlers
@@ -1535,129 +1129,128 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		this.previewViewHandler();
 		this.viewLibraryRecordHandler();
 		this.viewMetadataHandler();
-		this.expandHandler();
-		this.expandViewHandler();
-		this.attributeInfoHandler();
-		this.zoomToLayerExtentHandler();
-		this.smallSliderHandler();
-		this.sliderHoverHandler();
+		this.expandHandler();	
 		this.titleClickHandler();
-		this.colorControlClickHandler();
+		this.expandViewHandler();
+		this.expandView = new OpenGeoportal.Views.TableRowSettings({collection: this.tableLayerState, el: $("#" +this.getTableId())});
+
 	};
 	
-	this.colorControlClickHandler = function(){
-		var that = this;
-		jQuery("#" + that.getTableId()).on('click', ".colorControl", function(){
-			var node$ = jQuery(this).closest("tr").prev();
-			var layerId = that.getColumnData(that.getRowData(node$).data, "LayerId");
-			//console.log("triggering view.openColorChooser, layerId: " +layerId);
-			jQuery(document).trigger("view.openColorChooser", {"layerId": layerId});
-		});
-	};
-
-	this.expandHandler = function(){
-		jQuery("#" + that.getTableId() + " tbody").on("click.expand", "div.expandControl", function(event){
-			//console.log("layer saved");
-			that.expandRow(this);
-		});
-	};
-
 	this.expandViewHandler = function(){
 		var that = this;
-		jQuery("#" + that.getTableId()).on("view.expandRow", function(event, data){
-			var control$ = that.findExpandControl(data.layerId);
-			that.openPreviewTools(control$);
+		jQuery("#" + that.getTableId()).on("view.openRow", function(event, data){
+			var control$ = that.findExpandControl(data.LayerId);
+			control$.removeClass("notExpanded").addClass("expanded");
+
+			//a view that watches expand state
+			// Open this row 
+			var rowNode = control$.closest("tr")[0];
+			that.getTableObj().fnOpen(rowNode, "<div></div>", 'previewTools');
+			var layerModel = that.previewed.getLayerModel(that.backingData.get(data.LayerId));//at this point, we need to have a model for the layer in "previewed", or we can't render the tools properly
+			var tools$ = jQuery(rowNode).next().find(".previewTools");
+			var view = new OpenGeoportal.Views.PreviewTools({model: layerModel, el: tools$});//render to the container created by fnOpen
+			//add highlight to newly opened row if original row is highlighted
+			if (jQuery(rowNode).hasClass("row_selected")){
+				jQuery(rowNode).removeClass("row_selected_bottom");
+				tools$.parent().addClass("row_selected").addClass("row_selected_bottom");
+			}
 		});
+
 		jQuery("#" + that.getTableId()).on("view.closeRow", function(event, data){
-			var control$ = that.findExpandControl(data.layerId);
-			that.closePreviewTools(control$);
+			console.log("received view.closeRow");
+			var control$ = that.findExpandControl(data.LayerId);
+			control$.removeClass("expanded").addClass("notExpanded");
+			var rowNode = control$.closest("tr")[0];
+			if (jQuery(rowNode).hasClass("row_selected")){
+				jQuery(rowNode).addClass("row_selected_bottom");
+				//tools$.parent().addClass("row_selected").addClass("row_selected_bottom");
+			}
+			that.getTableObj().fnClose(rowNode);
+			
 		});
 	};
 
 
-	this.attributeInfoHandler = function(){
-		jQuery("#" + that.getTableId() + " tbody").on("click.attributeInfo", "div.attributeInfoControl", function(event){
-			var tableObj = that.getTableObj();	         
-			//Get the data array for this row 
-			var node = jQuery(this).closest("tr").prev();
-			var rowData = tableObj.fnGetData(tableObj.fnGetPosition( node[0] ));
-			that.toggleFeatureInfo(rowData);
-		});
-	};
-
-	this.zoomToLayerExtentHandler = function(){
-		jQuery("#" + that.getTableId() + " tbody").on("click.zoomToLayerExtent", "div.zoomToLayerControl", function(event){
-			var tableObj = that.getTableObj();	         
-			//Get the data array for this row 
-			var node = jQuery(this).closest("tr").prev();
-			var rowData = tableObj.fnGetData(tableObj.fnGetPosition( node[0] ));
-
-			var extent = [];
-			extent.push(that.getColumnData(rowData, "MinX"));
-			extent.push(that.getColumnData(rowData, "MinY"));
-			extent.push(that.getColumnData(rowData, "MaxX"));
-			extent.push(that.getColumnData(rowData, "MaxY"));
-
-			var bbox = extent.join();
-			jQuery(document).trigger("map.zoomToLayerExtent", {"bbox": bbox});
-		});
-	};
-
+	/*
+	 * Preview control.  Interacts with LayerSettings Collection and MapController
+	 */
+	
+	/*
+	 * Updates the appropriate layer model based on clicking the preview control on the table
+	 */
 	this.previewHandler = function(){
+		var that = this;
 		jQuery("#" + that.getTableId() + " tbody").on("click.preview", "div.previewControl", function(event){
-			//console.log("layer saved");
-			that.previewLayer(this);
+			//this should update the preview model
+			var layerId = that.getLayerIdFromTableCell(this);
+
+			var model = that.previewed.get(layerId);
+			if (typeof model == "undefined"){
+				//get the attributes for the layer retrieved from solr
+				var layerAttr = that.backingData.get(layerId).attributes;
+				//add them to the previewed collection.  Add them as attributes since we 
+				//are using different models in the previewed collection, and we want
+				//"model" to be called
+				that.previewed.add(layerAttr);
+				model = that.previewed.get(layerId);
+
+			}				
+			if (model.get("preview") == "on"){
+				model.set({preview: "off"});
+			} else {
+				model.set({preview: "on"});
+			}
 		});
 	};
 	
-	this.previewControlShowOn = function(thisObj){
-		var previewControl$ = jQuery(thisObj);
-		previewControl$.removeClass("previewOff").addClass("previewOn");
+	/*
+	 * Retrive the needed information from the data table and pass in an event.  The map listens for this event.
+	 */
+	this.previewControlShowOn = function(previewControl$){
+		previewControl$.removeClass("checkOff").addClass("checkOn");
 		var hideLayerText = "Turn off layer preview on the map";
 		previewControl$.attr("title", hideLayerText);
-		//console.log("at previewControlShowOn in table: " + this.getTableId());
-		var dataRow = this.getRowData(thisObj).data;
-		var dataObj = this.getDataObjFromRowData(dataRow);
-		jQuery(document).trigger("previewLayerOn", {"layerObj": dataObj});
 	};
 
-	this.previewControlShowOff = function(thisObj){
-		var previewControl$ = jQuery(thisObj);
-		previewControl$.removeClass("previewOn").addClass("previewOff");
+	this.previewControlShowOff = function(previewControl$){
+		previewControl$.removeClass("checkOn").addClass("checkOff");
 		var showLayerText = "Preview layer on the map";
 		previewControl$.attr("title", showLayerText);
-		var dataRow = this.getRowData(thisObj).data;
-		var dataObj = this.getDataObjFromRowData(dataRow);
-		jQuery(document).trigger("previewLayerOff", {"layerObj": dataObj});
 	};
 	
 	this.previewViewHandler = function(){
+		//this.listenTo(this.model, "change", this.render);
+		//change this to a backbone view
 		var that = this;
-		//we actually want this to fire for each table instance
 		jQuery(document).on("view.previewOn", function(event, data){
-			//console.log("view.previewOn fired by: " + that.getTableId());
-			var control$ = that.findPreviewControl(data.layerId);
+			console.log("view.previewOn fired by: " + that.getTableId());
+			var control$ = that.findPreviewControl(data.LayerId);
 			if (control$.length > 0){
 				that.previewControlShowOn(control$);
 			}
 		});
 		jQuery(document).on("view.previewOff", function(event, data){
-			var control$ = that.findPreviewControl(data.layerId);
+			console.log("view.previewOff fired by:" + that.getTableId());
+			var control$ = that.findPreviewControl(data.LayerId);
 			if (control$.length > 0){
 				that.previewControlShowOff(control$);
 			}
 		});
 	};
 
+	
+	
 	this.viewMetadataHandler = function(){
 		jQuery("#" + that.getTableId() + " tbody").on("click.viewMetadata", "div.viewMetadataControl", function(event){
-			that.viewMetadata(this);
+			var layerId = that.getLayerIdFromTableCell(this);;
+			that.controls.viewMetadata(layerId);
 		});
 	};
 
 	this.viewLibraryRecordHandler = function(){
 		jQuery("#" + that.getTableId() + " tbody").on("click.viewLibraryRecord", "div.viewLibraryRecordControl", function(event){
-			that.showLibraryRecord(this);
+			var layerId = that.getLayerIdFromTableCell(this);;
+			that.contols.showLibraryRecord(layerId);
 		});
 	};
 
@@ -1665,37 +1258,41 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		var tableId = this.getTableId();
 		var that = this;
 		jQuery('#' + tableId).on('click', '.colTitle', function(){
-			var rowData = that.getRowData(jQuery(this).closest("tr")).data;
-			var layerId = that.getColumnData(rowData, "LayerId");
-			var stateVal = that.tableLayerState.getState(layerId, "expanded");
-			that.tableLayerState.setState(layerId, {"expanded": !stateVal});
+			var layerId = that.getLayerIdFromTableCell(this);
+			var stateVal = that.tableLayerState.isExpanded(layerId);
+			that.tableLayerState.setExpandState(layerId, !stateVal);
+		});
+	};
+	
+	this.expandHandler = function(){
+		var tableId = this.getTableId();
+		var that = this;
+		jQuery('#' + tableId).on('click', '.colExpand', function(){
+			console.log("expand click");
+			var layerId = that.getLayerIdFromTableCell(this);
+			console.log(layerId);
+			var stateVal = that.tableLayerState.isExpanded(layerId);
+			console.log(stateVal);
+			that.tableLayerState.setExpandState(layerId, !stateVal);
 		});
 	};
 
+	
 	//callback to keep 'expanded' state on table reloads
 	//this can't be done with a draw table callback, because the open row function redraws
 	this.callbackExpand = function(){
+		console.log("calling calbackExpand");
 		var that = this;
 		var targetTableId = this.getTableId();
 		jQuery('#' + targetTableId + ' .expandControl').each(function(){
-			if (jQuery(this).hasClass("expanded"))
-				var imgVal = jQuery(this).attr('src');
-			var imgOpened = that.getImage("arrow_down.png");
-			var imgClosed = that.getImage("arrow_right.png");
-			if (imgVal == imgOpened){
-				var tableObj = that.getTableObj();
-				//var aPos = tableObj.fnGetPosition(jQuery(this).closest("tr")[0]);
-				var aData = tableObj.fnGetData(jQuery(this).closest("tr")[0]);
-				var layerId = this.getColumnData(aData, "LayerId");
-				if (layerId.length == 0){
-					return true;
-				}
-				var stateVal = that.tableLayerState.getState(layerId, "expanded");
+			if (jQuery(this).hasClass("expanded")){
+				var layerId = that.getLayerIdFromTableCell(this);
+				var stateVal = that.tableLayerState.isExpanded(layerId);
+				
 				if (stateVal === true){
-					that.expandRow(this);
-				} else {
-					jQuery(this).attr('src', imgClosed);
-				}
+					//that.expandView.trigger("syncUI.openRow");
+					that.tableLayerState.trigger("syncUI.openRow", {LayerId: layerId});
+				} 
 			}
 		});
 	};
@@ -1722,11 +1319,14 @@ OpenGeoportal.LayerTable = function LayerTable(stateObj){
 		console.log("creating tooltips");
 		var arrColumns = this.getVisibleColumns();
 		for (var i in arrColumns){
-			var currentHeading = this.tableHeadingsObj.getTableConfig()[arrColumns[i]];
-			if (currentHeading.resizable){
-				this.createSimpleTooltip(currentHeading.columnConfig.sClass);
+			//var currentHeading = this.tableHeadingsObj.getTableConfig()[arrColumns[i]];
+			var currentModel = this.tableHeadingsObj.where({columnName: arrColumns[i]})[0];
+			
+			if (currentModel.get("resizable")){
+				this.createSimpleTooltip(currentModel.get("columnClass"));
 			}
 		}
 		this.createHeaderTooltips();
+		console.log("finished tooltips");
 	};
 };

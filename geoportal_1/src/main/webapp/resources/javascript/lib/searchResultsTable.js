@@ -19,11 +19,15 @@ if (typeof OpenGeoportal == 'undefined'){
  * 
  * @param object OpenGeoportal.OgpSettings
  */
-OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
-	OpenGeoportal.LayerTable.call(this, stateObj);
-	
-	this.tableSettings.tableSorter = new OpenGeoportal.TableSortSettings();
-	this.tableOrganize = this.tableSettings.tableSorter;
+OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
+	OpenGeoportal.LayerTable.call(this);
+
+	this.tableOrganize = new OpenGeoportal.TableSortSettings();
+	var that = this;
+
+	this.backingData = OpenGeoportal.ogp.results;
+
+	//this.tableOrganize = this.tableSettings.tableSorter;
 	
 	this.addTableDrawCallback("sortGraphics", function(){this.createSortGraphics();});
 	this.addTableDrawCallback("markPreviewed", function(){this.markPreviewedLayers();});
@@ -34,33 +38,39 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 	{"sName": "Save", "sTitle": "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>", "bVisible": true, "aTargets": [ 3 ], "sClass": "colSave", "sWidth": "19px", "bSortable": false,
 		"fnRender": function(oObj){return thisObj.getSaveControl(oObj);}}}
 		*/
-	var that = this;
-	var columnLabel = "Save";
 	var columnObj = {
-			"ajax": false, 
-			"resizable": false, 
-			"organize": false, 
-			"columnConfig": {
-				"sName": "Save", 
-				"sTitle": "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>", 
-				"bVisible": true, 
-				"aTargets": [ 2 ], 
-				"sClass": "colSave", 
-				"sWidth": "19px", 
-				"bSortable": false,
-				"fnRender": function(oObj){return that.getSaveControl(oObj);}
-			}
+			order: 1,
+			columnName: "Save",
+			solr: false, 
+			resizable: false, 
+			organize: false, 
+			visible: true,
+			hidable: false,
+			header: "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>", 
+			columnClass: "colSave",
+			width: 19,
+			renderFunction: function(data, type, full){return that.controls.renderSaveControl(full.LayerId);}
 	};
 	
-	this.tableSettings.tableConfig.insertColumn(columnLabel, columnObj);
-		
+	this.tableHeadingsObj.add(columnObj);
+	
+
 	//override
+	/*
+	 * In the new search paradigm, we need to have dataTable's sSource point to a function that gets 
+	 * a url to solr with appropriate params.  some params will be passed directly from the table so 
+	 * that it can handle paging;  possibly sorting as well
+	 * 
+	 */
 	this.getDataTableParams = function(){
 		var that = this;
-		var columnDefinitions = this.tableHeadingsObj.getColumns();
 		//table created
+		//TODO: find the column index for "score"..probably can use tableHeadingsObj since this is initialization
+		var sortArr = [3, "desc"];
+		var columnDefs = this.getColumnDefinitions();
+		
 		var params = {
-			"aoColumnDefs": columnDefinitions,
+			"aoColumnDefs": columnDefs,
 			"fnDrawCallback": that.runTableDrawCallbacks,
 			"bAutoWidth": false,
 			"sDom": 'rtS',
@@ -69,38 +79,44 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 			},
 			"bProcessing": true,
 			"bServerSide": true,
-			"sScrollY": "630px",	//TODO: should be set elsewhere
+			"aaSorting": [sortArr],
+			"iDeferLoading": [ 0 ],
+			"sScrollY": "596px",	//TODO: should be set elsewhere
+			"bScrollAutoCss": false,
 			"oScroller": {
-				"loadingIndicator": false
+				"loadingIndicator": false,
+				"rowHeight": 25, //TODO: should be adaptive
+				"displayBuffer": 3
 			},
 			"bDeferRender": true,
 			"sAjaxSource": that.searcher.getSearchRequest(),
-			"fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {
-	        	//console.log(oSettings);
+			"fnServerData": function (sSource, aoData, fnCallback, oSettings) {
 	            oSettings.jqXHR = jQuery.ajax( {
-	    		  "jsonp": 'json.wrf',
-	              "type": "GET",
-	              "url": that.searcher.getSearchRequest(),
-	              "data": that.getAdditionalQueryData(aoData),
-	              "success": function(data){
-	            	  var response = {};
-	            	  data = jQuery.parseJSON(data);
-	            	  var solrdocs = data.response.docs;
-	            	  var totalRecords = parseInt(data.response.numFound);
-	            	  response.iTotalRecords = totalRecords;
-	            	  response.iTotalDisplayRecords = totalRecords;
-	            	  response.sEcho = echo;
-	            	  response.aaData = that.searcher.processData(data);
-	            	  fnCallback(response);
+	            	"dataType": 'jsonp',
+	    	        "crossDomain": true,
+	            	"jsonp": 'json.wrf',
+	            	"type": "GET",
+	            	"url": that.searcher.getSearchRequest(),//this should just be the solr url; rework with query terms model/view
+	            	"data": that.getAdditionalQueryData(aoData),//this should contain all the query params
+	            	"success": function(data){
+	            		var response = {};
+	            		var solrdocs = data.response.docs;
+	            		var totalRecords = parseInt(data.response.numFound);
+	            		jQuery(document).trigger("searchResults.totalFound", totalRecords);
+	            		response.iTotalRecords = totalRecords;
+	            		response.iTotalDisplayRecords = totalRecords;
+	            		response.sEcho = that.processAoData(aoData).echo;
+	            		response.aaData = that.processSearchResponse(data);
+	            		fnCallback(response);
 	            	  }
 	            } );
 			}
 		};
 		
 		try {
-		for (var param in params){
-			this.dataTableParams[param] = params[param];
-		}
+			for (var param in params){
+				this.dataTableParams[param] = params[param];
+			}
 		} catch(e){
 			console.log("problem setting params");
 			console.log(e);
@@ -108,11 +124,13 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 		return this.dataTableParams;
 	};
 	
-	this.getAdditionalQueryData = function(aoData){
+	this.processAoData = function(aoData){
 		var data = {};
+		//console.log(aoData);
 		for (var i in aoData){
     		if (aoData[i].name == "sEcho"){
-            	echo = aoData[i].value;
+            	console.log("echo:" + aoData[i].value);
+            	data["echo"] = aoData[i].value;
 			}
 			if (aoData[i].name == "iDisplayStart"){
         		data["start"] = aoData[i].value;
@@ -122,6 +140,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 			}
 			if (aoData[i].name == "iSortCol_0"){
         		console.log("sort col:" + aoData[i].value);
+        		var sortColumn = this.tableHeadingsObj.getHeadingFromTargetIndex(aoData[i].value);
+        		console.log("sort col name:" + sortColumn);
 			}
 			if (aoData[i].name == "sSortDir_0"){
         		console.log("sort dir:" + aoData[i].value);
@@ -130,42 +150,117 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 		return data;
 	};
 	
-	this.searcher = new OpenGeoportal.Search(this);
+	this.getAdditionalQueryData = function(aoData){
+
+		var data = this.processAoData(aoData);
+		var queryData = {};
+		queryData.start = data.start;
+		queryData.rows = data.rows;
+		return queryData;		
+	};
+	
+	this.searcher = new OpenGeoportal.Views.Query({model: new OpenGeoportal.Models.QueryTerms(), el: "form#searchForm"});
 	
 	//we must override initControlHandlers to add additional eventhandlers to the table
 	this.initControlHandlers = function(){
 		this.initControlHandlersDefault();
 		this.initSearchResultsHandlers();
+		this.sortView = new OpenGeoportal.Views.Sort({model: this.tableOrganize, el: $("#sortDropdown")});
+		var that = this;
+		this.sortView.listenTo(this.sortView.model, "change", function(){that.fireSearch();});
+		
+		var iconRenderer = function(){return "";};
+		var columnMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox({
+			collection: that.tableHeadingsObj,
+			el: "div#columnDropdown",
+			collectionFilter: {attr: "hidable", val: true},
+			valueAttribute: "columnName",
+			displayAttribute: "displayName",
+			selectionAttribute: "visible",
+			buttonLabel: "Columns",
+			itemClass: "columnMenuItem",
+			iconRenderer: iconRenderer,
+			controlClass: "columnCheck"
+			});
+
+		this.adjustColumnsHandler();
 	};
 
+	this.adjustColumnsHandler = function(){
+		var that = this;
+		jQuery("#left_col").on("adjustColumns", function(){
+			that.getTableObj().fnAdjustColumnSizing(false);
+			that.resizeColumnsCallback(); //other callbacks needed?
+		});
+	};
+	//processData needs to be aware of the table headings object for the results table;  at least the columns
+	//processData needs to be aware of previewed layers
+	//converts solr response object to dataTables array
+	this.processSearchResponse = function(dataObj){
+		// dataObj is a Javascript object (usually) returned by Solr
 
+		var solrResponse = dataObj.response;
+		var totalResults = solrResponse.numFound;
+		var startIndex = solrResponse.start;
+		var solrLayers = solrResponse.docs;
+
+		this.backingData.reset(solrLayers);
+
+		// solr docs holds an array of hashtables, each hashtable contains a layer
+
+		var arrData = [];
+
+		// loop over all the returned layers
+		var tableHeadings = this.tableHeadingsObj;
+		var previewed = this.previewed;
+		var plength = previewed.length;
+		rowloop:
+			for (var j in solrLayers){
+				j = parseInt(j);
+				//skip over layers that are currently previewed, so that they don't appear multiple times
+				if (plength > 0){
+					var isPreviewed = previewed.isPreviewed(solrLayers[j]["LayerId"]);
+					if (isPreviewed){
+						plength--;
+						continue rowloop;
+					}
+				}
+				var rowObj = {};
+				tableHeadings.each(function(currentModel){
+					//columns w/ solr == true should be populated with the returned solr data
+					var headingName = currentModel.get("columnName");
+					if (currentModel.get("solr")) {
+						
+						//if the tableheading can't be found in the solr object put in an empty string as a placeholder
+						if (typeof solrLayers[j][headingName] == 'undefined'){
+							rowObj[headingName] = "";
+						} else {
+							if (solrLayers[j][headingName].constructor !== Array){
+								rowObj[headingName] = solrLayers[j][headingName];
+							} else {
+								rowObj[headingName] = solrLayers[j][headingName].join();//in case the value is an array
+							}
+						}
+					} else {
+						//columns w/ solr == false are placeholders and are populated by javascript
+						rowObj[headingName] = "";
+					}
+				});
+				arrData.push(rowObj); 
+			}
+		//console.log(arrData[0]);
+		return arrData;
+	
+	};
 	
 	//*******Search Results only
-	this.getSaveControl = function (rowObj){
-		var layerId = this.getLayerIdFromRow(rowObj);
-		
-		var stateVal = this.layerState.getState(layerId, "inCart");
-		if (typeof stateVal == 'undefined'){
-			stateVal = false;
-		}
-		var rowNum = rowObj.iDataRow;
-		if (stateVal == true){
-			var value = '<div class="saveControl inCart" title="Remove this layer from your cart."></div>';
-			return value;
-		} else {
-			var value = '<div class="saveControl notInCart" title="Add this layer to your cart for download."></div>';
-			return value;
-		}  
-	};
+
 	
 	this.saveControlShowOn = function(saveControl$){
+		var that = this;
 		saveControl$.removeClass("notInCart").addClass("inCart");
 		var tooltipText = "Remove this layer from your cart.";
 		saveControl$.attr("title", tooltipText);
-		/*var options = { to: "#savedLayersNumberTab", className: "ui-effects-transfer"};
-			jQuery(thisObj).closest('tr').effect( "transfer", options, 500, function(){
-				OpenGeoportal.ui.updateSavedLayersNumber();
-			});*/
 	};
 
 	this.saveControlShowOff = function(saveControl$){
@@ -177,6 +272,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 	this.saveToCartViewHandler = function(){
 		var that = this;
 		jQuery(document).on("view.showInCart", function(event, data){
+			console.log(data);
 			var control$ = that.findSaveControl(data.layerId);
 			that.saveControlShowOn(control$);
 		});
@@ -202,117 +298,56 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 	//click-handler for save column
 
 	this.saveLayer = function(thisObj){
+		var cart = OpenGeoportal.ogp.cartView.collection;
 		var aData = this.getRowData(thisObj).data;
-		var layerId = aData[this.tableHeadingsObj.getColumnIndex("LayerId")];
-		var layerState = this.layerState;
-		if (!layerState.layerStateDefined(layerId)){
-			var dataType = aData[this.tableHeadingsObj.getColumnIndex("DataType")];
-			layerState.addNewLayer(layerId, {"dataType": dataType});
-		}
-		if (!layerState.getState(layerId,"inCart")){
-			var previewControl$ = jQuery(aData[this.tableHeadingsObj.getColumnIndex("View")]);
+		var layerId = this.getColumnData(aData, "LayerId");
+		console.log("save layer:");
+		console.log(layerId);
+		//var dataType = this.getColumnData(aData, "DataType");
+
+		var layerModel = cart.get(layerId);
+
+		if (typeof layerModel == "undefined"){
+			var cartItem = this.backingData.get(layerId).clone();
+			cart.addLayer(cartItem);
+			//TODO: add this to cart view
+		/*	var previewControl$ = jQuery(this.getColumnData(aData, "View"));
 			if (previewControl$.hasClass("loginButton")){
 				// TODO:  This section has to be redone
 				OpenGeoportal.ogp.ui.authenticationWarning(thisObj, aData, true);
 			} else if (previewControl$.hasClass("goExternal")){
 				OpenGeoportal.ogp.ui.authenticationWarning(thisObj, aData, false);
 			} else {
-				this.sendToCart(aData);
-			}
+				var cartItem = new OpenGeoportal.Models.CartItem(this.backingData.get(layerId).attributes);
+				this.cart.add(cartItem, {validate: true});
+			}*/
 		} else {
-			this.removeFromCart(aData);
+			cart.remove(layerId);
 		}
-	};
-
-	this.sendToCart = function(aData){
-		var layerState = this.layerState;
-		var layerId = aData[this.tableHeadingsObj.getColumnIndex("LayerId")];
-		var expandIndex = this.tableHeadingsObj.getColumnIndex("expandControls");
-		var institution = aData[this.tableHeadingsObj.getColumnIndex("Institution")];
-		aData = [aData];
-		jQuery(document).trigger('table.addToCart', aData);
-
-		layerState.setState(layerId, {"inCart": true});
-
-		this.analytics.track("Layer Added to Cart", institution, layerId);
-	};
-	
-	this.removeFromCart = function(aData){
-		var layerState = this.layerState;
-		var layerId = aData[this.tableHeadingsObj.getColumnIndex("LayerId")];
-		var expandIndex = this.tableHeadingsObj.getColumnIndex("expandControls");
-		var institution = aData[this.tableHeadingsObj.getColumnIndex("Institution")];
-		aData = [aData];
-
-		jQuery(document).trigger('table.removeFromCart', aData);
-		layerState.setState(layerId, {"inCart": false});
-
-		this.analytics.track("Layer Removed From Cart", institution, layerId);
 	};
 	
 	/******
 	 * Sorting
 	 *****/
-	
-	/**
-	 * uses styledSelect to create the menu that allows a user to sort the results table by column name; dynamically created from the table object
-	 */
-	//TODO: update when widget is created
-	this.createSortMenu = function() {
-		var fields = this.tableHeadingsObj.getTableConfig();
-		
-		var defaultField = "Relevancy";
-		var menuHtml = "";
-		for (var sortIndex in fields){
-			if (fields[sortIndex].organize){
-				var currentField = fields[sortIndex];
-				menuHtml += '<label for="sortDropdownRadio' + currentField.columnConfig.sName + '">';
-				menuHtml += currentField.displayName;
-				menuHtml += '</label>';
-				var checked = "";
-				if (currentField.displayName.toLowerCase().trim() == defaultField.toLowerCase()){
-					checked += " checked=true";
-				}
-				menuHtml += '<input type="radio" class="sortDropdownRadio" name="sortDropdownRadio" id="sortDropdownRadio' + currentField.columnConfig.sName + '" value="' + currentField.columnConfig.sName + '"' + checked + ' />';
-			}
-		}
-		var params = {
-				"menuHtml": menuHtml,
-				"text": defaultField
-		};
-		new OpenGeoportal.Widget.StyledSelect("sortDropdown", params);
-		jQuery('.sortDropdownRadio').hide();
-
-		var buttonHtml = defaultField; 
-		jQuery(".sortDropdownSelect > span > span").html(buttonHtml);
-		var that = this;
-		jQuery("#sortDropdownMenu span.ui-button-text").bind("click", function(){
-			var selectedField = jQuery(this).closest("label").next().val();
-			var buttonHtml = fields[selectedField].displayName;
-			jQuery("#sortDropdownSelect > span > span").html(buttonHtml);
-			that.sortColumns(selectedField, false);
-		});
-		jQuery("#sortDropdownSelect").addClass("subHeaderDropdownSelect");
-	};
-	
 
 	this.createSortGraphics = function(){
 		var tableId = this.getTableId();
 		var that = this;
 		jQuery('#' + tableId + ' > thead > tr > th').each(function(){
 			var innerThis = jQuery(this);
-			var organize = that.tableOrganize.getState();
-			for (var heading in that.tableHeadingsObj.getTableConfig()){
-				if (that.tableHeadingsObj.getValue(heading, "sTitle") == innerThis.find('div').text()){
-					if (that.tableHeadingsObj.getValue(heading, "organize")){
+			var organize = that.tableOrganize;
+
+			that.tableHeadingsObj.each(function(model){
+				if (model.get("header") == innerThis.find('div').text()){
+					if (model.get("organize")){
 						//now, we need to get a value for organize to determine which class is added
 						innerThis.removeClass("sortGraphic_unsorted");
 						innerThis.removeClass("sortGraphic_sortedAsc");
 						innerThis.removeClass("sortGraphic_sortedDesc");
-						if (organize.organizeBy == heading){
-							if (organize.organizeDirection == "asc"){
+						if (organize.get("organizeBy") == model.get("columnName")){
+							if (organize.get("organizeDirection") == "asc"){
 								innerThis.addClass("sortGraphic_sortedAsc");  
-							} else if (organize.organizeDirection == "desc"){
+							} else if (organize.get("organizeDirection") == "desc"){
 								innerThis.addClass("sortGraphic_sortedDesc");  
 							}
 						} else {
@@ -320,7 +355,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 						}
 					}
 				}
-			}
+			});
 		});
 	};
 	
@@ -341,44 +376,35 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 			jQuery(this).bind("click.header", function(){
 				var title = jQuery(this).text();
 				//translate title to tableHeading
-				var headingsObj = that.tableHeadingsObj.getTableConfig();
-				for (var heading in headingsObj){
-					if (title == that.tableHeadingsObj.getValue(heading, "sTitle")){
-						that.sortColumns(heading, true);
+				that.tableHeadingsObj.each(function(model){
+					if (model.get("header") == title){
+						that.sortColumns(model.get("columnName"), true);
 						return;
 					}
-				}
+				});
 			}); 
 		});
 	};
 	
 	this.sortColumns = function(heading, toggle){
 		if (heading == 'score'){
-			this.tableOrganize.setState({"organizeBy": heading, "organizeDirection": "desc"});
-		} else if (this.tableHeadingsObj.getValue(heading, "organize")){
-			var currentSort = this.tableOrganize.getState();
+			this.tableOrganize.set({"organizeBy": heading, "organizeDirection": "desc"});
+		} else if (this.tableHeadingsObj.findWhere({columnName: heading}).get("organize")){
+			var currentSort = this.tableOrganize;
 			var sortDirection = "asc";
-			if (currentSort.organizeBy == heading) {
+			if (currentSort.get("organizeBy") == heading) {
 				//toggle direction
 				if (toggle){
-					if (currentSort.organizeDirection == "asc"){
+					if (currentSort.get("organizeDirection") == "asc"){
 						sortDirection = "desc";
 					} 
 				}
 			}
-			this.tableOrganize.setState({"organizeBy": heading, "organizeDirection": sortDirection});
+			this.tableOrganize.set({"organizeBy": heading, "organizeDirection": sortDirection});
 		}
 	};
 
-	/*
-	 * Highlight previewed layers, add separator;  called on table draw callback
-	 */
-	this.markPreviewedLayers = function(){
-			jQuery(".previewOn").closest('tr').addClass('previewedLayer');			 
-			previewedLayer$ = jQuery(".previewedLayer");
-			previewedLayer$.removeClass('previewSeparator');
-			previewedLayer$.last().addClass('previewSeparator');
-	};
+
 
 
 	this.getEmptyTableMessage = function getEmptyTableMessage(){
@@ -403,57 +429,13 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 		}
 	};
 
-	//*******Search Results only
 
-	this.getNumberOfLayers = function(){
-		//we want to use the dataTables paging as a buffer, so that collapsing
-		//the search box or expanding preview controls does not require a new ajax call
-		//get active tab
-		var divId = this.getTableDiv();
-		var tableDiv$ = jQuery('#' + divId);
-		var totalHeight = tableDiv$.parent().height();
-		var header$ = tableDiv$.find(".tableHeader");
-		if (header$.length > 0){
-			totalHeight -= header$.height();
-		}
-		var footer$ = tableDiv$.find(".tableFooter");
-		if (footer$.length > 0){
-			totalHeight -= footer$.height();
-		}
-
-
-		var headerRowHeight = jQuery('#' + divId + ' table.display > thead > tr').outerHeight();
-		totalHeight -= headerRowHeight;
-
-		//totalHeight -= jQuery("#searchResultsNavigation").outerHeight() || 0;
-
-		var heightObj = {};
-		var searchRowHeight = jQuery('#' + divId + ' table.display > tbody > tr').outerHeight() || 23;
-		var controlRowHeight = jQuery('#' + divId + ' .previewControls').closest("tr").outerHeight() || 23;
-		heightObj.rows = totalHeight / searchRowHeight;
-		heightObj.buffer = heightObj.rows;
-		var controlAdjust = jQuery('#' + divId + ' .previewControls').length * controlRowHeight / searchRowHeight;
-		heightObj.rows = Math.floor(heightObj.rows - controlAdjust);
-		if(isNaN(heightObj.rows)){
-			heightObj.rows = 0;
-		}
-		heightObj.buffer = Math.ceil(heightObj.buffer);
-		if(heightObj.buffer == "Infinity"){
-			heightObj.buffer = 0;
-		}
-		this.displayedLayers.numberOfLayers = heightObj.rows;
-		//console.log(heightObj);
-		return heightObj;
-	};
-
-
-	//TODO: where is the var totalResults?
-	//**************Table Specific
-	this.numberOfResults = function(){
-		var tableName = this.getTableId();
-		var number = totalResults;
-
-		return number;
+	this.fireSearch = function(){
+		var that = this;
+		//redrawing the table causes the search to be performed
+		//if (jQuery("#left_col").css("display") !== "none"){
+			that.getTableObj().fnDraw();
+		//}
 	};
 
 
@@ -470,10 +452,11 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 		}
 	};
 
-	this.setResultNumber = function(numFound){
+	
+	this.updateResultsNumber = function(numFound){
 		jQuery('.resultsNumber').text(numFound);
-		
-		if (parseInt(numFound) == 0){
+	};	
+		/*if (parseInt(numFound) == 0){
 			//set some html below the search results table
 			var resultsMessage = "<p>No results were found for the terms specified.</p>";
 			if (this.appState.get("spatialSearch")){
@@ -483,8 +466,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 			jQuery('#searchResultsMessage').css("display", "block");
 		} else {
 			jQuery('#searchResultsMessage').css("display", "none");
-		}
-	};
+		}*/
+	
 	//*******Search Results only
 	this.currentSearchRequests = 0;
 	/*this.searchRequest = function(startIndex){
@@ -493,102 +476,22 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 		this.deferredSearchSetTimeOut(startIndex);
 	};*/
 
-	this.deferredSearchSetTimeOut = function(startIndex){
-		var t = setTimeout('OpenGeoportal.ogp.resultsTableObj.deferredSearchStart("' + startIndex + '")', 100);
-		//console.log(t);
+
+	/*
+	 * Highlight previewed layers, add separator;  called on table draw callback
+	 */
+	this.markPreviewedLayers = function(){
+			console.log("mark previewed");
+			jQuery(".previewOn").closest('tr').addClass('previewedLayer');			 
+			var previewedLayer$ = jQuery(".previewedLayer");
+			previewedLayer$.removeClass('previewSeparator');
+			previewedLayer$.last().addClass('previewSeparator');
 	};
-
-	this.deferredSearchStart = function(startIndex){
-		//console.log(this.currentSearchRequests);
-		this.currentSearchRequests--;
-		if (this.currentSearchRequests > 0){
-			this.deferredSearchSetTimeOut(startIndex);
-		} else if (this.currentSearchRequests == 0){
-			this.tableEffect("searchStart");
-			this.searchRequestJsonp(startIndex);
-			//console.log("searchRequestedfromSolr");
-		} else {
-			this.currentSearchRequests = 0;
-		}
-	};
-
-	//*******Search Results only
-	this.setTableLength = function(){
-		var rows = this.getNumberOfLayers().rows;
-		var tableObj = this.getTableObj();
-		tableObj.fnSettings()._iDisplayLength = rows;
-		tableObj.fnDraw();
-	};
-
-	this.adjustTableLength= function(rows){
-		try{	
-			var tableObj = this.getTableObj();
-			var currentRows = tableObj.fnSettings()._iDisplayLength;
-			tableObj.fnSettings()._iDisplayLength = currentRows + rows;
-			tableObj.fnDraw();
-		} catch (e){
-			console.log(e);
-		}
-	};
-
-
-
-//	*******Search Results only
-/*	this.addPagingUi = function(){
-		//unfortunately, startIndex is not static...we must calculate this value each
-		//time & we must know how many rows are expanded;  not a big deal for 'next', but how do
-		//we handle 'previous'? note..next should be working...still need a fix for previous in the case
-		//that a row is expanded
-		var pagingDiv = "searchResultsNavigation";
-		var prefix = 'OpenGeoportal.ogp.resultsTableObj';
-		//how can we calculate this?
-		var navigationString = '';
-		var displayedLayers = this.displayedLayers;
-		var startIndex = displayedLayers.startIndex;
-		var layersDisplayed = displayedLayers.numberOfLayers;
-		var resultsCount = displayedLayers.totalResults;
-		var prevString = '';
-		var nextString = '';
-		var resultsString = '';
-		var pagingText = false;
-
-		if (startIndex > 0){
-			pagingText = true;
-			// here if the page does not hold the first row
-			var previousIndex = startIndex - layersDisplayed;
-			if (previousIndex < 0){
-				previousIndex = 0;
-			}
-			prevString += "<a href=\'javascript:" + prefix + ".searchRequest(" + previousIndex + ")\'>&lt;&lt; Previous |</a>"; 
-		} else {
-			prevString += '<span style="color:#CCCCCC" >&lt;&lt; Previous |</span>'; 
-		}
-
-		if ((startIndex + layersDisplayed) < resultsCount){
-			pagingText = true;
-			// here if this page does not hold the last row
-			var nextIndex = startIndex + layersDisplayed;
-			nextString += "<a href=\'javascript:" + prefix + ".searchRequest(" + nextIndex + ")\'>| Next &gt;&gt;</a>";
-		}	else {
-			nextString += '<span style="color:#CCCCCC" >| Next &gt;&gt;</span>';
-		}
-
-
-		resultsString += " Results " + (startIndex + 1) + "-" + (startIndex + layersDisplayed) + " ";
-
-		if (pagingText){
-			navigationString = "<span>" + prevString + resultsString + nextString + "</span>";
-		} else {
-			navigationString = "";
-		}
-
-		jQuery("div#" + pagingDiv).html(navigationString);
-	};	
-*/
+	
 	this.addToPreviewedLayers = function(tableRow){
 		var tableObj = this.getTableObj();
 		var rowData = tableObj.fnGetData(tableRow);
-		this.previewedLayers.addLayer(rowData);
+		//this.previewed.addLayer(rowData);
 		function callback() {
 			//if (that.getTableId() == "searchResults"){
 				tableObj.fnDeleteRow(tableRow, false);
@@ -597,10 +500,9 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 				tableData.unshift(rowData);
 				tableObj.fnAddData(tableData);
 				var rowOne = tableObj.fnGetNodes(0);
-				var layerState = this.layerState;
-				if (typeof layerState.previewCount == "undefined"){
+				var num_previewed = this.previewed.length
+				if (num_previewed == 0){
 					jQuery(rowOne).find('.expandControl').first().trigger('click');
-					layerState.previewCount = true;
 				} else {
 					//that.callbackExpand();
 				}
@@ -624,29 +526,46 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(stateObj){
 		this.previewedLayers.removeLayer(matchValue, matchIndex);
 	};
 	
-	this.updateSortMenu = function(){
-		var organize = this.tableOrganize.getState();
 
-		var fields = this.tableHeadingsObj.getTableConfig();
-		var buttonHtml = fields[organize.organizeBy].displayName;
+	this.updateSortMenu = function(){
+		new OpenGeoportal.View.Sort
+		var organize = this.tableOrganize;
+
+		var fields = this.tableHeadingsObj;
+		var buttonHtml = fields.findWhere({columnName: organize.get("organizeBy")}).displayName;
 		jQuery("#sortDropdownSelect > span > span").html(buttonHtml);
 		jQuery("#sortDropdownMenu").find("input:radio").each(function(){
-			if (jQuery(this).val() == organize.organizeBy){
+			if (jQuery(this).val() == organize.get("organizeBy")){
 				jQuery(this).attr("checked", true);
 			}
 		});
 
 	};
 	
-	this.updateSortMenuHandler = function(){
+	this.updateResultsTotalHandler = function(){
+		var that = this;
+		jQuery(document).on("searchResults.totalFound", function(event, data){
+			that.updateResultsNumber(data);
+		});
+	};
+	
+	/*this.updateSortMenuHandler = function(){
 		var that = this;
 		jQuery(document).on("view.updateSortMenu", that.updateSortMenu());
-	};
+	};*/
 
+	this.fireSearchHandler = function(){
+		var that = this;
+		jQuery(document).on("fireSearch", function(){that.fireSearch.apply(that, arguments);});
+	};
+		
 	this.initSearchResultsHandlers = function(){
 		this.saveHandler();
 		this.saveToCartViewHandler();
-		this.updateSortMenuHandler();
+		//this.updateSortMenuHandler();
+
+		this.fireSearchHandler();
+		this.updateResultsTotalHandler();
 	};
 };
 

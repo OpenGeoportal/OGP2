@@ -15,6 +15,69 @@ if (typeof OpenGeoportal == 'undefined'){
     throw new Error("OpenGeoportal already exists and is not an object");
 }
 
+if (typeof OpenGeoportal.Models == 'undefined'){
+	OpenGeoportal.Models = {};
+} else if (typeof OpenGeoportal.Models != "object"){
+    throw new Error("OpenGeoportal.Models already exists and is not an object");
+}
+
+if (typeof OpenGeoportal.Views == 'undefined'){
+	OpenGeoportal.Views = {};
+} else if (typeof OpenGeoportal.Views != "object"){
+    throw new Error("OpenGeoportal.Views already exists and is not an object");
+}
+
+//{"authenticated":true,"username":"cbarne02","authorities":[{"authority":"ROLE_USER"}]}
+/**
+ * 
+ */
+//this should really allow us to help manage multiple repository access, instead of just assuming "local"
+OpenGeoportal.Models.User = Backbone.Model.extend({
+	defaults: {
+		username: "anonymous",
+		authenticated: false,
+		authorities: []
+	},
+	url: function(){return this.getUrl() + "loginStatus";},
+	getUrl: function(){
+		var hostname = window.location.hostname;
+		var currentPathname = window.location.pathname;
+		var pathParts = currentPathname.split("/");
+		var extraPath = "";
+		if (pathParts.length > 2)
+		{
+			// a hack to handle localhost where there is another element in the pathname
+			extraPath = pathParts[1] + "/";
+		}
+	        var port = window.location.port;
+		if ((port == "") || (port == null)){
+			port = "";
+		} else {
+			port = ":" + port;
+		}
+		var protocol = "https";
+		if (hostname == "localhost"){
+			//protocol = "http";
+			port = ":8443";
+		}
+		var url = protocol + "://" + hostname + port + "/" + extraPath;
+		return url;
+	}
+});
+
+OpenGeoportal.Views.Login = Backbone.View.extend({
+	model: OpenGeoportal.Models.User,
+	events: {
+		//"click .loginButton: promptLogin"
+	},
+	initialize: function(){
+		this.model.fetch();
+		//we could put this on setInterval, so that when the user's session expires, they get properly logged out
+		//this.listenTo(this.model, "change:authenticated", this.processLogin);
+	
+	}
+});
+
 OpenGeoportal.LogIn = function(institution){
 	this.TYPE = OpenGeoportal.InstitutionInfo.getLoginType(institution); //"iframe"; other choice is "form"; would be nice to get this from ogp config
 
@@ -36,6 +99,77 @@ OpenGeoportal.LogIn = function(institution){
 			return true;
 		}
 	};
+	
+	
+	this.loginHandler = function(){
+		var that = this;
+		jQuery(document).off(".login");
+
+		var promptLogin = function(e){that.promptLogin(e);};
+		jQuery(document).on("click.login", ".loginButton", promptLogin); 
+		jQuery("#headerLogin").on("click.login", promptLogin);
+
+	};
+	
+	/*
+	 * 
+	 * login code
+	 * 
+	 */
+
+
+	this.loginStatusHandler = function(){
+		jQuery(document).bind("loginSucceeded", function(){
+			jQuery(document).trigger("loginSuccess.addToCart");
+			that.applyLoginActions();
+			analytics.track("Login", "Login Success");
+		});
+		jQuery(document).on("loginFailed", function() {
+			analytics.track("Login", "Login Failure");
+		});	
+	};
+	
+	this.logoutResponse = function() {
+		var that = this;
+		jQuery(document).on("logoutSucceeded", function(event){
+			jQuery("#headerLogin").text("Login").unbind("click");
+			jQuery("#headerLogin").click(function(event){that.promptLogin(event);});
+			that.changeControlsToLoginButtons(that.config.getHomeInstitution());//get local inst.
+			//
+			//will also need to turn on login labels for layers in search results and cart, remove 
+			//restricted layers from preview?
+			//should we logout on page load to prevent weird states? or just check the state at page load?
+		});
+	};
+
+	this.promptLogin = function(event){
+		this.loginDialog();
+	};
+
+	this.applyLoginActions = function(){
+		// how do we update the UI so the user know login succeeded?
+		this.changeLoginButtonsToControls();
+		//change the login button in top right to logout
+		var that = this;
+		//console.log(this);
+		jQuery("#headerLogin").text("Logout");
+		jQuery("#headerLogin").unbind("click");
+		jQuery("#headerLogin").click(function(event){event.preventDefault();
+		//for logout capability
+		that.login.processLogout();
+		/*var ajaxArgs = {url: "logout", 
+			crossDomain: true,
+			xhrFields: {
+				withCredentials: true
+				},
+			context: that,
+			dataType: "json",
+			success: that.logoutResponse
+			};
+		jQuery.ajax(ajaxArgs);*/
+		});
+	};
+
 //return the login form to be presented to the user
 	this.getLoginContent = function(message){
 		var dialogContent;
@@ -136,30 +270,7 @@ this.checkLoginStatus = function(){
 	jQuery.ajax(ajaxArgs);
 };
 
-this.getUrl = function(){
-	var hostname = window.location.hostname;
-	var currentPathname = window.location.pathname;
-	var pathParts = currentPathname.split("/");
-	var extraPath = "";
-	if (pathParts.length > 2)
-	{
-		// a hack to handle localhost where there is another element in the pathname
-		extraPath = pathParts[1] + "/";
-	}
-        var port = window.location.port;
-	if ((port == "") || (port == null)){
-		port = "";
-	} else {
-		port = ":" + port;
-	}
-	var protocol = "https";
-	if (hostname == "localhost"){
-		//protocol = "http";
-		port = ":8443";
-	}
-	var url = protocol + "://" + hostname + port + "/" + extraPath;
-	return url;
-};
+
 // retrieve user entered values, generate https request and set login flag
 // some special processing is included for running on localhost 
 this.processFormLogin = function()

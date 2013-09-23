@@ -19,42 +19,25 @@ if (typeof OpenGeoportal == 'undefined'){
  * 
  * @param object OpenGeoportal.OgpSettings
  */
-OpenGeoportal.CartTable = function CartTable(stateObj){
-	OpenGeoportal.LayerTable.call(this, stateObj);
-	
-	//insert into table settings
-	/*
-	 * 	"checkBox": {"ajax": false, "resizable": false, "organize": false, "columnConfig": 
-		{"sName": "checkBox", "sTitle": "<input type=\"checkbox\" id=\"downloadHeaderCheck\" checked />", "bVisible": false, "aTargets": [ 1 ], "sClass": "colChkBoxes", "sWidth": "21px", "bSortable": false,
-									"fnRender": function(oObj){return thisObj.getDownloadControl(oObj);}}},
-	 */
-	
+OpenGeoportal.CartTable = function CartTable(){
+	OpenGeoportal.LayerTable.call(this);
+
 	var that = this;
-	var columnLabel = "checkBox";
 	var columnObj = {
-			"ajax": false, 
-			"resizable": false, 
-			"organize": false, 
-			"columnConfig": {
-				"sName": "checkBox", 
-				"sTitle": "<input type=\"checkbox\" id=\"downloadHeaderCheck\" checked />", 
-				"bVisible": true, 
-				"aTargets": [ 1 ], 
-				"sClass": "colChkBoxes", 
-				"sWidth": "21px", 
-				"bSortable": false,
-				"fnRender": function(oObj){return that.getDownloadControl(oObj);}
-				}
+			order: 1,
+			columnName: "checkBox",
+			solr: false, 
+			resizable: false, 
+			organize: false, 
+			visible: true,
+			hidable: false,
+			header: "<input type=\"checkbox\" id=\"downloadHeaderCheck\" checked />", 
+			columnClass: "colChkBoxes",
+			width: 21,
+			renderFunction: function(data, type, full){return that.controls.renderDownloadControl();}
 	};
 
-	this.tableSettings.tableConfig.insertColumn(columnLabel, columnObj);
-	
-	
-	//we must override initControlHandlers to add additional eventhandlers to the table
-/*	this.initControlHandlers = function(){
-		this.initControlHandlersDefault();
-	};
-	*/
+	this.tableHeadingsObj.add(columnObj);
 	
 	//we must override initControlHandlers to add additional eventhandlers to the table
 	this.initControlHandlers = function(){
@@ -63,90 +46,811 @@ OpenGeoportal.CartTable = function CartTable(stateObj){
 	};
 	
 	this.initCartHandlers = function(){
-		this.addToCartHandler();
-	};
-	
-	this.downloadActionSelectRow = function(rowPosition, isSelected){
-		var selectionClass;
-		if (isSelected){
-			selectionClass = 'downloadSelection';
-		} else {
-			selectionClass = 'downloadUnselection';
-		}
-		var tableObj = this.getTableObj();
-		var rowObj = jQuery(tableObj.fnGetNodes(rowPosition));
-		rowObj.addClass(selectionClass);
-
-		if (rowObj.next().children('td').hasClass('previewTools')){
-			rowObj.next().addClass(selectionClass);
-		}
-		//if next sibling is details row, then add class 'row_selected' to it as well
-		//set first tr ancestor to class row_selected
-		/*var aData = tableObj.fnGetData(rowObj[0]);
-		    //console.log(aData);
-		    if (aData == null){
-		    	rowObj = rowObj.prev();
-			    aData = tableObj.fnGetData(rowObj[0]);
-		    }
-		    var bbox = {};
-        	bbox.south = aData[tableHeadingsObj.getColumnIndex("MinY")];
-        	bbox.north = aData[tableHeadingsObj.getColumnIndex("MaxY")];
-        	bbox.west = aData[tableHeadingsObj.getColumnIndex("MinX")];
-        	bbox.east = aData[tableHeadingsObj.getColumnIndex("MaxX")];
-	    	OpenGeoportal.map.showLayerBBox(bbox);
-		 */
+		this.checkHandler();
+		this.createCartButtons();
 	};
 	
 
 	//**************Table Specific
 	this.numberOfResults = function(){
-		var tableName = this.getTableId();
-		var number;
-		number = this.getTableObj().fnSettings().fnRecordsTotal();
+		var number = this.getTableObj().fnSettings().fnRecordsTotal();
 		return number;
 	};
 	
 	this.removeRows = function(){
-		var that = this;
-		var index = this.tableHeadingsObj.getColumnIndex("LayerId");
-		var inst_idx = this.tableHeadingsObj.getColumnIndex("Institution");
-		jQuery('#savedLayersTable td.colChkBoxes :checked').each(function(){
-			var rowObj = jQuery(this).parentsUntil('tr').last().parent();
-			var layerId = jQuery('#savedLayers').dataTable().fnGetData(rowObj[0])[index];
-			var institution = jQuery("#savedLayers").dataTable().fnGetData(rowObj[0])[inst_idx];
-			that.layerState.setState(layerId, {"inCart": false});
-			jQuery('#savedLayers').dataTable().fnDeleteRow(rowObj[0]);
-			this.analytics.track("Layer Removed From Cart", institution, layerId);
-		});
-		jQuery(document).trigger("view.updateCartNumber");
-		//update layer state, synchronize save icons
+		
+		var checkedModels = this.backingData.where({isChecked: true});
+		this.backingData.remove(checkedModels);
 	};
 	
-	//*******Cart only
-	this.getDownloadControl = function (rowObj){
-		var value = rowObj.aData[rowObj.iDataColumn];
-		if ((typeof value == "undefined")||(value === null)){
-			return null;
-		}
-		return '<input type="checkbox" class="cartCheckBox" checked />';
-	};
-	
-	//TODO: remove table specific code
 	this.getEmptyTableMessage = function getEmptyTableMessage(){
 			return "No data layers have been added to the cart.";
 	};
 	
-	this.addToCartHandler = function(){
+	this.checkHandler = function(){
 		var that = this;
-		jQuery(document).on('table.addToCart', function(event, data){
-			var savedTable = that.getTableObj();
-			var currentData = savedTable.fnGetData();
-			currentData.unshift(data);
-			savedTable.fnClearTable();
-			savedTable.fnAddData(currentData);
+		jQuery("#cartTable").on('click', ".cartCheckBox", function(event, data){
+			var rowObj = jQuery(this).parentsUntil('tr').last().parent()[0];
+			var layerId = that.getTableObj().fnGetData(rowObj)["LayerId"];
+			console.log(layerId);
+			var checkVal = jQuery(this).is(":checked");
+			that.backingData.get(layerId).set({isChecked: checkVal});
 		});
-	 };
+	};
 	 
+	
+	//?
+	//		jQuery(document).on('click', '#downloadHeaderCheck', that.toggleChecksSaved);
+
+	this.toggleChecksSaved = function(eventObj){
+		var target = eventObj.target;
+		if (jQuery(target).is(':checked')){
+			jQuery(target).attr('title', "Unselect All");
+			jQuery(".cartCheckBox").each(function(){
+				jQuery(this).attr('checked', true);
+			});
+		} else {
+			jQuery(target).attr('title', "Select All");
+			jQuery(".cartCheckBox").each(function(){
+				jQuery(this).attr('checked', false);	
+			});
+		}
+	};
+	
+
+	this.downloadDialog = function(){
+		//first, check to see if anything is in savedLayers & checked
+		var layerList = this.getLayerList("download");
+
+		var dialogContent = "";
+
+		if (layerList.length === 0){
+			dialogContent = 'No layers have been selected.';
+		} else {
+			//this should probably call a dialog instance for error messages/notifications
+
+			//generate a list of appropriate choices for the chosen layers
+			//for now a best guess;  at some point, we might be able to do something clever
+			//by looking at the download config file.
+			var showVectorControl = false;
+			var showRasterControl = false;
+			for (var i in layerList){
+				if (this.requiresEmailAddress(layerList[i])){
+					needEmailInput = true;
+				}
+				//var dataType = layerList[layerId].dataType;
+				if (layerList[i].isVector){
+					showVectorControl = true;
+					continue;
+				}
+				if (layerList[i].isRaster){
+					showRasterControl = true;
+					continue;
+				}
+			}
+			var vectorControl = "<label for=\"vectorDownloadType\" class=\"downloadSelect\">Vector files</label>";
+			vectorControl += "<select id=\"vectorDownloadType\" class=\"downloadSelect\"> \n";
+			vectorControl += "<option value=\"shp\">shapefile</option> \n";
+			vectorControl += "<option value=\"kmz\">KMZ</option> \n";
+			vectorControl += "</select><br/> \n";
+			var rasterControl = "<label for=\"rasterDownloadType\" class=\"downloadSelect\">Raster files</label>";
+			rasterControl += "<select id=\"rasterDownloadType\" class=\"downloadSelect\"> \n";
+			rasterControl += "<option value=\"GeoTIFF\">GeoTiff</option> \n";
+			rasterControl += '<option value="kmz">KMZ</option> \n';
+			rasterControl += "</select><br/> \n";
+			var clipControl = '<input id="checkClip" type="checkbox" checked="checked" /><label for="checkClip" id="checkClipLabel">Clip data to map extent</label><br/> \n';
+			//var emailInput = '<label for="emailAddress">Enter your email address:</label><input id="emailAddress" type="text" /> </br>\n';
+			var formatLabel = "<span>Select format for:</span><br />\n";
+			if (showVectorControl || showRasterControl){
+				dialogContent += formatLabel;
+				if (showVectorControl){
+					dialogContent += vectorControl;
+				}
+				if (showRasterControl){
+					dialogContent += rasterControl;
+				}
+				dialogContent += clipControl;
+
+			} else {
+				dialogContent += "The selected layers have an invalid data type and can not be downloaded.";
+				layerList = [];
+			}
+		}
+
+		var that = this;
+		var params = {
+				zIndex: 3000,
+				autoOpen: false,
+				minHeight: '30px',
+				width: 300,
+				title: "Download Settings",
+				resizable: false,
+				modal: true
+		};
+		if (typeof jQuery('#downloadDialog')[0] == 'undefined'){
+			var downloadDiv = '<div id="downloadDialog" class="dialog downloadSettingsDialog"> \n';
+			downloadDiv += dialogContent;
+			downloadDiv += '</div> \n';
+			jQuery('#dialogs').append(downloadDiv);
+		} else {
+			//replace dialog text/controls & open the instance of 'dialog' that already exists
+			jQuery("#downloadDialog").html(dialogContent);
+			jQuery("#downloadDialog").dialog( "option", "disabled", false );
+		}
+		jQuery("#downloadDialog").dialog(params);
+		var buttons;
+		if (layerList.length === 0){
+			buttons = {
+					Cancel: function() {
+						jQuery(this).dialog('close');
+						jQuery("#optionDetails").html("");
+						jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+					}
+			};
+		} else {
+			buttons = {
+					Continue: function() {
+						that.downloadContinue();
+					},
+					Cancel: function() {
+						jQuery(this).dialog('close');
+						jQuery("#optionDetails").html("");
+						jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+					}
+			};
+		}
+		jQuery("#downloadDialog").dialog("option", "buttons", buttons);
+		jQuery("#downloadDialog").dialog('open');
+	};
+
+	this.downloadContinue = function(){
+		var clipped = this.isClipped();
+		var vectorFormat = jQuery("#vectorDownloadType").val();
+		var rasterFormat = jQuery("#rasterDownloadType").val();
+		var bounds;
+		var arrLayers;
+		var nonIntxLayers = [];
+		if (clipped){
+			//if this is true, we should also make sure that part or all of the requested layer is in the extent
+			//if not, it should be excluded & user warned
+			
+			bounds = OpenGeoportal.ogp.map.getGeodeticExtent().toArray();
+			arrLayers = this.getLayerList("download");
+			var intxLayers = [];
+			for (var i in arrLayers){
+				if (this.backingData.intersectsBounds(arrLayers[i], bounds)){
+					intxLayers.push(arrLayers[i]);
+				} else {
+					nonIntxLayers.push(arrLayers[i]);
+				}
+			}
+			arrLayers = intxLayers;
+		} else {
+			arrBbox = [-180,-90,180,90];
+			arrLayers = this.getLayerList("download");
+		}
+
+		var layerIds = [];
+		var needEmailInput = 0;
+		var layerNumber = 0;
+		for (var layer in layerObj){
+			layerNumber++;
+			if ((this.requiresEmailAddress(layerObj[layer]))&&(rasterFormat.toLowerCase() != "kmz")){
+				needEmailInput++;
+			}
+			if (this.isVector(layerObj[layer].dataType)){
+				layerIds.push(layer + "=" + vectorFormat);
+			} else if (this.isRaster(layerObj[layer].dataType)){
+				layerIds.push(layer + "=" + rasterFormat);
+			}
+		}
+		if (layerNumber == 0){
+			jQuery("#downloadDialog").dialog('close');
+			return;
+		}
+		var requestObj = {};
+		if (arrBbox.length > 0){
+			requestObj.bbox = arrBbox.join();
+		}
+		//requestObj.format = fileFormat;
+		requestObj.layers = layerIds;
+
+		//first, check to see if anything is in savedLayers & checked
+		var that = this;
+		pluralSuffix = function(totalNumber){
+			var plural;
+			if (totalNumber > 1){
+				plural = "s";
+			} else {
+				plural = "";
+			}
+			return plural;
+		};
+		var downloadContinue = '<div>You have selected ' + layerNumber + ' layer' + pluralSuffix(layerNumber) + ' for download.</div>\n';
+		var addEmail = "";
+		if (needEmailInput > 0){
+			addEmail += '<div><label for="emailAddress">You have selected Harvard raster data. Please enter your email to receive a download link:</label><br />\n';
+			addEmail += '<input id="emailAddress" type="text" /></div>\n';
+			addEmail += '<span id="emailValidationError" class="warning"></span>';
+
+		}
+		if ((layerNumber - needEmailInput) > 0){
+			downloadContinue += '<div>A zip file will be generated. \n';
+			downloadContinue += 'It may take up to 10 minutes to process your file.<br /> \n';
+			downloadContinue += '<span class="notice">Do not close the GeoData website.</span></div>\n';
+		}
+		downloadContinue += addEmail;
+		jQuery("#downloadDialog").html(downloadContinue);
+		jQuery("#downloadDialog").dialog({title: "Download",
+			width: 350,
+			buttons: {
+				Download: function() {
+					requestObj.layerNumber = layerNumber;
+					if (layerNumber == 0){
+						jQuery(this).dialog('close');
+						return;
+					}
+					var emailAddress = "";
+					if (needEmailInput > 0){
+						emailAddress = jQuery("#emailAddress").val();
+						if (!that.checkAddress(emailAddress)){
+							var warningText = 'You must enter a valid email address.';
+							jQuery("#emailValidationError").html(warningText);
+							return;
+						}
+					}
+					requestObj.email = emailAddress;
+					that.toProcessingAnimation(jQuery(this).parent().find("button").first());
+					that.requestDownload(requestObj);
+				},
+				Cancel: function() {
+					jQuery(this).dialog('close');
+					jQuery("#optionDetails").html("");
+					jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+				}
+			}});
+		jQuery("#emailAddress").focus();
+	};
+
+	this.checkAddress = function(emailAddress){
+		var stringArray = emailAddress.split("@");
+		if (stringArray.length < 2) {
+			return false;
+		} else {
+			var domainArray = stringArray[1].split(".");
+			var userString = stringArray[0];
+			if (domainArray.length < 2) {
+				return false;
+			} else if ((domainArray[0].length + domainArray[1].length + userString.length) < 3){
+				return false;
+			} 
+		}
+		return true;
+
+	};
+
+	this.isClipped = function(){
+		if (jQuery('#checkClip').is(':checked')){
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+	this.requestErrorMessage = function(errorMessageObj){
+
+		var line = "";
+		for (var failedToDownload in data.failed){
+			line += "<tr>";
+			//for (var infoElement in data.failed[failedToDownload]){
+			line += "<td>";
+			line += '<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>';
+			line += "</td>";
+			line += "<td>";
+			line += data.failed[failedToDownload]["institution"];
+			line += "</td>";						
+			line += "<td>";
+			line += data.failed[failedToDownload]["title"];
+			line += "</td>";						
+			line += "<td>";
+			line += data.failed[failedToDownload]["layerId"];
+			line += "</td>";
+			line += '<td><span class="warning">';
+			line += data.failed[failedToDownload]["message"];
+			line += "</span></td>";
+			//}
+			line += "</tr>";
+		}
+		if (line.length > 0){
+			var message = '<table class="downloadStatus">';
+			message += line;
+			message += "</table>";
+			this.genericModalDialog(message, "Download Errors");
+		}
+	};
+
+	this.requestDownloadSuccess = function(data){
+		//this will simply be a request Id.  add it to the  request queue.
+		OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId);
+
+		//will also have status info for requested layers in this returned object
+		/*var line = "";
+	for (var failedToDownload in data.failed){
+		line += "<tr>";
+		//for (var infoElement in data.failed[failedToDownload]){
+			line += "<td>";
+			line += '<span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>';
+			line += "</td>";
+			line += "<td>";
+			line += data.failed[failedToDownload]["institution"];
+			line += "</td>";						
+			line += "<td>";
+			line += data.failed[failedToDownload]["title"];
+			line += "</td>";						
+			line += "<td>";
+			line += data.failed[failedToDownload]["layerId"];
+			line += "</td>";
+			line += '<td><span class="warning">';
+			line += data.failed[failedToDownload]["message"];
+			line += "</span></td>";
+		//}
+		line += "</tr>";
+	}
+	if (line.length > 0){
+		var message = '<table class="downloadStatus">';
+		message += line;
+		message += "</table>";
+		this.genericModalDialog(message, "DOWNLOAD ERRORS");
+	}
+	if (data.succeeded.length > 0){
+		//check packageLink
+		if (typeof data.packageLink != 'undefined'){
+			jQuery("body").append('<iframe style="display:none" src="' + data.packageLink + '"></iframe>');
+		}
+		var line = "";
+		for (var successful in data.succeeded){
+			if (data.succeeded[successful].disposition == "LINK_EMAILED"){
+				line += "<tr>";
+				line += "<td>";
+				line += data.succeeded[successful]["institution"];
+				line += "</td>";						
+				line += "<td>";
+				line += data.succeeded[successful]["title"];
+				line += "</td>";						
+				//line += "<td>";
+				//line += data.succeeded[successful]["layerId"];
+				//line += "</td>";
+				//line += "<td>";
+				//line += data.succeeded[successful]["message"];
+				//line += "</td>";
+				line += "</tr>";
+			}
+		}
+
+		if (line.length > 0){
+			var message = "<p>A link for the following layers was emailed to '" + requestObj.email + "'.  ";
+			message += '<span class="notice">It may take up to 10 minutes to receive the email.</span></p>'; 
+			message += '<table class="downloadStatus">';
+			message += line;
+			message += "</table>";
+			this.genericModalDialog(message, "LAYERS EMAILED");
+		}
+	}*/
+
+	};
+
+	this.requestDownload = function(requestObj){
+		var that = this;
+		jQuery("#downloadDialog").dialog( "option", "disabled", true );
+
+		//TODO: move this somewhere else
+		/*jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
+			var data = jQuery("#savedLayers").dataTable().fnGetData(this),
+			inst_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("Institution"),
+			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
+			analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
+		});*/
+		delete requestObj.layerNumber;
+
+		var params = {
+				url: "requestDownload",
+				data: requestObj,
+				dataType: "json",
+				type: "POST",
+				//traditional: true,
+				context: this,
+				complete: function(){
+					jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+				},
+				success: function(data){OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId, requestObj);}
+		};
+		//close the download box;
+		jQuery("#downloadDialog").dialog("close");
+		jQuery.ajax(params);
+	};
+	
+	this.requiresEmailAddress = function(layerObject){
+		if ((layerObject.institution == "Harvard")&&(this.isRaster(layerObject.dataType))){
+			return true;
+		} else {
+			return false;
+		}
+	};
+
+
+	this.markRows = function(arrModel, markClass){
+		for (var i in arrModel){
+			var layerId = arrModel[i].get("LayerId");
+			var row$ = this.findTableRow(layerId);
+			if (row$.next().hasClass("previewTools")){
+				row$.add(row$.next());
+			}
+		
+			row$.addClass(markClass);
+
+		}
+	};
+	
+	this.getLayerList = function(action){
+		
+		jQuery(".cartSelected").removeClass("cartSelected");
+		jQuery(".cartUnavailable").removeClass("cartUnavailable");
+
+		//these are the layers that have the action available
+		var arrSelected = [];
+		var arrUnavailable = [];
+		var that = this;
+		this.backingData.each(function(model){
+			if (!that.backingData.isActionAvailable(model, action)){
+				arrUnavailable.push(model);
+			} else {
+				if (model.get("isChecked")){
+					arrSelected.push(model);
+				}
+			}
+		});
+		this.markRows(arrUnavailable, "cartUnavailable");
+		this.markRows(arrSelected, "cartSelected");
+		//grey out layers where the action is unavailable
+
+				/*var locationObj = jQuery.parseJSON(cart.getColumnData(aData, 'Location'));
+				console.log(locationObj);
+				var downloadLinkExists = false;
+				var directDownloadUrl = "";
+				if (typeof locationObj["fileDownload"] != undefined){
+					downloadLinkExists = true;
+					directDownloadUrl = locationObj["fileDownload"]
+				}
+				layerInfo[layerId].directDownload = downloadLinkExists;
+				layerInfo[layerId].directDownloadUrl = directDownloadUrl;*/
+		return arrSelected;
+	};
+	
+//	based on Dave's code
+	this.getParamsFromUrl = function() {
+		//TODO: make this into a backbone router?
+		var params = {};
+		var layers = [], hash;
+		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+		for(var i = 0; i < hashes.length; i++) {
+			hash = hashes[i].split('=');
+			if ((hash[0] == "layer%5B%5D")||(hash[0] == "layer[]")){
+				layers.push(hash[1]);
+			} else {
+				params[hash[0]] = hash[1];
+			}
+		}
+		if (layers.length > 0){
+			params.layer = layers;
+		}
+		return params;
+	};
+
+	this.addSharedLayersToCart = function(){
+		var params = this.getParamsFromUrl();
+
+		if (typeof params.layer == 'undefined'){
+			return;
+		}
+		var solr = new OpenGeoportal.Solr();
+		var query = solr.getInfoFromLayerIdQuery(params.layer);
+		solr.sendToSolr(query, this.getLayerInfoJsonpSuccess, this.getLayerInfoJsonpError, this);
+		var sharedExtent = params.minX + ',' + params.minY + ',' + params.maxX + ',' + params.maxY;
+		OpenGeoportal.ogp.map.zoomToLayerExtent(sharedExtent);
+		jQuery("#tabs").tabs("option", "active", 2);
+	};
+
+	this.getLayerInfoJsonpSuccess = function(data, newContext){
+		//wrong context? not sure
+		newCartData = this.processData(data);
+		for(var i in newCartData){
+			newContext.addLayerToCart(newCartData[i]);
+		}
+	};
+
+	this.getLayerInfoJsonpError = function(){
+		throw new Error("The attempt to retrieve layer information from layerIds failed.");
+	};
+	
+	this.toProcessingAnimation = function($fromObj){
+		jQuery("#requestTickerContainer").show();
+		var options = { to: "#requestTickerContainer", className: "ui-effects-transfer"};
+		$fromObj.effect( "transfer", options, 500, function(){
+			//OpenGeoportal.ui.updateSavedLayersNumber();
+		});
+	};
+
+
+
+
+
+//	solr query against layerIds
+//	process data functions, pass to this function
+	this.addLayerToCart = function(layerData){
+		var savedTable = jQuery('#savedLayers').dataTable();
+		var currentData = savedTable.fnGetData();
+		layerData = [layerData];
+		var newData = layerData.concat(currentData);
+		savedTable.fnClearTable();
+		savedTable.fnAddData(newData);
+		this.updateSavedLayersNumber();
+		//TODO: add to cart collection
+		//jQuery('#savedLayersNumber').text('(' + OpenGeoportal.cartTableObject.numberOfResults() + ')');
+		//console.log(layerData);
+		//var headingsObj = this.cartTableObject.tableHeadingsObj;
+		//var layerId = layerData[0][headingsObj.getColumnIndex('LayerId')];
+		//var dataType = layerData[0][headingsObj.getColumnIndex('DataType')];
+		//var layerModel = this.previewed.getLayerModel({layerId: layerId, dataType: dataType});
+		//layerModel.set({inCart: true});
+	};
+	
+	this.shortenLink = function(longLink){
+		var request = {"link": longLink};
+		var url = "shortenLink";
+		var that = this;
+		var ajaxArgs = {url: url, 
+				data: jQuery.param(request),
+				type: "GET", 
+				dataType: "json",
+				success: function(data){
+					var shortLink = data["shortLink"];
+					jQuery("#shareText").attr("rows", that.calculateRows(shortLink));
+					jQuery("#shareDialog").dialog('open');
+					jQuery("#shareText").text(shortLink).focus();} 
+		};
+
+		jQuery.ajax(ajaxArgs);
+	};
+
+	this.calculateRows = function(theText){
+		var numCharacters = theText.length;
+		var rows = 1;
+		if (numCharacters > 75){
+			rows = Math.floor(numCharacters/40);
+		}
+		return rows;
+	};
+
+	this.shareLayers = function(){
+
+		var arrModels = this.getLayerList("shareLink");
+		var layers = this.getLayerIdsFromModelArray(arrModels);
+
+		var dialogContent = "";
+		if (layers.length == 0){
+			dialogContent = 'No layers have been selected.';
+			//this should probably call a dialog instance for error messages/notifications
+		} else {
+			var path = top.location.href.substring(0, top.location.href.lastIndexOf("/"));
+			var shareLink = path + "/openGeoPortalHome.jsp";
+			var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
+			var queryString = '?' + jQuery.param({ layer: layers, minX: geodeticBbox.left, minY: geodeticBbox.bottom, maxX: geodeticBbox.right, maxY: geodeticBbox.top });
+			shareLink += queryString;
+
+			dialogContent = '<textarea id="shareText" class="linkText" ></textarea> \n';
+			dialogContent += '<p>Use this link to share this Cart</p>';
+			this.shortenLink(shareLink);
+		}
+
+		this.createShareDialog(dialogContent);
+	};
+
+	this.createShareDialog = function(dialogContent){
+		if (typeof jQuery('#shareDialog')[0] == 'undefined'){
+			var shareDiv = '<div id="shareDialog" class="dialog"> \n';
+			shareDiv += dialogContent;
+			shareDiv += '</div> \n';
+			jQuery('#dialogs').append(shareDiv);
+			jQuery("#shareDialog").dialog({
+				zIndex: 3000,
+				autoOpen: false,
+				width: 495,
+				height: 'auto',
+				title: 'Share Cart',
+				resizable: false,
+				buttons: {
+					Close: function() {
+						jQuery(this).dialog('close');
+						jQuery("#optionDetails").html("");
+						jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+					}
+				}});
+		} else {
+			//replace dialog text/controls & open the instance of 'dialog' that already exists
+			jQuery("#shareDialog").html(dialogContent);
+		}
+		jQuery('#shareText').focus(function(){
+			// Select input field contents
+			this.select();
+		});
+	};
+
+	this.getLayerIdsFromModelArray = function(arrModel){
+		var arrLayerId = [];
+		for (var i in arrModel){
+			arrLayerId.push(arrModel[i].get("LayerId"));
+		}
+		return arrLayerId;
+	};
+	
+	this.shareServices = function(){
+		var layerList = this.getLayerList("webService");
+		var dialogContent = "";
+		var queryString = this.getLayerIdsFromModelArray(layerList);
+
+		if (queryString.length == 0){
+			dialogContent = 'No layers have been selected.';
+		} else {
+
+			var serviceTypes = [{"type": "WFS", "title": "Web Feature Service (WFS):", "caption": "Creates a vector web service. Only available for vector data."}, 
+			                    {"type":"WMS", "title": "Web Mapping Service (WMS):", "caption": "Creates a raster web service for all your data. Vector data will be converted to raster format."}];//WCS later?  		   		
+			var path = top.location.href.substring(0, top.location.href.lastIndexOf("/"));
+			dialogContent += '<p>Web Services are provided in two formats. Paste the selected link into your desktop mapping software.</p>';
+			dialogContent += '<div id="owsServicesArea">\n';
+			for (var i in serviceTypes){
+				dialogContent += '<span class="sub_headerTitle">' + serviceTypes[i].title + '</span><a href="#">?</a>';
+				dialogContent += '<br/><span>' + serviceTypes[i].caption + '</span>';
+				dialogContent += '<div class="owsServicesLinkContainer">';
+				var dynamicCapabilitiesRequest = path + "/ogp" + serviceTypes[i].type + ".jsp?OGPIDS=" + queryString.join();
+				dialogContent += '<textarea class="shareServicesText linkText" >' + dynamicCapabilitiesRequest + '</textarea> <br />\n';
+				dialogContent += '</div><br/>';
+			}
+
+			dialogContent += '</div>';
+
+		}
+
+
+		if (typeof jQuery('#shareDialog')[0] == 'undefined'){
+			var shareDiv = '<div id="shareServicesDialog" class="dialog"> \n';
+			shareDiv += '</div> \n';
+			jQuery('#dialogs').append(shareDiv);
+			jQuery("#shareServicesDialog").dialog({
+				zIndex: 3000,
+				autoOpen: false,
+				height: 'auto',
+				title: 'Web Services',
+				width: 495,
+				buttons: {
+					Close: function() {
+						jQuery(this).dialog('close');
+						jQuery("#optionDetails").html("");
+						jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+					}
+				}});
+		} 
+		//replace dialog text/controls & open the instance of 'dialog' that already exists
+		jQuery("#shareServicesDialog").html(dialogContent);
+		var that = this;
+		jQuery(".shareServicesText").each(function(){
+			jQuery(this).attr("rows", that.calculateRows(jQuery(this).text()));
+		});
+
+		jQuery("#shareServicesDialog").dialog('open');
+
+		jQuery('.shareServicesText').bind("focus", function(){
+			// Select input field contents
+			this.select();
+		});
+		jQuery('.shareServicesText').first().focus();
+
+	};
+	
+	this.createExportParams = function(){
+		var exportParams = {};
+		exportParams.layers = this.getLayerList("mapIt");
+		exportParams.extent = {};
+		var map = OpenGeoportal.ogp.map;
+		exportParams.extent.global = map.getSpecifiedExtent("global");
+		exportParams.extent.current = map.getSpecifiedExtent("current");
+		exportParams.extent.maxForLayers = map.getSpecifiedExtent("maxForLayers", exportParams.layers);
+		return exportParams;
+	};
+	
+	this.displayOptionText = function(event, optionText, listLabel){
+		var that = this;
+		var button$ = jQuery(event.target);
+		
+		if (!button$.hasClass(".button")){
+			button$ = button$.closest(".button");
+		}
+		
+		var optionText$ = jQuery("#optionText");
+		var optionContainer$ = jQuery("#optionDetails");
+		optionText$.html(optionText);
+		
+		if (optionContainer$.css("display") == "none"){
+			optionContainer$.show();
+			jQuery(".arrow_buttons").hide();
+		}
+		button$.parent().find(".button").removeClass("detailsBottom");
+		button$.addClass("detailsBottom");
+
+	};
+	
+	this.addCartHeaderButton = function(buttonId, buttonLabel, helpText, listLabel, clickHandler){
+		var that = this;
+		this.controls.addButton(jQuery("#cartHeader"), buttonId, buttonLabel, clickHandler)
+			.on("mouseover", function(event){that.displayOptionText(event, helpText, listLabel); 
+									that.getLayerList(listLabel);});
+	};
+	
+	this.createCartButtons = function(){
+
+		var that = this;
+		var mapItHtml = "Open highlighted layers in GeoCommons to create maps.";
+		var shareHtml = "Create a link to share this Cart.";
+		var webServiceHtml = "Stream highlighted layers into an application.";
+		var downloadHtml = "Download highlighted layers to your computer.";
+		var removeHtml = "Remove selected layers from Cart.";
+		
+		var removeClick = function(){that.removeRows();};
+		var downloadClick = function(){that.downloadDialog();};
+		var mapItClick = function(){
+			var geoCommonsExport = new OpenGeoportal.Export.GeoCommons(that.createExportParams());
+			geoCommonsExport.exportDialog(that);
+		};
+		var webServiceClick = function(){that.shareServices();};
+		var shareClick = function(){that.shareLayers();};
+		
+			
+		this.addCartHeaderButton("removeFromCartButton", "Remove", removeHtml, "removeFromCart", removeClick);
+		this.addCartHeaderButton("downloadButton", "Download", downloadHtml, "download", downloadClick);
+		this.addCartHeaderButton("webServiceButton", "Web Service", webServiceHtml, "webService", webServiceClick);
+		this.addCartHeaderButton("shareButton", "Share", shareHtml, "shareLink", shareClick);
+		this.addCartHeaderButton("mapItButton", "MapIt", mapItHtml, "mapIt", mapItClick);
+
+		//Hover handler
+		var hideDetails = function(){
+						jQuery(".arrow_buttons").show();
+						jQuery("#optionDetails").hide();
+						jQuery(".button").removeClass("detailsBottom");
+						jQuery(".cartSelected, .cartUnavailable").removeClass("cartSelected cartUnavailable");
+				};
+		//hide on the header, rather than the buttons, so the ui doesn't flash
+		jQuery("#cartHeader.tableHeader").on("mouseleave", hideDetails);
+		//hide here, or it's annoying to get to tabs
+		jQuery("#optionDetails").on("mouseenter", hideDetails);
+		
+/*
+		
+				function(){if ((jQuery("#shareDialog").length == 0)||(!jQuery("#shareDialog").dialog("isOpen"))){jQuery("#optionDetails").hide();
+				jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");}});
+		.hover(function(){jQuery("#optionDetails").html(webServiceHtml).show();that.getLayerList("webService");},
+				function(){if ((jQuery("#shareServicesDialog").length == 0)||(!jQuery("#shareServicesDialog").dialog("isOpen"))){jQuery("#optionDetails").hide();	
+				jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");}});
+		jQuery("#downloadButton").hover(function(){jQuery("#optionDetails").html(downloadHtml).show();that.getLayerList("download");},
+				function(){if ((jQuery("#downloadDialog").length == 0)||(!jQuery("#downloadDialog").dialog("isOpen"))){jQuery("#optionDetails").hide();
+				jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");}});
+		jQuery("#removeFromCartButton").hover(function(){jQuery("#optionDetails").html(removeHtml).show();that.getLayerList("removeFromCart");},
+				function(){jQuery("#optionDetails").hide();jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");});
+				*/
+	};
+	
+	
+	
+	
+	
 	 //TODO: rewrite
 		this.initSortable = function(){
 			var that = this;
@@ -182,13 +886,13 @@ OpenGeoportal.CartTable = function CartTable(stateObj){
 					var tableLength = newArr.length;
 					for (var i in newArr){
 
-						if (typeof that.mapObject.getLayersByName(newArr[i][0])[0] != 'undefined'){
-							var layer = that.mapObject.getLayersByName(newArr[i][0])[0];
-							that.mapObject.setLayerIndex(layer, tableLength - (i+1));
+						if (typeof OpenGeoportal.ogp.map.getLayersByName(newArr[i][0])[0] != 'undefined'){
+							var layer = OpenGeoportal.ogp.map.getLayersByName(newArr[i][0])[0];
+							OpenGeoportal.ogp.map.setLayerIndex(layer, tableLength - (i+1));
 						}
 					}
 
-					that.cartTableObject.callbackExpand();
+					that.callbackExpand();
 
 				}
 			});

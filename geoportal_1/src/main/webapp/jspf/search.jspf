@@ -2,8 +2,8 @@
 		<form id="searchForm" onsubmit="return false;">
 			<div id="searchCol1" class="searchCol">
 		   		<div id="geosearchDiv" class="basicSearch whereBox searchFormRow searchRow1">
-		   			<label for="geosearch"><span class="labelText">Where:</span></label>
-		   			<input id="geosearch" type="text"/>
+		   			<label for="whereField"><span class="labelText">Where:</span></label>
+		   			<input id="whereField" type="text"/>
 				</div>
 				<div class="advancedSearch searchFormRow searchRow2">
 				    <span class="formCheckbox searchFormInput">		
@@ -19,10 +19,10 @@
 			</div>
 			<div id="searchCol2" class="searchCol">
 				<div class="basicSearch whatBox searchFormRow">
-					<label for="basicSearchTextField">
+					<label for="whatField">
 						<span class="labelText">What:</span>
 					</label>
-					<input id="basicSearchTextField" type="text" />
+					<input id="whatField" type="text" />
 				</div>
 				<div class="advancedSearch searchFormRow searchRow1">
     				<label for="advancedKeywordText">Keyword:</label>
@@ -35,7 +35,7 @@
       			</div>
       			<div class="advancedSearch searchFormRow searchRow3">
    			    	<label>Repository:</label>
-   					<div id="sourceDropdown" class="searchFormInput">
+   					<div id="repositoryDropdown" class="searchFormInput">
       				</div>
       			</div>
       			<div class="advancedSearch searchFormRow searchRow4">
@@ -46,8 +46,7 @@
    				</div>
 			</div>
 			<div id="searchCol3" class="searchCol">
-				<div class="basicSearch searchFormRow">
-					<span id="basicSearchSubmit" class="styledButtonSmall searchButton" >Search</span>	
+				<div class="basicSearch basicSearchButtons searchFormRow">
 					<span id="moreSearchOptions" class="searchToggle button offsetColor" >Advanced Search</span>
 				</div>
 				<div class="advancedSearch searchFormRow searchRow1">
@@ -63,8 +62,6 @@
         				</span>
         		</div>
         		<div class="advancedSearch searchFormRow advancedSearchButtons searchRow4">
-   					<span id="advancedSearchClear" class="styledButtonSmall">Clear</span>
-   					<span id="advancedSearchSubmit" class="styledButtonSmall searchButton">Search</span>
    					<span id="lessSearchOptions" class="searchToggle button offsetColor" >Basic Search</span>
     			</div>
 			</div>

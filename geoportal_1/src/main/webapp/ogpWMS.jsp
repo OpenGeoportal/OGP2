@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="application/vnd.ogc.wms_xml; charset=UTF-8"
     pageEncoding="UTF-8" import="javax.xml.transform.*, java.net.URLDecoder, javax.xml.transform.dom.*, javax.xml.transform.stream.*, org.OpenGeoPortal.Utilities.Http.*, 
     org.OpenGeoPortal.Solr.*, org.OpenGeoPortal.Metadata.LayerInfoRetriever, java.io.*, javax.xml.parsers.DocumentBuilderFactory, javax.xml.parsers.DocumentBuilder, 
-    org.w3c.dom.NodeList, org.w3c.dom.Node,org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.HashSet, java.util.List, org.springframework.context.*, 
+    org.w3c.dom.NodeList, org.w3c.dom.Node,org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.ArrayList, java.util.HashSet, java.util.List, org.springframework.context.*, 
     org.springframework.web.context.support.*, org.springframework.beans.factory.* "%><%
     	response.setHeader("Content-disposition","attachment; filename=\"wms\"");
 
@@ -40,70 +40,58 @@
    		String institution = solrRecords.get(0).getInstitution();
    		//String servicePoint = ParseJSONSolrLocationField.getWmsUrl(layerInfoMap.get(layerIds[0]).get("Location"));
    		//String serverName = servicePoint.substring(0, servicePoint.indexOf("/wms"));
-   		
    		String serverName = "http://geoserver01.uit.tufts.edu";
    		String servicePoint = serverName + "/wms";
    		String featureTypeInfo = "";
    		System.out.println(serverName);
-		for (int i = 0; i < layerIds.length; i++){
-			String workspace = "sde";
-   			//String workspace = layerInfoMap.get(layerIds[i]).get("WorkspaceName");
-   			String layerName = solrRecords.get(i).getName();
 
-   			InputStream inputStream = httpRequester.sendRequest(serverName + "/" + workspace + "/" + layerName + "/wms", "request=getCapabilities&version=1.1.1", "GET");
+		//parse the returned XML
+		// Create a factory
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		//ignore validation, dtd
+    	factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    	factory.setValidating(false);
+		// Use document builder factory
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		InputStream inputStream = httpRequester.sendRequest(serverName + "/wms", "request=getCapabilities&version=1.1.1", "GET");
+		//Parse the document
+		Document document = builder.parse(inputStream);
+		
 
-			//parse the returned XML
-			// Create a factory
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			//ignore validation, dtd
-        	factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        	factory.setValidating(false);
-			// Use document builder factory
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			//Parse the document
-			Document document = builder.parse(inputStream);
 		
 			NodeList layerNodeList = document.getElementsByTagName("Layer");
-			Node layerNode = null;
+			if (layerNodeList.getLength() == 0){
+				throw new Exception("Malformed GetCapabilities Document.");
+			}
+			List<Node> layerNodes = new ArrayList<Node>();
+			
 			for (int j = 0; j < layerNodeList.getLength(); j++){
 				Node currentLayerNode = layerNodeList.item(j);
 				if (currentLayerNode.getParentNode().getNodeName().equals("Layer")){
-					layerNode = currentLayerNode;
-					break;
+					for (SolrRecord currentRecord: solrRecords){
+			   			String layerName = currentRecord.getName();
+			   			System.out.println(layerName);
+			   			System.out.println(currentLayerNode.getTextContent());
+			   			if (currentLayerNode.getTextContent().toLowerCase().contains(layerName.toLowerCase())){
+			   				System.out.println("adding..." + layerName);
+							layerNodes.add(currentLayerNode);
+			   			}
+					}
 				}
 			}
-			if (layerNode == null){
-				continue;
-			}
 			
-	    	StringWriter stw = new StringWriter();
         	Transformer serializer = TransformerFactory.newInstance().newTransformer();
         	serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 			serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        	serializer.transform(new DOMSource(layerNode), new StreamResult(stw));
-       		featureTypeInfo += stw.toString();
-       		System.out.println(featureTypeInfo);
-		}
+			
+			for (Node layerNode: layerNodes){
+				StringWriter stw = new StringWriter();
+	        	serializer.transform(new DOMSource(layerNode), new StreamResult(stw));
+    	   		featureTypeInfo += stw.toString();
+       			System.out.println(featureTypeInfo);
+			}
         
-		/*for (int i = 0; i < elementNodes.getLength(); i++){
-			Node featureTypeNameElement = elementNodes.item(i);
-			String featureTypeName = featureTypeNameElement.getTextContent().trim();
-   			for (String layer : layerIds){
-   				String currentLayerName = layerInfoMap.get(layer).get("WorkspaceName") + ":" + layerInfoMap.get(layer).get("Name");
-   				System.out.println(currentLayerName);
-   				if (currentLayerName.equals(featureTypeName)){
-   					Node featureTypeElement = featureTypeNameElement.getParentNode();
-   			      	StringWriter stw = new StringWriter();
-   	            	Transformer serializer = TransformerFactory.newInstance().newTransformer();
-   	             	serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-					serializer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-   	            	serializer.transform(new DOMSource(featureTypeElement), new StreamResult(stw));
-   	            	featureTypeInfo += stw.toString();  
-   					break;
-   				}
-   			}
-		}*/
-		System.out.println(featureTypeInfo);
+		//System.out.println(featureTypeInfo);
 		if (featureTypeInfo.length() == 0){
 			throw new Exception("No features found.");
 		}

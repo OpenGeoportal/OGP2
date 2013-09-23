@@ -353,6 +353,7 @@
     z-index: 2000 !important;
     box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
 }
+.ui-menu { position: absolute;}
 .ui-menu .ui-menu { margin-top: -3px; position: absolute; }
 .ui-menu .ui-menu-item { margin: 0; padding: 0; zoom: 1; width: 100%; }
 .ui-menu .ui-menu-divider { margin: 5px -2px 5px -2px; height: 0; font-size: 0; line-height: 0; border-width: 1px 0 0 0; }
@@ -382,7 +383,7 @@ button.ui-button-icon-only { width: 2.4em; } /* button elements seem to need a l
 button.ui-button-icons-only { width: 3.7em; } 
 
 /*button text element */
-.ui-button .ui-button-text { display: block; /*line-height: 1.4;*/  }
+.ui-button .ui-button-text { display: inline-block; line-height: 1.4;  }
 .ui-button-text-only .ui-button-text { width: 75px; padding: 2px 0px; }
 .ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .4em; text-indent: -9999999px; }
 .ui-button-text-icon .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .4em 1em .4em 2.1em; }

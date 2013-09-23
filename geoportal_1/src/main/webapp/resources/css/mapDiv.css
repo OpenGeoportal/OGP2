@@ -1,10 +1,10 @@
 /* map panel */
 #map {
-	height: 100%;
+	min-height: 512px;
     margin: 0;
-  /*  width: 100%;*/
- 	/*min-width: 415px;*/
- 	float: right;
+ 	min-width: 512px;
+ 	position: absolute;
+ 	right: 0;
 }
 
 .map_expanded {
@@ -29,6 +29,16 @@
   	margin-top: 5px;
 }
 
+
+#ogpMapButtons .ui-button {
+    margin-right: 6px;
+}
+
+#basemapMenu {
+    display: inline-block;
+}
+
+
 .mapClearButtonItemInactive {
 	height: 20px;
 	width: auto;
@@ -52,11 +62,10 @@
 }
 
 #mapLoadIndicator {
-	position: absolute;
+	float: left;
 	width: 27px;
 	height: 25px;
-	left: 205px;
-	top: 3px;
+	margin: 5px 11px;
 }
 
 div.olControlMousePosition {

@@ -100,6 +100,9 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	    SolrQuery queryObj = new SolrQuery();
 	    queryObj.setQuery( query );
 		List<SolrRecord> results = solrClient.getSolrServer().query(queryObj).getBeans(SolrRecord.class);
+		if (results.isEmpty()){
+			throw new SolrServerException("The LayerId: '" + layerId.trim() + "' was not found.");
+		}
 		return results.get(0);
 	}
 

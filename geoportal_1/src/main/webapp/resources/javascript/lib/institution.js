@@ -12,10 +12,26 @@ if (typeof OpenGeoportal == 'undefined'){
 
 if (typeof OpenGeoportal.InstitutionInfo == 'undefined'){
 	OpenGeoportal.InstitutionInfo = {};
-} else if (typeof OpenGeoportal.InstitutionInfo !== "object"){
-    throw new Error("OpenGeoportal.InstitutionInfo already exists and is not an object");
+} else if (typeof OpenGeoportal.InstitutionInfo != "object"){
+    throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
+/*
+OpenGeoportal.Models.AppConfig = Backbone.Model.extend({
+	defaults: {
+		sName: "expandControls", 
+		sTitle: "", 
+		bVisible: true, 
+		aTargets: [ 1 ], 
+		sClass: "colExpand", 
+		sWidth: "10px", 
+		bSortable: false,
+		bUseRendered: false,
+		fnRender: function(oObj){return thisObj.getExpandControl(oObj);}
+	}
+});
+*/
 
+//tackle this later....I want to revamp parts of how this works anyway
 OpenGeoportal.InstitutionInfo.Config = {};
 OpenGeoportal.InstitutionInfo.Search = {};
 OpenGeoportal.InstitutionInfo.homeInstitution = "";
@@ -93,28 +109,37 @@ OpenGeoportal.InstitutionInfo.getSearch = function(){
 OpenGeoportal.InstitutionInfo.getInstitutionInfo = function(){
 	var configObj = OpenGeoportal.InstitutionInfo.Config;
 	//return the configObj if it is not empty
+
 	for (var i in configObj){
 		return configObj;
 	}
+
 	//otherwise, get set the configObj from the xml config file
 	OpenGeoportal.InstitutionInfo.requestInfo();
 	return OpenGeoportal.InstitutionInfo.Config;
 };
 
 OpenGeoportal.InstitutionInfo.requestInfo = function(){
+	var config = OpenGeoportal.InstitutionInfo.Config;
+
+	for (var i in config){
+		return;
+	}
+
 	var params = {
 		url: "resources/ogpConfig.json",
 		async: false,
 		contentType: "text/json",
-		dataType: 'json',
+		dataType: "json",
 		success: function(data){
-			var institutions = data["config"]["institutions"];
-			OpenGeoportal.InstitutionInfo.Search = data["config"]["search"];
-			OpenGeoportal.InstitutionInfo.institutionSpecificCss = data["config"]["institutionSpecificCss"];
-			OpenGeoportal.InstitutionInfo.institutionSpecificJavaScript = data["config"]["institutionSpecificJavaScript"];
-			OpenGeoportal.InstitutionInfo.institutionSpecificGoogleAnalyticsId = data["config"]["googleAnalyticsId"];
-			OpenGeoportal.InstitutionInfo.Config = institutions;
-			OpenGeoportal.InstitutionInfo.homeInstitution = data["config"]["homeInstitution"];
+
+			var config = data["config"];
+			OpenGeoportal.InstitutionInfo.Search = config["search"];
+			OpenGeoportal.InstitutionInfo.institutionSpecificCss = config["institutionSpecificCss"];
+			OpenGeoportal.InstitutionInfo.institutionSpecificJavaScript = config["institutionSpecificJavaScript"];
+			OpenGeoportal.InstitutionInfo.institutionSpecificGoogleAnalyticsId = config["googleAnalyticsId"];
+			OpenGeoportal.InstitutionInfo.Config = config["institutions"];
+			OpenGeoportal.InstitutionInfo.homeInstitution = config["homeInstitution"];
 		},
 		error: function(jqXHR, textStatus, errorThrown){
 			alert(textStatus);
@@ -122,24 +147,57 @@ OpenGeoportal.InstitutionInfo.requestInfo = function(){
 			alert(jqXHR);
 		}
 	  };
+
 	jQuery.ajax(params);
+	
 };
 
-OpenGeoportal.InstitutionInfo.getIcons = function(){
-	var dataTypes = {"dataTypes": {
-			  "Point": {"uiClass": "pointIcon", "displayName":"point"},
-			  "Line": {"uiClass": "lineIcon", "displayName":"line"},
-			  "Polygon": {"uiClass": "polygonIcon", "displayName":"polygon"},
-			  "Raster": {"uiClass": "rasterIcon", "displayName":"raster"},
-			  "PaperMap": {"uiClass": "mapIcon", "displayName":"scanned map"}/*,
-			  "LibraryRecord": {"source": OpenGeoportal.InstitutionInfo.imagePath + "type_library.png", "displayName":"library record"}*/
-			}
-	};
-	return dataTypes;
-};
 
-OpenGeoportal.InstitutionInfo.dataTypes = {	dataTypeArray : [{"DisplayName":"Point", "value": "point"}, 
-                                               	                 {"DisplayName":"Line", "value": "line"},
-                                            	                 {"DisplayName":"Polygon", "value": "polygon"}, 
-                                            	                 {"DisplayName":"Raster", "value": "raster"},
-                                            	                 {"DisplayName":"Scanned Map", "value": "paper map"}]};
+OpenGeoportal.InstitutionInfo.RepositoryCollection = Backbone.Collection.extend({
+	idAttribute: "id",
+	url: "resources/repositoryConfig.json"
+});
+
+//"value" should be the value in solr; uiClass determines what icon shows via css
+OpenGeoportal.InstitutionInfo.Repositories = new OpenGeoportal.InstitutionInfo.RepositoryCollection();
+OpenGeoportal.InstitutionInfo.Repositories.fetch();
+
+
+OpenGeoportal.InstitutionInfo.DataTypeCollection = Backbone.Collection.extend({
+});
+
+//"value" should be the value in solr; uiClass determines what icon shows via css
+OpenGeoportal.InstitutionInfo.DataTypes = new OpenGeoportal.InstitutionInfo.DataTypeCollection(
+		[
+		 {
+			 value: "Point",
+			 displayName: "Point",
+			 uiClass: "pointIcon",
+			 selected: true
+		 },
+		 {
+			 value: "Line",
+			 displayName: "Line",
+			 uiClass: "lineIcon",
+			 selected: true
+		 },
+		 {
+			 value: "Polygon",
+			 displayName: "Polygon",
+			 uiClass: "polygonIcon",
+			 selected: true
+		 },
+		 {
+			 value: "Raster",
+			 displayName: "Raster",
+			 uiClass: "rasterIcon",
+			 selected: true
+		 },
+		 {
+			 value: "Paper+Map",
+			 displayName: "Scanned Map",
+			 uiClass: "mapIcon",
+			 selected: true
+		 }
+		 ]
+);

@@ -9,11 +9,11 @@ This file has been heavily modified from the original template
 
 :focus {outline:none;}
 
-html, body {
+/*html, body {
     height: 100%;
     margin: 0;
     width: 100%;
-}
+}*/
 
 body {
 	text-align: left;
@@ -23,6 +23,10 @@ body {
 	font-family: arial, sans-serif;
 	font-size: 12px;
 	color: black;
+}
+
+.hiddenElements {
+	display: none;
 }
 
 img {
@@ -53,37 +57,6 @@ h3 {
  	cursor: pointer;
 }
 
-.styledButton {
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-    background: linear-gradient(#FFFFFF, #EEEEEE) repeat scroll 0 0 transparent;
-    border: 1px solid #999999;
-    color: #000000;
-    cursor: pointer;
-    font-family: arial;
-    padding: 2px 0px;
-    min-width: 88px;
-    text-align: center;
-    display: inline-block;
-}
-
-
-.mapStyledButton {
-	-moz-border-radius: 2px 2px 2px 2px;
-	border-radius: 2px 2px 2px 2px;
-    background: #EEEEEE;
-    border: 1px solid #AEAEAE;
-    color: #000;
-    cursor: pointer;
-    font-family: arial;
-    font-size: 12px;
-    margin: 0.5em 0.4em 0.5em 0;
-    padding: 3px 11px;
-   /* min-width: 88px;*/
-    text-align: center;
-    display: inline-block;
-}
-
 .raised {
     -webkit-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
     -moz-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
@@ -96,46 +69,32 @@ h3 {
   box-shadow:         0px 3px 4px -1px #888888 inset;
 }
 
-.styledButton:hover {
-	color: #417DC1;
-	}
-
-.styledButtonSmall {
-	-moz-border-radius: 3px 3px 3px 3px;
-    /*background: none repeat scroll 0 0 #EEEEEE;*/
-    background: linear-gradient(#FFFFFF, #EEEEEE) repeat scroll 0 0 transparent;
-    border: 1px solid #999999;
-    border-radius: 3px 3px 3px 3px;
-    color: #000000;
-    cursor: pointer;
-    display: inline-block;
-    font-family: arial;
-    font-size: 12px;
-    font-weight: normal;
-    line-height: 18px;
-    min-width: 50px;
-    padding: 1px 10px;
-    text-align: center;
+.shadowRight {
+  -moz-box-shadow:    3px 0px 4px 1px #888888 inset;
+  -webkit-box-shadow: 3px 0px 4px 1px #888888 inset;
+  box-shadow:         3px 0px 4px 1px #888888 inset;
 }
 
 .searchButton {
-    background: #307DB9;
-    color: #FFF;
-    border: 0;
-    padding: 2px 11px;
-   /* margin: 0.5em 0.4em 0.5em 0;*/ 
+    background: none repeat scroll 0 0 #307DB9;
+    border: 1px solid #307DB9;
+    color: #FFFFFF;
 }
 
-.mapClearButton {
-	float: right;
-    margin-right: 15px;
-    margin-top: 5px;
+#mapClearButton {
+    float: right;
+    margin-top: 1px;
+    right: 17px;
 }
 
-.styledButtonSmall:hover {
-	/*color: #417DC1;*/
-	}
-	
+#sortDropdown {
+    margin-left: 12px;
+}
+
+#sortDropdown .select .ui-button-text {
+    width: 70px;
+}
+
 .owsServicesButton {
 	width: 100%;
 	text-align: left;	
@@ -145,6 +104,7 @@ h3 {
 	width: 100%;	
 }
 
+
 .warning {
 	color: #FF5555;
 }
@@ -153,28 +113,18 @@ h3 {
 	font-weight: bold;
 }
 
+.directionsText {
+    padding: 20px;
+}
+/*2*/
 #metadataDownloadButton {
-	padding-left: 20px;
-	padding-right: 20px;
-	float: right;
-    margin-right: 5px;
-    margin-top: 3px
+	right: 2.3em;
 	}
 
- div#main {
- 	width: 100%;
- 	min-width: 1002px;
- 	/*width: 1002px;*/
- 	margin: 0 auto;
- 	/*background-color: #fff;*/
- 	/*text-align: left;*/
- 	opacity: 0;
- }
  
 /* Header */
 #header {
 	height: 120px;
-  	/*background-color: #edf4fa;*/
   	background-color: #ffffff;
 	border-right: #CCCCCC solid 1px;
 	border-left: #CCCCCC solid 1px;
@@ -232,39 +182,57 @@ h3 {
 	visibility: hidden;
 }
 
-/* Menu */
-#menu {
-	position: absolute;
-	top: 62px;
-	height: 25px;
-	width: inherit; 
-	min-width: 1000px;
+
+.styledSelect > ul {
+    max-height: 160px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: absolute;
+    z-index: 1500;
 }
 
-.styledDropdown {
-	display: inline-block;
+
+.searchFormInput.dropdown {
+    display: inline-block;
 }
 
-.styledSelect {
-	line-height: 10px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	font-family: Arial;
-	color: #000000 !important;
-	z-index: 999;
-	padding-left: 11px;
-	text-align: left;
+.searchFormInput.dropdown .select.ui-button {
+	width: 198px;
 }
 
+.searchFormInput.dropdown ul {
+	min-width: 196px;
+}
 .searchFormInput > .styledSelect {
 	width: 220px;
 }
 
-.styledSelect:hover{
-	/*color:#417DC1 !important;
-	background: #ffffff url(../media/tab_bg.gif) 50% 50% repeat-x;*/
+.dropdown .ui-menu-item > a > div {
+    display: inline-block;
+    margin-right: 9px;
+}
+.dropdown .ui-menu-item > a > div.checkOff {
+    float: right;
+    position: absolute;
+    right: 5px;
+}
+.dropdown .ui-menu-item > a > div.checkOn {
+    float: right;
+    position: absolute;
+    right: 5px;
+}
+.selectText {
+    vertical-align: top;
 }
 
+.advancedSearchButtons > div {
+	display: inline-block;
+}
+
+.basicSearchButtons > div {
+	display: inline-block;
+}
+/*
 .styledSelect > span {
 	width: 100% !important;
 }
@@ -274,8 +242,8 @@ h3 {
     min-width: 55px;
     overflow: hidden;
     white-space: nowrap;
-}
-
+}*/
+/*
 .styledSelectArrow {
 	float: right;
 	background: url("../media/geodata-sprite.png") no-repeat scroll -66px -83px transparent;
@@ -301,10 +269,10 @@ h3 {
 
 .styledSelectMenu label {
 	background-image: none !important;	
-	border: none !important;
+	border: none !important;*/
 	/*-moz-border-radius: 0px;
 	border-radius: 0px;*/
-	background-color: #ffffff !important;
+/*	background-color: #ffffff !important;
 	width: 97%;
 	padding-left: 5px;
 	display: inline-block;
@@ -335,118 +303,27 @@ h3 {
 	background-color:#EDF4FA !important;
 }
 
-#basemapDropdown {
-	display: inline-block;
-	vertical-align: top;
-}
-
-#basemapSelect {
-	/*height: 24px;
-	-moz-border-radius: 4px 4px 0px 0px;
-	border-radius: 4px 4px 0px 0px;
-	background-color: #ffffff;
-	z-index: 2500;
-	border-bottom: none;*/
-	line-height: 10px;
-}
-
-#basemapSelect:hover{
-	color:#417DC1;
-}
-
-#basemapSelect > span > span > img {
-	padding-left: 2px;
-	margin-bottom: -1px;
-}
-
-#basemapMenu {
-	display: none;
-	position: absolute;
-	background-color: #eeeeee;
-	border: #999999 solid 1px;
-	z-index: 2499;
-	top: 29px;
-	width: 100px;
-}
-
-#basemapMenu label {
-	background-image: none;	
-	display: block;
-	border: none;
-	-moz-border-radius: 0px;
-	border-radius: 0px;
-	margin: 0px;
-	padding: 2px 5px;
-	background-color: #eeeeee;
-}
-
-#basemapMenu label.ui-state-active {
-	color:#417DC1;
-}
-
-#basemapMenu label > span {
-	width: 100%;
-	text-align: left;
-}
-
-#basemapMenu label:hover {
-	background-color:#EDF4FA;
-}
-
-#sortDropdown {
-	display: inline-block;
-	margin-left: 10px;
-}
-
-#sortDropdownMenu {
-	width: 125px;
-	overflow: hidden;
-	margin-top: -3px;
-}
-
-.subHeaderDropdownSelect {
-    font-size: 12px;
-    margin: 0;
-    top: 0px;
-}
-
-#columnDropdown {
-    /*float: right;*/
-    margin-top: 1px;
-    padding-right: 5px;
-}
-
-#columnDropdownMenu {
-	width: 125px;	
-	overflow: hidden;
-	margin-top: -3px;
-}
-
-#columnDropdownMenu input {
-	left: 100px;
-}
-
 #dataTypeDropdownMenu {
 	overflow: hidden;
 }
 
 #sourceDropdownMenu {
 	overflow: hidden;
-}
+}*/
 
 /* Container */
 #container {
 	background-color: #fff;
 	border-right: #CCCCCC solid 1px;
 	border-left: #CCCCCC solid 1px; 
-	border-bottom: #CCCCCC solid 1px; 
-	min-height:680px;
-	height: 100%;
+	/*min-height:512px;*/
+	/*height: 100%;*/
+	overflow: hidden;
 }
 
 /* left column panel */
 #left_col {
-	width: 450px;
+	height: 100%;
 	border-right: #999 solid 1px; 	 
 	float:left;
 	cursor: default;
@@ -456,50 +333,54 @@ h3 {
 #left_tabs {
  	color:#666666;
  	font-size:10px;
- 	/*min-height: 680px !important;*/
  	height: 100%;
 }
- 
+
 #tabs {
-  	background: none !important;
-  	background-color: transparent !important;
-  	height: 100%;
-  	margin-top: 7px;
+	border: 0;
+	z-index: 1001;
+	min-height: 100%;
 }
 
-#tabs > ul {
-	padding-left: 15px;
-	/*position: absolute;*/
-	/*top: -20px;*/
+#tabs > .ui-resizable-e {
+	background: none repeat scroll 0 0 red;
 }
 
-#tabs > ul > li > a {
-	text-decoration: none;
+.resizableCol > .ui-resizable-e{
+	cursor: e-resize;
+	float: right;
+    height: 14px;
+    margin: 0 -9px 0 0;
+    position: static;
+    width: 7px;
 }
 
-.sub_header {
-	height: 32px;
-	line-height: 32px;
-	background: #eeeeee;
-	border-top:1px solid #CCC;
-	font-size: 12px;
-	clear: both;
+#left_col > .ui-resizable-se {
+    cursor: col-resize;
+    height: 100% !important;
+    right: 0;
+    width: 7px !important;	
+    z-index:2147483647 !important
+   }
+
+.tableHeader {
+	background: linear-gradient(#EAEAEA, #D3D3D3) repeat scroll 0 0 transparent;
+	border-bottom: 1px solid #999999;
+    padding: 2px;
 }
 
-.sub_header button.styledSelect {
-	font-size: 11px;
-	width: 75px;
+.tableHeader > div{
+	display: inline-block;
 }
 
-.sub_header .styledSelectText {
-	width: 60px;
+.tableHeader .button {
+    margin-right: 5px;
 }
-
 .arrow_buttons {
     float: right;
     margin-top: 3px;
     position: relative;
-    z-index: 9;
+    z-index: 1002;
  }
  
  .shoppingCartIcon {
@@ -536,15 +417,8 @@ h3 {
 }
 
 .tabText {
-	font-size: 14px;
-	font-family: Arial, sans-serif;
-	font-weight: bold;
-	width: 86px;
-	display: block;
-	text-align:center;
-	color: #404143;
-	height: 20px;
-    line-height: 20px;
+	height: 22px;
+	padding-top: 2px;
 }
 
 #searchTabText {
@@ -561,12 +435,12 @@ h3 {
 }
 
 #basicSearchDiv {
-	min-height: 680px;
+	/*min-height: 680px;*/
 	height: 100%;
 }
 
 #roll_right {
-	min-height:680px;
+	min-height:512px;
 	width:25px;
 	border-right: 1px solid #999999;
 	background-color: #eeeeee;
@@ -585,10 +459,6 @@ h3 {
 	display: none;
 }
 
-#resultsSubHeader > div {
-	display: none;
-}
-	
 .sub_headerTitle {
 	margin-left: 20px;
 	color: #003366;
@@ -627,11 +497,24 @@ textarea:focus {
 }
 
 .searchBox {
-	padding-top: 2px;
-	padding-left: 50px;
-	font-family: arial,sans-serif;
-	font-size: 12px;
-	/*width: 345px;*/
+    background: none repeat scroll 0 0 white;
+    border-bottom: 1px solid #CCCCCC;
+    font-family: arial,sans-serif;
+    font-size: 12px;
+    height: 30px;
+    padding-bottom: 23px;
+    padding-top: 2px;
+    position: absolute;
+    top: 65px;
+    width: 100%;
+    z-index: 1500;
+}
+
+#leftColSpacer {
+	background-color: #FFFFFF;
+    position: relative;
+    z-index: 1490;
+    height: 0px;
 }
 
 .advancedSearchButtons {
@@ -764,7 +647,6 @@ div#goButton:hover {
 
 .searchCol {
 	position: absolute;
-	top: 70px;
 	width: 302px;
 	margin-right: 42px;
 }
@@ -836,6 +718,19 @@ div#goButton:hover {
 	display: none;
 }
 
+#cartTable {
+	width: 100%;
+}
+
+#cartHeader {
+    padding-right: 40px;
+    text-align: right;
+}
+
+#removeFromCartButton {
+    float: left;
+    margin-left: 20px;
+}
 .table_header {
 	font-size:11px;
 }
@@ -882,14 +777,14 @@ div#goButton:hover {
 
 /* footer */      
 #footer {
- 	/*text-align: center;
- 	vertical-align:middle;*/
+    z-index: 1050;
 	height: 30px;
 	background: #FFF;
-	border-right: #DDD solid 1px;
-	border-left: #DDD solid 1px;
-	border-bottom: #DDD solid 1px;
+	border: #CCCCCC solid 1px;
 	font-size: 13px;
+	position: fixed;
+	bottom: 0;
+    width: 100%;
 }	
  
 #footerLogos {
@@ -1138,15 +1033,14 @@ td.attributeName:hover {
 }
 
 .getFeatureTitle {
-	 color: #003366; 
-	 font-family: Trebuchet MS; 
-	 font-weight: lighter; 
-	 font-size: 13px; 
-	 padding: 10px;
+    font-size: 14px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    text-align: left;
 }
 
 .columnSort {
-	display: inline-block;
 	width: 19px;
 	height: 19px;
 }
@@ -1166,8 +1060,21 @@ td.attributeName:hover {
 }
 
 #optionDetails {
-	height: 17px;
-	padding: 5px;
+	display: none;
+    background: none repeat scroll 0 0 #4B8ACF;
+    height: 34px;
+    left: 0;
+    position: absolute;
+    text-align: left;
+    top: 0;
+    width: 100%;
+    overflow: visible;
+}
+
+#optionText {
+	color: white;
+    font-size: 14px;    
+    padding: 9px 5px 9px 20px;
 }
 
 #requestTickerContainer {
@@ -1255,13 +1162,13 @@ iframe.download {
 /********
 Preview controls
 *********/
-.previewOff {
+.checkOff {
 	background: url("../media/geodata-sprite.png") no-repeat scroll -61px -109px transparent;
 	width: 25px;
 	height: 17px;
 }
 
-.previewOn {
+.checkOn {
 	background: url("../media/geodata-sprite.png") no-repeat scroll -84px -109px transparent;
 	width: 25px;
 	height: 17px;
@@ -1424,7 +1331,7 @@ padding: 10px 20px;
 color: white;
 box-shadow: 0 0 7px black;
 display: none;
-/*z-index: 2147483647;*/
+z-index: 9999;
 }
 .triangle-isoscelesBackground.top-arrowBackground:after {
     border-color: #61729E transparent;
@@ -1468,3 +1375,19 @@ display: none;
     position: absolute;
 }
 
+ .detailsBottom:after {
+ 	    content: "";
+    position: absolute;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+   /* box-shadow: 6px 5px 9px -9px black;*/
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    tranform: rotate(45deg);
+   border-bottom: 8px solid #4B8ACF;
+    top: -14px;
+    z-index: 999;
+  }

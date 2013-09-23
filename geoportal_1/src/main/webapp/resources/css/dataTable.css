@@ -31,8 +31,10 @@
  */
 
 .dataTables_wrapper {
-	position: relative;
+	/*position: relative;*/
 	zoom: 1; /* Feeling sorry for IE */
+	font-family: Verdana, Geneva, sans-serif;
+	font-size: 11px;
 }
 
 .dataTables_processing {
@@ -48,8 +50,10 @@
 	text-align: center;
 	color: #999;
 	font-size: 14px;
-	background-color: white;
+	background-color: #FFFFFF;
+	z-index: 2;
 }
+
 
 .dataTables_length {
 	width: 40%;
@@ -105,7 +109,6 @@
  */
 table.display {
 	margin: 0px;
-	font-family: Arial, sans-serif;
 	border-collapse: collapse;
 	table-layout: fixed;
 	cursor: default;
@@ -132,14 +135,26 @@ table.display thead th {
 	border-collapse:collapse;
 	padding: 3px;
 	margin: 0px;
-	border: 1px solid rgb(204, 204, 204);
-	background-color:#FFFFFF;
-	font-size: 11px;
-	color: #333333;
+	/*border: 1px solid rgb(204, 204, 204);*/
+	border-color: #CCCCCC;
+    /*border-right: 1px solid #CCCCCC;*/
+    border-style: none solid solid;
+    border-width: 0 1px 1px;
+	/*background-color:#FFFFFF;*/
+	font-size: 12px;
+	color: #000000;
 	font-weight: normal;
 	/* cursor: hand;*/
 }
 
+/* text columns */
+td.colTitle .searchResultsTableCell {
+   	margin-right: 3px;
+    overflow: hidden;
+    color: #000000;
+}
+    
+    
 #resultsTable th:hover {
 	color:#417dc1;
 }
@@ -163,13 +178,14 @@ table.display tr.heading2 td {
 }
 
 table.display > tbody > tr > td {
-	padding: 4px 3px;
+	padding: 3px;
 	overflow: hidden;
-	font-size: 12px;
-	color: #333333;
+	color: #4E4E4E;
 	height: 17px;
-	border: 0px;
-	border-color: #FFFFFF;
+    border-collapse: collapse;
+    border-color: #FFFFFF;
+    border-style: none solid solid;
+    border-width: 0 1px 1px;
 	white-space: nowrap;	
 }
 
@@ -201,8 +217,19 @@ th.colChkBoxes {
 	clear: both;
 }
 
+.dataTables_scrollHead {
+	border-bottom: 1px solid #cccccc !important;	
+	height: 24px; /*preserve basic layout, even if header gets wonky */
+}
+
+.dataTables_scrollHead tbody{
+	background-color: #F8F8E4;
+}
+
 .dataTables_scrollBody {
 	*margin-top: -1px;
+ 	overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 .top, .bottom {
@@ -281,19 +308,30 @@ td.details {
 	background-color: #99B3FF;
 }
 
-table.display tr td {
-	background-color:#FFFFFF;
-}
 
-table.display tr.row_selected td {
+
+
+table.display tr.row_selected { 
 	background-color:#ebf6ff;
 }
 
-table.display tr.downloadSelection td {
+table.display tr.row_selected td { 
+	border-color:#ebf6ff;
+}
+
+table.display tr.row_selected_top td {
+	border-bottom: #d8e8fa 1px solid !important;
+}
+
+table.display tr.row_selected_bottom td {
+	border-bottom: #d8e8fa 1px solid !important;
+}
+
+table.display tr.cartSelected td {
 	background-color:#CDE4FA;
 }
 
-table.display tr.downloadUnselection td {
+table.display tr.cartUnavailable td {
 	opacity: .6;
 }
 
@@ -318,7 +356,7 @@ div.box {
 	position: absolute;
 }
 
-.opacitySlider {
+/*.opacitySlider {
 	position: relative;
 	overflow: visible;
 }
@@ -326,6 +364,32 @@ div.box {
 .opacitySlider > div {
 	display:inline;
 	position:absolute;
+}*/
+
+.sliderControl > div {
+	color: #231F20;
+	background-color: #FFFFFF;
+}
+
+.sliderDisplay {
+	font-size: 10px;
+	border: 1px solid #aaaaaa;
+    border-radius: 3px 0 0 3px;
+    padding-left: 5px;
+    padding-right: 2px;
+    display: inline-block;
+}
+
+.sliderArrow {
+	background: url("../media/geodata-sprite.png") no-repeat scroll -65px -84px transparent;
+   	border-bottom: 1px solid #aaaaaa;
+    border-radius: 0 3px 3px 0;
+    border-right: 1px solid #aaaaaa;
+    border-top: 1px solid #aaaaaa;
+    height: 15px;
+    vertical-align: top;
+    width: 14px;
+    display: inline-block;
 }
 
 .controlContainer {
@@ -333,14 +397,13 @@ div.box {
 	border: 1px solid #aaaaaa;
 	background: white;
 	height: 11px;
-	padding: 5px 4px 0px 8px;
+	width: 71px;
+	padding: 5px 10px 5px 8px;
+	right: 0;
+	top: 100%;
 	display: none;
 	}
 
-.controlContainer > div > img {
-	padding-bottom: 10px;
-	padding-top: 0px;
-}
 
 .controlText{
 	height: 13px;
@@ -349,13 +412,11 @@ div.box {
 	padding: 0px 1px;
 	}
 	
-.opacityText {
+/*.opacityText {
 	width: 26px;
 	}
+*/
 
-.controlExpand {
-	padding-left: 1px;
-	}
 	
 .sizeText {
 	}
@@ -363,7 +424,7 @@ div.box {
 .colorControl {
 	width:12px;
 	height:12px;
-	border:1px solid #666666;
+	border:1px solid #aaaaaa;
 	display: inline-block;
 	-moz-border-radius: 1px;
 }
@@ -372,10 +433,10 @@ td.colTitle {
 	cursor: pointer;
 }
 
-.ui-resizable-helper { 
+/*.ui-resizable-helper { */
 	/*border-right: 1px solid black;*/
-	margin-right: -5px;
-}
+	/*margin-right: -5px;
+}*/
 	
 .tableCheckBox {
 	/*margin-bottom: 0px;*/
@@ -393,16 +454,27 @@ td.colTitle {
 	background: url("../media/sort_desc.png") no-repeat right transparent;
 }
 
-.opacityControlCell {
-	left: 85px;
+.sizeControlCell .sliderLabel {
+    display: inline-block;
+    width: 50px;
 }
 
+.opacityControlCell {
+	left: 71px;
+}
+
+.opacityControlCell .sliderValue {
+	display: inline-block;
+	width: 19px;
+	text-align: right;
+}
 .sizeControlCell {
-	left: 175px;
+	left: 172px;
 }
 
 .colorControlCell {
-	left: 250px;
+    left: 271px;
+    margin-top: 1px;
 }
 
 .expandControl {
@@ -419,14 +491,14 @@ td.colTitle {
 }
 
 .zoomToLayerControl {
-	left: 290px;
+	left: 301px;
 	background: url("../media/geodata-sprite.png") no-repeat scroll -9px -110px transparent;
     height: 17px;
 	width: 17px;
 }
 
 .attributeInfoControl {
-	left: 312px;
+	left: 323px;
     height: 17px;
 	width: 17px;
 }
@@ -470,7 +542,7 @@ table.display > thead > tr > th > div {
 
 table.display > tbody > tr > td > div {
 	height: 17px;
-	line-height: 17px;
+	line-height: 15px;
 }
 
 .opacityControl {

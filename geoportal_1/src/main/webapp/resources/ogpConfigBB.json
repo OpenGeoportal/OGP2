@@ -1,0 +1,7 @@
+{
+ "customCss": "", 
+ "customJavaScript": "", 
+ "googleAnalyticsId": "UA-19787732-1", 
+ "solrUrl": "http://localhost:8080/solr/select"
+ }
+

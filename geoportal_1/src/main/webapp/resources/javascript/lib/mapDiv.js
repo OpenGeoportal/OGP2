@@ -16,26 +16,15 @@ if (typeof OpenGeoportal == 'undefined'){
 //some code to test presence of OpenLayers, check version?
 
 //MapDiv Constructor
-OpenGeoportal.MapController = function(stateObj) {	
+OpenGeoportal.MapController = function() {	
 
-	//we only want one copy of this;  we can make this a singleton or call it from main.
-	this.appState = stateObj;
-
-	//really, we're just checking to make sure something was passed in
-	if (typeof this.appState === "undefined"){
-		throw new Error("An appropriate state object must be passed to the constructor of MapController.");
-	}
-	
-	this.layerState = this.appState.layerState;
-	this.template = this.appState.template;
+	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
+	this.template = OpenGeoportal.ogp.appState.get("template");
 	
 	this.config = OpenGeoportal.InstitutionInfo;
 	
-	this.userMapAction = false;
 	var analytics = new OpenGeoportal.Analytics();
 		
-	this.currentAttributeRequest = false;
-	this.prevExtent = "";
 
 	this.createMap = function(containerDiv, userOptions){
 		//set default for the name of the map div
@@ -44,9 +33,22 @@ OpenGeoportal.MapController = function(stateObj) {
 		}
 		this.containerDiv = containerDiv;
 		this.createMapHtml(containerDiv);
-		this.createOLMap(userOptions);
+		
+		try {
+			this.createOLMap(userOptions);
+		} catch (e){
+			console.log("problem creating ol map");
+			console.log(e);
+		}
+		
 		this.initMap();
+
+		try {
 		this.registerMapEvents();
+		} catch (e){
+			console.log("problem registering map events");
+			console.log(e);
+		}
 	};
 
 	this.createMapHtml = function(div){
@@ -64,9 +66,16 @@ OpenGeoportal.MapController = function(stateObj) {
 			previousOptions:{title: "Zoom to previous geographic extent"}});
 		var zoomBox = new OpenLayers.Control.ZoomBox(
 				{title:"Click or draw rectangle on map to zoom in"});
-		var zoomBoxListener = function(){jQuery(document).trigger("zoomBoxActivated")};
+		var that = this;
+		var zoomBoxListener = function(){
+				jQuery('.olMap').css('cursor', "-moz-zoom-in");
+				that.previewed.resetState('getFeature');
+			};
 		zoomBox.events.register("activate", this, zoomBoxListener);
-		var panListener = function(){jQuery(document).trigger("panActivated")};
+		var panListener = function(){
+				jQuery('.olMap').css('cursor', "-moz-grab");
+				that.previewed.resetState('getFeature');
+			};
 		var panHand = new OpenLayers.Control.Navigation(
 				{title:"Pan by dragging the map"});
 		panHand.events.register("activate", this, panListener);
@@ -92,14 +101,21 @@ OpenGeoportal.MapController = function(stateObj) {
 		var displayCoords = new OpenLayers.Control.MousePosition({displayProjection: new OpenLayers.Projection("EPSG:4326")});
 
 		var mapBounds = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
-
+	
+		var initialZoom = 1;
+		
+		if (jQuery('#' + this.containerDiv).parent().height() > 896){
+			initialZoom = 2;
+			//TODO: this should be more sophisticated.  width is also important
+			//initialZoom = Math.ceil(Math.sqrt(Math.ceil(jQuery('#' + this.containerDiv).parent().height() / 256)));
+		}
 		var options = {
 				allOverlays: true,
 				projection: new OpenLayers.Projection("EPSG:900913"),
 				maxResolution: 2.8125,
 				maxExtent: mapBounds,
 				units: "m",
-				minZoomLevel: 1,
+				zoom: initialZoom,
 				controls: [new OpenLayers.Control.ModPanZoomBar(),
 				           new OpenLayers.Control.ScaleLine(),
 				           displayCoords,
@@ -110,7 +126,7 @@ OpenGeoportal.MapController = function(stateObj) {
 		//merge default options and user specified options into 'options'--not recursive
 		jQuery.extend(userOptions, options);
 		//div defaults to 0 height for certain doc-types; we want the map to fill the parent container
-		jQuery('#' + this.mapDiv).height(jQuery('#' + this.mapDiv).parent().parent().height());
+		jQuery('#' + this.mapDiv).height("512px");
 
 		//call OpenLayers.Map with function arguments
 
@@ -126,17 +142,34 @@ OpenGeoportal.MapController = function(stateObj) {
 
 	this.initMap = function (){
 		//default background map
-		this.setBackgroundMap();
+		this.basemaps = this.createBaseMaps();
+		var defaultBasemapModel = this.basemaps.findWhere({name: "googlePhysical"});
+		this.setBasemap(defaultBasemapModel);
+		defaultBasemapModel.get("initialRenderCallback").apply(defaultBasemapModel, [this]);
+		var that = this;
+		this.basemaps.listenTo(this.basemaps, 'change:selected', function(model){that.setBasemap(model);});
 
+		try{
 		var center = this.WGS84ToMercator(0, 0);
 		//set map position
 		this.setCenter(center);	
-		this.prevExtent = this.getExtent();
 		
 		this.addMapToolbarButton({displayClass: "saveImageButton", title: "Save map image", buttonText: "Save Image"}, this.saveImage);
-		this.addMapToolbarButton({displayClass: "printButton", title: "Print map", buttonText: "Print Map"}, OpenGeoportal.Utility.doPrint);
-
-		this.createBasemapMenu();
+		this.addMapToolbarButton({displayClass: "printButton", title: "Print map", buttonText: "Print"}, OpenGeoportal.Utility.doPrint);
+		this.addToMapToolbar(this.template.basemapMenu());
+		this.basemapMenu = new OpenGeoportal.Views.CollectionSelect({
+										collection: this.basemaps, 
+										el: "div#basemapMenu",
+										valueAttribute: "name",
+										displayAttribute: "displayName",
+										buttonLabel: "Basemap",
+										itemClass: "baseMapMenuItem"
+										});
+		jQuery(".olMap").find("[id*=event]").addClass("shadowDown").addClass("shadowRight");
+		} catch (e){
+			console.log("problem creating basemap menu?");
+			console.log(e);
+		}
 	};
 
 	this.registerMapEvents = function(){
@@ -153,15 +186,16 @@ OpenGeoportal.MapController = function(stateObj) {
 		this.events.register('zoomend', this, function(){
 			var zoomLevel = that.getZoom();
 			//console.log(zoomLevel);
-			if (zoomLevel >= (that.backgroundMaps(that.getCurrentBackgroundMap()).zoomLevels - 1)){
-				that.changeBackgroundMap("googleHybrid");
+			var maxZoom = that.basemaps.findWhere({selected: true}).get("zoomLevels");
+			if (zoomLevel >= (maxZoom - 1)){
+				that.basemaps.findWhere({name: "googleHybrid"}).set({selected: true});
 				that.zoomTo(that.getZoom());
 			} else {
-				if (that.getBackgroundType() !== that.getCurrentBackgroundMap()){
+				/*if (that.getBackgroundType() !== that.getCurrentBackgroundMap()){
 					that.changeBackgroundMap(that.getCurrentBackgroundMap());
-				}
+				}*/
 			}
-			var mapHeight = Math.pow((zoomLevel + 2), 2) / 2 * 256;
+			var mapHeight = Math.pow((zoomLevel + 1), 2) / 2 * 256;
 			var containerHeight = jQuery("#" + that.mapDiv).parent().parent().height();
 			if (mapHeight > containerHeight){
 				mapHeight = containerHeight;
@@ -178,7 +212,12 @@ OpenGeoportal.MapController = function(stateObj) {
 		});
 
 		this.events.register('moveend', this, function(){
-			jQuery(document).trigger('eventMoveEnd');
+			console.log("moveend");
+			var newExtent = that.getSearchExtent();
+			console.log(newExtent);
+			//TODO: move this to the map object, register the map object in app state
+			//that.appState.set({mapExtent: newExtent});
+			jQuery(document).trigger('map.extentChanged', {mapExtent: newExtent});
 		});
 
 		this.bboxHandler();
@@ -187,9 +226,51 @@ OpenGeoportal.MapController = function(stateObj) {
 		this.zoomToLayerExtentHandler();
 		this.previewLayerHandler();
 		this.getFeatureInfoHandler();
-
+		this.geocodeLocation();
+		this.clearLayersHandler();
+		this.attributeDescriptionHandler();
 	};
 
+	this.mouseCursorHandler = function(){
+		var that = this;
+		jQuery('.olMap').css('cursor', "-moz-grab");
+		jQuery(document).bind('zoomBoxActivated', function(){
+			/*
+			var mapLayers = that.mapObject.layers;
+			for (var i in mapLayers){
+				var currentLayer = mapLayers[i];
+				if (layerStateObject.layerStateDefined(currentLayer.name)){
+					if (layerStateObject.getState(currentLayer.name, "getFeature")){
+						//that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+						layerStateObject.setState(currentLayer.name, {"getFeature": false});
+					}
+				} else {
+					continue;
+				}
+			}*/
+			
+			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+		});
+		
+		jQuery(document).bind('panActivated', function(){
+
+			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+		});
+	};
+
+	this.clearLayersHandler = function(){
+		var that = this;
+				//TODO: this should be in the previewed layers view.  clearing the map should update the previewed layers collection, which triggers
+		//removal from the map.
+		var mapClear$ = jQuery("#mapClearButton");
+		mapClear$.button();
+		mapClear$.on("click", function(event){
+			//alert("button clicked");
+			console.log(event);
+			that.clearMap();}
+		);
+	};
+	
 	this.mapControlUIHandler = function(){
 		//'hover' for graphics that are not background graphics
 		var zoomPlusSelector = '.olControlModPanZoomBar img[id*="zoomin"]';
@@ -222,12 +303,17 @@ OpenGeoportal.MapController = function(stateObj) {
 
 	};
 	
-	this.addMapToolbarButton = function(displayParams, callbackHandler){
-		jQuery("#ogpMapButtons").append(this.template.mapButton(displayParams));
-		var that = this;
-		jQuery("." + displayParams.displayClass).on("click", function(){callbackHandler.call(that);});
+	this.addToMapToolbar = function(markup){
+		jQuery("#ogpMapButtons").append(markup);
 	};
 	
+	this.addMapToolbarButton = function(displayParams, callbackHandler){
+		this.addToMapToolbar(this.template.mapButton(displayParams));
+		var that = this;
+		jQuery("." + displayParams.displayClass).button().on("click", function(){callbackHandler.call(that);});
+	};
+	
+
 	//default text for the geocoder input box
 	this.geocodeText = "Find Place (Example: Boston, MA)";
 	/**
@@ -235,29 +321,70 @@ OpenGeoportal.MapController = function(stateObj) {
 	 * then zooms to the returned extent.  also animates the response
 	 */
 	this.geocodeLocation = function(){
-		var value = jQuery("#geosearch").val();
-		geocoder = new google.maps.Geocoder();
+		var geocodeField$ = jQuery("#geosearch");
+		var geocoder = new google.maps.Geocoder();
 		var that = this;
-		geocoder.geocode( { 'address': value}, function(results, status) {
-			if (status != 'OK'){
-				jQuery("#geosearch").val("Place name not found");
-			} else {
-				jQuery("#geosearch").val(results[0].formatted_address);
-				var	maxY = results[0].geometry.viewport.getNorthEast().lat();
-				var	maxX = results[0].geometry.viewport.getNorthEast().lng();
-				var	minY = results[0].geometry.viewport.getSouthWest().lat();
-				var	minX = results[0].geometry.viewport.getSouthWest().lng();
-				var extent = minX + "," + minY + "," + maxX + "," + maxY;
-				//zooms to actual extent, rather than a latitude delta
-				that.zoomToLayerExtent(extent);
+		var geocodeResponse = {};
+		geocodeField$.autocomplete({
+			source: function( request, response ) {
+				geocoder.geocode( { 'address': request.term}, function(results, status) {
+					/*
+					 * 
+    "OK" indicates that no errors occurred; the address was successfully parsed and at least one geocode was returned.
+    "ZERO_RESULTS" indicates that the geocode was successful but returned no results. This may occur if the geocode was passed a non-existent address or a latlng in a remote location.
+    "OVER_QUERY_LIMIT" indicates that you are over your quota.
+    "REQUEST_DENIED" indicates that your request was denied, generally because of lack of a sensor parameter.
+    "INVALID_REQUEST" generally indicates that the query (address or latlng) is missing.
+    UNKNOWN_ERROR indicates that the request could not be processed due to a server error. The request may succeed if you try again.
 
+					 */
+					if (status !== "OK"){
+						return;
+					}
+					//reset the response object
+					geocodeResponse = {};
+					var labelArr = [];
+					for (var i in results){
+						var viewPort = results[i].geometry.viewport;
+						var extent = [];
+						extent.push(viewPort.getSouthWest().lng());
+						extent.push(viewPort.getSouthWest().lat());
+						extent.push(viewPort.getNorthEast().lng());
+						extent.push(viewPort.getNorthEast().lat());
+
+						var bbox = extent.join();
+						var currentAddress = results[i].formatted_address;
+						geocodeResponse[currentAddress] = bbox;
+						labelArr.push(currentAddress);
+
+					}
+					response(labelArr);
+				});
+			},
+			minLength: 4,
+			delay: 1000,
+			select: function( event, ui ) {
+
+				jQuery(document).trigger("map.zoomToLayerExtent", {"bbox": geocodeResponse[ui.item.value]});
+
+				var currentFontSize = geocodeField$.css("font-size");
+				var currentOpacity = geocodeField$.css("opacity");
+				geocodeField$.animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500)
+					.delay(1500)
+					.animate({ "font-size": 0 }, 300, function(){geocodeField$.val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity})});
+			},
+
+			open: function() {
+				jQuery( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
+			},
+			close: function() {
+				jQuery( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
 			}
-			var currentFontSize = jQuery("#geosearch").css("font-size");
-			var currentOpacity = jQuery("#geosearch").css("opacity");
-			jQuery("#geosearch").animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500).delay(1500)
-			.animate({ "font-size": 0 }, 300, function(){jQuery("#geosearch").val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity});} );
-		});
+		}
+		);
 	};
+
+
 	
 	this.saveImage = function(imageFormat, resolution){
 		imageFormat = 'png';
@@ -286,15 +413,18 @@ OpenGeoportal.MapController = function(stateObj) {
 			if (currentLayer.visibility == false){
 				continue;
 			}
-
-			var sld = this.layerState.getState(currentLayer.name, "sld");
-			var opacity = this.layerState.getState(currentLayer.name, "opacity");
+			var layerModel = this.previewed.findWhere({LayerId: currentLayer.ogpLayerId});
+			if (typeof layerModel == "undefined"){
+				throw new Error("Layer ['" + currentLayer.ogpLayerId + "'] could not be found in the PreviewedLayers collection.");
+			}
+			var sld = layerModel.get("sld");
+			var opacity = layerModel.get("opacity");
 			if (opacity == 0){
 				continue;
 			}
 			//insert this opacity value into the sld to pass to the wms server
 			var layerObj = {};
-			var storedName = this.layerState.getState(currentLayer.name, "wmsName");
+			var storedName = layerModel.get("qualifiedName");
 			if (storedName == ''){
 				layerObj.name = currentLayer.params.LAYERS;
 			} else {
@@ -339,67 +469,20 @@ OpenGeoportal.MapController = function(stateObj) {
 		//this.toProcessingAnimation(jQuery("#map_tabs > span").first());
 	};
 	
-	//TODO:  create a generic widget for this to put in the widgets file, add necessary config.
-	/**
-	 * creates the basemap menu from the backgroundMaps object in OpenGeoportal.MapController
-	 */
-	this.createBasemapMenu = function() {
-		var basemapHtml = '<div id="basemapDropdown">'
-			+ '<button id="basemapSelect" class="mapStyledButton" title="Select base map">'
-			+	'<span>Basemap<img src="resources/media/arrow_down.png" alt="Select base map" /></span>'
-			+ '</button>'
-			+ '<div id="basemapMenu">'
-			+ '</div>'
-			+ '</div>';
-		jQuery("#ogpMapButtons").append(basemapHtml);
 
-		var backgroundMapsConfig = this.backgroundMaps("all");
-		var radioHtml = "";
-		for (var mapType in backgroundMapsConfig){
-			var isDefault = "";
-			if (mapType == this.getCurrentBackgroundMap()){
-				isDefault = ' checked="checked"';
-			} 
-			radioHtml += '<input type="radio" id="basemapRadio' + mapType + '" name="basemapRadio" value="' + mapType + '"' + isDefault + ' />';
-			radioHtml += '<label for="basemapRadio' + mapType + '">' + backgroundMapsConfig[mapType].name + '</label>';
-		}
-		var that = this;
-		jQuery("#basemapMenu").html(radioHtml);
-		jQuery("[name=basemapRadio]").attr("checked", false);
-		jQuery("[name=basemapRadio]").filter("[value=" + that.getCurrentBackgroundMap() + "]").attr("checked", "checked");
-		jQuery("#basemapSelect").button();
-		jQuery("#basemapMenu").buttonset();
-		jQuery("#basemapDropdown").hover(function(){jQuery("#basemapMenu").show();}, function(){jQuery("#basemapMenu").hide();});		
-		jQuery("[name=basemapRadio]").on("change", function(){that.changeBasemap.call(that);});
-	};
 	
 	/**
 	 * sets the background map to the value in the background map dropdown menu.  called by change for the basemap radio button set
 	 */
-	this.changeBasemap = function(){
-		var value = jQuery('input:radio[name=basemapRadio]:checked').val();
-		this.setBackgroundMap(value);
-	};
+	/*this.basemapHandler = function(){
+		var that = this;
+		jQuery("[name=basemapRadio]").on("change", function(){
+			var value = jQuery('input:radio[name=basemapRadio]:checked').val();
+			that.basemaps.findWhere({name: value}).set({selected: true});
+		});
+	};*/
 	
-//	method to set background map
-	this.getOsmTileUrl = function getOsmTileUrl(bounds) {
-		var res = this.map.getResolution();
-		var x = Math.round((bounds.left - this.getMaxExtent().left) / (res * this.tileSize.w));
-		var y = Math.round((this.getMaxExtent().top - bounds.top) / (res * this.tileSize.h));
-		var z = this.map.getZoom() + 1;
-		var limit = Math.pow(2, z);
-
-		if (y < 0 || y >= limit) {
-			//console.log["ol 404"];
-			return OpenGeoportal.Utility.getImage("404.png");
-		} else {
-			x = ((x % limit) + limit) % limit;
-			//console.log([this.url, this.type]);
-			return this.url + z + "/" + x + "/" + y + "." + this.type;
-		}
-	};
-
-	this.getBackgroundType = function() {
+/*	this.getBackgroundType = function() {
 		var layers = this.layers;
 		for (var i in layers){
 			if ((layers[i].CLASS_NAME == "OpenLayers.Layer.Google")&&(layers[i].visibility == true)
@@ -410,8 +493,242 @@ OpenGeoportal.MapController = function(stateObj) {
 			}
 		}
 	};
+*/
+	this.createBaseMaps = function(){
+		var that = this;
+		var models = [];
+		models.push({
+			displayName: "Google Physical",
+			name: "googlePhysical",
+			selected: true,
+			subType: google.maps.MapTypeId.TERRAIN,
+			type: "Google",
+			zoomLevels: 15,
+			getLayerDefinition: function(){
+				console.log("layer definition arguments");
+				console.log(arguments);
+				var bgMap = new OpenLayers.Layer.Google(
+					this.get("displayName"),
+					{
+						type: this.get("subType")
+					},
+					{
+						layerRole: "basemap",
+						animationEnabled: true,
+						basemapType: this.get("subType") 
+					}
+					);
+				return bgMap;
+				},
+			showOperations: function(layer){
+				layer.mapObject.setMapTypeId(this.get("subType"));
+				layer.type = this.get("subType");
+				layer.setVisibility(true);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			},
+			hideOperations: function(layer){
+				layer.setVisibility(false);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
+			},
+			initialRenderCallback: function(mapController){
+				console.log("mapcontroller");
+				console.log(mapController);
+				console.log(this.get("subType"));
+				var bgMap = mapController.getLayersBy("type", this.get("subType"))[0];
+				console.log(bgMap);
+				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					jQuery(document).trigger("mapReady");
+					//really should only fire the first time
+					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
 
-	this.backgroundMaps = function(mapType){
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "Google Hybrid",
+			name: "googleHybrid",
+			selected: false,
+			subType: google.maps.MapTypeId.HYBRID,
+			type: "Google",
+			zoomLevels: 22,
+			getLayerDefinition: function(){
+				var bgMap = new OpenLayers.Layer.Google(
+					this.get("displayName"),
+					{
+						basemapType: this.get("subType"),
+						layerRole: "basemap",
+						animationEnabled: true
+					}
+					);
+				return bgMap;
+				},
+			showOperations: function(layer){
+				layer.mapObject.setMapTypeId(this.get("subType"));
+				layer.type = this.get("subType");
+				layer.setVisibility(true);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			},
+			hideOperations: function(layer){
+				layer.setVisibility(false);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
+			},
+			initialRenderCallback: function(mapController){
+				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					jQuery(document).trigger("mapReady");
+					//really should only fire the first time
+					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "Google Satellite",
+			name: "googleSatellite",
+			selected: false,
+			subType: google.maps.MapTypeId.SATELLITE,
+			type: "Google",
+			zoomLevels: 22,
+			getLayerDefinition: function(){
+				var bgMap = new OpenLayers.Layer.Google(
+					this.get("displayName"),
+					{
+						basemapType: this.get("subType"),
+						layerRole: "basemap",
+						animationEnabled: true
+					}
+					);
+				return bgMap;
+				},
+			showOperations: function(layer){
+				layer.mapObject.setMapTypeId(this.get("subType"));
+				layer.type = this.get("subType");
+				layer.setVisibility(true);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			},
+			hideOperations: function(layer){
+				layer.setVisibility(false);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
+			},
+			initialRenderCallback: function(mapController){
+				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					jQuery(document).trigger("mapReady");
+					//really should only fire the first time
+					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "Google Streets",
+			name: "googleStreets",
+			selected: false,
+			subType: google.maps.MapTypeId.ROADMAP,
+			type: "Google",
+			zoomLevels: 20,
+			getLayerDefinition: function(){
+				var bgMap = new OpenLayers.Layer.Google(
+					this.get("displayName"),
+					{
+						basemapType: this.get("subType"),
+						layerRole: "basemap",
+						animationEnabled: true
+					}
+					);
+				return bgMap;
+				},
+			showOperations: function(layer){
+				layer.mapObject.setMapTypeId(this.get("subType"));
+				layer.type = this.get("subType");
+				layer.setVisibility(true);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			},
+			hideOperations: function(layer){
+				layer.setVisibility(false);
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
+			},
+			initialRenderCallback: function(mapController){
+				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					jQuery(document).trigger("mapReady");
+					//really should only fire the first time
+					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "OpenStreetMap",
+			name: "osm",
+			selected: false,
+			type: "TMS",
+			url: "http://tile.openstreetmap.org/",
+			tileFunction: function(bounds){
+				console.log(arguments);
+				var res = that.map.getResolution();
+				var x = Math.round((bounds.left - that.getMaxExtent().left) / (res * that.tileSize.w));
+				var y = Math.round((that.getMaxExtent().top - bounds.top) / (res * that.tileSize.h));
+				var z = that.map.getZoom() + 1;
+				var limit = Math.pow(2, z);
+
+				if (y < 0 || y >= limit) {
+					//console.log["ol 404"];
+					return OpenGeoportal.Utility.getImage("404.png");
+				} else {
+					x = ((x % limit) + limit) % limit;
+					//console.log([this.url, this.type]);
+					return this.get("url") + z + "/" + x + "/" + y + ".png";
+				}
+			},
+			zoomLevels: 17,
+			getLayerDefinition: function(){
+				var bgMap = new OpenLayers.Layer.OSM(
+						this.get("name")
+				);
+				return bgMap;
+				},
+			showOperations: function(layer){
+				layer.setVisibility(true);
+			},
+			hideOperations: function(layer){
+				console.log("hide operations");
+				console.log(layer);
+				layer.setVisibility(false);
+			},
+			initialRenderCallback: function(mapController){
+				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				bgMap.events.register(bgMap.mapObject, "loadend", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					//really should only fire the first time
+					bgMap.events.unregister(bgMap.mapObject, "loadend");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+				});
+			}
+		});
+		//create an instance of the basemap collection
+		var collection = new OpenGeoportal.BasemapCollection(models);
+		return collection;
+		
+	};
+	/*this.backgroundMaps = function(mapType){
 		if (typeof google != "undefined"){
 			var bgMaps = {
 					googleHybrid: {mapClass: "Google", zoomLevels: 22, name: "Google Hybrid", params: {type: google.maps.MapTypeId.HYBRID}},
@@ -467,8 +784,46 @@ OpenGeoportal.MapController = function(stateObj) {
 			this.changeBackgroundMap(bgType);
 		}
 	};
+*/	
 
-	this.changeBackgroundMap = function(bgType){
+	this.showBasemap = function(model, layer){
+		if (model.has("showOperations")){
+			model.get("showOperations").apply(model, [layer]);
+		}
+	};
+	this.hideBasemap = function(model, layer){
+		if (model.has("hideOperations")){
+			model.get("hideOperations").apply(model, [layer]);
+		}
+	};
+
+	this.setBasemap = function(model){
+
+		//see if there is a basemap layer of the specified type
+		if (this.getLayersBy("basemapId", model.get("type")).length == 0){
+			//add the appropriate basemap layer
+			this.addLayer(model.get("getLayerDefinition").call(model));
+		}
+		
+		//make sure selected basemap is in the foreground and others are hidden
+		var basemapLayers = this.getLayersBy("layerRole", "basemap");
+		
+		//iterate over this array, set visibility false, unless it is represented by the passed model
+		for (var i = 0; i < basemapLayers.length; i++){
+			var currLayer = basemapLayers[i];
+
+			if (currLayer.basemapType == model.get("subType")){
+				this.showBasemap(model, currLayer);
+			} else {
+				this.hideBasemap(model, currLayer);
+			}
+		}
+	};
+	
+
+	
+
+	/*this.changeBackgroundMap = function(bgType){
 		//minimize the number of Google layers by changing map types in the Google Maps API
 		var that = this;
 		var backgroundMaps = this.backgroundMaps(bgType);
@@ -477,20 +832,21 @@ OpenGeoportal.MapController = function(stateObj) {
 				var googleLayer = this.getLayersByClass('OpenLayers.Layer.Google')[0];
 				googleLayer.mapObject.setMapTypeId(backgroundMaps["params"]["type"]);
 				googleLayer.type = backgroundMaps["params"]["type"];
-				googleLayer.setOpacity(1);
+				googleLayer.setVisibility(true);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
 
 			} else {
-				backgroundMaps.params.sphericalMercator = true;
-				backgroundMaps.params.maxExtent = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
+				//backgroundMaps.params.sphericalMercator = true;
+				//backgroundMaps.params.maxExtent = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
+				backgroundMaps.params.basemapType = model.get("type");
 				var bgMap = new OpenLayers.Layer.Google(backgroundMaps.name,
 						backgroundMaps.params);
-
+				bgMap.animationEnabled = true;
 				this.addLayer(bgMap);
 				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
 					//console.log("Tiles loaded");
 					that.render(that.mapDiv);
-					jQuery(".mapClearButtonItemInactive").text("clear previews");
+					//jQuery(".mapClearButtonItemInactive").text("clear previews");
 					that.userMapAction = true;
 					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
@@ -518,7 +874,7 @@ OpenGeoportal.MapController = function(stateObj) {
 				bgMap.events.register(bgMap.mapObject, "loadend", function() {
 					//console.log("Tiles loaded");
 					that.render(that.mapDiv);
-					jQuery(".mapClearButtonItemInactive").text("clear previews");
+					//jQuery(".mapClearButtonItemInactive").text("clear previews");
 					that.userMapAction = true;
 					//really should only fire the first time
 					bgMap.events.unregister(bgMap.mapObject, "loadend");
@@ -529,11 +885,11 @@ OpenGeoportal.MapController = function(stateObj) {
 				var googleLayer = this.getLayersByClass('OpenLayers.Layer.Google')[0];
 				googleLayer.mapObject.setMapTypeId(this.backgroundMaps("googleHybrid")["params"]["type"]);
 				googleLayer.type = this.backgroundMaps("googleHybrid")["params"]["type"];
-				googleLayer.setOpacity(0);
+				googleLayer.setVisibility(false);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");
 			}
 		}
-	};
+	};*/
 
 //	utility functions
 	this.WGS84ToMercator = function (lon, lat){
@@ -577,80 +933,46 @@ OpenGeoportal.MapController = function(stateObj) {
 		return new OpenLayers.LonLat(newLon, newLat);
 	};
 
-	this.returnExtent = function(){
-		// pass along the extents of the map
-		var extents = this.getExtent().toArray();
-		var left = extents[0];
-		var bottom = extents[1];
-		var right = extents[2];
-		var top = extents[3];
-		var bottomLeftLonLat = this.MercatorToWGS84(left, bottom);
-		var topRightLonLat = this.MercatorToWGS84(right, top);
-		var bbox = {};
-		bbox.left = parseFloat(bottomLeftLonLat.lon);
-		bbox.bottom = parseFloat(bottomLeftLonLat.lat); 
-		bbox.right = parseFloat(topRightLonLat.lon);
-		bbox.top = parseFloat(topRightLonLat.lat);
-		//console.log(new OpenLayers.Bounds(bbox));why doesn't this return a nice openlayers bounds object?
-		return bbox;
-	};
-
-//	method to clear the map while keeping the base layer
 	this.clearMap = function (){
-		var mapLayers = this.layers;
-		if (mapLayers.length > 0){
-			OpenGeoportal.PreviewedLayers.clearLayers();
-			for (var i in mapLayers){
-				var currentLayer = mapLayers[i];
-				if ((currentLayer.CLASS_NAME != 'OpenLayers.Layer.Google')&&
-						(currentLayer.name != 'OpenStreetMap')&&
-						(currentLayer.name != 'layerBBox')){
-					//remove the layer from the map
-					currentLayer.setVisibility(false);
-					//we'll also need to update the state of buttons and the layer state object
-					this.layerState.setState(currentLayer.name, {"preview": "off", "getFeature": false});
-				} else {
-					continue;
-				}
-			}
-		}
+		this.previewed.each(function(model){
+			model.set({preview: "off"});
+		});
 	};
 
-	this.getAttributeDescription = function (thisObj, layerId) {
-		//no need to make the call if the title attribute has already been set
-		if (!jQuery(thisObj).attr('title')){
-			var solr = new OpenGeoportal.Solr();
-			var query = solr.getMetadataQuery(layerId);
-			jQuery(".attributeName").css("cursor", "wait");
-			solr.sendToSolr(query, this.getAttributeDescriptionJsonpSuccess, this.getAttributeDescriptionJsonpError, thisObj);
-		}
-	};
-
-	this.getAttributeDescriptionJsonpSuccess = function(data, thisObj) {
-		var that = thisObj;
-		jQuery(".attributeName").css("cursor", "default");
-		var solrResponse = data["response"];
-		var totalResults = solrResponse["numFound"];
-		if (totalResults != 1)
-		{
-			throw new Error("Request for FGDC returned " + totalResults +".  Exactly 1 was expected.");
+	this.processMetadataSolrResponse = function(data){
+		var solrResponse = data.response;
+		var totalResults = solrResponse.numFound;
+		if (totalResults != 1){
+			throw new Error("Request for Metadata returned " + totalResults +".  Exactly 1 was expected.");
 			return;
 		}
-		var doc = solrResponse["docs"][0];  // get the first layer object
-		var fgdcRawText = doc["FgdcText"];
-		var fgdcText = fgdcRawText;  // text was escaped on ingest into Solr
-		//var parser = new DOMParser();
-		//var fgdcDocument = parser.parseFromString(fgdcText,"text/xml");
-		jQuery(jQuery.parseXML(fgdcText)).find("attrlabl").each(function(){
-			var currentXmlAttribute = jQuery(this);
-			jQuery(that).closest("tbody").find(".attributeName").each(function(){
-				if (currentXmlAttribute.text() == jQuery(this).text()){
-					var attributeDescription = currentXmlAttribute.siblings("attrdef").first();
+		var doc = solrResponse.docs[0];  // get the first layer object
+		return doc;
+	};
+	
+	this.getAttributeDescriptionJsonpSuccess = function(data) {
+		jQuery(".attributeName").css("cursor", "default");
+		
+		var that = this; 
+		
+		var solrdoc = this.processMetadataSolrResponse(data);
+		var xmlDoc = jQuery.parseXML(solrdoc.FgdcText);  // text was escaped on ingest into Solr
+
+		var layerId = jQuery("td.attributeName").first().closest("table").find("caption").attr("title");
+		var layerAttrs = this.previewed.get(layerId).get("layerAttributes");
+		
+		jQuery(xmlDoc).find("attrlabl").each(function(){
+			var currentXmlAttribute$ = jQuery(this);
+			jQuery("td.attributeName").each(function(){
+				var attributeName = jQuery(this).text().trim();
+				if (currentXmlAttribute$.text().trim().toLowerCase() == attributeName.toLowerCase()){
+					var attributeDescription = currentXmlAttribute$.siblings("attrdef").first();
 					attributeDescription = OpenGeoportal.Utility.stripExtraSpaces(attributeDescription.text().trim());
-					if (attributeDescription.length == 0){
+					if (attributeDescription.length === 0){
 						attributeDescription = "No description available";
 					}
 					jQuery(this).attr('title', attributeDescription);
+					layerAttrs.findWhere({attributeName: attributeName}).set({description: attributeDescription});
 					return;
 				}
 			});
@@ -661,155 +983,221 @@ OpenGeoportal.MapController = function(stateObj) {
 		jQuery(".attributeName").css("cursor", "default");
 		throw new Error("The attribute description could not be retrieved.");
 	};
+	
+	
+	this.attributeDescriptionHandler = function(){
+		//mouseover to display attribute descriptions
+		var that = this;
+		jQuery(document).on('mouseenter', "td.attributeName", function() {
+			var layerId = jQuery(this).closest("table").find("caption").attr("title");
+			var layerAttrs = that.previewed.get(layerId).get("layerAttributes");
 
-	this.wmsGetFeature = function(e){
-		//since this is an event handler, the context isn't the MapController Object
-		console.log("wmsGetFeature");
+			var attrModel = layerAttrs.findWhere({attributeName: jQuery(this).text().trim()});
+
+			if (attrModel.has("description")){
+				jQuery(this).attr('title', attrModel.get("description"));
+				//short circuit if attributes have already been looked up
+			} else {
+				var solr = new OpenGeoportal.Solr();
+				var query = solr.getServerName() + "?" + jQuery.param(solr.getMetadataParams(layerId));
+				jQuery(".attributeName").css("cursor", "wait");
+				solr.sendToSolr(query, that.getAttributeDescriptionJsonpSuccess, that.getAttributeDescriptionJsonpError, that);
+			}
+		});
+	};
+
+	this.getFeatureAttributes = function(e){
+		console.log("getFeatureAttributes");
 		if (typeof this.map != "undefined"){
-			var mapObject = this.map;
-			var layerStateObject = mapObject.layerState;
-			var that = this;
-			var PIXELS = 10;//#pixel(s) on each side
-			var pixelSize = mapObject.getGeodesicPixelSize();//pixel size in kilometers
-			//console.log(pixelSize);
-			var xbboxSize = pixelSize.w * PIXELS * 1000;//in meters
-			var ybboxSize = pixelSize.h * PIXELS * 1000;
-			var point = mapObject.getLonLatFromViewPortPx(e.xy);
-			var pixel = e.xy;
-			//console.log(point);
-			//var srcProj = new OpenLayers.Projection("EPSG:4326");
-			//var destProj = new OpenLayers.Projection("EPSG:900913");
-			var projPoint = point;//.transform(srcProj, destProj);
-			//console.log(projPoint);
-			var xMin = projPoint.lon - xbboxSize/2;
-			var yMin = projPoint.lat - ybboxSize/2;
-			var xMax = projPoint.lon + xbboxSize/2;
-			var yMax = projPoint.lat + ybboxSize/2;
-			var layerId = this.name;
+			var mapObject = this.map;//since this is an event handler, the context isn't the MapController Object, it's the map layer. Should it be?
+
+			//generate the query string
+			var layerId = this.ogpLayerId;
 			var searchString = "OGPID=" + layerId;
-			searchString += "&bbox=" + this.map.getExtent().toBBOX();//+ xMin + "," + yMin + "," + xMax + "," + yMax;
-			//+ this.map.getExtent().toBBOX(); 
+			
+			var mapExtent = mapObject.getExtent();
+			searchString += "&bbox=" + mapExtent.toBBOX();			
+			
+			var pixel = e.xy;
 			//geoserver doesn't like fractional pixel values
 			searchString += "&x=" + Math.round(pixel.x) + "&y=" + Math.round(pixel.y);
-			searchString += "&height=" + this.map.size.h + "&width=" + this.map.size.w;
+			searchString += "&height=" + mapObject.size.h + "&width=" + mapObject.size.w;
+			
+			var layerModel = mapObject.previewed.findWhere({LayerId: layerId});			
+			var dialogTitle =  layerModel.get("LayerDisplayName");
+			var institution = layerModel.get("Institution");
 
 			var ajaxParams = {
 					type: "GET",
-					context: this,
 					url: 'featureInfo',
 					data: searchString,
-					dataType: 'text',
+					dataType: 'html',
+					beforeSend: function(){
+						if (mapObject.currentAttributeRequests.length > 0){
+							//abort any outstanding requests before submitting a new one
+							for (var i in mapObject.currentAttributeRequests) {					
+								mapObject.currentAttributeRequests.splice(i, 1)[0].abort();
+							}
+						}
+						
+						jQuery(document).trigger("showLoadIndicator");
+					},
 					success: function(data, textStatus, XMLHttpRequest){
 						//create a new dialog instance, or just open the dialog if it already exists
-						var dialogTitle = '<span class="getFeatureTitle">' + layerStateObject.getFeatureTitle + "</span>";
-						var tableText = '<table class="attributeInfo">';
-						var response = jQuery.parseXML(jQuery.trim(data));
-						var attributes = response.getElementsByTagName("gml:featureMember");
-						if (attributes.length == 0){
-							attributes = response.getElementsByTagName("featureMember");
-						}
-						var rawFeatures = response;//.getElementsByTagName("wfs:FeatureCollection");
-						var innerText = '';
-						/*var featureLayer;
-            	//add or modify a layer with a vector representing the selected feature
-            	if (this.map.getLayersByName("featureSelection").length > 0){
-            		featureLayer = this.map.getLayersByName("featureSelection")[0];
-            	} else {
-                    var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-                    style_blue.strokeColor = "blue";
-                    style_blue.fillColor = "blue";
-                    style_blue.fillOpacity = 1;
-                    style_blue.pointRadius = 2;
-                    style_blue.strokeWidth = 2;
-                    style_blue.strokeLinecap = "butt";
-                    style_blue.zIndex = 999999;
-            		featureLayer = new OpenLayers.Layer.Vector("featureSelection");//, {
-                   //     style: style_blue
-                    //});
-
-            		this.map.addLayer(featureLayer);
-            	}
-            	var options = {
-                        'featureType': "GISPORTAL.GISOWNER01.BOSTONINFRASTRUCTURE12",
-                        'featureNS': "http://geoserver.sf.net",
-                        'internalProjection': new OpenLayers.Projection("EPSG:900913"),
-                        'externalProjection': new OpenLayers.Projection("EPSG:2249")
-            	};
-                var format = new OpenLayers.Format.GML.v3(options);
-            	var features = format.read(rawFeatures);
-            	//console.log(features);
-                var vector = new OpenLayers.Feature.Vector(features.geometry);
-                //vector.bounds = this.map.getExtent();
-                this.map.testVector = vector;
-                featureLayer.removeAllFeatures();
-                featureLayer.addFeatures([vector]);
-                featureLayer.redraw();
-            	this.map.setLayerIndex(featureLayer, (this.map.layers.length -1));
-						 */
-						var linecount = 0;
-						//supports only one feature as is
-						jQuery(attributes).children().first().children().each(function(){
-							if (typeof jQuery(this).children()[0] == 'undefined'){
-								var attributeName = this.nodeName;
-								attributeName = attributeName.substr(attributeName.indexOf(":") + 1);
-								var attributeValue = jQuery(this).text();
-								linecount++;
-								innerText += '<tr><td class="attributeName">';
-								innerText += attributeName;
-								innerText += "</td><td>";
-								innerText += attributeValue;
-								innerText += "</td></tr>";
-							}
-						});
-
-						tableText += innerText + "</table>";
-						if (innerText.length == 0){
-							//return;
-							tableText = '<p>There is no data for this layer at this point.</p>';
-						}
-						var containerHeight = jQuery("#container").height();
-						var dataHeight =  linecount * 20;
-						if (dataHeight > containerHeight){
-							dataHeight = containerHeight;
-						} else {
-							dataHeight = "auto";
-						}
-						if (typeof jQuery('#featureInfo')[0] == 'undefined'){
-							var infoDiv = '<div id="featureInfo" class="dialog">' + dialogTitle + tableText + '</div>';
-							jQuery("body").append(infoDiv);
-							jQuery("#featureInfo").dialog({
-								zIndex: 2999,
-								title: "FEATURE ATTRIBUTES",
-								width: 'auto',
-								height: dataHeight,
-								autoOpen: false
-							});    	  
-							jQuery("#featureInfo").dialog('open');
-						} else {
-							jQuery("#featureInfo").html(dialogTitle + tableText);
-							jQuery("#featureInfo").dialog("option", "height", dataHeight);
-							jQuery("#featureInfo").dialog('open');
-						}
-						var that = this;
-						jQuery("td.attributeName").mouseenter(function(){that.map.getAttributeDescription(this, that.name);});
+						mapObject.getFeatureAttributesSuccessCallback(layerId, dialogTitle, data);
 					},
-					error: function(jqXHR, textStatus, errorThrown) {if ((jqXHR.status != 401)&&(textStatus != 'abort')){new OpenGeoportal.ErrorObject(new Error(), "Error retrieving Feature Information.");}},
-					complete: function(){that.map.currentAttributeRequest = false;            	
-					jQuery(document).trigger("hideLoadIndicator");}
+					error: function(jqXHR, textStatus, errorThrown) {
+						if ((jqXHR.status != 401)&&(textStatus != 'abort')){
+							new OpenGeoportal.ErrorObject(new Error(), "Error retrieving Feature Information.");
+						}
+					},
+					complete: function(jqXHR){
+						for (var i in mapObject.currentAttributeRequests){
+							if (mapObject.currentAttributeRequests[i] === jqXHR){
+								var spliced = mapObject.currentAttributeRequests.splice(i, 1);						
+         	
+							}
+						}
+
+						jQuery(document).trigger("hideLoadIndicator");
+					}
 			};
 
-			if (typeof this.map.currentAttributeRequest == 'object'){
-				this.map.currentAttributeRequest.abort();
-			} 
-			this.map.currentAttributeRequest = jQuery.ajax(ajaxParams);
-			jQuery(document).trigger("showLoadIndicator");
-			var institution = (layerId.indexOf(".") > -1) ? layerId.split(".")[0] : "";
+ 
+			mapObject.currentAttributeRequests.push(jQuery.ajax(ajaxParams));
+			
+			
 			analytics.track("Layer Attributes Viewed", institution, layerId);
 		} else {
 			new OpenGeoportal.ErrorObject(new Error(), "This layer has not been previewed. <br/>You must preview it before getting attribute information.");
 		}
 	};
 
+	this.currentAttributeRequests = [];
+	
+	this.registerAttributes = function(layerId, attrNames){
+		var layerModel = this.previewed.get(layerId);
+		if (!layerModel.has("layerAttributes")){
+			var attributes = new OpenGeoportal.Attributes();
+			for (var i in attrNames){
+				var attrModel = new OpenGeoportal.Models.Attribute({attributeName: attrNames[i]});
+				attributes.add(attrModel);
+			}
+			layerModel.set({layerAttributes: attributes});
+		}
+	};
+	
+	this.getFeatureAttributesSuccessCallback = function(layerId, dialogTitle, data) {		
+		//grab the html table from the response
+		var responseTable$ = jQuery(data).filter(function() {
+			return jQuery(this).is('table')
+		});			
+		
+		var template = this.template;
+		var tableText = "";
+		
+		if ((responseTable$.length === 0) || (jQuery(data).find("tr").length === 0)){
+			//what should happen here?  returned content is empty or otherwise unexpected	
+			tableText = '<p>There is no data for "' + dialogTitle + '" at this point.</p>';
+		} else {
+			responseTable$ = responseTable$.first();
+			//process the html table returned from wms getfeature request
+			var rows = this.processAttributeTable(responseTable$);
+
+			tableText = template.attributeTable({
+				layerId: layerId,
+				title : dialogTitle,
+				tableContent : rows
+			});
+			
+			var attrNames = [];
+			for (var i in rows){
+				attrNames.push(rows[i].header);
+			}
+			this.registerAttributes(layerId, attrNames);
+
+		}
+		
+		//create a new dialog instance, or just open the dialog if it already exists
+
+		if ( typeof jQuery('#featureInfo')[0] == 'undefined') {
+			var infoDiv = template.genericDialogShell({
+				id : "featureInfo"
+			});
+			jQuery("#dialogs").append(infoDiv);
+			jQuery("#featureInfo").dialog({
+				zIndex : 2999,
+				title : "Feature Attributes",
+				width : 'auto',
+				autoOpen : false
+			});
+
+		}
+
+		jQuery("#featureInfo").html(tableText);
+		
+		//limit the height of the dialog.  some layers will have hundereds of attributes
+		var containerHeight = jQuery("#container").height();
+		var linecount = jQuery("#featureInfo tr").length;
+		var dataHeight = linecount * 20;
+		if (dataHeight > containerHeight) {
+			dataHeight = containerHeight;
+		} else {
+			dataHeight = "auto";
+		}
+		jQuery("#featureInfo").dialog("option", "height", dataHeight);
+		jQuery("#featureInfo").dialog('open');
+		
+	}; 
+
+	
+	this.processAttributeTable = function(responseTable$) {
+		var tableArr = [];
+		if (responseTable$.find("tr").length === 2) {
+			//horizontal table returned
+			responseTable$.find("tr").each(function() {
+
+				if (jQuery(this).find("th").length > 0) {
+					//this is the header row
+					var cells$ = jQuery(this).find("th");
+
+				} else {
+					var cells$ = jQuery(this).find("td");
+				}
+				var rowArr = [];
+				cells$.each(function() {
+					rowArr.push(jQuery(this).text());
+				});
+				tableArr.push(rowArr);
+			});
+
+		} else {
+			//vertical table returned
+			//TODO: handle vertical table case
+		}
+	
+		//iterate over headers
+		var rows = [];
+		if (tableArr.length > 0){
+			
+		for (var i = 0; i < tableArr[0].length; i++) {
+			var newRowObj = {};
+			newRowObj.values = [];
+			for (var j = 0; j < tableArr.length; j++) {
+				if (j === 0) {
+					newRowObj.header = tableArr[j][i];
+				} else {
+					newRowObj.values.push(tableArr[j][i]);
+				}
+
+			}
+			rows.push(newRowObj);
+		}
+		
+		}
+		
+		return rows;
+	}; 
 
 //	methods to add layers
 
@@ -1006,39 +1394,75 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		this.setLayerIndex(featureLayer, (this.layers.length -1));
 	};
 
-	this.layerExists = function (mapObj) {
+	this.startService = function(layerModel){
 		//if layer is a Harvard one, send an ajax request to 
 		//http://dixon.hul.harvard.edu:8080/HGL/RemoteServiceStarter?AddLayer=[layer name]&ValidationKey=OPENGEOPORTALROCKS
+		var requestObj = {};
+		requestObj.AddLayer = [layerModel.get("qualifiedName")];
+		requestObj.ValidationKey = "OPENGEOPORTALROCKS";
+		var params = {
+				url: layerModel.get("parsedLocation").serviceStart,
+				dataType: "jsonp",
+				data: requestObj,
+				type: "GET",
+				traditional: true,
+				complete: function(){
+					jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
+				},
+				statusCode: {
+					200: function(){
+						jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
+					},
+					500: function(){
+						throw new Error("layer could not be added");
+					}
+				}
+		};
+		jQuery.ajax(params);
+	};
+	
+	this.describeLayer = function(layerModel){
+		//on error, returns:  {"version":null,"layerDescription":[]}
+		//replace with info controller
+		
+		//we should store the results of this in the layerModel, so we don't have to repeat if we preview again
+		var that = this;
+		var params = {
+			url: "describeLayer",
+			dataType: "json",
+			data: {layerId: layerModel.get("LayerId")},
+			type: "GET",
+			success: function(data){
+				if (data.layerDescription.length > 0){
+					//success
+					console.log(data);
+					jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
+					//else failed
+					//check to see if a startService service is defined for the layer
+				} else if (layerModel.get("parsedLocation").serviceStart != "undefined"){
+
+					that.startService(layerModel);
+				} else {
+					//let the user know the layer is not previewable
+					throw new Error("layer could not be added");
+				}
+			}
+		};
+		
+		jQuery.ajax(params);
+	};
+	
+	this.layerExists = function (layerModel) {
 		//otherwise, do a wms describe layer to make sure the layer is there before
 		//attempting to add it to the map (must be proxied).  handling wms errors is non-trivial, since,
 		//by design, OpenLayers requires an error of type 'image' from the wms server
 		//(OpenLayers is merely dynamically setting the src attribute of img tags)
 		//console.log(mapObj);
-		if (typeof mapObj.location.serviceStart != 'undefined'){
-			var requestObj = {};
-			requestObj.AddLayer = [mapObj.layerName];
-			requestObj.ValidationKey = "OPENGEOPORTALROCKS";
-			var params = {
-					url: mapObj.location.serviceStart,
-					dataType: "jsonp",
-					data: requestObj,
-					type: "GET",
-					traditional: true,
-					complete: function(){
-						jQuery("body").trigger(mapObj.layerName + 'Exists');
-					},
-					statusCode: {
-						200: function(){
-							jQuery("body").trigger(mapObj.layerName + 'Exists');
-						},
-						500: function(){
-							throw new Error("layer could not be added");
-						}
-					}
-			};
-			jQuery.ajax(params);
+		if (layerModel.get("parsedLocation").wms != "undefined"){
+			this.describeLayer(layerModel);
 		} else {
-			jQuery("body").trigger(mapObj.layerName + 'Exists');
+			//assume it exists
+			jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
 		}
 	};
 
@@ -1071,7 +1495,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		return urlArray;
 	};
 
-	this.addWMSLayer = function (mapObj) {
+	this.addWMSLayer = function (layerModel){
 //		mapObj requires institution, layerName, title, datatype, access
 		/*var bottomLeft = this.WGS84ToMercator(mapObj.west, mapObj.south);
 	var topRight = this.WGS84ToMercator(mapObj.east, mapObj.north);
@@ -1083,124 +1507,119 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 	 var featureLayer = new OpenLayers.Layer.Vector("BBoxTest");
 	 featureLayer.addFeatures([box]);
 	 this.addLayer(featureLayer);*/
+
+		var layerId = layerModel.get("LayerId");
+        //check to see if layer is on openlayers map, if so, show layer
+        var opacitySetting = layerModel.get("opacity");
+        
+  
+        if (this.getLayersByName(layerId).length > 0){
+            	this.showLayer(layerId);
+            	this.getLayersByName(layerId)[0].setOpacity(opacitySetting * .01);
+            	return;
+        } 
 		//use a tilecache if we are aware of it
 
-		var wmsArray = this.getPreviewUrlArray(mapObj.location, true);
 
-		//tilecache and GeoServer names are different for Harvard layers
-		if (mapObj.institution == "Harvard"){
-			mapObj.layerName = mapObj.layerName.substr(mapObj.layerName.indexOf(".") + 1);
-			mapObj.layerName = mapObj.layerName.substr(mapObj.layerName.indexOf(":") + 1);
+    	//check for a proxy here
+    	var proxy = OpenGeoportal.InstitutionInfo.getWMSProxy(layerModel.get("Institution"), layerModel.get("Access"));
+    	if (proxy){
+    		layerModel.set({wmsProxy: proxy});
+    	}
+    	
+
+		var wmsArray = this.getPreviewUrlArray(layerModel.get("parsedLocation"), true);
+		//add the namespace if it's not already in the name
+		var wmsNamespace = layerModel.get("WorkspaceName");
+		var layerName = layerModel.get("Name");
+		if ((wmsNamespace.length > 0)&&(layerName.indexOf(":") == -1)){
+				layerName = wmsNamespace + ":" + layerName;
 		}
+			
+			
+		//tilecache and GeoServer names are different for Harvard layers
+		if (layerModel.get("Institution") == "Harvard"){
+			layerName = layerName.substr(layerName.indexOf(".") + 1);
+			layerName = layerName.substr(layerName.indexOf(":") + 1);
+		}		
+		
+		layerModel.set({qualifiedName: layerName});
+
 		//won't actually do anything, since noMagic is true and transparent is true
 		var format;
-		if ((mapObj.dataType == "Raster")||(mapObj.dataType == "Paper Map")){
+		var dataType = layerModel.get("DataType");
+		if ((dataType == "Raster")||(dataType == "Paper Map")){
 			format = "image/jpeg";
 		} else {
 			format = "image/png";
 		}
-
+		
 //		if this is a raster layer, we should use jpeg format, png for vector (per geoserver docs)
-		var newLayer = new OpenLayers.Layer.WMS( mapObj.title,
+		var newLayer = new OpenLayers.Layer.WMS( 
+				layerModel.get("LayerDisplayName"),
 				wmsArray,
-				{layers: mapObj.layerName,
-			format: format, 
-			tiled: true,
-			exceptions: "application/vnd.ogc.se_inxml",
-			transparent: true//,
-			//version: "1.1.1"
+				{
+					layers: layerModel.get("qualifiedName"),
+					format: format, 
+					tiled: true,
+					exceptions: "application/vnd.ogc.se_xml",
+					transparent: true
 				},
 				{
-					//buffer: 0,
-					//gutter: 4,
 					transitionEffect: 'resize',
-					opacity: mapObj.opacity//,
-					//displayOutsideMaxExtent: false//,
-					//wrapDateLine: true
+					opacity: opacitySetting * .01,
+					ogpLayerId: layerModel.get("LayerId")
 				});
 		//how should this change? trigger custom events with jQuery
-		newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.name);});
-		newLayer.events.register('loadend', newLayer, function() {OpenGeoportal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.name);});
+		//newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.name);});
+		//newLayer.events.register('loadend', newLayer, function() {OpenGeoportal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.name);});
 		var that = this;
 		//we do a check to see if the layer exists before we add it
-		jQuery("body").bind(mapObj.layerName + 'Exists', function(){that.addLayer(newLayer);});
-		this.layerExists(mapObj);
+		jQuery("body").bind(layerModel.get("qualifiedName") + 'Exists', function(){that.addLayer(newLayer);});
+		this.layerExists(layerModel);
+
 	};
 
 //	thanks to Allen Lin, MN
-	this.addArcGISRestLayer = function (mapObj) {
+	this.addArcGISRestLayer = function (layerModel) {
 		//won't actually do anything, since noMagic is true and transparent is true
 		var format;
-		if ((mapObj.dataType == "Raster")||(mapObj.dataType == "Paper Map")){
-			format = "image/jpeg";
-		} else {
+		if (layerModel.isVector){
 			format = "image/png";
+		} else {
+			format = "image/jpeg";
 		}
 
 //		if this is a raster layer, we should use jpeg format, png for vector (per geoserver docs)
-		var newLayer = new OpenLayers.Layer.ArcGIS93Rest( mapObj.title,
-				mapObj.location.ArcGISRest,
+		var newLayer = new OpenLayers.Layer.ArcGIS93Rest( 
+			layerModel.get("LayerDisplayName"),
+			layerModel.get("parsedLocation").ArcGISRest,
 				{
-			layers: "show:" + mapObj.layerName,
-			transparent: true
+					layers: "show:" + layerModel.get("Name"),
+					transparent: true
 				},
 				{
 					buffer: 0,
 					transitionEffect: 'resize',
-					opacity: mapObj.opacity
+					opacity: layerModel.get("opacity"),
+					ogpLayerId: layerModel.get("LayerId")
 				});
 		newLayer.projection = new OpenLayers.Projection("EPSG:3857");
 		//how should this change? trigger custom events with jQuery
-		newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.name);});
-		newLayer.events.register('loadend', newLayer, function() {OpenGeoportal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.name);});
+		//newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.ogpLayerId);});
+		//newLayer.events.register('loadend', newLayer, function() {OpenGeoportal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.ogpLayerId);});
 		var that = this;
 		//we do a cursory check to see if the layer exists before we add it
-		jQuery("body").bind(mapObj.layerName + 'Exists', function(){that.addLayer(newLayer);});
-		this.layerExists(mapObj);
-	};
-
-	this.addOverview = function() {
-		//add overview  options?
-		//google maps api v3 seems to have broken this
-		var overviewLayer = new OpenLayers.Layer.Google('Google Satellite',
-				{type: google.maps.MapTypeId.SATELLITE});
-
-		var overviewSize = new OpenLayers.Size();
-		overviewSize.h = 100;
-		overviewSize.w = 150;
-
-		var overviewBounds = new OpenLayers.Bounds();
-		overviewBounds.extend(new OpenLayers.LonLat(-2.003750834E7,-2.003750834E7));
-		overviewBounds.extend(new OpenLayers.LonLat(2.003750834E7,2.003750834E7));
-		var overviewOptions = {
-				autoActivate: true,
-				title: 'Overview window',
-				//autoPan: true,
-				mapOptions: { resolutions: [156543.03390625, 78271.516953125, 39135.7584765625, 19567.87923828125, 
-				                            9783.939619140625, 4891.9698095703125, 2445.9849047851562, 1222.9924523925781, 
-				                            611.4962261962891, 305.74811309814453, 152.87405654907226, 76.43702827453613, 
-				                            38.218514137268066, 19.109257068634033, 9.554628534317017, 4.777314267158508, 
-				                            2.388657133579254, 1.194328566789627, 0.5971642833948135, 0.29858214169740677, 
-				                            0.14929107084870338, 0.07464553542435169],
-				                            projection: new OpenLayers.Projection('EPSG:900913'),
-				                            maxExtent: overviewBounds,
-				                            units: "m"
-				},
-				layers: [overviewLayer],
-				size: overviewSize
-		};
-
-		var overview = new OpenLayers.Control.OverviewMap(overviewOptions);
-		return overview;
-		//this.addControl(overview);
-
+		jQuery("body").bind(newLayer.ogpLayerId + 'Exists', function(){that.addLayer(newLayer);});
+		this.layerExists(layerModel);
 	};
 
 	this.opacityHandler = function(){
 		var that = this;
 		jQuery(document).on("map.opacityChange", function(event, data){
-			for (var i in that.getLayersByName(data.layerId)){
-				that.getLayersByName(data.layerId)[0].setOpacity(data.opacity * .01);
+			console.log(data);
+			for (var i in that.getLayersBy("ogpLayerId", data.LayerId)){
+				that.getLayersBy("ogpLayerId", data.LayerId)[0].setOpacity(data.opacity * .01);
 			}
 		});
 	};
@@ -1208,39 +1627,45 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 	this.previewLayerHandler = function(){
 		var that = this;
 		jQuery(document).on("previewLayerOn", function(event, data){
-			that.previewLayerOn(data.layerObj);
+			that.previewLayerOn(data.LayerId);
 		});
 		
 		jQuery(document).on("previewLayerOff", function(event, data){
-			that.previewLayerOff(data.layerObj);
+			that.previewLayerOff(data.LayerId);
 		});
 	};
 	
 	this.styleChangeHandler = function(){
 		var that = this;
-		jQuery(document).on("map.styleChange", function(){
-			that.changeStyle(layerId);
+		jQuery(document).on("map.styleChange", function(event, data){
+			that.changeStyle(data.LayerId);
 		});
 	};
 
 	this.changeStyle = function(layerId){
-		var layer = this.getLayersByName(layerId)[0];
+		var layer = this.getLayersBy("ogpLayerId", layerId)[0];
 		if (typeof layer == 'undefined'){
+			console.log("layer with id=['" + layerId + "'] not found on map.");
+			//should we try to add it then?
 			return;
 		}
 
-		var layerStateObject = this.layerState;
-		var dataType = layerStateObject.getState(layerId, "dataType");
+		var layerModel = this.previewed.findWhere({LayerId: layerId});
+		if (typeof layerModel == "undefined"){
+			throw new Error("This layer can't be found in the PreviewedLayers collection.");
+		}
+		console.log(layerModel);
+		var dataType = layerModel.get("DataType").toLowerCase();
 		var userSLD = {};
 		//we need this for now, since the tilecache name and geoserver name for layers is different for Harvard layers
-		var wmsName = layerStateObject.getState(layerId, "wmsName");
-		var location = layerStateObject.getState(layerId, "location");
+		var wmsName = layerModel.get("qualifiedName");
+		var location = layerModel.get("parsedLocation");
 		//don't use a tilecache
 		layer.url = this.getPreviewUrlArray(location, false);
-		var userColor = layerStateObject.getState(layerId, "color");
-		var userWidth = layerStateObject.getState(layerId, "graphicWidth");
+		var userColor = layerModel.get("color");
+		var userWidth = layerModel.get("graphicWidth");
 		switch (dataType){
-		case "Polygon":
+		case "polygon":
 			//for polygons
 			userSLD.symbolizer = {};
 			userSLD.symbolizer.Polygon = {};
@@ -1252,7 +1677,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 				userSLD.symbolizer.Polygon.strokeColor = this.getBorderColor(userColor);
 			}
 			break;
-		case "Point":
+		case "point":
 			//for points
 			userSLD.symbolizer = {};
 			userSLD.symbolizer.Point = {};
@@ -1263,7 +1688,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 			userSLD.symbolizer.Point.strokeWidth = 0;
 			userSLD.symbolizer.Point.strokeColor = userColor;
 			break;
-		case "Line":
+		case "line":
 			//for lines	
 			userSLD.symbolizer = {};
 			userSLD.symbolizer.Line = {};
@@ -1278,7 +1703,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		var arrSLD = [{wmsName: wmsName, layerStyle: layerUniqueInfo}];
 		var newSLD = { layers: wmsName, sld_body: this.createSLDFromParams(arrSLD)};
 		layer.mergeNewParams(newSLD);
-		layerStateObject.setState(layerId, {"sld": layerUniqueInfo}); 
+		layerModel.set({sld: layerUniqueInfo}); 
 	};
 
 	this.getBorderColor = function(fillColor){
@@ -1326,41 +1751,18 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 	};
 
 	this.hideLayer = function(layerId){
-		var layer = this.getLayersByName(layerId)[0];
-		layer.setVisibility(false);
+		var layers = this.getLayersBy("ogpLayerId", layerId);
+		console.log(layers);
+		if (layers.length == 0){
+			//probably don't need to do anything;  the layer probably never made it to the map
+		} else {
+			layers[0].setVisibility(false);
+		}
 	};
 
 	this.showLayer = function(layerId){
-		var layer = this.getLayersByName(layerId)[0];
+		var layer = this.getLayersBy("ogpLayerId", layerId)[0];
 		layer.setVisibility(true);
-	};
-
-	/**
-	 * a property that stores the previous map extent, so that we can test to see if the extent has changed
-	 */
-
-	this.prevExtent = null;
-
-	this.extentChanged = function(){
-		var currentExtent = this.getExtent();
-		var previous;
-		if (typeof this.prevExtent == "object"){
-			previous = this.prevExtent;
-		} else {
-			previous = new OpenLayers.Bounds(0,0,0,0);
-		}
-		//console.log("currentExtent:" + currentExtent);
-		//console.log("previousExtent:" + previous);
-
-		if ((previous.left != currentExtent.left)||
-				(previous.right != currentExtent.right)||
-				(previous.bottom != currentExtent.bottom)||
-				(previous.top != currentExtent.top)){
-			this.prevExtent = currentExtent;
-			return true;
-		} else {
-			return false;
-		}
 	};
 
 	this.getGeodeticExtent = function(){
@@ -1369,29 +1771,51 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		return mercatorExtent.transform(sphericalMercator, geodetic);
 	};
+	
+	this.getSearchExtent = function(){
+		this.updateSize();
+		var rawExtent = this.getGeodeticExtent();
+		return this.clipToWorld(rawExtent);
+	};
 
+	this.clipToWorld = function(bounds){
+		return this.clipExtent(bounds, new OpenLayers.Bounds(-180, -90, 180, 90));
+	};
+	
+	this.clipExtent = function(bounds, clipBounds){
+		if (bounds.intersectsBounds(clipBounds)){
+			var newExtent = new OpenLayers.Bounds();
+			newExtent.left = Math.max(bounds.left, clipBounds.left);
+			newExtent.top = Math.min(bounds.top, clipBounds.top);
+			newExtent.right = Math.min(bounds.right, clipBounds.right);
+			newExtent.bottom = Math.max(bounds.bottom, clipBounds.bottom);
+			return newExtent;
+		} else {
+			throw new Error("The extents don't intersect");
+		}
+	};
 	
 	this.getFeatureInfoHandler = function(){
 		var that = this;
 		jQuery(document).on("map.getFeatureInfoOn", function(event, data){
 			console.log("map.getFeatureInfoOn");
-			var layerId = data.layerId;
+			var layerId = data.LayerId;
 			console.log(layerId);
-			var layers = that.getLayersByName(layerId);
+			var layers = that.getLayersBy("ogpLayerId", layerId);
 			if (layers.length == 0){
 				//layer is not in OpenLayers...
 				throw new Error("This layer has not yet been previewed.  Please preview it first.");
 			} else {
-				that.events.register("click", layers[0], that.wmsGetFeature);
+				that.events.register("click", layers[0], that.getFeatureAttributes);
 			}
 		});
 		jQuery(document).on("map.getFeatureInfoOff", function(event, data){
-			var layerId = data.layerId;
-			var layers = that.getLayersByName(layerId);
+			var layerId = data.LayerId;
+			var layers = that.getLayersBy("ogpLayerId", layerId);
 			if (layers.length == 0){
-				//layer is not in OpenLayers...add it
+				//layer is not in OpenLayers...add it?
 			} else {
-				that.events.unregister("click", layers[0], that.wmsGetFeature);
+				that.events.unregister("click", layers[0], that.getFeatureAttributes);
 			}
 		});
 	};
@@ -1416,40 +1840,17 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 	};
 
 	this.getCombinedBounds = function(arrBounds){
-		function sortNumber(a, b){
-			return a - b;
-		}
 
-		function inverseSortNumber(a, b){
-			return b - a;
-		}
-
-		var arrLeft = [];
-		var arrRight = [];
-
-		var arrTop = [];
-		var arrBottom = [];
-
+		var newExtent = new OpenLayers.Bounds();
 		for (var currentIndex in arrBounds){
 			var currentBounds = arrBounds[currentIndex];
-			arrLeft.push(currentBounds.left);
-			arrRight.push(currentBounds.right);
-			arrTop.push(currentBounds.top);
-			arrBottom.push(currentBounds.bottom);
+			newExtent.extend(currentBounds);
 		}
-		var newExtent = new OpenLayers.Bounds();
-
-		newExtent.left = arrLeft.sort(sortNumber)[0];
-		newExtent.right = arrRight.sort(inverseSortNumber)[0];
-		newExtent.top = arrTop.sort(inverseSortNumber)[0];
-		newExtent.bottom = arrBottom.sort(sortNumber)[0];
-
 		return newExtent;
 	};
 
 	this.getMaxLayerExtent = function getMaxLayerExtent(layerId){
-		var layerStateObject = this.layerState;
-		var bbox = layerStateObject.getState(layerId, "bbox");
+		var bbox = this.previewed.get(layerId).get("bbox");
 		var arrBbox = bbox.split(",");
 		var newExtent = new OpenLayers.Bounds();
 
@@ -1495,118 +1896,146 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		}
 	};
 	
-	
+	this.previewBrowseGraphic = function(layerModel){
+		var dialogHtml = '<img src="' + layerModel.get("parsedLocation").browseGraphic + '"/>';
+		if (typeof jQuery('#browseGraphic')[0] == 'undefined'){
+			var infoDiv = '<div id="browseGraphic" class="dialog">' + dialogHtml + '</div>';
+			jQuery("body").append(infoDiv);
+			jQuery("#browseGraphic").dialog({
+				zIndex: 2999,
+				title: "BROWSE GRAPHIC",
+				width: 'auto',
+				height: "auto",
+				resizable: false,
+				autoOpen: false
+			});    	  
+			jQuery("#browseGraphic").dialog('open');
+		} else {
+			jQuery("#browseGraphic").html(dialogHtml);
+			jQuery("#browseGraphic").dialog('open');
+		}
+	};
 	/*****
 	 * main preview functions
 	 */
 	
-	  this.previewLayerOn = function(dataObj){
-		  //TODO: if there's a problem, set preview to off, give hte user a notice
-      	var location = null;
-        	try {
-        		location = jQuery.parseJSON(dataObj["Location"]);
-        	} catch (err){
-        		 new OpenGeoportal.ErrorObject(err,'Preview parameters are invalid.  Unable to Preview layer "' + dataObj["LayerDisplayName"] +'"');
-        	}
-        	
-        	
-        var layerId = dataObj["LayerId"]; 
+	this.closeBrowseGraphic = function(layerId){
+		jQuery("#browseGraphic").dialog('close');
+		jQuery("#browseGraphic").html("");
+	};
+	
+	this.getPreviewMethods =  function(){
+		//order matters; should there be an order property?
+		var previewMethods = [
+	                        {type: "tilecache", onHandler: this.addWMSLayer, offHandler: this.hideLayer},
+	                        {type: "wms", onHandler: this.addWMSLayer, offHandler: this.hideLayer},
+	                        {type: "ArcGISRest", onHandler: this.addArcGISRestLayer, offHandler: this.hideLayer},
+	                        {type: "browseGraphic", onHandler: this.previewBrowseGraphic, offHandler: this.closeBrowseGraphic},
+	                        {type: "default", onHandler: this.addMapBBox, offHandler: this.hideLayer}
+	                        ];
+		return previewMethods;
+	};
+	
+	this.previewOnDispatcher = function(location){
+		var previewObj = this.getPreviewMethods();
 
-	          //check the state obj to see if we need to do anything to the layer
-	          //Get the data array for this row
-	          //our layer id is being used as the openlayers layer name
-  	    	var dataType = dataObj["DataType"];
-  	    	var access = dataObj["Access"];
-  	    	var institution = dataObj["Institution"];
-  	    	var minLatitude = dataObj["MinY"];
-  	    	var maxLatitude = dataObj["MaxY"];
-  	    	var minLongitude = dataObj["MinX"];
-  	    	var maxLongitude = dataObj["MaxX"];
-  	    	var bbox = [];
-  	    	bbox.push(minLongitude);
-  	    	bbox.push(minLatitude);
-  	    	bbox.push(maxLongitude);
-  	    	bbox.push(maxLatitude);
+		var defaultObj = null;
+   		for (var i=0; i < previewObj.length; i++){
+   			var currentObj = previewObj[i];
+   	   		if (typeof location[currentObj.type] != "undefined"){
+   	   			return currentObj;
+   	   		} else if (location[currentObj.type] == "default"){
+   	   			defaultObj = currentObj;
+   	   		}
+   		}
+   		
+   		console.log("no preview type match");
+		//there's no preview method identified, so just return a function that shows a static bounding box
+		return defaultObj;
+	};
+	
+	this.previewOffDispatcher = function(previewType){
+		var previewObj = this.getPreviewMethods();
+
+   		for (var i=0; i < previewObj.length; i++){
+   			var currentObj = previewObj[i];
+   	   		if (currentObj.type == previewType){
+   	   			return currentObj.offHandler;
+   	   		}	
+   		}
+   		
+   		console.log("No preview type match for '" + previewType + "'");
+		//there's no preview method identified, so just return a function that shows a static bounding box
+		return this.hideLayer;
+	};
+	
+	 
+	this.getBboxFromCoords = function(minx, miny, maxx, maxy){
+	    	var bbox = [];
+  	    	bbox.push(minx);
+  	    	bbox.push(miny);
+  	    	bbox.push(maxx);
+  	    	bbox.push(maxy);
   	    	bbox = bbox.join(",");
+		return bbox;
+	};
+	
+	this.previewLayerOn = function(layerId){
+		//find preview method
 
-        	var georeferenced = dataObj["GeoReferenced"];
+		var currModel = this.previewed.get(layerId);
+		if (typeof currModel == "undefined"){
+			throw new Error("Layer['" + layerId + "'] not found in PreviewedLayers collection.");
+		}
+		
+		var location = jQuery.parseJSON(currModel.get("Location"));
+		currModel.set({parsedLocation: location}); //perhaps this should happen on model add
+		var previewHandler = null;
+		var previewType = null;
+		try {
+			var previewObj = this.previewOnDispatcher(location);
+			try {
+				previewObj.onHandler.call(this, currModel);
+			} catch (e){
+				console.log(e);
+				throw new Error("error in preview on handler.");
+			}		
+			//if no errors, set state for the layer
+			previewType = previewObj.type;
+			currModel.set({previewType: previewType});
+        	analytics.track("Layer Previewed", currModel.get("Institution"), layerId);
+		} catch (err){
+			//if there's a problem, set preview to off, give the user a notice
+			console.log("error in layer on");
+			console.log(err);
+			currModel.set({preview: "off"});
+			throw new OpenGeoportal.ErrorObject(err,'Unable to Preview layer "' + currModel.get("LayerDisplayName") +'"');
+		}
 
-        	//check for a proxy here
-        	var proxy = OpenGeoportal.InstitutionInfo.getWMSProxy(institution, access);
-        	if (proxy){
-        		location.wmsProxy = proxy;
-        	}
+	};
 
-	    	this.layerState.setState(layerId, {"location": location});
-	    	this.layerState.setState(layerId, {"bbox": bbox});
-	      	    
-	      	    
-
-	        //check to see if layer is on openlayers map, if so, show layer
-	        var opacitySetting = this.layerState.getState(layerId, "opacity");
-	        
-	        if (this.getLayersByName(layerId)[0]){
-	            	this.showLayer(layerId);
-	            	this.getLayersByName(layerId)[0].setOpacity(opacitySetting * .01);
-	        } else{
-	            	//use switching logic here to allow other types of layer preview besides wms
-
-	            	var layerName = dataObj["Name"];
-	            	var wmsNamespace = dataObj["WorkspaceName"];
-	            	var availability = dataObj["Availability"];
-	            	/*if (!georeferenced){
-	            		//code to handle ungeoreferenced layers
-	            	}*/
-	            	var mapObj = {"institution": institution, "layerName": layerName, "title": layerId, 
-	            			"bbox": bbox, "dataType": dataType, "opacity": opacitySetting *.01, "access": access, "location": location};
-	            	//should have some sort of method to determine preview type based on location field
-	            	if (availability.toLowerCase() == "online"){
-	            		if (typeof location.wms != "undefined"){
-	            			if ((wmsNamespace.length > 0)
-	            				&&(layerName.indexOf(":") == -1)){
-	            				layerName = wmsNamespace + ":" + layerName;
-	            			}
-	            			mapObj.layerName = layerName;
-	            			this.addWMSLayer(mapObj);
-	            			//this should be triggered when layer load is complete
-	            			//jQuery(thisObj).attr('title', hideLayerText);
-	            			this.layerState.setState(layerId, {"dataType": dataType, "wmsName": layerName});
-	            		} else if (typeof location.ArcGISRest != "undefined"){
-							this.addArcGISRestLayer({"institution": institution, "layerName": layerName, "title": layerId, 
-		            			"west": minLongitude, "south": minLatitude, "east": maxLongitude, "north": maxLatitude, 
-		            			"dataType": dataType, "opacity": opacitySetting *.01, "access": access, "location": location});
-		            		//this should be triggered when layer load is complete
-		            		//jQuery(thisObj).attr('title', hideLayerText);
-		            		this.layerState.setState(layerId, {"dataType": dataType, "wmsName": layerName});
-						} else {
-	            			throw new Error("This layer is currently not previewable.");
-	            		}
-	            	} else if (availability.toLowerCase() == "offline"){
-	            		//try to preview bounds
-	            		//console.log(mapObj);
-	            		this.addMapBBox(mapObj);
-	            		this.layerState.setState(layerId, {"dataType": dataType, "wmsName": layerName});
-	            	}
-	            }
-	           // this.addToPreviewedLayers(rowData.node);
-	            //analytics.track("Layer Previewed", institution, layerId);
-	            //console.log(this);
-	  };
 	  
-	  this.previewLayerOff = function(dataObj){
-	        	try {
-	        		//layer id is being used as the openlayers layer name
-	        		this.hideLayer(dataObj.LayerId);
+	this.previewLayerOff = function(layerId){
+		//find preview off method
+		var previewModel = this.previewed.get(layerId);
+		var previewType = previewModel.get("previewType");
+		var previewHandler = null;
+		try {
+			previewHandler = this.previewOffDispatcher(previewType);
+			previewHandler.call(this, layerId);
 
-	        		//does it make sense to institute a timer here?....if layer is not used w/in x min, 
-	        		//remove from the map.
-	        		//this.previewedLayers.removeLayer(layerId, index);
+		} catch (err){
+			console.log("error in layer off")
+			throw new OpenGeoportal.ErrorObject(err,'Unable to remove Previewed layer "' + previewModel.get("LayerDisplayName") +'"');
+		}
+		//if no errors, set state for the layer
 
-	        	} catch (err) {
-	        		new OpenGeoportal.ErrorObject(err, "Error turning off preview.");
-	        	}
-	  };
+		//previewModel.set({preview: "off"});
+		// this.addToPreviewedLayers(rowData.node);//this should happen in the datatable
+		//analytics.track("Layer Unpreviewed", dataObj["Institution"], layerId);
 
-};
+	};
+	
+};//object end
 //set inheritance for MapController
 OpenGeoportal.MapController.prototype = Object.create(OpenLayers.Map.prototype);

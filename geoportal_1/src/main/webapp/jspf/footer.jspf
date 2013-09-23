@@ -13,6 +13,5 @@
 		<span id="ogpLink" class="infoLinks" onclick="location.href='http://www.opengeoportal.org'">Powered by OpenGeoportal</span> 
 	</span>
 </div>
-<%@include file="about.jspf"%> 
-<%@include file="contact.jspf"%> 
+
     	

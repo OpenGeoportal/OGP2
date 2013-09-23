@@ -1,5 +1,5 @@
 <div id="header"> 
-	<div id="header_top">
+
 		<div id="logo" onclick="location.href=location.href">
 			<span>GeoData</span>
 			<span class="offsetColor"> at Tufts</span>
@@ -14,5 +14,4 @@
  			<span id="headerLogin" class="infoLinks login">Login</span>
    		</div>
    	</div>
-    <%@include file="search.jspf"%> 
-</div> 
+     

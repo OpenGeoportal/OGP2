@@ -36,9 +36,9 @@ public class GetFeatureInfoController {
 			@RequestParam("x") String xCoord,@RequestParam("y") String yCoord,
 			@RequestParam("width") String width,@RequestParam("height") String height,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-	    String format = "application/vnd.ogc.gml";
-
+		//unfortunately, not every source supports gml response
+	    //String format = "application/vnd.ogc.gml";
+		String format = "text/html";
 	    Set<String> layerIds = new HashSet<String>();
 	    layerIds.add(layerId);
 	    SolrRecord layerInfo = null;
