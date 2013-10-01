@@ -1,29 +1,37 @@
 package org.OpenGeoPortal.Download.Methods;
 
-import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Download.Types.LayerRequest;
+import org.OpenGeoPortal.Layer.BoundingBox;
 import org.OpenGeoPortal.Layer.GeometryType;
+import org.OpenGeoPortal.Ogc.OgcInfoRequest;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.OpenGeoPortal.Utilities.OgpUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.fasterxml.jackson.core.JsonParseException;
 
 public class WmsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Double MAX_AREA =  1800.0 * 1800.0;  //should be within recommended geoserver memory settings.
 	private static final Boolean INCLUDES_METADATA = false;
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private static final String METHOD = "GET";
 
-	@Override
+	@Autowired
+	@Qualifier("ogcInfoRequest.wfs")
+	private OgcInfoRequest ogcInfoRequest;
+	
+	@Override 
 	public String getMethod(){
 		return METHOD;
 	}
@@ -35,6 +43,9 @@ public class WmsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		expectedContentType.add("application/vnd.google-earth.kml+xml");
 		expectedContentType.add("application/vnd.google-earth.kmz");
 		expectedContentType.add("image/geotiff");
+		expectedContentType.add("image/tiff");
+		expectedContentType.add("image/tiff; subtype=\"geotiff\"");
+
 		return expectedContentType;
 	}
 	
@@ -72,7 +83,7 @@ The currently recognized format options are:
 		if (format.toLowerCase().equals("geotiff")){
 			format = "image/geotiff";
 		}
-		String getFeatureRequest = "VERSION=1.1.1&REQUEST=GetMap&SRS=epsg:" +
+		String getFeatureRequest = "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&SRS=epsg:" +
 				epsgCode + "&BBOX=" + bounds.toString() + "&LAYERS=" + layerName +
 				"&HEIGHT=" + requestDimensions.get("height") + "&WIDTH=" + requestDimensions.get("width") +
 				"&FORMAT=" + format;
@@ -89,88 +100,13 @@ The currently recognized format options are:
 	}
 	
 	@Override
-	public String getUrl(){
-		return this.currentLayer.getWmsUrl();
-	};
+	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
+		String url = layer.getWmsUrl();
+		url = OgpUtils.filterQueryString(url);
+		this.checkUrl(url);
+		return urlToUrls(url);
+	}
 	
-	 Map<String, String> getWfsDescribeLayerInfo()
-	 	throws Exception
-	 {
-		// TODO should be xml
-		/*DocumentFragment requestXML = createDocumentFragment();
-		// Insert the root element node
-		Element rootElement = requestXML.createElement("DescribeFeatureType");
-		requestXML.appendChild(rootElement);*/
-		String layerName = this.currentLayer.getLayerNameNS();
-	 	String describeFeatureRequest = "<DescribeFeatureType"
-	            + " version=\"1.0.0\""
-	            + " service=\"WFS\""
-	            + " xmlns=\"http://www.opengis.net/wfs\""
-	            + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
-	            + " xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/wfs.xsd\">"
-	            + 	"<TypeName>" + layerName + "</TypeName>"
-	            + "</DescribeFeatureType>";
-
-		InputStream inputStream = this.httpRequester.sendRequest(this.currentLayer.getWfsUrl(), describeFeatureRequest, "POST");
-		//System.out.println(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
-
-		//parse the returned XML and return needed info as a map
-		// Create a factory
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		// Use document builder factory
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		//Parse the document
-		Document document = builder.parse(inputStream);
-		//initialize return variable
-		Map<String, String> describeLayerInfo = new HashMap<String, String>();
-
-		//get the namespace info
-		Node schemaNode = document.getFirstChild();
-		if (schemaNode.getNodeName().equals("ServiceExceptionReport")){
-			this.handleServiceException(schemaNode);
-		}
-		try {
-			NamedNodeMap schemaAttributes = schemaNode.getAttributes();
-			describeLayerInfo.put("nameSpace", schemaAttributes.getNamedItem("targetNamespace").getNodeValue());
-
-			//we can get the geometry column name from here
-			NodeList elementNodes = document.getElementsByTagName("xsd:element");
-			for (int i = 0; i < elementNodes.getLength(); i++){
-				Node currentNode = elementNodes.item(i);
-				NamedNodeMap currentAttributeMap = currentNode.getAttributes();
-				String attributeValue = null;
-				for (int j = 0; j < currentAttributeMap.getLength(); j++){
-					Node currentAttribute = currentAttributeMap.item(j);
-					String currentAttributeName = currentAttribute.getNodeName();
-					if (currentAttributeName.equals("name")){
-						attributeValue = currentAttribute.getNodeValue();
-					} else if (currentAttributeName.equals("type")){
-						if (currentAttribute.getNodeValue().startsWith("gml:")){
-							describeLayerInfo.put("geometryColumn", attributeValue);
-							break;
-						}
-					}
-				}
-			}
-			
-		} catch (Exception e){
-			throw new Exception("error getting layer info: "+ e.getMessage());
-		}
-		
-		return describeLayerInfo;
-	 }
-
-	 void handleServiceException(Node schemaNode) throws Exception{
-			String errorMessage = "";
-			for (int i = 0; i < schemaNode.getChildNodes().getLength(); i++){
-				String nodeName = schemaNode.getChildNodes().item(i).getNodeName();
-				if (nodeName.equals("ServiceException")){
-					errorMessage += schemaNode.getChildNodes().item(i).getTextContent().trim();
-				}
-			}
-			throw new Exception(errorMessage);
-	 }
-	 
 		private Map<String, String> calculateDimensions(Double aspectRatio){
 			String requestWidth;
 			String requestHeight;

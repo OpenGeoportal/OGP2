@@ -13,84 +13,122 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 *	object to hold display setting info, where it exists (opacity, etc.)
 */
 
+/*
+ * 
+ * 
+ * Attributes:
+ * 
+ * - resourceName: this is the layer name value needed to preview the layer.  Unfortunately, this may be different from the solr "Name" value, which should be the
+ * layer name used to access ogc web services (ex: Harvard's name value to access their tilecache does not include the database prefixes, while ogc layer names (GeoServer) do.)
+ * 
+ * 
+ */
 
-OpenGeoportal.Models.GenericLayer = OpenGeoportal.Models.ResultItem.extend({
-	defaults: {
-		preview: "off", 
-		resourceName: "",
-		previewType: ""
-		}
-});
+//TODO: generalizing this, since I really need it for the cart collection as well.
+OpenGeoportal.Models.DataTypeAware = OpenGeoportal.Models.ResultItem.extend({
+	initialize: function(){
+		this.assignDataTypeAttributes();
+	},
+	assignDataTypeAttributes: function() {
+		//really, this should take into account location field....what url types does the layer have;
+		//preview controls are available according to what attributes this model has
+		var dataType = this.get("DataType").toLowerCase();
+		var attr = {};
+		switch(dataType){
+		case "raster":
+		case "paper map":
+			attr = {baseType: "raster"};
+			break;
+		default:
+			//we're defaulting to vector type
+			attr = {baseType: "vector"};
+		break;
+		};
+		this.set(attr);
+		return this;
 
-OpenGeoportal.Models.VectorLayer = OpenGeoportal.Models.GenericLayer.extend({
+	},
 	
-	defaults: {
-		isVector: true,
+});
+
+OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.DataTypeAware.extend({	
+	previewSpecificAttributes: {
 		preview: "off", 
 		resourceName: "",
 		previewType: "",
+	},
+
+	initialize: function(){
+		this.assignDataTypeAttributes();
+		this.assignPreviewAttributes();
+	},
+	assignPreviewAttributes: function(){
+				//really, this should take into account location field....what url types does the layer have;
+		//preview controls are available according to what attributes this model has
+		var baseType = this.get("baseType").toLowerCase();
+		var attr = {};
+		switch(baseType){
+		case "raster":
+			attr = this.rasterDefaults;
+			break;
+		case "vector": 
+			var typeSpecificAttr = this.getTypeSpecificVectorAttr(this.get("DataType"));
+			attr = jQuery.merge(this.vectorDefaults, typeSpecificAttr);
+			break;
+		default:
+			//should never get here as is
+		break;
+		};
+		this.set(attr);
+		return this;
+	},
+	rasterDefaults: {
 		getFeature: false, 
 		opacity: 100, 
 		sld: ""
-	}
-});
-
-OpenGeoportal.Models.PointLayer = OpenGeoportal.Models.VectorLayer.extend({
-	defaults: {
-		isVector: true,
-		preview: "off", 
-		resourceName: "",
-		previewType: "",
+	},
+	vectorDefaults: {
 		getFeature: false, 
 		opacity: 100, 
-		sld: "",
+		colorPickerOn: false,
+		sld: ""
+	},
+	getTypeSpecificVectorAttr: function(dataType){
+		switch(dataType){
+			case "point":
+				return this.pointDefaults;
+				break;
+			case "line":
+				return this.lineDefaults;
+				break;
+			case "polygon":
+				return this.polygonDefaults;
+				break;
+			default:
+				return this.unknownVectorDefaults;
+				break;
+		}
+	},
+	pointDefaults: {
 		color: "#ff0000", 
-		colorPickerOn: false,
 		graphicWidth: 2 
-	}
-});
-
-OpenGeoportal.Models.LineLayer = OpenGeoportal.Models.VectorLayer.extend({
-	defaults: {
-		isVector: true,
-		preview: "off", 
-		resourceName: "",
-		previewType: "",
-		getFeature: false, 
-		opacity: 100, 
-		sld: "",
+	},
+	lineDefaults:  {
 		color: "#0000ff", 
-		colorPickerOn: false,
 		graphicWidth: 1 
-	}
-});
-
-OpenGeoportal.Models.PolygonLayer = OpenGeoportal.Models.VectorLayer.extend({
-	defaults: {
-		isVector: true,
-		preview: "off", 
-		resourceName: "",
-		previewType: "",
-		getFeature: false, 
+	},
+	polygonDefaults: {
 		opacity: 80, 
-		sld: "",
 		color: "#aaaaaa", 
-		colorPickerOn: false,
+		graphicWidth: 1 
+	},
+	unknownVectorDefaults: {
+		color: "#aaaaaa", 
 		graphicWidth: 1 
 	}
 });
 
-OpenGeoportal.Models.RasterLayer = OpenGeoportal.Models.GenericLayer.extend({
-	defaults: {
-		isVector: false,
-		preview: "off", 
-		resourceName: "",
-		previewType: "",
-		getFeature: false, 
-		opacity: 100, 
-		sld: ""
-	}
-});
+
 
 OpenGeoportal.Models.Attribute = Backbone.Model.extend({});
 
@@ -103,6 +141,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	 * 			//the collection should handle setting the title
 			this.previewed.getFeatureTitle = displayName;
 	 */
+	model: OpenGeoportal.Models.PreviewLayer,
 	initialize: function(){
 		this.listenTo(this, "change:preview", this.changePreview);  
 		this.listenTo(this, "change:graphicWidth change:color", this.changeLayerStyle);  
@@ -152,32 +191,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		}
 		console.log( model.get("LayerId") + " changed preview to " + preview);
 	},
-	model: function(attrs, options) {
 
-		//really, this should take into account location field....what url types does the layer have;
-		//preview controls are available according to what attributes this model has
-		var dataType = attrs.DataType.toLowerCase();
-		console.log(dataType);
-		switch(dataType){
-		case "point":
-			return new OpenGeoportal.Models.PointLayer(attrs, options);
-			break;
-		case "line":
-			return new OpenGeoportal.Models.LineLayer(attrs, options);
-			break;
-		case "polygon":
-			return new OpenGeoportal.Models.PolygonLayer(attrs, options);
-			break;
-		case "raster":
-		case "paper map":
-			return new OpenGeoportal.Models.RasterLayer(attrs, options);
-			break;
-		default:
-			return new OpenGeoportal.Models.GenericLayer(attrs, options);
-		break;
-		};
-
-	},
 	isPreviewed: function(layerId){
 		var currModel = this.get(layerId);
 		var stateVal = false;

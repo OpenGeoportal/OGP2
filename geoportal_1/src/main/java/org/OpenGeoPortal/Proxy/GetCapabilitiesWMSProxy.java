@@ -24,7 +24,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
+import org.OpenGeoPortal.Utilities.LocationFieldUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,8 +114,8 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
    		
 		SolrRecord firstRecord = layerRecords.get(0);
    		//String institution = firstRecord.getInstitution();
-		String servicePoint = firstRecord.getLocation();
-		servicePoint = ParseJSONSolrLocationField.getWmsUrl(servicePoint);
+		String location = firstRecord.getLocation();
+		String servicePoint = LocationFieldUtils.getWmsUrl(location);
    		String serverName = servicePoint.substring(0, servicePoint.indexOf("/wms"));
    		logger.debug(serverName);
    		genericProxy.proxyRequest(request, response, servicePoint + "request=getCapabilities&version=1.1.1");

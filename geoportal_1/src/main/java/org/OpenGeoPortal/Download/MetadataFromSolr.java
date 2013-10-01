@@ -9,7 +9,7 @@ import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
 import org.xml.sax.*;
-import org.OpenGeoPortal.Solr.SolrClient;
+import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocumentList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import org.w3c.dom.*;
  */
 public class MetadataFromSolr implements MetadataRetriever {
 	@Autowired
-	private SolrClient solrClient;
+	private LayerInfoRetriever layerInfoRetriever;
 	private String layerId;
 	private Document xmlDocument;
 	private DocumentBuilder builder;
@@ -132,7 +132,7 @@ public class MetadataFromSolr implements MetadataRetriever {
 		query.addField("FgdcText");
 		query.setRows(1);
 		
-		 SolrDocumentList docs = this.solrClient.getSolrServer().query(query).getResults();
+		 SolrDocumentList docs = this.layerInfoRetriever.getSolrServer().query(query).getResults();
 		 return (String) docs.get(0).getFieldValue("FgdcText");
 	}
 	

@@ -9,9 +9,6 @@ import java.util.UUID;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Controller
 @RequestMapping("/geocommons/requestExport")
@@ -36,10 +37,10 @@ public class ExportRequestController {
 		//read the POST'ed JSON object
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = mapper.readTree(request.getInputStream());
-		String basemap = rootNode.path("basemap").getTextValue();
-		String bbox = rootNode.path("extent").getTextValue();
-		String username = rootNode.path("username").getTextValue();
-		String password = rootNode.path("password").getTextValue();
+		String basemap = rootNode.path("basemap").asText();
+		String bbox = rootNode.path("extent").asText();
+		String username = rootNode.path("username").asText();
+		String password = rootNode.path("password").asText();
 		
 		ObjectNode responseJson = mapper.createObjectNode();
 		//response json format
@@ -57,12 +58,12 @@ public class ExportRequestController {
 			response.sendError(500, "This request requires a valid GeoCommons username and password.");
 			return;
 		}*/
-		String title = rootNode.path("title").getTextValue();
-		String description = rootNode.path("description").getTextValue();
+		String title = rootNode.path("title").asText();
+		String description = rootNode.path("description").asText();
 		JsonNode idArray = rootNode.path("OGPIDS");
 		ArrayList<String> layers = new ArrayList<String>();
 		for (JsonNode idNode : idArray){
-			layers.add(idNode.getTextValue());
+			layers.add(idNode.asText());
 		}
 		/*if (layers.isEmpty()) {
 			//response.sendError(400, "No layers specified in request.");

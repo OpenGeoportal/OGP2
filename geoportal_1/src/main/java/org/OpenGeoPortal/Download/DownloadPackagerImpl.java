@@ -106,7 +106,9 @@ public class DownloadPackagerImpl implements DownloadPackager {
 		//get metadata for this layer, add the resulting xml file to the file list
 		logger.info("Retrieving metadata...");
 		File xmlFile;
-
+		for (File temp: layer.downloadedFiles){
+			logger.info(temp.getName());
+		}
 		if (GeometryType.isVector(GeometryType.parseGeometryType(layer.getLayerInfo().getDataType()))&&(!layer.getRequestedFormat().equals("kmz"))){
 			xmlFile = new File(directory, OgpFileUtils.filterName(layer.getLayerInfo().getName()) + ".shp.xml");
 		} else {

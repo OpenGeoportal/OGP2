@@ -1,25 +1,26 @@
 package org.OpenGeoPortal.Download.Methods;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Download.Types.LayerRequest;
+import org.OpenGeoPortal.Layer.BoundingBox;
+import org.OpenGeoPortal.Ogc.OgcInfoRequest;
+import org.OpenGeoPortal.Ogc.OwsInfo;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
-	private static final String METHOD = "POST";
+	private static final String METHOD = "GET";
 
+	@Autowired
+	@Qualifier("ogcInfoRequest.wfs")
+	private OgcInfoRequest ogcInfoRequest;
+	
 	@Override
 	public String getMethod(){
 		return METHOD;
@@ -42,9 +43,14 @@ public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerL
 		BoundingBox nativeBounds = new BoundingBox(layerInfo.getMinX(), layerInfo.getMinY(), layerInfo.getMaxX(), layerInfo.getMaxY());
 		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
 
-		String workSpace = layerInfo.getWorkspaceName();
-		Map<String, String> describeLayerInfo = getWfsDescribeLayerInfo();
-		int epsgCode = 4326;//we are filtering the bounds based on WGS84
+		/*String workSpace = layerInfo.getWorkspaceName();
+		Map<String, String> describeLayerInfo = null;
+		try {
+			describeLayerInfo = OwsInfo.findWfsInfo(this.currentLayer.getOwsInfo()).getInfoMap();
+		} catch (Exception e){
+			this.currentLayer.getOwsInfo().add(getWfsDescribeLayerInfo());
+			describeLayerInfo = OwsInfo.findWfsInfo(this.currentLayer.getOwsInfo()).getInfoMap();
+		}
 		String geometryColumn = describeLayerInfo.get("geometryColumn");
 		String nameSpace = describeLayerInfo.get("nameSpace");
 		String bboxFilter = "";
@@ -55,9 +61,13 @@ public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerL
         	+			bounds.generateGMLEnvelope(epsgCode)
         	+		"</ogc:BBOX>"
       		+	"</ogc:Filter>";
-		}
+		}*/
+		int epsgCode = 4326;//we are filtering the bounds based on WGS84
+		String format = "shape-zip";
+		String getFeatureRequest = "request=GetFeature&version=1.1.0&typeName=" + layerName + "&outputFormat=" + format + "&BBOX=" + bounds.toString() + ",EPSG:" + Integer.toString(epsgCode);
+
 		// TODO should be xml
-		String getFeatureRequest = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\""
+		/*String getFeatureRequest = "<wfs:GetFeature service=\"WFS\" version=\"1.1.0\""
 			+ " outputFormat=\"shape-zip\""
 			+ " xmlns:" + workSpace + "=\"" + nameSpace + "\""
   			+ " xmlns:wfs=\"http://www.opengis.net/wfs\""
@@ -70,92 +80,28 @@ public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerL
   			+ bboxFilter
   			+ "</wfs:Query>"
 			+ "</wfs:GetFeature>";
-
+	*/
     	return getFeatureRequest;
 	}
 	
 	@Override
-	public String getUrl(){
-		return this.currentLayer.getWfsUrl();
-	};
+	public List<String> getUrls(LayerRequest layer) throws Exception{
+		String url = layer.getWfsUrl();
+		this.checkUrl(url);
+		return urlToUrls(url);
+	}
 	
-	 Map<String, String> getWfsDescribeLayerInfo()
-	 	throws Exception
-	 {
-		// TODO should be xml
-		/*DocumentFragment requestXML = createDocumentFragment();
-		// Insert the root element node
-		Element rootElement = requestXML.createElement("DescribeFeatureType");
-		requestXML.appendChild(rootElement);*/
-		String layerName = this.currentLayer.getLayerNameNS();
-	 	String describeFeatureRequest = "<DescribeFeatureType"
-	            + " version=\"1.0.0\""
-	            + " service=\"WFS\""
-	            + " xmlns=\"http://www.opengis.net/wfs\""
-	            + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
-	            + " xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/wfs.xsd\">"
-	            + 	"<TypeName>" + layerName + "</TypeName>"
-	            + "</DescribeFeatureType>";
+	 OwsInfo getWfsDescribeLayerInfo()
+	 	throws Exception {
 
-		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(), describeFeatureRequest, "POST");
+		String layerName = this.currentLayer.getLayerNameNS();
+
+		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(this.currentLayer), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
 		System.out.println(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
 
-		//parse the returned XML and return needed info as a map
-		// Create a factory
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		// Use document builder factory
-		DocumentBuilder builder = factory.newDocumentBuilder();
-		//Parse the document
-		Document document = builder.parse(inputStream);
-		//initialize return variable
-		Map<String, String> describeLayerInfo = new HashMap<String, String>();
-
-		//get the namespace info
-		Node schemaNode = document.getFirstChild();
-		if (schemaNode.getNodeName().equals("ServiceExceptionReport")){
-			this.handleServiceException(schemaNode);
-		}
-		try {
-			NamedNodeMap schemaAttributes = schemaNode.getAttributes();
-			describeLayerInfo.put("nameSpace", schemaAttributes.getNamedItem("targetNamespace").getNodeValue());
-
-			//we can get the geometry column name from here
-			NodeList elementNodes = document.getElementsByTagName("xsd:element");
-			for (int i = 0; i < elementNodes.getLength(); i++){
-				Node currentNode = elementNodes.item(i);
-				NamedNodeMap currentAttributeMap = currentNode.getAttributes();
-				String attributeValue = null;
-				for (int j = 0; j < currentAttributeMap.getLength(); j++){
-					Node currentAttribute = currentAttributeMap.item(j);
-					String currentAttributeName = currentAttribute.getNodeName();
-					if (currentAttributeName.equals("name")){
-						attributeValue = currentAttribute.getNodeValue();
-					} else if (currentAttributeName.equals("type")){
-						if (currentAttribute.getNodeValue().startsWith("gml:")){
-							describeLayerInfo.put("geometryColumn", attributeValue);
-							break;
-						}
-					}
-				}
-			}
-			
-		} catch (Exception e){
-			throw new Exception("error getting layer info: "+ e.getMessage());
-		}
-		
-		return describeLayerInfo;
+		return ogcInfoRequest.parseResponse(inputStream);
 	 }
 
-	 void handleServiceException(Node schemaNode) throws Exception{
-			String errorMessage = "";
-			for (int i = 0; i < schemaNode.getChildNodes().getLength(); i++){
-				String nodeName = schemaNode.getChildNodes().item(i).getNodeName();
-				if (nodeName.equals("ServiceException")){
-					errorMessage += schemaNode.getChildNodes().item(i).getTextContent().trim();
-				}
-			}
-			throw new Exception(errorMessage);
-	 }
 
 	@Override
 	public Boolean includesMetadata() {

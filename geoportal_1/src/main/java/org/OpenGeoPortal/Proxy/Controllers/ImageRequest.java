@@ -8,12 +8,13 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.OpenGeoPortal.Download.Controllers.RequestStatusController.StatusSummary;
-import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Layer.BoundingBox;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ImageRequest {
 	@JsonIgnore

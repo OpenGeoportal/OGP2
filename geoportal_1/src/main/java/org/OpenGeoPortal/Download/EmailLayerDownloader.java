@@ -9,6 +9,7 @@ import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
 /**
@@ -22,6 +23,7 @@ import org.springframework.scheduling.annotation.Async;
 //and take care of layer status as much as possible
 public class EmailLayerDownloader implements LayerDownloader {
 	private EmailDownloadMethod emailDownloadMethod;
+	@Autowired
 	private RequestStatusManager requestStatusManager;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -39,36 +41,33 @@ public class EmailLayerDownloader implements LayerDownloader {
 	@Override
 	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest request) throws Exception {
 		List<LayerRequest> layerList = request.getRequestList();
+		//check to see if the filename exists
+		//this should fire off a callable that asynchronously calls the download method
+
+		logger.debug("Trying to send email...");
+		Future<?> emailFuture = this.emailDownloadMethod.sendEmail(layerList);
+
+		Boolean emailSent = (Boolean) emailFuture.get();
 		for (LayerRequest currentLayer: layerList){
-			//this.downloadMethod.validate(currentLayer);
-				//check to see if the filename exists
-			//this should fire off a callable that asynchronously calls the download method
-			try {
-				logger.info("Trying to send email...");
-				currentLayer.setFutureValue(this.emailDownloadMethod.sendEmail(currentLayer));
-			} catch (Exception e){
-				//e.printStackTrace();
-				logger.error("an error downloading this layer: " + currentLayer.getLayerInfo().getName());
-				currentLayer.setStatus(Status.FAILED);
-				continue;
-			}
-		} 
-		for (LayerRequest currentLayer: layerList){
-			Future<?> currentFuture = currentLayer.getFutureValue();
-			if ((Boolean) currentFuture.get()){
+			if (emailSent){
 				currentLayer.setStatus(Status.SUCCESS);
 			} else {
 				currentLayer.setStatus(Status.FAILED);
 			}
 		}
+		if(emailSent){
+			DownloadRequest downloadRequest = requestStatusManager.getDownloadRequest(requestId);
+			downloadRequest.setEmailSent(emailSent);
+			logger.info("Email requested.");
+		} else {
+			logger.error("Error requesting Email");
+		}
 	}
 
 
-	public RequestStatusManager getRequestStatusManager() {
-		return requestStatusManager;
+	@Override
+	public Boolean hasRequiredInfo(LayerRequest layer) {
+		return this.emailDownloadMethod.hasRequiredInfo(layer);
 	}
 
-	public void setRequestStatusManager(RequestStatusManager requestStatusManager) {
-		this.requestStatusManager = requestStatusManager;
-	}
 }

@@ -1,10 +1,16 @@
 package org.OpenGeoPortal.Download.Methods;
 
+import java.net.MalformedURLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Download.Types.LayerRequest;
+import org.OpenGeoPortal.Layer.BoundingBox;
 import org.OpenGeoPortal.Layer.GeometryType;
+import org.OpenGeoPortal.Utilities.OgpUtils;
+
+import com.fasterxml.jackson.core.JsonParseException;
 
 public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {
 	private static final Boolean INCLUDES_METADATA = false;
@@ -30,10 +36,7 @@ public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLaye
 
 	@Override
 	public String createDownloadRequest() throws Exception {
-		//--generate POST message
-		//info needed: geometry column, bbox coords, epsg code, workspace & layername
-	 	//all client bboxes should be passed as lat-lon coords.  we will need to get the appropriate epsg code for the layer
-	 	//in order to return the file in original projection to the user (will also need to transform the bbox)
+
 		BoundingBox bounds = this.getClipBounds();
 		String layerName = this.currentLayer.getLayerNameNS();
 		/* we're going to use the kml reflector
@@ -54,7 +57,10 @@ public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	}
 
 	@Override
-	public String getUrl() {
-		return this.currentLayer.getWmsUrl();
+	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
+		String url = layer.getWmsUrl();
+		url = OgpUtils.filterQueryString(url);
+		this.checkUrl(url);
+		return urlToUrls(url);
 	}
 }

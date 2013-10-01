@@ -436,7 +436,7 @@ OpenGeoportal.MapController = function() {
 				var sldParams = [{wmsName: layerObj.name, layerStyle: sld}];
 				layerObj.sld = this.createSLDFromParams(sldParams);
 			}
-			layerObj.layerId = currentLayer.name;
+			layerObj.layerId = layerModel.get("LayerId");
 			requestObj.layers.push(layerObj);
 		}
 		console.log(this);
@@ -458,15 +458,10 @@ OpenGeoportal.MapController = function() {
 				},
 				success: function(data){
 					OpenGeoportal.ogp.downloadQueue.registerImageRequest(data.requestId, requestObj);
-					//TODO:
-					//should parse errors
-					//will also have status info for requested layers in this returned object
-
 				}
 		};
 
 		jQuery.ajax(params);
-		//this.toProcessingAnimation(jQuery("#map_tabs > span").first());
 	};
 	
 
@@ -1395,8 +1390,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 	};
 
 	this.startService = function(layerModel){
-		//if layer is a Harvard one, send an ajax request to 
-		//http://dixon.hul.harvard.edu:8080/HGL/RemoteServiceStarter?AddLayer=[layer name]&ValidationKey=OPENGEOPORTALROCKS
+		//if layer has a startService value in the location field, try to start the service via the provided url
 		var requestObj = {};
 		requestObj.AddLayer = [layerModel.get("qualifiedName")];
 		requestObj.ValidationKey = "OPENGEOPORTALROCKS";
@@ -1407,7 +1401,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 				type: "GET",
 				traditional: true,
 				complete: function(){
-					jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
+					//jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
 				},
 				statusCode: {
 					200: function(){
@@ -1421,36 +1415,33 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		jQuery.ajax(params);
 	};
 	
-	this.describeLayer = function(layerModel){
-		//on error, returns:  {"version":null,"layerDescription":[]}
-		//replace with info controller
-		
-		//we should store the results of this in the layerModel, so we don't have to repeat if we preview again
-		var that = this;
-		var params = {
-			url: "describeLayer",
-			dataType: "json",
-			data: {layerId: layerModel.get("LayerId")},
-			type: "GET",
+	this.setWmsLayerInfo = function(model){
+		var that = this; 
+		var queryData = {OGPID: model.get("LayerId")};
+    	var ajaxParams = {
+    		type: "GET",
+            url: 'info/wmsInfo',
+            data: queryData,
+            dataType: 'json',
 			success: function(data){
-				if (data.layerDescription.length > 0){
-					//success
-					console.log(data);
-					jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
-					//else failed
-					//check to see if a startService service is defined for the layer
-				} else if (layerModel.get("parsedLocation").serviceStart != "undefined"){
+					//{"owsProtocol":"WMS","infoMap":{"owsUrl":"http://geoserver01.uit.tufts.edu/wfs/WfsDispatcher?","owsType":"WFS","qualifiedName":"sde:GISPORTAL.GISOWNER01.WORLDBOUNDARIES95"},"owsDescribeInfo":null}
+					jQuery("body").trigger(model.get("qualifiedName") + 'Exists');
+					model.set({qualifiedName: data.infoMap.qualifiedName});
+					//should we also set a wfs or wcs if found?...if the dataType is unknown, it should be updated to vector or raster
+			},
+			error: function(){
+				if (model.get("parsedLocation").serviceStart != "undefined"){
 
-					that.startService(layerModel);
+					that.startService(model);
 				} else {
 					//let the user know the layer is not previewable
 					throw new Error("layer could not be added");
 				}
 			}
-		};
-		
-		jQuery.ajax(params);
+    	};
+    	jQuery.ajax(ajaxParams);
 	};
+	
 	
 	this.layerExists = function (layerModel) {
 		//otherwise, do a wms describe layer to make sure the layer is there before
@@ -1459,7 +1450,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		//(OpenLayers is merely dynamically setting the src attribute of img tags)
 		//console.log(mapObj);
 		if (layerModel.get("parsedLocation").wms != "undefined"){
-			this.describeLayer(layerModel);
+			this.setWmsLayerInfo(layerModel);
 		} else {
 			//assume it exists
 			jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
@@ -1563,12 +1554,14 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 					format: format, 
 					tiled: true,
 					exceptions: "application/vnd.ogc.se_xml",
-					transparent: true
+					transparent: true,
+					version: "1.3.0"
 				},
 				{
 					transitionEffect: 'resize',
 					opacity: opacitySetting * .01,
-					ogpLayerId: layerModel.get("LayerId")
+					ogpLayerId: layerModel.get("LayerId"),
+					ogpLayerRole: "LayerPreview"
 				});
 		//how should this change? trigger custom events with jQuery
 		//newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.name);});

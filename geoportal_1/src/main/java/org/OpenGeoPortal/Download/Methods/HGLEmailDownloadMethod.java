@@ -3,14 +3,17 @@ package org.OpenGeoPortal.Download.Methods;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
+import org.OpenGeoPortal.Layer.BoundingBox;
+import org.OpenGeoPortal.Utilities.OgpUtils;
 import org.OpenGeoPortal.Utilities.Http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+
+import com.fasterxml.jackson.core.JsonParseException;
 
 /**
  * a class that implements PackagedDownloadMethod to request raster layers from HGL.  They are not downloaded locally.
@@ -23,7 +26,6 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	private static final Boolean INCLUDES_METADATA = true;
 	private HttpRequester httpRequester;
 	private List<LayerRequest> layerList;
-	private LayerRequest currentLayer;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public void setLayerList(List<LayerRequest> layerList){
@@ -56,6 +58,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 		}
 	}
 	
+	
 	@Override
 	public String createDownloadRequest() {
 		LayerRequest representativeLayer = this.layerList.get(0);
@@ -82,21 +85,39 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	
 	@Override
 	@Async
-	public Future<Boolean> sendEmail(LayerRequest currentLayer) throws Exception {
-		this.currentLayer = currentLayer;
+	public Future<Boolean> sendEmail(List<LayerRequest> layerList) {
+		this.layerList = layerList;
 		try {
-			this.httpRequester.sendRequest(this.getUrl(), createDownloadRequest(), "GET");
-			logger.info("Email request sent.");
+			this.httpRequester.sendRequest(this.getUrl(layerList.get(0)), createDownloadRequest(), "GET");
+			this.setAllLayerStatus(Status.SUCCESS);
 			return new AsyncResult<Boolean>(true);
 		} catch (Exception e){
-			logger.error("Attempt to send email failed.");
+			logger.error(e.getMessage());
+			this.setAllLayerStatus(Status.FAILED);
 			return new AsyncResult<Boolean>(false);
 		}
 	}
 
-	private String getUrl() {
-		logger.info("Download URL: " + currentLayer.getDownloadUrl());
-		return currentLayer.getDownloadUrl();
+	@Override
+	public Boolean hasRequiredInfo(LayerRequest layerRequest){
+		if (!OgpUtils.isWellFormedEmailAddress(layerRequest.getEmailAddress())){
+			return false;
+		}
+		try {
+			if (getUrl(layerRequest) != null){
+				return true;
+			}
+		} catch (JsonParseException e) {
+			logger.error(e.getMessage());
+		}
+		logger.info("Layer does not have required info for HGLEmailDownload");
+		return false;
+	};
+	
+	private String getUrl(LayerRequest layer) throws JsonParseException {
+
+		logger.info("Download URL: " + layer.getDownloadUrl());
+		return layer.getDownloadUrl().get(0);
 	}
 
 }

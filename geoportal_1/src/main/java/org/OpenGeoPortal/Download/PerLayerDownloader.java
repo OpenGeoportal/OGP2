@@ -2,6 +2,7 @@ package org.OpenGeoPortal.Download;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.OpenGeoPortal.Download.Methods.PerLayerDownloadMethod;
@@ -27,6 +28,7 @@ public class PerLayerDownloader implements LayerDownloader {
 	private DownloadPackager downloadPackager;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	@SuppressWarnings("unchecked") 
 	@Async
 	@Override
 	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest downloadRequest) throws Exception {
@@ -48,7 +50,7 @@ public class PerLayerDownloader implements LayerDownloader {
 		int successCount = 0;
 		for (LayerRequest currentLayer: layerList){
 			try{
-				currentLayer.getDownloadedFiles().add((File) currentLayer.getFutureValue().get());
+				currentLayer.getDownloadedFiles().addAll((Set<File>) currentLayer.getFutureValue().get());
 				currentLayer.setStatus(Status.SUCCESS);
 				successCount++;
 				logger.info("finished download for: " + currentLayer.getLayerNameNS());
@@ -73,6 +75,11 @@ public class PerLayerDownloader implements LayerDownloader {
 
 	public void setPerLayerDownloadMethod(PerLayerDownloadMethod perLayerDownloadMethod) {
 		this.perLayerDownloadMethod = perLayerDownloadMethod;
+	}
+
+	@Override
+	public Boolean hasRequiredInfo(LayerRequest layer) {
+		return perLayerDownloadMethod.hasRequiredInfo(layer);
 	}
 
 

@@ -7,29 +7,23 @@
                     http://www.springframework.org/schema/security/spring-security-3.1.xsd">
                     
 	<security:http pattern="/resources/**" security="none" />
-
-	<security:http use-expressions="true" auto-config="true">
-		<security:intercept-url pattern="/login*"
-			access="permitAll" requires-channel="https" />
-		<security:intercept-url pattern="/restricted/**"
-			access="isAuthenticated()" />
-		<security:form-login login-page="/login"
-			login-processing-url="/j_security_check" />
+	<security:http use-expressions="true">
+		<security:intercept-url pattern="/login*" access="permitAll" requires-channel="https" />
+		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+		<security:intercept-url pattern="/restricted/**" access="isAuthenticated()" />
 		<security:form-login login-page="/logout"
 			login-processing-url="/j_spring_security_logout" />
 		<security:intercept-url pattern="/**" access="permitAll" />
 	</security:http>
 	
-	<!-- <security:ldap-server url="ldaps://ldapUrl/base" />-->
+	<!--<security:ldap-server url="${ldap.url}" />-->
 	<security:authentication-manager alias="authenticationManager" >
-		<!-- <security:ldap-authentication-provider user-search-filter="(uid={0})"
+		<!--<security:ldap-authentication-provider user-search-filter="${ldap.userSearchFilter}"
 		user-context-mapper-ref="userDetailsMapper.custom" />-->
 		<security:authentication-provider>
 			<security:user-service>
-				<security:user name="ogpAdmin" password="koala"
-					authorities="ROLE_ADMIN,ROLE_USER" />
-				<security:user name="ogpUser" password="wombat"
-					authorities="ROLE_USER" />
+				<security:user name="admin" password="pachyderm" authorities="ROLE_ADMIN,ROLE_USER" />
+				<security:user name="user" password="jumbo" authorities="ROLE_USER" />
 			</security:user-service>
 		</security:authentication-provider>
 	</security:authentication-manager>

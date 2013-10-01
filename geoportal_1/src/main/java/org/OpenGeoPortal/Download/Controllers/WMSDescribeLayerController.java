@@ -2,7 +2,7 @@ package org.OpenGeoPortal.Download.Controllers;
 
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
+import org.OpenGeoPortal.Utilities.LocationFieldUtils;
 import org.OpenGeoPortal.Download.Methods.WmsDescribeLayer;
 import org.OpenGeoPortal.Download.Types.Generated.Ogc.WMSDescribeLayer.WMSDescribeLayerResponse;
 
@@ -44,7 +44,7 @@ public class WMSDescribeLayerController {
 			}
 		}
 		String location = layerInfo.getLocation();
-		String baseUrl = ParseJSONSolrLocationField.getWmsUrl(location);
+		String baseUrl = LocationFieldUtils.getWmsUrl(location);
 		WMSDescribeLayerResponse response = new WMSDescribeLayerResponse();
 		try {
 			response = wmsDescribeLayer.describeLayer(baseUrl, name);

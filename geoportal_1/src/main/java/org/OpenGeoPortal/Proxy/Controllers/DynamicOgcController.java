@@ -21,9 +21,13 @@ package org.OpenGeoPortal.Proxy.Controllers;
 
 import org.OpenGeoPortal.Metadata.*;
 import org.OpenGeoPortal.Solr.*;
+import org.OpenGeoPortal.Utilities.LocationFieldUtils;
+import org.OpenGeoPortal.Utilities.OgpUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.AbortableHttpRequest;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.entity.InputStreamEntity;
@@ -35,6 +39,8 @@ import org.apache.http.message.HeaderGroup;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,21 +48,39 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
-import javax.servlet.ServletConfig;
+
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/dynamic")
@@ -71,10 +95,9 @@ public class DynamicOgcController {
 	
 	@Autowired
 	private LayerInfoRetriever layerInfoRetriever;
-	private String layerIds;
 
-
-
+	private DocumentBuilderFactory factory;
+	private TransformerFactory transformerFactory;
 
 
 /**
@@ -98,6 +121,14 @@ public class DynamicOgcController {
     HttpParams hcParams = new BasicHttpParams();
     hcParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
     proxyClient = createHttpClient(hcParams);
+    
+	// Create a factory
+	factory = DocumentBuilderFactory.newInstance();
+	//ignore validation, dtd
+	factory.setAttribute("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+	factory.setValidating(false);
+	
+	transformerFactory = TransformerFactory.newInstance();
   }
 
   /** Called from {@link #init(javax.servlet.ServletConfig)}. HttpClient offers many opportunities for customization.
@@ -113,56 +144,238 @@ protected HttpClient createHttpClient(HttpParams hcParams) {
       proxyClient.getConnectionManager().shutdown();
   }
 
-@RequestMapping(value="/wfs", method=RequestMethod.GET, params="request=GetCapabilities")
-	public void doWfsGetCapabilities(@RequestParam("typeName") String layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException {
+  private class UrlToNameContainer {
+	  Set<String> qualifiedNames;
+	  String wfsUrl;	  
+  }
+  
+  @RequestMapping(value="/wfs", method=RequestMethod.GET, params="request=GetCapabilities")
+	public ModelAndView doWfsGetCapabilitiesCase(@RequestParam("ogpids") Set<String> layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
+	  return doWfsGetCapabilities(layerIds, servletRequest, servletResponse);
+  }
+  
+  @RequestMapping(value="/wfs", method=RequestMethod.GET, params="REQUEST=GetCapabilities")
+	public ModelAndView doWfsGetCapabilities(@RequestParam("ogpids") Set<String> layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
+	  logger.info("wfs get capabilities requested");
+	  List<SolrRecord> solrRecords = null;
+		try {
+			solrRecords = this.layerInfoRetriever.fetchAllLayerInfo(layerIds);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServletException("Unable to retrieve layer info.");
+		}	
+		//need to pass a model to the caps document
 
-	//return getCapabilities doc use a jsp to resolve view, populate with data from describe feature type requests
+		
+		//parse the returned XML
+		// Use document builder factory
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		
+		Map<String,UrlToNameContainer> recordMap  = new HashMap<String,UrlToNameContainer>();
+		for (SolrRecord solrRecord: solrRecords){
+			//we have to get all of the wfs service points for the passed layerids.  match layerids to service points, so we only have to process each caps document once
+			//in the future, we should cache these caps documents
+			String workspaceName = solrRecord.getWorkspaceName();
+			String layerName = solrRecord.getName();
+			
+			String qualifiedName = OgpUtils.getLayerNameNS(workspaceName, layerName);
+			String wfsUrl = LocationFieldUtils.getWfsUrl(solrRecord.getLocation());
+			
+			URI currentURI = new URI(wfsUrl);
+			//is it ok to call these equivalent?
+			String currentURIString = currentURI.getScheme() + currentURI.getHost() + currentURI.getPath();
+			if (recordMap.containsKey(currentURIString)){
+				UrlToNameContainer urlMap = recordMap.get(currentURIString);
+				logger.info(qualifiedName);
+				urlMap.qualifiedNames.add(qualifiedName);
+			} else {
+				UrlToNameContainer urlMap = new UrlToNameContainer();
+				urlMap.wfsUrl = wfsUrl;
+				Set<String> qNamesSet = new HashSet<String>();
+				qNamesSet.add(qualifiedName);
+				logger.info(qualifiedName);
+				urlMap.qualifiedNames = qNamesSet;
+			
+				recordMap.put(currentURIString,urlMap);
+			}
+		}
+		
+		String version = "1.0.0";
+		String currentUrl = "";
+		String wfsQueryBoilerPlate = "?version=" + version + "&service=wfs";
+		String capabilitiesQuery = "&request=GetCapabilities";
+		String featureTypeInfo = "";
+		for (UrlToNameContainer container : recordMap.values()){
+			//this should happen asynchronously
+			currentUrl = container.wfsUrl;
+			HttpResponse response = proxyClient.execute(new HttpGet(currentUrl + wfsQueryBoilerPlate + capabilitiesQuery));
+			InputStream inputStream = response.getEntity().getContent();
+			//Parse the document
+			Document document = builder.parse(inputStream);
+			inputStream.close();
+
+			
+			NodeList layerNodeList = document.getElementsByTagName("Name");
+			if (layerNodeList.getLength() == 0){
+				throw new Exception("Malformed GetCapabilities Document.");
+			}
+			/*
+			 * <FeatureType><Name>sde:GISPORTAL.GISOWNER01.AFGHANISTANRIVERREGION97</Name><Title>GISPORTAL.GISOWNER01.AFGHANISTANRIVERREGION97</Title><Abstract/><Keywords>ArcSDE, GISPORTAL.GISOWNER01.AFGHANISTANRIVERREGION97</Keywords><SRS>EPSG:100004</SRS><LatLongBoundingBox minx="60.82625305019409" miny="29.95629731861914" maxx="74.6959181471344" maxy="38.59658289704833"/></FeatureType>
+			 * 
+			 */
+			for (int j = 0; j < layerNodeList.getLength(); j++){
+				Node currentLayerNode = layerNodeList.item(j);
+				String layerName = currentLayerNode.getTextContent().toLowerCase();
+				if (OgpUtils.getSetAsLowerCase(container.qualifiedNames).contains(layerName)){
+					featureTypeInfo += xmlToString(currentLayerNode.getParentNode());
+				}
+				
+			}
+			
+		}
+		
+		String onlineResource = "";
+		String describeFeatureUrl = "";
+		String getFeatureUrl = "";
+
+		if (recordMap.values().size() == 1){
+			//this is a special case...
+			//if every layer is from a single server, pass that server value into the caps doc for describelayer and getfeature.  that way, clients that do the right thing will bypass this ogp service
+			//otherwise, everything must be proxied
+			onlineResource = currentUrl;
+			describeFeatureUrl = currentUrl + wfsQueryBoilerPlate + "&request=DescribeFeatureType";
+			getFeatureUrl = currentUrl + wfsQueryBoilerPlate + "&request=GetFeature";
+		} else {
+			//values for describelayer and getFeature should refer back to this controller
+			String thisUrl = servletRequest.getRequestURL().toString() + "?";
+			onlineResource = thisUrl + "ogpids=" + servletRequest.getParameter("ogpids");
+			describeFeatureUrl = thisUrl + "request=DescribeFeatureType";
+			getFeatureUrl = thisUrl + "request=GetFeature";
+		}
+	    ModelAndView mav = new ModelAndView("wfs_caps_1_0_0"); 
+	    
+	    mav.addObject("onlineResource", StringEscapeUtils.escapeXml(onlineResource));
+	    mav.addObject("getCapabilities", StringEscapeUtils.escapeXml(servletRequest.getRequestURL().toString() + "?" + servletRequest.getQueryString()));
+	    mav.addObject("describeFeatureUrl", StringEscapeUtils.escapeXml(describeFeatureUrl)); 
+	    mav.addObject("getFeatureUrl",StringEscapeUtils.escapeXml(getFeatureUrl));
+	    mav.addObject("featureTypeInfo", featureTypeInfo);
+	    
+		servletResponse.setHeader("Content-Disposition", "inline;filename=GetCapabilities.xml");
+		return mav;
+		
   }
 
-@RequestMapping(value="/wfs", method=RequestMethod.GET, params="request=GetFeature")
-public void doWfsGetFeature(@RequestParam("typeName") String layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException {
-	SolrRecord solrRecord = null;
-	try {
-		solrRecord = this.layerInfoRetriever.getAllLayerInfo(layerIds);
-	} catch (Exception e) {
-		e.printStackTrace();
-		throw new ServletException("Unable to retrieve layer info.");
+  
+@RequestMapping(value="/wfs", method=RequestMethod.GET)
+	public void doWfsRequest(@RequestParam("ogpids") Set<String> layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
+	Enumeration paramNames = servletRequest.getParameterNames();
+	String ogcRequest = "";
+	String typeName = "";
+	while (paramNames.hasMoreElements()){
+		String param = (String) paramNames.nextElement();
+		if (param.equalsIgnoreCase("version")){
+			
+		} else if (param.equalsIgnoreCase("request")){
+			logger.info("request: " + servletRequest.getParameter(param));
+			ogcRequest = servletRequest.getParameter(param);
+		} else if (param.equalsIgnoreCase("typename")){
+			typeName = servletRequest.getParameter(param);
+		} 
 	}
-	doProxy(solrRecord, servletRequest, servletResponse);		
+	
+	if (ogcRequest.equalsIgnoreCase("describefeaturetype") || ogcRequest.equalsIgnoreCase("getfeature")){
+		//TODO: strip all the params and rebuild the request with only sanctioned parameters, in case of fussy servers
+		String remoteUrl = getOgcUrlFromLayerName(typeName, "wfs");
+		String newQuery = removeParamFromQuery(servletRequest.getQueryString(), "ogpids");
+		if (ogcRequest.equalsIgnoreCase("describefeaturetype")){
+			newQuery = removeParamFromQuery(newQuery, "srsname");
+		}
+		remoteUrl += "?" + newQuery;
+		logger.info("remote url:" + remoteUrl);
+		doProxy(remoteUrl, servletRequest, servletResponse);
+	} 
+	
+
+  }
+
+
+private String xmlToString(Node node) throws TransformerException{
+	StringWriter stw = new StringWriter();
+	Transformer transformer = transformerFactory.newTransformer();
+	transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+	transformer.transform(new DOMSource(node), new StreamResult(stw));
+	return stw.toString();
 }
 
-@RequestMapping(value="/wfs", method=RequestMethod.GET, params="request=DescribeFeatureType")
-public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException {
-	//replace layerId with typeName, get wfs location from solr
-	SolrRecord solrRecord = null; 
-	try {
-		solrRecord = layerInfoRetriever.getAllLayerInfo(layerIds);
-	} catch (Exception e) {
-		e.printStackTrace();
-		throw new ServletException("Unable to retrieve layer info.");
+public static String removeParamFromQuery(String query, String param){
+	if (query.startsWith("?")){
+		query = query.substring(1);
 	}
-	doProxy(solrRecord, servletRequest, servletResponse);
+	String[] arrQuery = query.split("&");
+	String newQuery = "";
+	for (int i = 0; i < arrQuery.length; i++){
+		String currentParam = arrQuery[i].substring(0, arrQuery[i].indexOf("="));
+		if (!currentParam.equalsIgnoreCase(param)){
+			newQuery += arrQuery[i] + "&";
+		}
+	}
+	newQuery = newQuery.substring(0, newQuery.length() - 1);
+	return newQuery;
+}
+
+private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) throws Exception{
+	SolrQuery query = new SolrQuery();
+		
+	if (layerName.contains(":")){
+		String[] arrName = layerName.split(":");
+		layerName = arrName[1];
+	}
+	
+	String queryText = "Name:" + layerName;
+	
+    query.setQuery(queryText);
+	QueryResponse queryResponse = this.layerInfoRetriever.getSolrServer().query(query);
+	List<SolrRecord> records = queryResponse.getBeans(SolrRecord.class);
+	if (records.isEmpty()){
+		throw new Exception("No matching record found in Solr Index for ['" + layerName + "']");
+	}
+	String location = records.get(0).getLocation();
+	
+	if (ogcProtocol.equalsIgnoreCase("wfs")){
+		return LocationFieldUtils.getWfsUrl(location);
+	
+	} else if (ogcProtocol.equalsIgnoreCase("wms")){
+		return LocationFieldUtils.getWmsUrl(location);
+
+	} else if (ogcProtocol.equalsIgnoreCase("wcs")){
+		return LocationFieldUtils.getWcsUrl(location);
+	} else {
+		throw new Exception("Unsupported OGC Protocol ['" + ogcProtocol + "']");
+	}
+	
 }
 
 @SuppressWarnings("deprecation")
-  private void doProxy(SolrRecord solrRecord, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException {
+  private void doProxy(String remoteUrl, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws ServletException, IOException {
 	    // Make the Request
 	    //note: we won't transfer the protocol version because I'm not sure it would truly be compatible
 	try {
-		this.targetUri = new URI(layerInfoRetriever.getWFSUrl(solrRecord));
+		this.targetUri = new URI(remoteUrl);
 	} catch (URISyntaxException e1) {
 		// TODO Auto-generated catch block
 		e1.printStackTrace();
 	}
 	
-	String layerName = "";
-	if (solrRecord.getWorkspaceName().length() > 0){
-		layerName += solrRecord.getWorkspaceName() + ":" + solrRecord.getName();
-	} else {
-		layerName += solrRecord.getName();
+	//Need to handle https, but think about "restricted" layers for now.  Some institutions don't really have good protection for restricted layers.  Does this open up potential for security
+	//problems for those folks?
+	if (servletRequest.getScheme().equals("https")){
+		//actually, what matters the most is if the remote url is https
 	}
+	
+
 	    BasicHttpEntityEnclosingRequest proxyRequest =
-	        new BasicHttpEntityEnclosingRequest(servletRequest.getMethod(), rewriteUrlFromRequest(layerName, servletRequest));
+	        new BasicHttpEntityEnclosingRequest(servletRequest.getMethod(), rewriteUrlFromRequest(servletRequest));
 	    
 	    copyRequestHeaders(servletRequest, proxyRequest);
 
@@ -175,6 +388,7 @@ public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, 
 
 	        // Execute the request
 	        logger.debug("proxy " + servletRequest.getMethod() + " uri: " + servletRequest.getRequestURI() + " -- " + proxyRequest.getRequestLine().getUri());
+
 	        proxyResponse = proxyClient.execute(URIUtils.extractHost(targetUri), proxyRequest);
 	      } finally {
 	        closeQuietly(servletRequestInputStream);
@@ -182,7 +396,7 @@ public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, 
 
 	      // Process the response
 	      int statusCode = proxyResponse.getStatusLine().getStatusCode();
-
+	      logger.info("Status from remote server: " + Integer.toString(statusCode));
 	      if (doResponseRedirectOrNotModifiedLogic(servletRequest, servletResponse, proxyResponse, statusCode)) {
 	        EntityUtils.consume(proxyResponse.getEntity());
 	        return;
@@ -272,10 +486,10 @@ public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, 
     while (enumerationOfHeaderNames.hasMoreElements()) {
       String headerName = (String) enumerationOfHeaderNames.nextElement();
       //TODO why?
-      if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH))
-        continue;
+     // if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH))
+       // continue;
       if (hopByHopHeaders.containsHeader(headerName))
-        continue;
+         continue;
       // As per the Java Servlet API 2.5 documentation:
       // Some headers, such as Accept-Language can be sent by clients
       // as several headers each with a different value rather than
@@ -284,6 +498,10 @@ public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, 
       Enumeration headers = servletRequest.getHeaders(headerName);
       while (headers.hasMoreElements()) {
         String headerValue = (String) headers.nextElement();
+        //Don't do this unless we need to
+        /*if (headerName.equalsIgnoreCase(HttpHeaders.USER_AGENT)){
+        	headerValue = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0";
+        }*/
         // In case the proxy host is running multiple virtual servers,
         // rewrite the Host header to ensure that we get content from
         // the correct virtual server
@@ -320,16 +538,12 @@ public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, 
     }
   }
   
-  private String rewriteUrlFromRequest(String layerName, HttpServletRequest servletRequest) {
+  private String rewriteUrlFromRequest(HttpServletRequest servletRequest) {
     StringBuilder uri = new StringBuilder(500);
     uri.append(this.targetUri.toString());
-    // Handle the path given to the servlet
-    /*if (servletRequest.getPathInfo() != null) {//ex: /my/path.html
-      uri.append(servletRequest.getPathInfo());
-    }*/
+
     // Handle the query string
-    String queryString = servletRequest.getQueryString();//ex:(following '?'): name=value&foo=bar#fragment
-    queryString = queryString.replace(layerIds, layerName);
+   /* String queryString = servletRequest.getQueryString();//ex:(following '?'): name=value&foo=bar#fragment
     if (queryString != null && queryString.length() > 0) {
       uri.append('?');
       int fragIdx = queryString.indexOf('#');
@@ -339,7 +553,12 @@ public void doWfsDescribeFeatureType(@RequestParam("typeName") String layerIds, 
         uri.append('#');
         uri.append(encodeUriQuery(queryString.substring(fragIdx + 1)));
       }
-    }
+    }*/
+    //skip this for now
+    
+  //  http://giswebservices.massgis.state.ma.us/geoserver/wfs?service=wfs&version=1.0.0&request=getFeature&typename=massgis:MORIS.RFI_AIS_GT50_POLY
+    //?ogpids=MassGIS.MORIS.RFI_AIS_GT50_POLY&service=wfs&version=1.0.0&request=getFeature&typename=massgis:MORIS.RFI_AIS_GT50_POLY
+    logger.info("new url string: " + uri.toString());
     return uri.toString();
   }
 

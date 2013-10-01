@@ -16,6 +16,8 @@ public class GetDirectory implements DirectoryRetriever {
 	
 	/**
 	 * a method to create a directory to put downloaded files into, if it doesn't already exist
+	 * 
+	 * @param	directoryName	the name of the directory as a String
 	 * @throws IOException 
 	 * 
 	 */
@@ -38,6 +40,12 @@ public class GetDirectory implements DirectoryRetriever {
 		}
 	}
 	
+
+	/** 
+	 * 
+	 * @return a File handle for the download directory specified in DOWNLOAD_DIRECTORY
+	 * @see org.OpenGeoPortal.Utilities.DirectoryRetriever#getDownloadDirectory()
+	 */
 	public File getDownloadDirectory() {
 		try {
 			File theDirectory = this.getDirectory(DOWNLOAD_DIRECTORY);

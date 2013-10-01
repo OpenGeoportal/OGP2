@@ -1,5 +1,6 @@
 package org.OpenGeoPortal.Download;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,20 +9,26 @@ import java.util.UUID;
 
 import org.OpenGeoPortal.Download.LayerDownloader;
 import org.OpenGeoPortal.Download.Config.DownloadConfigRetriever;
-import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Layer.BoundingBox;
 import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Download.Types.LayerRequest.Status;
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
+import org.OpenGeoPortal.Ogc.AugmentedSolrRecordRetriever;
 import org.OpenGeoPortal.Solr.SearchConfigRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.DirectoryRetriever;
+import org.OpenGeoPortal.Utilities.LocationFieldUtils;
+import org.OpenGeoPortal.Utilities.Http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
+
+import com.fasterxml.jackson.core.JsonParseException;
 
 /**
  * class that provides the logic to determine which concrete class 
@@ -48,7 +55,15 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	@Autowired
 	protected RequestStatusManager requestStatusManager;
 
+	@Autowired
+	AugmentedSolrRecordRetriever asrRetriever;
+	@Autowired
+	@Qualifier("httpRequester.generic")
+	HttpRequester httpRequester;
+	
 	protected BeanFactory beanFactory;
+	
+	
 	
 	/**
 	 * a method to set the locallyAuthenticated property.  
@@ -102,6 +117,8 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		return requestId;
 	}
 
+
+	
 	private Boolean isAuthorizedToDownload(SolrRecord solrRecord){
 		if (solrRecord.getAccess().equalsIgnoreCase("public")){
 			return true;
@@ -130,20 +147,25 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		for (SolrRecord record: this.layerInfo){
 			logger.debug("Requested format: " + layerMap.get(record.getLayerId()));
 			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()), bounds);
-			String currentClassKey = null;
 			if (!isAuthorizedToDownload(record)){
 				layerRequest.setStatus(Status.FAILED);
 				logger.info("User is not authorized to download: '" + record.getLayerId() +"'");
 				continue;	
 			}
+			String currentClassKey = null;
 			try {
 				currentClassKey = this.downloadConfigRetriever.getClassKey(layerRequest);
+				if (currentClassKey == null){
+					throw new Exception();
+				}
 				logger.info("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
+				e.printStackTrace();
 				layerRequest.setStatus(Status.FAILED);
 				logger.info("No download method found for: '" + record.getLayerId() +"'");
 				continue;
 			}
+			//here, we're collecting layers that use the same download method
 			if (downloadMap.containsKey(currentClassKey)){
 				List<LayerRequest> currentLayerList = downloadMap.get(currentClassKey);
 				currentLayerList.add(layerRequest);
@@ -156,15 +178,44 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		return downloadMap;
 		
 	}
-
+	
+	
 	private LayerRequest createLayerRequest(SolrRecord solrRecord, String requestedFormat, String[] bounds){
 		LayerRequest layer = new LayerRequest(solrRecord, requestedFormat);
 		layer.setRequestedBounds(new BoundingBox(bounds[0], bounds[1], bounds[2], bounds[3]));
 		layer.setEmailAddress(this.emailAddress);
 		layer.setTargetDirectory(this.directoryRetriever.getDownloadDirectory());
+		addOwsInfo(layer);
 		return layer;
 	}
-
+	
+	private void addOwsInfo(LayerRequest layer) {
+		String location = layer.getLayerInfo().getLocation();
+		if (LocationFieldUtils.hasWmsUrl(location)){
+			//if there is a serviceStart url for the layer, try that first
+			if (LocationFieldUtils.hasServiceStart(location)){
+					String serviceStart = "";
+					try {
+						serviceStart = LocationFieldUtils.getServiceStartUrl(location);
+						//requestObj.AddLayer = [layerModel.get("qualifiedName")];
+						//requestObj.ValidationKey = "OPENGEOPORTALROCKS";
+						logger.info("Attempting to Start Service for ['" + layer.getId() + "']");
+						httpRequester.sendRequest(serviceStart, "AddLayer=" + layer.getLayerInfo().getName() + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
+					} catch (JsonParseException e) {
+						logger.error("Problem parsing ServiceStart parameter from ['" + location + "']");
+					} catch (IOException e) {
+						logger.error("Problem sending ServiceStart request to : ['" + serviceStart + "']");
+					}
+			}
+				
+			try {
+				layer.setOwsInfo(asrRetriever.getOgcAugmentedSolrRecord(layer.getLayerInfo()).getOwsInfo());
+			} catch (Exception e) {
+				logger.error("Problem setting info from OWS service for layer: ['" + layer.getId() + "']");
+			}	
+			
+		}
+	}
 
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
@@ -194,6 +245,9 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		for (String currentDownloader: downloadMap.keySet()){
 			//get concrete class key from config
 			List<LayerRequest> layerRequests = downloadMap.get(currentDownloader);
+			for (LayerRequest layer: layerRequests){
+				logger.info("LayerID: ['" + layer.getLayerInfo().getLayerId() + "'] requested for download");
+			}
 			MethodLevelDownloadRequest request = new MethodLevelDownloadRequest(layerRequests);
 
 			try{

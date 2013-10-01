@@ -16,9 +16,7 @@ import org.OpenGeoPortal.Layer.Metadata;
 import org.OpenGeoPortal.Layer.AccessLevel;
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
-import org.OpenGeoPortal.Utilities.QuickDownload;
-import org.OpenGeoPortal.Utilities.ZipFilePackager;
+import org.OpenGeoPortal.Utilities.*;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -319,9 +317,12 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 
 		private CreateStreamDataSetRequestJson createStreamDataSetRequestObject(String layerId) {
 	    	CreateStreamDataSetRequestJson createDataSetRequestJson = new CreateStreamDataSetRequestJson();
-	    	Metadata layerInfo;
+	    	Metadata layerInfo = null;
+	    	String wmsUrl = null;
 			try {
 				layerInfo = createLayerInfoObject(layerId);
+				wmsUrl = LocationFieldUtils.getWmsUrl(layerInfo.getLocation());
+
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -356,7 +357,6 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 				String layerName = layerInfo.getOwsName();
 				String SRS = "EPSG:4326";
 	    	//http://geoserver01.uit.tufts.edu/wms?LAYERS=sde:GISPORTAL.GISOWNER01.CHELSEACULVERTSDITCHES05&request=getmap&format=kml&bbox=-71.052205,42.385485,-71.0138,42.41027&srs=EPSG:4326&width=1&height=1
-				String wmsUrl = ParseJSONSolrLocationField.getWmsUrl(layerInfo.getLocation());
 				//Note; this only works for GeoServer
 				wmsUrl = wmsUrl.replace("/wms", "/" + workspaceName + "/" + layerName + "/wms");
 				wmsUrl += "?request=getCapabilities";

@@ -100,8 +100,8 @@ OpenGeoportal.CartTable = function CartTable(){
 
 	this.downloadDialog = function(){
 		//first, check to see if anything is in savedLayers & checked
-		var layerList = this.getLayerList("download");
-
+		//backingData is the CartCollection
+		var layerList = this.backingData.getItemsWithAction("download");
 		var dialogContent = "";
 
 		if (layerList.length === 0){
@@ -115,15 +115,15 @@ OpenGeoportal.CartTable = function CartTable(){
 			var showVectorControl = false;
 			var showRasterControl = false;
 			for (var i in layerList){
-				if (this.requiresEmailAddress(layerList[i])){
-					needEmailInput = true;
+				if (layerList[i].has("requiresEmailAddress")){
+					needEmailInput = layerList[i].get("requiresEmailAddress");
 				}
-				//var dataType = layerList[layerId].dataType;
-				if (layerList[i].isVector){
-					showVectorControl = true;
+				if (layerList[i].get("baseType") == "vector"){
+					showVectorControl = true; //determining available formats should be smarter than this.  ideally, a getCapabilities document would be inspected at
+					//some point to tell us what types are available.  since this could be slow, we should cache these, or at least the info we need from them.
 					continue;
 				}
-				if (layerList[i].isRaster){
+				if (layerList[i].get("baseType") == "raster"){
 					showRasterControl = true;
 					continue;
 				}
@@ -190,7 +190,7 @@ OpenGeoportal.CartTable = function CartTable(){
 		} else {
 			buttons = {
 					Continue: function() {
-						that.downloadContinue();
+						that.downloadContinue(layerList);
 					},
 					Cancel: function() {
 						jQuery(this).dialog('close');
@@ -203,45 +203,49 @@ OpenGeoportal.CartTable = function CartTable(){
 		jQuery("#downloadDialog").dialog('open');
 	};
 
-	this.downloadContinue = function(){
+	this.downloadContinue = function(arrLayers){
+
 		var clipped = this.isClipped();
 		var vectorFormat = jQuery("#vectorDownloadType").val();
 		var rasterFormat = jQuery("#rasterDownloadType").val();
 		var bounds;
-		var arrLayers;
 		var nonIntxLayers = [];
 		if (clipped){
 			//if this is true, we should also make sure that part or all of the requested layer is in the extent
 			//if not, it should be excluded & user warned
 			
 			bounds = OpenGeoportal.ogp.map.getGeodeticExtent().toArray();
-			arrLayers = this.getLayerList("download");
+			console.log(bounds);
+			//arrLayers = this.getLayerList("download");
 			var intxLayers = [];
 			for (var i in arrLayers){
 				if (this.backingData.intersectsBounds(arrLayers[i], bounds)){
+					console.log("intersects");
 					intxLayers.push(arrLayers[i]);
 				} else {
+					console.log("doesnt intersect");
 					nonIntxLayers.push(arrLayers[i]);
 				}
 			}
 			arrLayers = intxLayers;
 		} else {
-			arrBbox = [-180,-90,180,90];
-			arrLayers = this.getLayerList("download");
+			bounds = [-180,-90,180,90];
 		}
 
 		var layerIds = [];
 		var needEmailInput = 0;
 		var layerNumber = 0;
-		for (var layer in layerObj){
+		for (var j in arrLayers){
 			layerNumber++;
-			if ((this.requiresEmailAddress(layerObj[layer]))&&(rasterFormat.toLowerCase() != "kmz")){
+			var currentLayer = arrLayers[j];
+			if ((currentLayer.has("requiresEmailAddress"))&&(currentLayer.get("requiresEmailAddress"))&&(rasterFormat.toLowerCase() != "kmz")){
 				needEmailInput++;
 			}
-			if (this.isVector(layerObj[layer].dataType)){
-				layerIds.push(layer + "=" + vectorFormat);
-			} else if (this.isRaster(layerObj[layer].dataType)){
-				layerIds.push(layer + "=" + rasterFormat);
+			//this is ugly.  we should have a better "API" for download
+			if (currentLayer.get("baseType") == "vector"){
+				layerIds.push(currentLayer.get("LayerId") + "=" + vectorFormat);
+			} else if (arrLayers[j].get("baseType") == "raster"){
+				layerIds.push(currentLayer.get("LayerId") + "=" + rasterFormat);
 			}
 		}
 		if (layerNumber == 0){
@@ -249,27 +253,19 @@ OpenGeoportal.CartTable = function CartTable(){
 			return;
 		}
 		var requestObj = {};
-		if (arrBbox.length > 0){
-			requestObj.bbox = arrBbox.join();
+		if (bounds.length > 0){
+			requestObj.bbox = bounds.join();
 		}
 		//requestObj.format = fileFormat;
 		requestObj.layers = layerIds;
 
 		//first, check to see if anything is in savedLayers & checked
 		var that = this;
-		pluralSuffix = function(totalNumber){
-			var plural;
-			if (totalNumber > 1){
-				plural = "s";
-			} else {
-				plural = "";
-			}
-			return plural;
-		};
-		var downloadContinue = '<div>You have selected ' + layerNumber + ' layer' + pluralSuffix(layerNumber) + ' for download.</div>\n';
+
+		var downloadContinue = '<div>You have selected ' + layerNumber + ' layer' + OpenGeoportal.Utility.pluralSuffix(layerNumber) + ' for download.</div>\n';
 		var addEmail = "";
 		if (needEmailInput > 0){
-			addEmail += '<div><label for="emailAddress">You have selected Harvard raster data. Please enter your email to receive a download link:</label><br />\n';
+			addEmail += '<div><label for="emailAddress">You have selected some layers that require an email address. Please enter your email to receive a download link:</label><br />\n';
 			addEmail += '<input id="emailAddress" type="text" /></div>\n';
 			addEmail += '<span id="emailValidationError" class="warning"></span>';
 
@@ -293,7 +289,7 @@ OpenGeoportal.CartTable = function CartTable(){
 					var emailAddress = "";
 					if (needEmailInput > 0){
 						emailAddress = jQuery("#emailAddress").val();
-						if (!that.checkAddress(emailAddress)){
+						if (!OpenGeoportal.Utility.checkAddress(emailAddress)){
 							var warningText = 'You must enter a valid email address.';
 							jQuery("#emailValidationError").html(warningText);
 							return;
@@ -310,23 +306,6 @@ OpenGeoportal.CartTable = function CartTable(){
 				}
 			}});
 		jQuery("#emailAddress").focus();
-	};
-
-	this.checkAddress = function(emailAddress){
-		var stringArray = emailAddress.split("@");
-		if (stringArray.length < 2) {
-			return false;
-		} else {
-			var domainArray = stringArray[1].split(".");
-			var userString = stringArray[0];
-			if (domainArray.length < 2) {
-				return false;
-			} else if ((domainArray[0].length + domainArray[1].length + userString.length) < 3){
-				return false;
-			} 
-		}
-		return true;
-
 	};
 
 	this.isClipped = function(){
@@ -469,14 +448,6 @@ OpenGeoportal.CartTable = function CartTable(){
 		jQuery.ajax(params);
 	};
 	
-	this.requiresEmailAddress = function(layerObject){
-		if ((layerObject.institution == "Harvard")&&(this.isRaster(layerObject.dataType))){
-			return true;
-		} else {
-			return false;
-		}
-	};
-
 
 	this.markRows = function(arrModel, markClass){
 		for (var i in arrModel){

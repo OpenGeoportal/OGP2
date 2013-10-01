@@ -1,16 +1,19 @@
 package org.OpenGeoPortal.Utilities;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class LinkShortenRequestGoogle {
-	/*{
- "kind": "urlshortener#url",
- "id": "http://goo.gl/fbsS",
- "longUrl": "http://www.google.com/"
-}
-*/	
+	/*
+	 * Example request to Google Link Shortener API	
+	 * {
+ 	 *	"kind": "urlshortener#url",
+ 	 *	"id": "http://goo.gl/fbsS",
+ 	 *	"longUrl": "http://www.google.com/"
+	 *	}
+	 */	
 	LinkShortenRequestGoogle (String longUrl){
 		this.setLongUrl(longUrl);
 	}

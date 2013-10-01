@@ -1,7 +1,8 @@
 package org.OpenGeoPortal.Export.GeoCommons;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 //import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 public class CreateDataSetRequestJson {
 	/*

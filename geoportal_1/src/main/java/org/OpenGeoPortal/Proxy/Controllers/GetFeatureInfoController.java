@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.OpenGeoPortal.Metadata.LayerInfoRetriever;
+import org.OpenGeoPortal.Solr.SearchConfigRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
 import org.OpenGeoPortal.Utilities.Http.HttpRequester;
 import org.apache.commons.compress.utils.IOUtils;
@@ -24,21 +25,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/featureInfo")
 public class GetFeatureInfoController {
 	private static final int NUMBER_OF_FEATURES = 1;
+	//private static final int BUFFER_MULTIPLIER = 5;
+	
+	//unfortunately, not every source supports gml response
+	private static final String RESPONSE_FORMAT = "text/html";
+	private static final String EXCEPTION_FORMAT = "application/vnd.ogc.se_xml";
+	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired @Qualifier("httpRequester.generic")
 	private HttpRequester httpRequester;
 	@Autowired
 	private LayerInfoRetriever layerInfoRetriever;
-
+	@Autowired
+	private SearchConfigRetriever searchConfigRetriever;
+	
 	@RequestMapping(method=RequestMethod.GET)
 	public void getFeatureInfo(@RequestParam("OGPID") String layerId, @RequestParam("bbox") String bbox, 
 			@RequestParam("x") String xCoord,@RequestParam("y") String yCoord,
 			@RequestParam("width") String width,@RequestParam("height") String height,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
-		//unfortunately, not every source supports gml response
-	    //String format = "application/vnd.ogc.gml";
-		String format = "text/html";
+
+
+	    
 	    Set<String> layerIds = new HashSet<String>();
 	    layerIds.add(layerId);
 	    SolrRecord layerInfo = null;
@@ -48,14 +57,9 @@ public class GetFeatureInfoController {
 			e.printStackTrace();
 			//response.sendError(500);
 		}
-	    String previewUrl = null;
-	    try {
-	    	//is there a proxy?
-			previewUrl = this.layerInfoRetriever.getWMSUrl(layerInfo);
-		} catch (Exception e) {
-			e.printStackTrace();
-			//response.sendError(500);
-		}
+	    
+	    //remove any query string
+	    String previewUrl = searchConfigRetriever.getWmsUrl(layerInfo);
 	    
 	    /*
 	     * http://www.example.com/wfs?
@@ -73,33 +77,30 @@ public class GetFeatureInfoController {
 	    	workspaceName = workspaceName + ":";
 	    }
 	    String layerName = workspaceName + layerInfo.getName();
-	    String query = "service=wms&version=1.1.1&request=GetFeatureInfo&info_format=" + format 
-				+ "&SRS=EPSG:900913&feature_count=" + NUMBER_OF_FEATURES + "&styles=&height=" + height + "&width=" + width +"&bbox=" + bbox 
-				+ "&x=" + xCoord + "&y=" + yCoord +"&query_layers=" + layerName + "&layers=" + layerName;
 	    
-	    /*String query = "service=wfs&version=1.1.0&request=GetFeature&typeName=" + layerName + "&maxFeatures=" + NUMBER_OF_FEATURES 
-	    		+ "&srsName=EPSG:900913&bbox=" + bbox;*/
+	    //in caps to support ogc services through arcgis server 9.x
+	    String query = "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&INFO_FORMAT=" + RESPONSE_FORMAT  
+				+ "&SRS=EPSG:900913&FEATURE_COUNT=" + NUMBER_OF_FEATURES + "&STYLES=&HEIGHT=" + height + "&WIDTH=" + width +"&BBOX=" + bbox 
+				+ "&X=" + xCoord + "&Y=" + yCoord +"&QUERY_LAYERS=" + layerName + "&LAYERS=" + layerName + "&EXCEPTIONS=" + EXCEPTION_FORMAT;
+	   
+	    String method = "GET";
+
 	    if (previewUrl.contains("?")){
 	    	previewUrl = previewUrl.substring(0, previewUrl.indexOf("?"));
 	    }
 		logger.info("executing WMS getFeatureRequest: " + previewUrl + "?" + query);
+		
+		
 		if (!previewUrl.contains("http")){
 			
 			request.getRequestDispatcher(previewUrl + "?" + query).forward(request, response);
 			
 		} else {
-			InputStream input = httpRequester.sendRequest(previewUrl, query, "GET");
-			logger.debug(httpRequester.getContentType());
+			InputStream input = httpRequester.sendRequest(previewUrl, query, method);
+			logger.info(httpRequester.getContentType());
 			response.setContentType(httpRequester.getContentType());
 			IOUtils.copy(input, response.getOutputStream());
 		}
-	}
 	
-	public LayerInfoRetriever getLayerInfoRetriever() {
-		return layerInfoRetriever;
-	}
-	
-	public void setLayerInfoRetriever(LayerInfoRetriever layerInfoRetriever) {
-		this.layerInfoRetriever = layerInfoRetriever;
 	}
 }

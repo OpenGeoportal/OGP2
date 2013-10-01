@@ -4,34 +4,49 @@ import java.util.List;
 import java.util.Set;
 
 import org.OpenGeoPortal.Solr.SearchConfigRetriever;
-import org.OpenGeoPortal.Solr.SolrClient;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class SolrLayerInfoRetriever implements LayerInfoRetriever{
-	private SearchConfigRetriever searchConfigRetriever;
-	private SolrClient solrClient;
+	private SolrServer solrServer;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
+	@Autowired
+	private SearchConfigRetriever searchConfigRetriever;
 
-	public void setSolrClient(SolrClient solrClient) {
-		this.solrClient = solrClient;
-	}
-
-	public void setSearchConfigRetriever(SearchConfigRetriever searchConfigRetriever) throws Exception{
-		this.searchConfigRetriever = searchConfigRetriever;
+	@Override
+	public SolrServer getSolrServer(){
+		try {
+			String url = searchConfigRetriever.getSearchUrl();
+			url = url.substring(0, url.indexOf("/select"));
+			//logger.info(url);
+			HttpSolrServer httpServer = new HttpSolrServer(url);
+			
+			httpServer.setParser(new XMLResponseParser());
+			this.solrServer = (SolrServer) httpServer;
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error("problem creating solr server");
+		}
+		return solrServer;
 	}
 	
 	public List<SolrRecord> fetchAllLayerInfo(Set<String> layerIds) throws SolrServerException {
-		SolrServer server = solrClient.getSolrServer();
+		SolrServer server = getSolrServer();
 		String query = "";
 		for (String layerId : layerIds){
-			query += "LayerId:" + layerId.trim();
+			logger.debug(layerId);
+			query += "LayerId:" + ClientUtils.escapeQueryChars(layerId.trim());
 			query += " OR ";
 		}
 		if (query.length() > 0){
@@ -57,71 +72,15 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	}
 
 	@Override
-	public String getWMSUrl(SolrRecord solrRecord) {
-		if (hasProxy(solrRecord)){
-			String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
-			String accessLevel = solrRecord.getAccess();//layerInfo.get("Access")
-			try {
-				String proxyUrl = this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
-				logger.info("Has proxy url: " + proxyUrl);
-				return proxyUrl;
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				logger.error("Error getting proxy");
-				e.printStackTrace();
-				return null;
-			}
-		} else {
-			return ParseJSONSolrLocationField.getWmsUrl(solrRecord.getLocation());
-		}
-	}
-
-	@Override
-	public boolean hasProxy(SolrRecord layerInfo) {
-		String institution = layerInfo.getInstitution();
-		String accessLevel = layerInfo.getAccess();
-		String wmsProxyUrl = null;
-		try {
-			wmsProxyUrl = this.searchConfigRetriever.getWmsProxy(institution, accessLevel);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (wmsProxyUrl != null){
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	@Override
-	public SolrRecord getAllLayerInfo(String layerId) throws SolrServerException{
+	public SolrRecord getAllLayerInfo(String layerId) throws SolrServerException {
 		String query = "LayerId:" + layerId.trim();
 	    SolrQuery queryObj = new SolrQuery();
 	    queryObj.setQuery( query );
-		List<SolrRecord> results = solrClient.getSolrServer().query(queryObj).getBeans(SolrRecord.class);
-		if (results.isEmpty()){
-			throw new SolrServerException("The LayerId: '" + layerId.trim() + "' was not found.");
-		}
-		return results.get(0);
-	}
-
-	@Override
-	public String getWFSUrl(SolrRecord solrRecord) {
-		logger.info("Has proxy url: " + Boolean.toString(hasProxy(solrRecord)));
-		if (hasProxy(solrRecord)){
-			String institution = solrRecord.getInstitution();//layerInfo.get("Institution");
-			String accessLevel = solrRecord.getAccess();//layerInfo.get("Access")
-			try {
-				return this.searchConfigRetriever.getWfsProxy(institution, accessLevel);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				logger.error("Error getting proxy");
-				e.printStackTrace();
-				return null;
-			}
+		List<SolrRecord> results = getSolrServer().query(queryObj).getBeans(SolrRecord.class);
+		if(results.isEmpty()){
+			throw new SolrServerException("Layer with id ['" + layerId.trim() + "'] not found in the Solr index.");
 		} else {
-			return ParseJSONSolrLocationField.getWfsUrl(solrRecord.getLocation());
+			return results.get(0);
 		}
 	}
 

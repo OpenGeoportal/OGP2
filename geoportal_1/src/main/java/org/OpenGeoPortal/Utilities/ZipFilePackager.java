@@ -20,6 +20,11 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class contains utility methods for zipping and unzipping files
+ * 
+ * @author Chris Barnett
+ */
 public class ZipFilePackager{
 	/**
 	 * Adds a set of files to a zip archive.
@@ -30,6 +35,16 @@ public class ZipFilePackager{
 	 */
 	final static Logger logger = LoggerFactory.getLogger(ZipFilePackager.class.getName());
 
+	/**
+	 * Zips up a File
+	 * 
+	 * This method creates a zip archive in the File's current directory with the File's name appended with ".zip".  
+	 * Once the archive is created, the original file is deleted.
+	 * 
+	 * @param fileToZip		a File to zip
+	 * @return the zipped File
+	 * @throws IOException 	if there is a problem reading or writing a File
+	 */
 	public static File zipUpFile(File fileToZip) throws IOException{
 		String zipFileName = fileToZip.getName() + ".zip";
 		File zipFile = new File(fileToZip.getParent(), zipFileName);
@@ -52,6 +67,16 @@ public class ZipFilePackager{
 		return zipFile;
 	}
 	
+	
+	/**
+	 * Adds a Set of Files to an existing Zip Archive
+	 * 
+	 * Adds a new ZipArchive entry for each of a Set of Files to a Zip Archive
+	 * 
+	 * @param filesToPackage	a Set of Files to add to a zip archive
+	 * @param zipArchive		the zip archive to add the passed Set of Files to
+	 * @throws IOException
+	 */
 	public static void addFilesToArchive(Set<File> filesToPackage, File zipArchive) throws IOException {
 	    if (filesToPackage.isEmpty()){
 	    	//if there are no files, don't do anything.
@@ -138,18 +163,14 @@ public class ZipFilePackager{
 		//long endTime = System.currentTimeMillis();
 		//logger2.info(zipFileCounter + " file(s) zipped in " + (endTime - startTime) + " milliseconds.");
 	}
-	
-	/*public static Set<File> unarchiveFiles(File zippedFile) throws Exception {
-		ZipFile zipFile = new ZipFile(zippedFile);
-		zipFile.
-		ZipArchiveEntry entry = zipFile.getEntry(name);
-		InputStream content = zipFile.getInputStream(entry);
-		try {
-		    READ UNTIL content IS EXHAUSTED
-		} finally {
-		    content.close();
-		}		
-	}*/
+
+	/**
+	 * Unzips a zipped archive into a Set of Files
+	 * 
+	 * @param zipArchive	archive File to unzip
+	 * @return	a Set of Files from the archive
+	 * @throws Exception
+	 */
 	public static Set<File> unarchiveFiles(File zipArchive) throws Exception {
 		Set<File> unarchivedFiles = new HashSet<File>();
     	try{

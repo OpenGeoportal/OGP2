@@ -17,7 +17,8 @@ public class DownloadRequest {
 	private String sessionId;
 	private File downloadPackage;
 	private List<MethodLevelDownloadRequest> requestList = new ArrayList<MethodLevelDownloadRequest>();
-	private Boolean downloadPackageSet = false;;
+	private Boolean downloadPackageSet = false;
+	private Boolean emailSent = false;
 	
 	public UUID getRequestId() {
 		return requestId;
@@ -56,9 +57,10 @@ public class DownloadRequest {
 			} else {
 				return false;
 			}
-		} else {
-			return false;
+		} else if (emailSent){
+			return true;
 		}
+		return false;
 	}
 	
 	public Boolean isReadyForPackaging(){
@@ -73,6 +75,7 @@ public class DownloadRequest {
 	
 	private StatusSummary getRawStatusSummary(){
 		//Processing or Complete for the request
+		logger.debug("Getting raw status summary");
 		StatusSummary completionStatus = null;
 		int successCount = 0;
 		int failureCount = 0;
@@ -81,6 +84,7 @@ public class DownloadRequest {
 			layerList.addAll(request.getRequestList());
 		}
 		for (LayerRequest request: layerList){
+			logger.debug("status: " + request.getStatus().toString());
 			if (request.getStatus().equals(Status.PROCESSING)){
 				return StatusSummary.PROCESSING;
 			} else if (request.getStatus().equals(Status.SUCCESS)) {
@@ -89,7 +93,9 @@ public class DownloadRequest {
 				failureCount++;
 			}
 		}
-		if (failureCount == 0){
+		if (layerList.size() == 0){
+			completionStatus = StatusSummary.COMPLETE_FAILED;
+		} else if (failureCount == 0){
 			completionStatus = StatusSummary.COMPLETE_SUCCEEDED;
 		} else if (successCount == 0){
 			completionStatus = StatusSummary.COMPLETE_FAILED;
@@ -100,7 +106,13 @@ public class DownloadRequest {
 	}
 	
 	public StatusSummary getStatusSummary() {
-		StatusSummary completionStatus = getRawStatusSummary();
+		logger.debug("getting status summary");
+		StatusSummary completionStatus = StatusSummary.COMPLETE_FAILED;
+		try {
+			completionStatus = getRawStatusSummary();
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 			
 		if (completionStatus.equals(StatusSummary.COMPLETE_SUCCEEDED) || completionStatus.equals(StatusSummary.COMPLETE_PARTIAL)){
 			if (!isPostProcessingComplete()){
@@ -108,5 +120,12 @@ public class DownloadRequest {
 			}
 		}
 		return completionStatus;
+	}
+	
+	public Boolean getEmailSent() {
+		return emailSent;
+	}
+	public void setEmailSent(Boolean emailSent) {
+		this.emailSent = emailSent;
 	}
 }

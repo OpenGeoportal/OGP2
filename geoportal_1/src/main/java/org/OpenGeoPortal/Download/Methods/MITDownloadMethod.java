@@ -1,10 +1,16 @@
 package org.OpenGeoPortal.Download.Methods;
 
+import java.net.MalformedURLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.OpenGeoPortal.Download.Types.BoundingBox;
+import org.OpenGeoPortal.Download.Types.LayerRequest;
+import org.OpenGeoPortal.Layer.BoundingBox;
 
+import com.fasterxml.jackson.core.JsonParseException;
+
+@Deprecated
 public class MITDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = true;
 	private static final String METHOD = "GET";
@@ -56,7 +62,9 @@ public class MITDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	}
 
 	@Override
-	public String getUrl() {
-		return this.currentLayer.getDownloadUrl();
-	}
+	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
+		String url = layer.getDownloadUrl().get(0);
+		this.checkUrl(url);
+		return urlToUrls(url);
+	};
 }

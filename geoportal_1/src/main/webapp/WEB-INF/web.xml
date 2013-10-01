@@ -6,7 +6,7 @@
 	</welcome-file-list>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/tufts-security-app-context.xml</param-value>
+		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml classpath*:org/OpenGeoPortal/**/applicationContext.xml</param-value>
 	</context-param>
 	<filter>
 		<filter-name>jsonpCallbackFilter</filter-name>

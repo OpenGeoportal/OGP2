@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.OpenGeoPortal.Download.DownloadRequest;
+import org.OpenGeoPortal.Download.MethodLevelDownloadRequest;
 import org.OpenGeoPortal.Download.RequestStatusManager;
+import org.OpenGeoPortal.Download.Types.LayerRequest;
 import org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExportRequest;
 import org.OpenGeoPortal.Proxy.Controllers.ImageRequest;
 import org.slf4j.Logger;
@@ -88,11 +90,28 @@ public class RequestStatusController {
 		//logger.info("download requests size: " + Integer.toString(downloadRequests.size()));
 		for (DownloadRequest downloadRequest: downloadRequests){
 			UUID requestId = downloadRequest.getRequestId();
+			List<MethodLevelDownloadRequest> requests = downloadRequest.getRequestList();
+			List<RequestedLayerStatus> layerStatuses = new ArrayList<RequestedLayerStatus>();
+			for (MethodLevelDownloadRequest mldRequest: requests){
+				for (LayerRequest layerRequest : mldRequest.getRequestList()){
+					RequestedLayerStatus layerStatus = new RequestedLayerStatus();
+					layerStatus.setStatus(layerRequest.getStatus());
+					layerStatus.setId(layerRequest.getId());
+					layerStatus.setBounds(layerRequest.getRequestedBounds().toStringLatLon());
+					try {
+						layerStatus.setName(layerRequest.getLayerNameNS());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					layerStatuses.add(layerStatus);
+				}
+			}
 			logger.debug("RequestId: " + requestId.toString());
 			String type = "layer";
 			StatusSummary status = downloadRequest.getStatusSummary();
 			logger.debug("Download status summary: " + status.toString());
-			requestStatus.addRequestStatusElement(requestId, type, status);
+			requestStatus.addRequestStatusElement(requestId, type, status, layerStatuses);
 		}
 
 		for (ImageRequest imageRequest: imageRequests){

@@ -61,7 +61,7 @@ OpenGeoportal.Models.RequestQueue = Backbone.Model.extend({
 	initialize: function(){
 		this.listenTo(this, "add", this.checkPoll);
 		this.listenTo(this, "change:status", this.checkPoll);
-		this.listenTo(this, "change:isPollRunning", this.pollStatus)
+		this.listenTo(this, "change:isPollRunning", this.pollStatus);
 
 	},
 	

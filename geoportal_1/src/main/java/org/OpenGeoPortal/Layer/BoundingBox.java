@@ -5,12 +5,9 @@ package org.OpenGeoPortal.Layer;
  * @author chris
  *
  */
-public class BoundingBox {
-	private Double minX;
-	private Double minY;
-	private Double maxX;
-	private Double maxY;
-	
+public class BoundingBox extends Envelope{
+
+	private final static String epsgCode = "4326";
 	/**
 	 * BoundingBox constructor from Doubles
 	 * @param minX
@@ -19,7 +16,7 @@ public class BoundingBox {
 	 * @param maxY
 	 */
 	public BoundingBox(Double minX, Double minY, Double maxX, Double maxY){
-		this.init(minX, minY, maxX, maxY);
+		super(minX, minY, maxX, maxY, epsgCode);
 	}
 	
 	/**
@@ -30,88 +27,28 @@ public class BoundingBox {
 	 * @param maxY
 	 */
 	public BoundingBox(String minX, String minY, String maxX, String maxY){
-		this.init(Double.parseDouble(minX), Double.parseDouble(minY), Double.parseDouble(maxX), Double.parseDouble(maxY));
+		super(minX, minY, maxX, maxY, epsgCode);
 	}
 	
-	private void init(Double minX, Double minY, Double maxX, Double maxY){
-		this.minX = minX;
-		this.minY = minY;
-		this.maxX = maxX;
-		this.maxY = maxY;
+	public static BoundingBox getOrderedBox(BoundingBox box){
+		Double minx = Math.min(box.getMinX(), box.getMaxX());
+		Double maxx = Math.max(box.getMinX(), box.getMaxX());
+		Double miny = Math.min(box.getMinY(), box.getMaxY());
+		Double maxy = Math.max(box.getMinY(), box.getMaxY());
+		return new BoundingBox(minx, miny, maxx, maxy);
 	}
 	
-	public Double getMinX(){
-		return this.minX;
-	}
-	
-	public Double getMaxX(){
-		return this.maxX;
-	}
-	
-	public Double getMinY(){
-		return this.minY;
-	}
-	
-	public Double getMaxY(){
-		return this.maxY;
-	}
-	
-	@Override
-	public String toString(){
-		return Double.toString(this.minX) + "," + Double.toString(this.minY) + "," +Double.toString(this.maxX) + "," + Double.toString(this.maxY);
-	}
-	
-	public Double getAspectRatio(){
-		Double aspectRatio = (this.getMinX() - this.getMaxX())/(this.getMinY() - this.getMaxY());
-		aspectRatio = Math.abs(aspectRatio);
-		return aspectRatio;
-	}
-	
-	public String generateGMLEnvelope(int epsgCode){
-   		String envelope = "<gml:Envelope srsName=\"http://www.opengis.net/gml/srs/epsg.xml#" + String.valueOf(epsgCode) + "\">"
-   		+ "<gml:pos>" + Double.toString(this.getMinX()) + " " + Double.toString(this.getMinY()) + "</gml:pos>"
-   		+ "<gml:pos>" + Double.toString(this.getMaxX()) + " " + Double.toString(this.getMaxY()) + "</gml:pos>"
-   		+ "</gml:Envelope>";
-   		return envelope;
-	}
-	/*
-	 *         <gml:Box srsName="http://www.opengis.net/gml/srs/epsg.xml#4326">
-           <gml:coordinates>-75.102613,40.212597 -72.361859,41.512517</gml:coordinates>
-        </gml:Box>
-	 */
-	public String generateGMLBox(int epsgCode){
-   		String envelope = "<gml:Box srsName=\"http://www.opengis.net/gml/srs/epsg.xml#" + String.valueOf(epsgCode) + "\">"
-   		+ "<gml:coordinates>" + Double.toString(this.getMinX()) + "," + Double.toString(this.getMinY())
-   		+ " " + Double.toString(this.getMaxX()) + "," + Double.toString(this.getMaxY()) + "</gml:coordinates>"
-   		+ "</gml:Box>";
-   		return envelope;
-	}
-	
-	public BoundingBox getIntersection(BoundingBox anotherBoundingBox){
-		Double intersectionMinX = Math.max(this.getMinX(), anotherBoundingBox.getMinX());
-		Double intersectionMaxX = Math.min(this.getMaxX(), anotherBoundingBox.getMaxX());
-		Double intersectionMinY = Math.max(this.getMinY(), anotherBoundingBox.getMinY());
-		Double intersectionMaxY = Math.min(this.getMaxY(), anotherBoundingBox.getMaxY());
-		BoundingBox intersection = new BoundingBox(intersectionMinX, intersectionMinY, intersectionMaxX, intersectionMaxY);
-		return intersection;
-	}
-	
-	public Boolean isEquivalent(BoundingBox anotherBoundingBox){
-		double acceptableDelta = .001;
-		if ((Math.abs(this.minX - anotherBoundingBox.minX) < acceptableDelta)&&
-				(Math.abs(this.minX - anotherBoundingBox.minX) < acceptableDelta)&&
-				(Math.abs(this.minX - anotherBoundingBox.minX) < acceptableDelta)&&
-				(Math.abs(this.minX - anotherBoundingBox.minX) < acceptableDelta)){
-			return true;
-		} else {
-			return false;
-		} 
-	}
-
-	private static Boolean isInRange(Double var, Double low, Double high){
-		if (var >= low && var <= high){
-			return true;
-		} else return false;
+	public BoundingBox getIntersection(BoundingBox anotherBox) throws Exception{
+			//make sure the boxes are in proper order to start with
+			anotherBox = BoundingBox.getOrderedBox(anotherBox);
+			BoundingBox currentBox = BoundingBox.getOrderedBox(this);
+			Double intersectionMinX = Math.max(currentBox.getMinX(), anotherBox.getMinX());
+			Double intersectionMaxX = Math.min(currentBox.getMaxX(), anotherBox.getMaxX());
+			Double intersectionMinY = Math.max(currentBox.getMinY(), anotherBox.getMinY());
+			Double intersectionMaxY = Math.min(currentBox.getMaxY(), anotherBox.getMaxY());
+			BoundingBox intersection = new BoundingBox(intersectionMinX, intersectionMinY, intersectionMaxX, intersectionMaxY);
+			
+			return intersection;
 	}
 	
 	public Boolean isValid(){
@@ -125,7 +62,7 @@ public class BoundingBox {
 	
 	public String toString1_3() {
 		//wms 1.3 reverses the axes
-		return Double.toString(this.minY) + "," + Double.toString(this.minX) + "," + Double.toString(this.maxY) + "," + Double.toString(this.maxX);
+		return this.toStringLatLon();
 	}
 	
 }

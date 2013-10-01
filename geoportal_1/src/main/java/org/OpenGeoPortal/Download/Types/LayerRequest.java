@@ -9,12 +9,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.OpenGeoPortal.Layer.BoundingBox;
+import org.OpenGeoPortal.Ogc.OwsInfo;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField;
+import org.OpenGeoPortal.Utilities.OgpUtils;
+import org.OpenGeoPortal.Utilities.LocationFieldUtils;
+
+import com.fasterxml.jackson.core.JsonParseException;
 
 public class LayerRequest {
 	final String id;
 	final SolrRecord layerInfo;
+	List<OwsInfo> owsInfo;
 	private String requestedFormat;
 	private UUID jobId;
 	private String emailAddress = "";
@@ -67,6 +73,14 @@ public class LayerRequest {
 	
 	public SolrRecord getLayerInfo(){
 		return this.layerInfo;
+	}
+
+	public List<OwsInfo> getOwsInfo() {
+		return owsInfo;
+	}
+
+	public void setOwsInfo(List<OwsInfo> owsInfo) {
+		this.owsInfo = owsInfo;
 	}
 
 	public File getTargetDirectory() {
@@ -145,24 +159,50 @@ public class LayerRequest {
 		return this.status;
 	}
 	
-	public String getLayerNameNS(){
-		return this.layerInfo.getWorkspaceName() + ":" + this.layerInfo.getName();
+	public String getLayerNameNS() throws Exception{
+		return OgpUtils.getLayerNameNS(this.layerInfo.getWorkspaceName(), this.layerInfo.getName());
 	}
 
-	public String getWmsUrl(){
-		return ParseJSONSolrLocationField.getWmsUrl(this.layerInfo.getLocation());
+	public String getWmsUrl() throws JsonParseException{
+		return LocationFieldUtils.getWmsUrl(this.layerInfo.getLocation());
 	}
 	
-	public String getWfsUrl(){
-		return ParseJSONSolrLocationField.getWfsUrl(this.layerInfo.getLocation());
+	public String getWfsUrl() throws Exception{
+		String url = "";
+
+		try {
+			url = LocationFieldUtils.getWfsUrl(this.layerInfo.getLocation());
+		} catch (JsonParseException e){
+			Map<String,String> infoMap = OwsInfo.findWmsInfo(this.getOwsInfo()).getInfoMap();
+			if (infoMap.get("owsType").equalsIgnoreCase("wfs")){
+				url = infoMap.get("owsUrl");
+			}
+		}
+		if (url.isEmpty()){
+			throw new Exception("No WFS url found!");
+		}
+		return url;
 	}
 	
-	public String getWcsUrl(){
-		return ParseJSONSolrLocationField.getWcsUrl(this.layerInfo.getLocation());
+	public String getWcsUrl() throws Exception{
+		String url = "";
+
+		try {
+			url = LocationFieldUtils.getWcsUrl(this.layerInfo.getLocation());
+		} catch (JsonParseException e){
+			Map<String,String> infoMap = OwsInfo.findWmsInfo(this.getOwsInfo()).getInfoMap();
+			if (infoMap.get("owsType").equalsIgnoreCase("wcs")){
+				url = infoMap.get("owsUrl");
+			}
+		}
+		if (url.isEmpty()){
+			throw new Exception("No WCS url found!");
+		}
+		return url;
 	}
 	
-	public String getDownloadUrl(){
-		return ParseJSONSolrLocationField.getDownloadUrl(this.layerInfo.getLocation());
+	public List<String> getDownloadUrl() throws JsonParseException{
+		return LocationFieldUtils.getDownloadUrl(this.layerInfo.getLocation());
 	}
 
 	public boolean hasMetadata() {
@@ -176,4 +216,5 @@ public class LayerRequest {
 	public void setFutureValue(Future<?> futureValue) {
 		this.futureValue = futureValue;
 	}
+
 }

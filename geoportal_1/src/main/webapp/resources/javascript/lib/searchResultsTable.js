@@ -285,7 +285,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	this.saveHandler = function(){
 		var that = this;
 		jQuery(document).on("click.save", "#" + this.getTableId() + " div.saveControl", function(event){
-			that.saveLayer(this);
+			that.toggleCartState(this);
 		});
 	};
 	
@@ -297,7 +297,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	//saveLayer or previewLayer add a layer to the layerState obj, if it is not there.
 	//click-handler for save column
 
-	this.saveLayer = function(thisObj){
+	this.toggleCartState = function(thisObj){
 		var cart = OpenGeoportal.ogp.cartView.collection;
 		var aData = this.getRowData(thisObj).data;
 		var layerId = this.getColumnData(aData, "LayerId");
@@ -308,19 +308,9 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 		var layerModel = cart.get(layerId);
 
 		if (typeof layerModel == "undefined"){
-			var cartItem = this.backingData.get(layerId).clone();
-			cart.addLayer(cartItem);
-			//TODO: add this to cart view
-		/*	var previewControl$ = jQuery(this.getColumnData(aData, "View"));
-			if (previewControl$.hasClass("loginButton")){
-				// TODO:  This section has to be redone
-				OpenGeoportal.ogp.ui.authenticationWarning(thisObj, aData, true);
-			} else if (previewControl$.hasClass("goExternal")){
-				OpenGeoportal.ogp.ui.authenticationWarning(thisObj, aData, false);
-			} else {
-				var cartItem = new OpenGeoportal.Models.CartItem(this.backingData.get(layerId).attributes);
-				this.cart.add(cartItem, {validate: true});
-			}*/
+			var cartItem = this.backingData.get(layerId).clone();//Do I need to clone, since I am passing just the attributes?
+			cart.addLayer(new OpenGeoportal.Models.CartLayer(cartItem.attributes));
+
 		} else {
 			cart.remove(layerId);
 		}

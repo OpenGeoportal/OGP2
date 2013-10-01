@@ -19,12 +19,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * a filter that wraps jsonp responses with callback specified in the parameters
+ * 
+ * 
+ * @author cbarne02
+ *
+ */
 public class JsonpCallbackFilter implements Filter {
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+		@Override
 		public void init(FilterConfig fConfig) throws ServletException {}
 
+		@Override
 		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
@@ -32,8 +41,8 @@ public class JsonpCallbackFilter implements Filter {
 			@SuppressWarnings("unchecked")
 			Map<String, String[]> parms = httpRequest.getParameterMap();
 			if(parms.containsKey("callback")) {
-				if(logger.isDebugEnabled())
-					logger.debug("Wrapping response with JSONP callback '" + parms.get("callback")[0] + "'");
+				
+				logger.debug("Wrapping response with JSONP callback '" + parms.get("callback")[0] + "'");
 
 				OutputStream out = httpResponse.getOutputStream();
 
@@ -53,6 +62,7 @@ public class JsonpCallbackFilter implements Filter {
 			}
 		}
 
+		@Override
 		public void destroy() {}
 	}
 

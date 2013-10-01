@@ -375,7 +375,7 @@ OpenGeoportal.UserInterface = function(){
 
 	this.getImage = function(imageName){
 		return this.utility.getImage(imageName);
-	}
+	};
 
 
 

@@ -21,7 +21,7 @@ if (typeof OpenGeoportal.Utility == 'undefined'){
 
 OpenGeoportal.Utility.ImageLocation = "resources/media/";
 OpenGeoportal.Utility.CssLocation = "resources/css/";
-OpenGeoportal.Utility.JspfLocation = "jspf/"
+OpenGeoportal.Utility.JspfLocation = "jspf/";
 	
 OpenGeoportal.Utility.InitSet = false;
 
@@ -206,26 +206,6 @@ OpenGeoportal.Utility.hideLoadIndicator = function(div){
 	
 };
 
-
-OpenGeoportal.Utility.isRaster = function(dataType){
-		dataType = dataType.toLowerCase();
-		if ((dataType == "raster")||(dataType == "paper map")){
-			return true;
-		} else {
-			return false;
-		}
-	};
-
-OpenGeoportal.Utility.isVector = function(dataType){
-		//console.log(dataType);
-		dataType = dataType.toLowerCase();
-		//console.log(dataType);
-		if ((dataType == "line")||(dataType == "point")||(dataType == "polygon")){
-			return true;
-		} else {
-			return false;
-		}
-	};
 	
 OpenGeoportal.Utility.checkAddress = function(emailAddress){
 		var stringArray = emailAddress.split("@");
@@ -244,6 +224,16 @@ OpenGeoportal.Utility.checkAddress = function(emailAddress){
 
 	};
  
+ OpenGeoportal.Utility.pluralSuffix = function(totalNumber){
+			var plural;
+			if (totalNumber > 1){
+				plural = "s";
+			} else {
+				plural = "";
+			}
+			return plural;
+		};
+		
 OpenGeoportal.Utility.doPrint = function(){
 		window.print();
 		//jQuery('head > link[href="css/print.css"]').remove();

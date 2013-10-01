@@ -1,3 +1,4 @@
+<%@page import="org.OpenGeoPortal.Utilities.LocationFieldUtils"%>
 <%@ page language="java" contentType="application/xml; charset=UTF-8"
     pageEncoding="UTF-8" import="java.util.*, javax.xml.transform.*, org.apache.commons.compress.utils.IOUtils, java.net.URLDecoder, java.net.URL, javax.xml.transform.dom.*, javax.xml.transform.stream.*, 
     org.OpenGeoPortal.Utilities.Http.HttpRequester, org.OpenGeoPortal.Metadata.LayerInfoRetriever, org.OpenGeoPortal.Solr.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, 
@@ -48,7 +49,7 @@
    		//insert it into this response.  Eventually, if we can get the epsg code from solr reliably, solr might be the
    		//faster method, since we are parsing a potentially large xml document.
    		//String institution = solrRecords.get(0).getInstitution();
-   		String servicePoint = org.OpenGeoPortal.Utilities.ParseJSONSolrLocationField.getWfsUrl(solrRecords.get(0).getLocation());
+   		String servicePoint = LocationFieldUtils.getWfsUrl(solrRecords.get(0).getLocation());
 		URL serverUrl = new URL(servicePoint);
 		String serverName = serverUrl.getProtocol() +"://" + serverUrl.getHost();
 		System.out.println(serverName);

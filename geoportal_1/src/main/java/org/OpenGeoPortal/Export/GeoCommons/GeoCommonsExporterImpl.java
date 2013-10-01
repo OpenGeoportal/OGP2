@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.OpenGeoPortal.Download.Types.BoundingBox;
 import org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExportRequest.ExportStatus;
+import org.OpenGeoPortal.Layer.BoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -16,27 +16,21 @@ public class RequestStatus {
 		requestStatus.add(new RequestStatusElement(requestId, type, status));
 	}
 	
-	/*public enum ElementType {
-		Layer, Image
+	public void addRequestStatusElement(UUID requestId, String type, StatusSummary status, List<RequestedLayerStatus> requestedLayerStatuses){
+		requestStatus.add(new ExtendedRequestStatusElement(requestId, type, status, requestedLayerStatuses));
 	}
-	
-	public enum DeliveryMethod {
-		Direct, Email
-	}*/
 	
 	public class RequestStatusElement {
 		private UUID requestId;
-		//private ElementType type;//layer, image, etc.
-		//private DeliveryMethod delivery;//direct, email, etc.
 		private String type;
 		private StatusSummary status;
+		
 		RequestStatusElement(UUID requestId, String type, StatusSummary status){
 			this.requestId = requestId;
 			this.setType(type);
 			this.status = status;
 		}
 		
-
 		public UUID getRequestId() {
 			return requestId;
 		}
@@ -60,18 +54,25 @@ public class RequestStatus {
 		public void setType(String type) {
 			this.type = type;
 		}
+		
+	}
+	
+	public class ExtendedRequestStatusElement extends RequestStatusElement {
 
+		private List<RequestedLayerStatus> requestedLayerStatuses;
 
-		/*public DeliveryMethod getDelivery() {
-			return delivery;
+		ExtendedRequestStatusElement(UUID requestId, String type, StatusSummary status, List<RequestedLayerStatus> requestedLayerStatuses){
+			super(requestId, type, status);
+			this.setRequestedLayerStatuses(requestedLayerStatuses);
+		}
+		
+		public List<RequestedLayerStatus> getRequestedLayerStatuses() {
+			return requestedLayerStatuses;
 		}
 
-
-		public void setDelivery(DeliveryMethod delivery) {
-			this.delivery = delivery;
-		}*/
-		
-		
+		public void setRequestedLayerStatuses(List<RequestedLayerStatus> requestedLayerStatuses) {
+			this.requestedLayerStatuses = requestedLayerStatuses;
+		}
 	}
 	
 }

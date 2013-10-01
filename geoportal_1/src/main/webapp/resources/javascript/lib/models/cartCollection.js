@@ -11,20 +11,34 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 }
 
 
-OpenGeoportal.Models.CartItem = OpenGeoportal.Models.ResultItem.extend({
+OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.DataTypeAware.extend({
+	initialize: function(){
+		this.assignDataTypeAttributes();
+		this.requiresEmailAddress();
+	},
+	
+	requiresEmailAddress: function(){
+		//there should be a more generalized way to do this, rather than specifying "Harvard"
+		if ((this.get("Institution").toLowerCase() == "harvard")&&(this.get("baseType") == "raster")){
+			this.set({requiresEmailAddress: true, emailAddress: ""});
+		} else {
+			this.set({requiresEmailAddress: false, emailAddress: ""});
+		}
+	}
 });
 
 OpenGeoportal.CartCollection = Backbone.Collection.extend({
-	model: OpenGeoportal.Models.CartItem,
+	model: OpenGeoportal.Models.CartLayer,
 	initialize: function(){
+
 		this.listenTo(this, "invalid", function(model, error){
 		        console.log(error);
 		    });
 	},
 	isActionAvailable: function(model, action){
-		//return models in the collection that have passed 'action' available
+		//returns true for passed models that have passed 'action' available
 		var trueFunction = function(){return true};
-		var filter = trueFunction; //returns all models by default
+		var filter = trueFunction; //returns true by default
 		switch (action){
 		case "mapIt":
 			filter = this.mapItFilter;
@@ -38,18 +52,31 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		}
 		return filter.call(this, model);
 	},
+	
+	getItemsWithAction: function(action){
+		var that = this;
+
+		var arrItems = this.filter(function(model){
+
+			return that.isActionAvailable(model, action);
+
+			});
+		return arrItems;
+	},
+	
 	mapItFilter: function(model){
 		//public vector layers only.
 		if (model.get("Access").toLowerCase() != "public"){
 			return false;
 		} else {
-			if (model.isVector){
+			if (model.get("baseType").toLowerCase() == "vector"){
 				return true;
 			} else {
 				return false;
 			}
 		}
 	},
+	
 	downloadFilter: function(model){
 		//no external restricted layers, no local restricted layers if not logged in. 
 		var institution = model.get('Institution').toLowerCase();
@@ -69,6 +96,7 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 			return false;
 		}
 	},
+	
 	webServiceFilter: function(model){
 		//public layers only.  right now, only Tufts.
 		var institution = model.get('Institution').toLowerCase();
@@ -83,18 +111,20 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 			return true;
 		}
 	},
+	
 	intersectsBounds: function(model, bounds){
 		//return an array of models in the collection that intersect the passed bounds
 			var minX = model.get("MinX");
 			var minY = model.get("MinY");
 			var maxX = model.get("MaxX");
 			var maxY = model.get("MaxY");
-
+			console.log(model);
+			console.log(bounds);//would prefer for bounds to be an object, rather than an array
 			var isIntx = function(min1, max1, min2, max2){
 				return (Math.min(max1, max2) - Math.max(min1, min2)) > 0;
-			}		
+			};		
 		
-			if (!isIntx(bounds.minY, bounds.maxY, minY, maxY)){
+			if (!isIntx(bounds[1], bounds[3], minY, maxY)){
 				return false;
 			}
 		
@@ -104,12 +134,12 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 				dateLine = true;
 			}
 			if (!dateLine){
-				var xIntx = isIntx(bounds.minX, bounds.maxX, minX, maxX);
+				var xIntx = isIntx(bounds[0], bounds[2], minX, maxX);
 				return xIntx;
 			} else {
 				//split the model's bounds into 2 boxes
-				var xIntx1 = isIntx(bounds.minX, bounds.maxX, -180.0, maxX);
-				var xIntx2 = isIntx(bounds.minX, bounds.maxX, minX, 180.0);
+				var xIntx1 = isIntx(bounds[0], bounds[2], -180.0, maxX);
+				var xIntx2 = isIntx(bounds[0], bounds[2], minX, 180.0);
 				return xIntx1 || xIntx2;
 			}
 	},
@@ -140,8 +170,19 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		}
 	},
 	
+	
 	IgnoreAuthenticationWarning: {local: false, external: false},
-
+			//TODO: add this to cart view
+		/*	var previewControl$ = jQuery(this.getColumnData(aData, "View"));
+			if (previewControl$.hasClass("loginButton")){
+				// TODO:  This section has to be redone
+				OpenGeoportal.ogp.ui.authenticationWarning(thisObj, aData, true);
+			} else if (previewControl$.hasClass("goExternal")){
+				OpenGeoportal.ogp.ui.authenticationWarning(thisObj, aData, false);
+			} else {
+				var cartItem = new OpenGeoportal.Models.CartItem(this.backingData.get(layerId).attributes);
+				this.cart.add(cartItem, {validate: true});
+			}*/
 
 	authenticationWarning: function(checkboxObj, rowData, canLogin){
 		var instIndx = this.getColumnsIndex()["Institution"];

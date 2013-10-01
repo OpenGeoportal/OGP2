@@ -15,11 +15,4 @@ public class OgpUserContextImpl implements OgpUserContext {
 		return authenticated;
 	}
 
-	/*@Override
-	public boolean authenticate(String username, String password) {
-		// TODO Auto-generated method stub
-		return authenticationMethod.authenticate(username, password);
-	}*/
-
-
 }

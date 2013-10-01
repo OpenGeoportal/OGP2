@@ -1,19 +1,12 @@
 {"config":{
 	"institutions":{
-		"Tufts":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
-			{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"], "outputFormats":["shp"]},
+		"Tufts":[
 			{"classKey": "layerDownloader.wfs.proxied", "accessLevel":["restricted"],"dataType":["vector"], "outputFormats":["shp"]},
-			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]},
 			{"classKey": "layerDownloader.wcs.proxied", "accessLevel":["restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
-		"Berkeley":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
-			{"classKey": "layerDownloader.wfs", "accessLevel":["public","restricted"],"dataType":["vector"], "outputFormats":["shp"]},
-			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
-		"Harvard":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector","raster","paper map"], "outputFormats":["kml","kmz"]},
-			{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"]},
+		"Harvard":[
 			{"classKey": "layerDownloader.email.HGL", "accessLevel":["public","restricted"],"dataType":["raster","paper map"],"outputFormats":["geotiff"]}],
-		"MIT":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},
-			{"classKey": "layerDownloader.wfs", "accessLevel":["public","restricted"],"dataType":["vector"], "outputFormats":["shp"]},
-			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}], 
-		"MassGIS":[{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["vector", "raster"], "outputFormats":["kml", "kmz"]},                  
-			{"classKey": "layerDownloader.wfs", "accessLevel":["public","restricted"],"dataType":["vector"],"outputFormats":["shp"]},
-			{"classKey": "layerDownloader.wcs", "accessLevel":["public","restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}]}}} 
+		"default":[{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"], "preference": 1},
+			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 1},
+			{"classKey": "layerDownloader.wms", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 3},
+			{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["raster", "vector"],"outputFormats":["kml", "kmz"], "preference": 4},
+			{"classKey": "layerDownloader.file", "accessLevel":["public"],"dataType":["vector", "raster"],"outputFormats":["shp", "geotiff"], "preference": 2}]}}} 

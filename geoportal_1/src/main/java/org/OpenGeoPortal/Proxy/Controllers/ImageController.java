@@ -13,17 +13,19 @@ import org.OpenGeoPortal.Proxy.Controllers.ImageRequest.LayerImage;
 import org.OpenGeoPortal.Security.OgpUserContext;
 import org.OpenGeoPortal.Solr.SearchConfigRetriever;
 import org.OpenGeoPortal.Solr.SolrRecord;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.OpenGeoPortal.Utilities.LocationFieldUtils;
+import org.OpenGeoPortal.Utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 @RequestMapping("/requestImage")
@@ -35,7 +37,7 @@ public class ImageController {
 	private SearchConfigRetriever searchConfigRetriever;
 	@Autowired
 	private ImageHandler imageHandler;
-	private @Value("${ogp.proxyToWMS}") String proxyTo;
+	
 	private boolean isLocallyAuthenticated;// = true;
 	@Autowired
 	private OgpUserContext ogpUserContext;
@@ -96,13 +98,15 @@ public class ImageController {
 	}
 	
 
+
+	
 	private void populateImageRequest() throws Exception{
 		String baseQuery = generateBaseQuery(imageRequest);	
     	//I'm making the assumption that the overhead of having separate http requests
 		//to Solr is far greater than iterating over these lists
 		
 	    List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(imageRequest.getLayerIds());
-	    
+	    logger.info("Number of layers in image: " + Integer.toString(layerInfo.size()));
 		for (LayerImage layerImage: imageRequest.getLayers()){
 			String currentId = layerImage.getLayerId();
 			for (SolrRecord solrRecord : layerInfo){
@@ -120,12 +124,12 @@ public class ImageController {
 	    		   	}
 	    		   	
 	    		   	layerImage.setQueryString(baseQuery + layerQueryString);
-	    		   	logger.debug(layerImage.getQueryString());
-	    			if (this.layerInfoRetriever.hasProxy(solrRecord)){
-	    				layerImage.setBaseUrl(this.proxyTo);
+	    		   	logger.info(layerImage.getQueryString());
+	    			if (this.searchConfigRetriever.hasWmsProxy(solrRecord.getInstitution(), solrRecord.getAccess())){ 
+	    				layerImage.setBaseUrl(this.searchConfigRetriever.getWmsProxyInternal(solrRecord.getInstitution(), solrRecord.getAccess()));
 	    			}  else {
 	        		   	try {
-	    					layerImage.setBaseUrl(this.layerInfoRetriever.getWMSUrl(solrRecord));
+	    					layerImage.setBaseUrl(OgpUtils.filterQueryString(LocationFieldUtils.getWmsUrl(solrRecord.getLocation())));
 	    				} catch (Exception e1) {
 	    					e1.printStackTrace();
 	    				}

@@ -6,12 +6,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * This class inspects the donwload directory, looks for files last modified before FILE_AGE_MINUTES, then deletes them
+ * 
+ * This is set up as a recurring task
+ * 
+ * @author cbarne02
+ *
+ */
 public class CleanupDirectoryImpl implements CleanupDirectory {
 	private static final int FILE_AGE_MINUTES = 240;
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
 	final static Logger logger = LoggerFactory.getLogger(CleanupDirectoryImpl.class.getName());
 
+	/* (non-Javadoc)
+	 * @see org.OpenGeoPortal.Utilities.CleanupDirectory#cleanupDownloadDirectory()
+	 */
 	public void cleanupDownloadDirectory(){
 		logger.debug("Attempting to clean directory...");
 		//this is not great...only handles one level of directories
