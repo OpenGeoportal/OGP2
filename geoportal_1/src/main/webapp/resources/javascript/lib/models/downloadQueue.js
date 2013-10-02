@@ -12,15 +12,15 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 
 
 OpenGeoportal.Models.QueueItem = Backbone.Model.extend({
-    defaults: {//each layer with a request should get an object here. that means that requestId is not necessarily unique
-    	//layerId's may not be unique either
+    defaults: {
     	requestId: "",
-    	layerId: "",
+    	layers: [],
     	clipBounds: "",
     	emailAddress: "",
     	status: "waiting",//waiting, pending, succeeded, failed
     	type: "" //layer, image, export
     }
+	
 /*
  * attributes: 
  * type: download, image, export, etc.
@@ -111,6 +111,17 @@ OpenGeoportal.Models.RequestQueue = Backbone.Model.extend({
 			};
 			setTimeout(function(){model.get("responses").fetch(options);}, model.get("poller").get("pollInterval"));
 		} 
+	},
+    createRequest: function(requestObj){
+		var that = this;
+		var params = {
+				url: "requestDownload",
+				data: requestObj,
+				dataType: "json",
+				type: "POST",
+				success: function(data){that.get("queue").add(jQuery.merge(data, requestObj));}
+		};
+		jQuery.ajax(params);
 	}
 	
 });

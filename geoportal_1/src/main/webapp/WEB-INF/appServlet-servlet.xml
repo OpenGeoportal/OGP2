@@ -15,11 +15,11 @@
     <!-- <context:property-placeholder location = "WEB-INF/ogp.properties" />-->
     <!-- Scans within the base package of the application for @Components to configure as beans -->
     <!-- @Controller, @Service, @Configuration, etc. -->
-        <context:component-scan base-package="org.OpenGeoPortal" />
-    <!--<context:component-scan base-package="org.OpenGeoPortal.Security" />
-    <context:component-scan base-package="org.OpenGeoPortal.Download.Controllers" />
-    <context:component-scan base-package="org.OpenGeoPortal.Proxy.Controllers" />
-    <context:component-scan base-package="org.OpenGeoPortal.Export.GeoCommons" />-->
+        <context:component-scan base-package="org.OpenGeoportal" />
+    <!--<context:component-scan base-package="org.OpenGeoportal.Security" />
+    <context:component-scan base-package="org.OpenGeoportal.Download.Controllers" />
+    <context:component-scan base-package="org.OpenGeoportal.Proxy.Controllers" />
+    <context:component-scan base-package="org.OpenGeoportal.Export.GeoCommons" />-->
     
  	<beans:bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
   		<beans:property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>

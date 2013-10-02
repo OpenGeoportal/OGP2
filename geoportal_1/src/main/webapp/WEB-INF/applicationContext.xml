@@ -13,21 +13,21 @@
            	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
 
 	<context:annotation-config />
-	<context:property-placeholder location="WEB-INF/ogp.properties,classpath*:org/OpenGeoPortal/**/*.properties" />
+	<context:property-placeholder location="WEB-INF/ogp.properties,classpath*:org/OpenGeoportal/**/*.properties" />
 
 	<oxm:jaxb2-marshaller id="marshaller">
-   	 	<oxm:class-to-be-bound name="org.OpenGeoPortal.Ogc.Wmc.JaxB.ViewContextType"/>   
+   	 	<oxm:class-to-be-bound name="org.OpenGeoportal.Ogc.Wmc.JaxB.ViewContextType"/>   
 	</oxm:jaxb2-marshaller>
-	<beans:bean id="proxy.simple" class="org.OpenGeoPortal.Proxy.GenericProxyImpl" />
-	<beans:bean id="userContext.ogp" class="org.OpenGeoPortal.Security.OgpUserContextImpl" />
-	<beans:bean id="userDetailsMapper.custom" class="org.OpenGeoPortal.Security.SimpleLdapUserDetailsMapper" >
+	<beans:bean id="proxy.simple" class="org.OpenGeoportal.Proxy.GenericProxyImpl" />
+	<beans:bean id="userContext.ogp" class="org.OpenGeoportal.Security.OgpUserContextImpl" />
+	<beans:bean id="userDetailsMapper.custom" class="org.OpenGeoportal.Security.SimpleLdapUserDetailsMapper" >
 		<beans:property name="admins" value="${admins}" />
 	</beans:bean>
 
 	<!-- misc -->
 	<!--
-	<beans:bean id="localSchemaLSResourceResolver.wmsDescribeLayerResponse" class="org.OpenGeoPortal.Utilities.LocalSchemaLSResourceResolver">
-			<beans:property name="resource" value="classpath:org/OpenGeoPortal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" />
+	<beans:bean id="localSchemaLSResourceResolver.wmsDescribeLayerResponse" class="org.OpenGeoportal.Utilities.LocalSchemaLSResourceResolver">
+			<beans:property name="resource" value="classpath:org/OpenGeoportal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" />
 	</beans:bean>
 	-->
 	<beans:bean id="ogcRestTemplate" class="org.springframework.web.client.RestTemplate">
@@ -46,202 +46,202 @@
 					</beans:property>
 	</beans:bean>
 	
-	<beans:bean id="ogcJaxb2Marshaller" class="org.OpenGeoPortal.Download.Methods.CustomMarshaller">
+	<beans:bean id="ogcJaxb2Marshaller" class="org.OpenGeoportal.Download.Methods.CustomMarshaller">
 		<!-- <beans:property name="schemaResourceResolver" ref="localSchemaLSResourceResolver.wmsDescribeLayerResponse"/>-->
-		<!-- <beans:property name="schema" value="classpath:org/OpenGeoPortal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" />-->
+		<!-- <beans:property name="schema" value="classpath:org/OpenGeoportal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" />-->
 		<beans:property name="classesToBeBound">
 			<beans:list>
-				<beans:value>org.OpenGeoPortal.Download.Types.Generated.Ogc.WMSDescribeLayer.WMSDescribeLayerResponse
+				<beans:value>org.OpenGeoportal.Download.Types.Generated.Ogc.WMSDescribeLayer.WMSDescribeLayerResponse
 				</beans:value>
 			</beans:list>
 		</beans:property>
 	</beans:bean>
 	
 	
-	<beans:bean id="jsonpCallbackFilter" class="org.OpenGeoPortal.Utilities.JsonpCallbackFilter" />
+	<beans:bean id="jsonpCallbackFilter" class="org.OpenGeoportal.Utilities.JsonpCallbackFilter" />
 	
-	<beans:bean id="imageHandler" class="org.OpenGeoPortal.Proxy.ImageHandlerImpl" scope="prototype" />
-	<beans:bean id="imageCompositor" class="org.OpenGeoPortal.Proxy.ImageCompositorImpl" scope="prototype" />
-	<beans:bean id="imageDownloader" class="org.OpenGeoPortal.Proxy.ImageDownloaderImpl" scope="prototype" />
+	<beans:bean id="imageHandler" class="org.OpenGeoportal.Proxy.ImageHandlerImpl" scope="prototype" />
+	<beans:bean id="imageCompositor" class="org.OpenGeoportal.Proxy.ImageCompositorImpl" scope="prototype" />
+	<beans:bean id="imageDownloader" class="org.OpenGeoportal.Proxy.ImageDownloaderImpl" scope="prototype" />
 
-	<beans:bean id="exportHandler.geocommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExportHandlerImpl" scope="prototype"/>
-	<beans:bean id="exporter.geocommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsExporterImpl" scope="prototype"/>
-	<beans:bean id="restClient.geocommons" class="org.OpenGeoPortal.Export.GeoCommons.GeoCommonsJsonClient" scope="prototype" />
+	<beans:bean id="exportHandler.geocommons" class="org.OpenGeoportal.Export.GeoCommons.GeoCommonsExportHandlerImpl" scope="prototype"/>
+	<beans:bean id="exporter.geocommons" class="org.OpenGeoportal.Export.GeoCommons.GeoCommonsExporterImpl" scope="prototype"/>
+	<beans:bean id="restClient.geocommons" class="org.OpenGeoportal.Export.GeoCommons.GeoCommonsJsonClient" scope="prototype" />
 	
-	<beans:bean id="wmsDescribeLayer" class="org.OpenGeoPortal.Download.Methods.WmsDescribeLayerImpl" />
+	<beans:bean id="wmsDescribeLayer" class="org.OpenGeoportal.Download.Methods.WmsDescribeLayerImpl" />
 	
-	<beans:bean id="requestStatusManager" class="org.OpenGeoPortal.Download.RequestStatusManagerImpl" />
+	<beans:bean id="requestStatusManager" class="org.OpenGeoportal.Download.RequestStatusManagerImpl" />
 
-	<beans:bean id="cleanupDirectory.download" class="org.OpenGeoPortal.Utilities.CleanupDirectoryImpl" />
+	<beans:bean id="cleanupDirectory.download" class="org.OpenGeoportal.Utilities.CleanupDirectoryImpl" />
 		
-	<beans:bean id="urlShortener.Google" class="org.OpenGeoPortal.Utilities.UrlShortenerGoogle">
+	<beans:bean id="urlShortener.Google" class="org.OpenGeoportal.Utilities.UrlShortenerGoogle">
 		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
 	</beans:bean>
 
-	<beans:bean id="layerInfoRetriever.solr" class="org.OpenGeoPortal.Metadata.SolrLayerInfoRetriever"/>
+	<beans:bean id="layerInfoRetriever.solr" class="org.OpenGeoportal.Metadata.SolrLayerInfoRetriever"/>
 
-	<beans:bean id="metadataRetriever.solr" class="org.OpenGeoPortal.Download.MetadataFromSolr" />
+	<beans:bean id="metadataRetriever.solr" class="org.OpenGeoportal.Download.MetadataFromSolr" />
 
 	<beans:bean id="configRetriever.download"
-		class="org.OpenGeoPortal.Download.Config.OgpDownloadConfigRetriever">
+		class="org.OpenGeoportal.Download.Config.OgpDownloadConfigRetriever">
 		<beans:property name="resource" value="resources/ogpDownloadConfig.json" />
 	</beans:bean>
 
-	<beans:bean id="configRetriever.search" class="org.OpenGeoPortal.Solr.OgpConfigRetriever">
+	<beans:bean id="configRetriever.search" class="org.OpenGeoportal.Solr.OgpConfigRetriever">
 		<beans:property name="resource" value="resources/ogpConfig.json" />
 	</beans:bean>
 
-	<!--<beans:bean id="solrClient.solrJ" class="org.OpenGeoPortal.Solr.SolrJClient">
+	<!--<beans:bean id="solrClient.solrJ" class="org.OpenGeoportal.Solr.SolrJClient">
 		<beans:constructor-arg ref="configRetriever.search" />
 	</beans:bean>-->
 
-	<beans:bean id="quickDownload" class="org.OpenGeoPortal.Utilities.QuickWfsDownload"/>
+	<beans:bean id="quickDownload" class="org.OpenGeoportal.Utilities.QuickWfsDownload"/>
 	
-	<beans:bean id="directoryRetriever.simple" class="org.OpenGeoPortal.Utilities.GetDirectory">
+	<beans:bean id="directoryRetriever.simple" class="org.OpenGeoportal.Utilities.GetDirectory">
 		<beans:property name="resource" value="WEB-INF/ogp.properties" />
 	</beans:bean>
 
-	<beans:bean id="downloadPackager" class="org.OpenGeoPortal.Download.DownloadPackagerImpl" />
+	<beans:bean id="downloadPackager" class="org.OpenGeoportal.Download.DownloadPackagerImpl" />
 
-	<beans:bean id="downloadHandler" class="org.OpenGeoPortal.Download.DownloadHandlerImpl">
+	<beans:bean id="downloadHandler" class="org.OpenGeoportal.Download.DownloadHandlerImpl">
 	</beans:bean>
 	<!-- http requesters -->
 	<beans:bean id="httpRequester.generic"
-		class="org.OpenGeoPortal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">
+		class="org.OpenGeoportal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">
 		<beans:property name="ogpHttpClient" ref="httpClient.pooling" />
 	</beans:bean>
 
 	<beans:bean id="httpRequester.allTrustingCert"
-		class="org.OpenGeoPortal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">
+		class="org.OpenGeoportal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">
 		<beans:property name="ogpHttpClient" ref="httpClient.pooling.allTrusting" />
 	</beans:bean>
 
-	<beans:bean id="httpClient.pooling" class="org.OpenGeoPortal.Utilities.Http.PoolingHttpClient" />
-	<beans:bean id="httpClient.pooling.allTrusting" class="org.OpenGeoPortal.Utilities.Http.AllTrustingCertPoolingHttpClient" />
+	<beans:bean id="httpClient.pooling" class="org.OpenGeoportal.Utilities.Http.PoolingHttpClient" />
+	<beans:bean id="httpClient.pooling.allTrusting" class="org.OpenGeoportal.Utilities.Http.AllTrustingCertPoolingHttpClient" />
 
 	<!-- Download methods -->
 	<beans:bean id="downloadMethod.wms"
-		class="org.OpenGeoPortal.Download.Methods.WmsDownloadMethod" scope="prototype">
+		class="org.OpenGeoportal.Download.Methods.WmsDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.wfs"
-		class="org.OpenGeoPortal.Download.Methods.WfsDownloadMethod" scope="prototype">
+		class="org.OpenGeoportal.Download.Methods.WfsDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.wfs.proxied"
-		class="org.OpenGeoPortal.Download.Methods.ProxiedWfsDownloadMethod"
+		class="org.OpenGeoportal.Download.Methods.ProxiedWfsDownloadMethod"
 		scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="proxyTo" value="${ogp.proxyToWFS}" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.kmlReflector"
-		class="org.OpenGeoPortal.Download.Methods.KmlDownloadMethod" scope="prototype">
+		class="org.OpenGeoportal.Download.Methods.KmlDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.wcs"
-		class="org.OpenGeoPortal.Download.Methods.WcsDownloadMethod" scope="prototype">
+		class="org.OpenGeoportal.Download.Methods.WcsDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.wcs.proxied"
-		class="org.OpenGeoPortal.Download.Methods.ProxiedWcsDownloadMethod"
+		class="org.OpenGeoportal.Download.Methods.ProxiedWcsDownloadMethod"
 		scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="proxyTo" value="${ogp.proxyToWCS}" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.file"
-		class="org.OpenGeoPortal.Download.Methods.FileDownloadMethod" scope="prototype">
+		class="org.OpenGeoportal.Download.Methods.FileDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.email.HGL"
-		class="org.OpenGeoPortal.Download.Methods.HGLEmailDownloadMethod"
+		class="org.OpenGeoportal.Download.Methods.HGLEmailDownloadMethod"
 		scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
 	<!-- LayerDownloader -->
 	<beans:bean id="layerDownloader.wfs"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wfs" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.wcs"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wcs" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.wfs.proxied"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wfs.proxied" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.wcs.proxied"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wcs.proxied" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.kml"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wms" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.wms"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wms" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.kml.reflector"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.kmlReflector" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.file"
-		class="org.OpenGeoPortal.Download.PerLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.file" />
 	</beans:bean>
 
 <!-- HGL specific -->
 
 	<beans:bean id="layerDownloader.email.HGL"
-		class="org.OpenGeoPortal.Download.EmailLayerDownloader" scope="prototype">
+		class="org.OpenGeoportal.Download.EmailLayerDownloader" scope="prototype">
 		<beans:property name="emailDownloadMethod" ref="downloadMethod.email.HGL" />
 	</beans:bean>
 	
-	<beans:bean id="ogcInfoRequester.wms" class="org.OpenGeoPortal.Ogc.OgcInfoRequesterImpl" scope="prototype">
+	<beans:bean id="ogcInfoRequester.wms" class="org.OpenGeoportal.Ogc.OgcInfoRequesterImpl" scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wms" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 	
-	<beans:bean id="ogcInfoRequester.wfs" class="org.OpenGeoPortal.Ogc.OgcInfoRequesterImpl" scope="prototype">
+	<beans:bean id="ogcInfoRequester.wfs" class="org.OpenGeoportal.Ogc.OgcInfoRequesterImpl" scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wfs" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 	
-	<beans:bean id="ogcInfoRequester.wcs_1_1_1" class="org.OpenGeoPortal.Ogc.OgcInfoRequesterImpl" scope="prototype">
+	<beans:bean id="ogcInfoRequester.wcs_1_1_1" class="org.OpenGeoportal.Ogc.OgcInfoRequesterImpl" scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wcs_1_1_1" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 	
-	<beans:bean id="ogcInfoRequester.wcs_1_0_0" class="org.OpenGeoPortal.Ogc.OgcInfoRequesterImpl" scope="prototype">
+	<beans:bean id="ogcInfoRequester.wcs_1_0_0" class="org.OpenGeoportal.Ogc.OgcInfoRequesterImpl" scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wcs_1_0_0" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
-	<beans:bean id="ogcInfoRequest.wms" class="org.OpenGeoPortal.Ogc.Wms.WmsDescribeLayer" scope="prototype"/>
-	<beans:bean id="ogcInfoRequest.wfs" class="org.OpenGeoPortal.Ogc.Wfs.WfsDescribeFeature" scope="prototype"/>
-	<beans:bean id="ogcInfoRequest.wcs_1_1_1" class="org.OpenGeoPortal.Ogc.Wcs.WcsDescribeCoverage1_1_1" scope="prototype"/>
-	<beans:bean id="ogcInfoRequest.wcs_1_0_0" class="org.OpenGeoPortal.Ogc.Wcs.Wcs1_0_0.WcsDescribeCoverage1_0_0" scope="prototype"/>
+	<beans:bean id="ogcInfoRequest.wms" class="org.OpenGeoportal.Ogc.Wms.WmsDescribeLayer" scope="prototype"/>
+	<beans:bean id="ogcInfoRequest.wfs" class="org.OpenGeoportal.Ogc.Wfs.WfsDescribeFeature" scope="prototype"/>
+	<beans:bean id="ogcInfoRequest.wcs_1_1_1" class="org.OpenGeoportal.Ogc.Wcs.WcsDescribeCoverage1_1_1" scope="prototype"/>
+	<beans:bean id="ogcInfoRequest.wcs_1_0_0" class="org.OpenGeoportal.Ogc.Wcs.Wcs1_0_0.WcsDescribeCoverage1_0_0" scope="prototype"/>
 
-	<beans:bean id="augmentedRecordRetriever" class="org.OpenGeoPortal.Ogc.AugmentedSolrRecordRetrieverImpl" scope="prototype"/>
+	<beans:bean id="augmentedRecordRetriever" class="org.OpenGeoportal.Ogc.AugmentedSolrRecordRetrieverImpl" scope="prototype"/>
 	
-	<beans:bean id="wmcCreator" class="org.OpenGeoPortal.Ogc.WmcCreatorImpl" scope="prototype"/>
+	<beans:bean id="wmcCreator" class="org.OpenGeoportal.Ogc.WmcCreatorImpl" scope="prototype"/>
 	
 	<task:annotation-driven executor="executor" />
 

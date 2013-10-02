@@ -17,7 +17,6 @@ if (typeof OpenGeoportal == 'undefined'){
  * CartTable constructor
  * this object defines the behavior of the cart table, inherits from the LayerTable
  * 
- * @param object OpenGeoportal.OgpSettings
  */
 OpenGeoportal.CartTable = function CartTable(){
 	OpenGeoportal.LayerTable.call(this);
@@ -297,6 +296,7 @@ OpenGeoportal.CartTable = function CartTable(){
 					}
 					requestObj.email = emailAddress;
 					that.toProcessingAnimation(jQuery(this).parent().find("button").first());
+					delete requestObj.layerNumber;
 					that.requestDownload(requestObj);
 				},
 				Cancel: function() {
@@ -419,9 +419,9 @@ OpenGeoportal.CartTable = function CartTable(){
 	};
 
 	this.requestDownload = function(requestObj){
-		var that = this;
 		jQuery("#downloadDialog").dialog( "option", "disabled", true );
 
+		this.appState.get("requestQueue").createRequest(requestObj);
 		//TODO: move this somewhere else
 		/*jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
 			var data = jQuery("#savedLayers").dataTable().fnGetData(this),
@@ -429,23 +429,13 @@ OpenGeoportal.CartTable = function CartTable(){
 			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
 			analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
 		});*/
-		delete requestObj.layerNumber;
+		
+	//where should this go?
+		//jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
 
-		var params = {
-				url: "requestDownload",
-				data: requestObj,
-				dataType: "json",
-				type: "POST",
-				//traditional: true,
-				context: this,
-				complete: function(){
-					jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
-				},
-				success: function(data){OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId, requestObj);}
-		};
 		//close the download box;
 		jQuery("#downloadDialog").dialog("close");
-		jQuery.ajax(params);
+		
 	};
 	
 

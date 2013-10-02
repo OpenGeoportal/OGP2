@@ -6,7 +6,7 @@
 	</welcome-file-list>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml classpath*:org/OpenGeoPortal/**/applicationContext.xml</param-value>
+		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml classpath*:org/OpenGeoportal/**/applicationContext.xml</param-value>
 	</context-param>
 	<filter>
 		<filter-name>jsonpCallbackFilter</filter-name>
@@ -39,7 +39,7 @@
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 	<listener>
-		<listener-class>org.OpenGeoPortal.Download.RequestStatusSessionListener</listener-class>
+		<listener-class>org.OpenGeoportal.Download.RequestStatusSessionListener</listener-class>
 	</listener>
 	<servlet>
 		<servlet-name>appServlet</servlet-name>

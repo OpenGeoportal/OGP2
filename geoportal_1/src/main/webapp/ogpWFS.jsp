@@ -1,7 +1,7 @@
-<%@page import="org.OpenGeoPortal.Utilities.LocationFieldUtils"%>
+<%@page import="org.OpenGeoportal.Utilities.LocationFieldUtils"%>
 <%@ page language="java" contentType="application/xml; charset=UTF-8"
     pageEncoding="UTF-8" import="java.util.*, javax.xml.transform.*, org.apache.commons.compress.utils.IOUtils, java.net.URLDecoder, java.net.URL, javax.xml.transform.dom.*, javax.xml.transform.stream.*, 
-    org.OpenGeoPortal.Utilities.Http.HttpRequester, org.OpenGeoPortal.Metadata.LayerInfoRetriever, org.OpenGeoPortal.Solr.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, 
+    org.OpenGeoportal.Utilities.Http.HttpRequester, org.OpenGeoportal.Metadata.LayerInfoRetriever, org.OpenGeoportal.Solr.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, 
     javax.xml.parsers.DocumentBuilder, org.w3c.dom.NodeList, org.w3c.dom.Node, org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.HashSet, java.util.Map, 
     org.springframework.context.*, org.springframework.web.context.support.*, org.springframework.beans.factory.* "%><%
     	response.setHeader("Content-disposition","inline; filename=\"getCapabilities.xml\"");

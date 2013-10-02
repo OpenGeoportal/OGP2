@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="application/vnd.ogc.wms_xml; charset=UTF-8"
-    pageEncoding="UTF-8" import="javax.xml.transform.*, java.net.URLDecoder, javax.xml.transform.dom.*, javax.xml.transform.stream.*, org.OpenGeoPortal.Utilities.Http.*, 
-    org.OpenGeoPortal.Solr.*, org.OpenGeoPortal.Metadata.LayerInfoRetriever, java.io.*, javax.xml.parsers.DocumentBuilderFactory, javax.xml.parsers.DocumentBuilder, 
+    pageEncoding="UTF-8" import="javax.xml.transform.*, java.net.URLDecoder, javax.xml.transform.dom.*, javax.xml.transform.stream.*, org.OpenGeoportal.Utilities.Http.*, 
+    org.OpenGeoportal.Solr.*, org.OpenGeoportal.Metadata.LayerInfoRetriever, java.io.*, javax.xml.parsers.DocumentBuilderFactory, javax.xml.parsers.DocumentBuilder, 
     org.w3c.dom.NodeList, org.w3c.dom.Node,org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.ArrayList, java.util.HashSet, java.util.List, org.springframework.context.*, 
     org.springframework.web.context.support.*, org.springframework.beans.factory.* "%><%
     	response.setHeader("Content-disposition","attachment; filename=\"wms\"");
