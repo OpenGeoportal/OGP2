@@ -344,19 +344,19 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			var that = this;
 			var callback = function(){
 				var repositoryMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox({
-				collection: repositoryCollection,
-				el: "div#repositoryDropdown",
-				valueAttribute: "id",
-				displayAttribute: "shortName",
-				buttonLabel: "Select repositories",
-				itemClass: "repositoryMenuItem",
-				iconRenderer: iconRenderer,
-				controlClass: "repositoryCheck"
+					collection: repositoryCollection,
+					el: "div#repositoryDropdown",
+					valueAttribute: "id",
+					displayAttribute: "shortName",
+					buttonLabel: "Select repositories",
+					itemClass: "repositoryMenuItem",
+					iconRenderer: iconRenderer,
+					controlClass: "repositoryCheck"
 				});
 				that.repositories = repositoryMenu;
 				that.model.set({repository: that.repositories.getValueAsArray()});
 				that.repositories.$el.on("change", function(){that.model.set({repository: that.repositories.getValueAsArray()});});
-			}
+			};
 			if (repositoryCollection.length === 0){
 				//create the view once the Repository collection is 'fetched'
 				repositoryCollection.once("sync", callback); 

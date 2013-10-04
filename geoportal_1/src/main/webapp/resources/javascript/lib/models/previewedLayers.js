@@ -33,98 +33,81 @@ OpenGeoportal.Models.DataTypeAware = OpenGeoportal.Models.ResultItem.extend({
 		//really, this should take into account location field....what url types does the layer have;
 		//preview controls are available according to what attributes this model has
 		var dataType = this.get("DataType").toLowerCase();
-		var attr = {};
+		var baseType = "";
 		switch(dataType){
-		case "raster":
-		case "paper map":
-			attr = {baseType: "raster"};
+			case "raster":
+			case "paper map":
+				baseType = "raster";
+				break;
+			default:
+				//we're defaulting to vector type
+				baseType = "vector";
 			break;
-		default:
-			//we're defaulting to vector type
-			attr = {baseType: "vector"};
-		break;
 		};
+
+		this.set({baseType: baseType});
+		//really, this should take into account location field....what url types does the layer have;
+		var attr = jQuery.extend(this.baseDefaults[baseType], this.getSubTypeSpecificAttributes(this));
 		this.set(attr);
 		return this;
-
 	},
+	
+	getSubTypeSpecificAttributes: function(model){
+		if (model.get("baseType") === "vector"){
+			var dataType = this.get("DataType").toLowerCase();
+			var typeSpecificAttr = this.typeSpecificVectorAttr[dataType];
+			if (typeof typeSpecificAttr == "undefined"){
+				typeSpecificAttr = this.typeSpecificVectorAttr.unknown;
+			}
+			return typeSpecificAttr;
+		} else {
+			return this.typeSpecificRasterAttr;
+		}
+	},
+	
+	typeSpecificRasterAttr: {},
+	typeSpecificVectorAttr: {}
 	
 });
 
 OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.DataTypeAware.extend({	
-	previewSpecificAttributes: {
+	defaults: {
 		preview: "off", 
 		resourceName: "",
 		previewType: "",
 	},
 
-	initialize: function(){
-		this.assignDataTypeAttributes();
-		this.assignPreviewAttributes();
-	},
-	assignPreviewAttributes: function(){
-				//really, this should take into account location field....what url types does the layer have;
-		//preview controls are available according to what attributes this model has
-		var baseType = this.get("baseType").toLowerCase();
-		var attr = {};
-		switch(baseType){
-		case "raster":
-			attr = this.rasterDefaults;
-			break;
-		case "vector": 
-			var typeSpecificAttr = this.getTypeSpecificVectorAttr(this.get("DataType"));
-			attr = jQuery.merge(this.vectorDefaults, typeSpecificAttr);
-			break;
-		default:
-			//should never get here as is
-		break;
-		};
-		this.set(attr);
-		return this;
-	},
-	rasterDefaults: {
-		getFeature: false, 
-		opacity: 100, 
-		sld: ""
-	},
-	vectorDefaults: {
-		getFeature: false, 
-		opacity: 100, 
-		colorPickerOn: false,
-		sld: ""
-	},
-	getTypeSpecificVectorAttr: function(dataType){
-		switch(dataType){
-			case "point":
-				return this.pointDefaults;
-				break;
-			case "line":
-				return this.lineDefaults;
-				break;
-			case "polygon":
-				return this.polygonDefaults;
-				break;
-			default:
-				return this.unknownVectorDefaults;
-				break;
+	baseDefaults: {
+		raster:{
+			getFeature: false, 
+			opacity: 100, 
+			sld: ""
+		},
+		vector: {
+			getFeature: false, 
+			opacity: 100, 
+			colorPickerOn: false,
+			sld: ""
 		}
 	},
-	pointDefaults: {
-		color: "#ff0000", 
-		graphicWidth: 2 
-	},
-	lineDefaults:  {
-		color: "#0000ff", 
-		graphicWidth: 1 
-	},
-	polygonDefaults: {
-		opacity: 80, 
-		color: "#aaaaaa", 
-		graphicWidth: 1 
-	},
-	unknownVectorDefaults: {
-		color: "#aaaaaa", 
-		graphicWidth: 1 
+	typeSpecificVectorAttr: {
+		point:  {
+			color: "#ff0000", 
+			graphicWidth: 2 
+		},
+		line: {
+			color: "#0000ff", 
+			graphicWidth: 1 
+		},
+		polygon:  {
+			opacity: 80, 
+			color: "#aaaaaa", 
+			graphicWidth: 1 
+		},
+		unknown:  {
+			color: "#aaaaaa", 
+			graphicWidth: 1 
+		}
 	}
 });
 
@@ -169,6 +152,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		var mapEvent = null;
 		if (value){
 			mapEvent = "map.getFeatureInfoOn";
+			this.clearGetFeature(model); //passing a model to clearGetFeature clears all other gf
 		} else {
 			mapEvent = "map.getFeatureInfoOff";
 		}
@@ -186,7 +170,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 			jQuery(document).trigger("previewLayerOff", {LayerId: layerId});
 			//also set getFeature state to off.
 			if (model.has("getFeature")){
-				model.set({getFeature: "off"});
+				model.set({getFeature: false});
 			}
 		}
 		console.log( model.get("LayerId") + " changed preview to " + preview);
@@ -203,19 +187,27 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		}
 		return stateVal;
 	},
+	
 	getLayerModel: function(resultModel){
 		this.add(resultModel.attributes);
 		var layerModel = this.get(resultModel.get("LayerId"));
 		return layerModel;
 	},
-	resetState: function(attributeName){
-		this.each(function(currModel){
-			var defaultValue = currModel.defaults[attributeName];
-			console.log(defaultValue);
-			if (typeof defaultValue != "undefined"){
-				currModel.set(attributeName, defaultValue);
+	
+	clearGetFeature: function(turnOnModel){
+		console.log("clearGetFeature");
+		var layerId = "dummy";
+		if (typeof turnOnModel != "undefined"){
+			layerId = turnOnModel.get("LayerId");
+		}
+		this.each(function(model){
+			if (model.get("LayerId") === layerId){
+				return;
 			}
-		});
+			if (model.get("getFeature")){
+				model.set({getFeature: false});
+			}
+		});	
 	}
 
 });

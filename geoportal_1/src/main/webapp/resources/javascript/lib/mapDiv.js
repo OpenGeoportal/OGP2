@@ -69,12 +69,12 @@ OpenGeoportal.MapController = function() {
 		var that = this;
 		var zoomBoxListener = function(){
 				jQuery('.olMap').css('cursor', "-moz-zoom-in");
-				that.previewed.resetState('getFeature');
+				that.previewed.clearGetFeature();
 			};
 		zoomBox.events.register("activate", this, zoomBoxListener);
 		var panListener = function(){
 				jQuery('.olMap').css('cursor', "-moz-grab");
-				that.previewed.resetState('getFeature');
+				that.previewed.clearGetFeature();
 			};
 		var panHand = new OpenLayers.Control.Navigation(
 				{title:"Pan by dragging the map"});
@@ -132,7 +132,7 @@ OpenGeoportal.MapController = function() {
 
 		// attempt to reload tile if load fails
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
-		OpenLayers.ImgPath = "resources/media/"
+		OpenLayers.ImgPath = "resources/media/";
 			// make OL compute scale according to WMS spec
 			//OpenLayers.DOTS_PER_INCH = 90.71428571428572;
 		OpenLayers.Util.onImageLoadErrorColor = 'transparent';
@@ -203,6 +203,7 @@ OpenGeoportal.MapController = function() {
 
 			if (jQuery("#" + that.mapDiv).height() != mapHeight){
 				jQuery("#" + that.mapDiv).height(mapHeight);//calculate min and max sizes
+				that.updateSize();
 			}
 			if (zoomLevel == 0){
 				that.setCenter(that.WGS84ToMercator(that.getCenter().lon, 0));
@@ -371,7 +372,7 @@ OpenGeoportal.MapController = function() {
 				var currentOpacity = geocodeField$.css("opacity");
 				geocodeField$.animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500)
 					.delay(1500)
-					.animate({ "font-size": 0 }, 300, function(){geocodeField$.val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity})});
+					.animate({ "font-size": 0 }, 300, function(){geocodeField$.val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity});});
 			},
 
 			open: function() {
@@ -440,7 +441,7 @@ OpenGeoportal.MapController = function() {
 			requestObj.layers.push(layerObj);
 		}
 		console.log(this);
-		var bbox = this.getExtent().toBBOX();
+		var bbox = this.getVisibleExtent().toBBOX();
 		
 		requestObj.format = format;
 		requestObj.bbox = bbox;
@@ -1085,7 +1086,7 @@ OpenGeoportal.MapController = function() {
 	this.getFeatureAttributesSuccessCallback = function(layerId, dialogTitle, data) {		
 		//grab the html table from the response
 		var responseTable$ = jQuery(data).filter(function() {
-			return jQuery(this).is('table')
+			return jQuery(this).is('table');
 		});			
 		
 		var template = this.template;
@@ -1128,20 +1129,25 @@ OpenGeoportal.MapController = function() {
 			});
 
 		}
-
-		jQuery("#featureInfo").html(tableText);
+		jQuery("#featureInfo").fadeOut(200, function(){
+			jQuery("#featureInfo").html(tableText);
+			//limit the height of the dialog.  some layers will have hundreds of attributes
+			var containerHeight = jQuery("#container").height();
+			var linecount = jQuery("#featureInfo tr").length;
+			var dataHeight = linecount * 20;
+			if (dataHeight > containerHeight) {
+				dataHeight = containerHeight;
+			} else {
+				dataHeight = "auto";
+			}
+			jQuery("#featureInfo").dialog("option", "height", dataHeight);
+			
+			jQuery("#featureInfo").dialog('open');
+			jQuery("#featureInfo").fadeIn(200);
+			});
 		
-		//limit the height of the dialog.  some layers will have hundereds of attributes
-		var containerHeight = jQuery("#container").height();
-		var linecount = jQuery("#featureInfo tr").length;
-		var dataHeight = linecount * 20;
-		if (dataHeight > containerHeight) {
-			dataHeight = containerHeight;
-		} else {
-			dataHeight = "auto";
-		}
-		jQuery("#featureInfo").dialog("option", "height", dataHeight);
-		jQuery("#featureInfo").dialog('open');
+
+		
 		
 	}; 
 
@@ -1218,7 +1224,6 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.showLayerBBox = function (mapObj) {
-		//mapObj requires west, east, north, south
 		//add or modify a layer with a vector representing the selected feature
 		var featureLayer;
 		if (this.getLayersByName("layerBBox").length > 0){
@@ -1228,10 +1233,10 @@ OpenGeoportal.MapController = function() {
 			var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
 			/*
 			 * 4px border,
-border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
+				border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 			 */
-			style_blue.strokeColor = "#1D6EEF";//'#003366';
-			style_blue.fillColor = "#DAEDFF";//'#003366';
+			style_blue.strokeColor = "#1D6EEF";
+			style_blue.fillColor = "#DAEDFF";
 			style_blue.fillOpacity = .25;
 			style_blue.pointRadius = 10;
 			style_blue.strokeWidth = 4;
@@ -1259,35 +1264,43 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		this.setLayerIndex(featureLayer, (this.layers.length -1));
 
 		//do a comparison with current map extent
-		var extent = this.getExtent(); //h=
-		//25px
+		var extent = this.getVisibleExtent(); 
 		var geodeticExtent = this.getGeodeticExtent();
-		var compareTop = extent.top;
+		var mapTop = extent.top;
 		if (geodeticExtent.top > 83){
-			compareTop = 238107694;
+			mapTop = 238107694;
 		}
-		var compareBottom = extent.bottom;
+		var mapBottom = extent.bottom;
 		if (geodeticExtent.bottom < -83){
-			compareBottom = -238107694;
+			mapBottom = -238107694;
 		}
-		var compareLeft = extent.left;
+		var mapLeft = extent.left;
 		if (geodeticExtent.left < -179){
-			compareLeft = -20037510;
+			mapLeft = -20037510;
 		}
-		var compareRight = extent.right;
+		var mapRight = extent.right;
 		if (geodeticExtent.right > 180){
-			compareRight = 20037510;
+			mapRight = 20037510;
 		}
 
-		if (compareLeft > bottomLeft.lon || compareRight < topRight.lon || compareTop < topRight.lat || compareBottom > bottomLeft.lat){
+		var layerTop = topRight.lat;
+		var layerBottom = bottomLeft.lat;
+		var layerLeft = bottomLeft.lon;
+		var layerRight = topRight.lon;
+		
+		
+		if (layerLeft < mapLeft || layerRight > mapRight || layerTop > mapTop || layerBottom < mapBottom) {
+			//console.log("should show arrow");
 			var extentFeatureLayer;
-			if (this.getLayersByName("layerBBoxOutsideExtent").length > 0){
+			if (this.getLayersByName("layerBBoxOutsideExtent").length > 0) {
 				extentFeatureLayer = this.getLayersByName("layerBBoxOutsideExtent")[0];
 				extentFeatureLayer.removeAllFeatures();
 			} else {
 				var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-				style_blue.strokeColor = "#1D6EEF";//'#003366';
-				style_blue.fillColor = "#1D6EEF";//'#003366';
+				style_blue.strokeColor = "#1D6EEF";
+				//'#003366';
+				style_blue.fillColor = "#1D6EEF";
+				//'#003366';
 				style_blue.fillOpacity = 1;
 				style_blue.pointRadius = 1;
 				style_blue.strokeWidth = 1;
@@ -1295,66 +1308,113 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 				style_blue.zIndex = 999;
 
 				extentFeatureLayer = new OpenLayers.Layer.Vector("layerBBoxOutsideExtent", {
-					style: style_blue
+					style : style_blue
 				});
 				this.addLayer(extentFeatureLayer);
 			}
-			var mapSize = this.getCurrentSize(); //h=512
-			var size = 	(Math.abs(extent.top - extent.bottom))/mapSize.h * 25;
-			var offset = size / 2;
-			var pointList = [];
-			var newPoint = new OpenLayers.Geometry.Point(extent.right - offset,extent.top - offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.right - offset,extent.top - size - offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.right - size - offset,extent.top - offset);
-			pointList.push(newPoint);
-			pointList.push(pointList[0]);
-			var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
-			var polygonFeature1 = new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.Polygon([linearRing]));
+			var mapSize = this.getCurrentSize();
+			//h=512
+			var size = (Math.abs(extent.top - extent.bottom)) / mapSize.h * 25;
 
-			var pointList = [];
-			var newPoint = new OpenLayers.Geometry.Point(extent.right - offset,extent.bottom + offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.right - offset,extent.bottom + size + offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.right - size - offset,extent.bottom + offset);
-			pointList.push(newPoint);
-			pointList.push(pointList[0]);
-			var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
-			var polygonFeature2 = new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.Polygon([linearRing]));
+			var polygonFeatures = [];
 
-			var pointList = [];
-			var newPoint = new OpenLayers.Geometry.Point(extent.left + offset,extent.top - offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.left + offset,extent.top - size - offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.left + size + offset,extent.top - offset);
-			pointList.push(newPoint);
-			pointList.push(pointList[0]);
-			var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
-			var polygonFeature3 = new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.Polygon([linearRing]));
+			if (layerTop < mapTop && layerBottom > mapBottom) {
+				if (layerRight > mapRight) {
+					//console.log("ne + se");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "ne", size));
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "se", size));
+				}
 
-			var pointList = [];
-			var newPoint = new OpenLayers.Geometry.Point(extent.left + offset,extent.bottom + offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.left + offset,extent.bottom + size + offset);
-			pointList.push(newPoint);
-			var newPoint = new OpenLayers.Geometry.Point(extent.left + size + offset,extent.bottom + offset);
-			pointList.push(newPoint);
-			pointList.push(pointList[0]);
-			var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
-			var polygonFeature4 = new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.Polygon([linearRing]));
-			extentFeatureLayer.addFeatures([polygonFeature1, polygonFeature2, polygonFeature3, polygonFeature4]);
-			this.setLayerIndex(extentFeatureLayer, (this.layers.length -1));
+				if (layerLeft < mapLeft) {
+					//console.log("sw + nw");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "sw", size));
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "nw", size));
+				}
+			} else if (layerRight < mapRight && layerLeft > mapLeft) {
+				if (layerTop > mapTop) {
+					//console.log("ne + nw");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "ne", size));
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "nw", size));
+				}
+
+				if (layerBottom < mapBottom) {
+					//console.log("se + sw");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "se", size));
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "sw", size));
+				}
+
+			} else {
+				//corners only
+				if (layerTop > mapTop && layerRight > mapRight) {
+					//console.log("ne");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "ne", size));
+				}
+
+				if (layerBottom < mapBottom && layerRight > mapRight) {
+					//console.log("se");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "se", size));
+				}
+
+				if (layerTop > mapTop && layerLeft < mapLeft) {
+					//console.log("nw");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "nw", size));
+				}
+
+				if (layerBottom < mapBottom && layerLeft < mapLeft) {
+					//console.log("sw");
+					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "sw", size));
+				}
+
+			}
+
+			extentFeatureLayer.addFeatures(polygonFeatures);
+			this.setLayerIndex(extentFeatureLayer, (this.layers.length - 1));
 		}
 
-	};
+		};
 
+
+	this.getOutsideExtentGraphic = function(mapExtent, direction, graphicSize){
+		//direction = "ne", "nw", "sw", "se";
+			var offset = graphicSize / 2;
+			var yNorth = mapExtent.top - offset;
+			var ySouth = mapExtent.bottom + offset;
+			var xEast = mapExtent.right - offset;
+			var xWest = mapExtent.left + offset;
+			if (direction === "ne"){
+				return this.createRightTriangle(xEast, yNorth, direction, graphicSize);
+			} else if (direction === "nw"){
+				return this.createRightTriangle(xWest, yNorth, direction, graphicSize);
+			} else if (direction === "se"){
+				return this.createRightTriangle(xEast, ySouth, direction, graphicSize);
+			} else if (direction === "sw"){
+				return this.createRightTriangle(xWest, ySouth, direction, graphicSize);
+			}
+			
+	};
+	
+	this.createRightTriangle = function(xcoord, ycoord, direction, size){
+		
+		var pt1 = new OpenLayers.Geometry.Point(xcoord, ycoord);
+		
+		var directions = {
+			ne: [new OpenLayers.Geometry.Point(xcoord - size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord - size)],
+			nw: [new OpenLayers.Geometry.Point(xcoord + size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord - size)],
+			se: [new OpenLayers.Geometry.Point(xcoord - size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord + size)],
+			sw: [new OpenLayers.Geometry.Point(xcoord + size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord + size)]
+		};
+
+		
+		var pointList = directions[direction];
+		pointList.unshift(pt1);
+		pointList.push(pt1);
+		var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
+		var polygonFeature = new OpenLayers.Feature.Vector(
+					new OpenLayers.Geometry.Polygon([linearRing]));
+				
+		return polygonFeature;
+	};
+	
 	this.addMapBBox = function (mapObj) {
 		//mapObj requires west, east, north, south
 		//add or modify a layer with a vector representing the selected feature
@@ -1758,8 +1818,29 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 		layer.setVisibility(true);
 	};
 
+	this.getMapOffset = function(){
+		var mapOffset = jQuery("#" + this.containerDiv).offset();
+		var xOffset = 0;
+		var leftCol$ = jQuery("#left_col");
+		var leftColOffset = leftCol$.offset();
+		if (leftCol$.is(":visible")){
+			xOffset = leftCol$.width() + leftColOffset.left - mapOffset.left;
+		}
+		var yOffset = jQuery("#tabs").offset().top - mapOffset.top;
+
+		return new OpenLayers.Pixel(xOffset, yOffset);
+	};
+	
+	this.getVisibleExtent = function(){
+		var topLeft =  this.getLonLatFromViewPortPx(this.getMapOffset());
+		var fullExtent = this.getExtent();
+		fullExtent.left = topLeft.lon;
+		fullExtent.top = topLeft.lat;
+		return fullExtent;
+	};
+	
 	this.getGeodeticExtent = function(){
-		var mercatorExtent = this.getExtent();
+		var mercatorExtent = this.getVisibleExtent();
 		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		return mercatorExtent.transform(sphericalMercator, geodetic);
@@ -2018,7 +2099,7 @@ border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
 			previewHandler.call(this, layerId);
 
 		} catch (err){
-			console.log("error in layer off")
+			console.log("error in layer off");
 			throw new OpenGeoportal.ErrorObject(err,'Unable to remove Previewed layer "' + previewModel.get("LayerDisplayName") +'"');
 		}
 		//if no errors, set state for the layer

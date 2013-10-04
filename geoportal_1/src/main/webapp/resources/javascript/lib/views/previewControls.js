@@ -63,14 +63,16 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			markup += template.sliderControl({controlClass: "opacityControlCell", label: label, value: this.model.get("opacity"), units: "%", tooltip: tooltip});
 
 		}
+		console.log(this.model);
 		if (this.model.has("graphicWidth")){
 			var label = "";
-			if (this.model instanceof OpenGeoportal.Models.PointLayer){
+			var type = this.model.get("DataType").toLowerCase();
+			if (type === "point"){
 				//render sizeControl; different for point, line, and polygon
 				label = "Pt size";
-			} else if (this.model instanceof OpenGeoportal.Models.LineLayer){
+			} else if (type === "line"){
 				label = "Ln width";
-			} else if (this.model instanceof OpenGeoportal.Models.PolygonLayer){
+			} else if (type === "polygon"){
 				label = "Border";
 			} else {
 				//generic vector layer

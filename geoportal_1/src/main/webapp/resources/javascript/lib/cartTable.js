@@ -252,6 +252,7 @@ OpenGeoportal.CartTable = function CartTable(){
 			return;
 		}
 		var requestObj = {};
+		requestObj.type = "layer";
 		if (bounds.length > 0){
 			requestObj.bbox = bounds.join();
 		}
@@ -280,8 +281,7 @@ OpenGeoportal.CartTable = function CartTable(){
 			width: 350,
 			buttons: {
 				Download: function() {
-					requestObj.layerNumber = layerNumber;
-					if (layerNumber == 0){
+					if (layerNumber === 0){
 						jQuery(this).dialog('close');
 						return;
 					}
@@ -295,8 +295,7 @@ OpenGeoportal.CartTable = function CartTable(){
 						}
 					}
 					requestObj.email = emailAddress;
-					that.toProcessingAnimation(jQuery(this).parent().find("button").first());
-					delete requestObj.layerNumber;
+					that.toProcessingAnimation(jQuery(this).parent());
 					that.requestDownload(requestObj);
 				},
 				Cancel: function() {
@@ -350,7 +349,7 @@ OpenGeoportal.CartTable = function CartTable(){
 
 	this.requestDownloadSuccess = function(data){
 		//this will simply be a request Id.  add it to the  request queue.
-		OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId);
+		//OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId);
 
 		//will also have status info for requested layers in this returned object
 		/*var line = "";
@@ -534,6 +533,10 @@ OpenGeoportal.CartTable = function CartTable(){
 	};
 	
 	this.toProcessingAnimation = function($fromObj){
+		if (jQuery("#requestTickerContainer").length == 0){
+			jQuery("body").append('<div id="requestTickerContainer" class="raised"></div>');
+		}
+
 		jQuery("#requestTickerContainer").show();
 		var options = { to: "#requestTickerContainer", className: "ui-effects-transfer"};
 		$fromObj.effect( "transfer", options, 500, function(){

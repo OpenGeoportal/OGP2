@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+/* I don't think this is used.  superseded by the info controller */
 @Controller
 @RequestMapping("/describeLayer")
 public class WMSDescribeLayerController {

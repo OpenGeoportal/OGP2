@@ -12,106 +12,178 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 
 
 OpenGeoportal.Models.QueueItem = Backbone.Model.extend({
+	idAttribute: "requestId",
     defaults: {
     	requestId: "",
     	layers: [],
-    	clipBounds: "",
-    	emailAddress: "",
-    	status: "waiting",//waiting, pending, succeeded, failed
-    	type: "" //layer, image, export
+    	bbox: "",
+    	email: "",
+    	status: "PROCESSING",
+    	type: "" 
     }
 	
 /*
  * attributes: 
- * type: download, image, export, etc.
- * clipBounds: (if no clipping requested, set this to full extent; we want to keep track of if a user
+ * type: layer, image, export, etc.
+ * bbox: (if no clipping requested, set this to full extent; we want to keep track of if a user
  * 	has requested this data before)
- * jobId:
- * emailAddress: (opt.)
- *  
+ * requestId:
+ * email: (opt.)
+ *  status: "PROCESSING", "COMPLETE_SUCCEEDED", "COMPLETE_PARTIAL", "COMPLETE_FAILED"
  */
 });
 
 
-OpenGeoportal.QueueCollection = Backbone.Collection.extend({
-	model: OpenGeoportal.Models.QueueItem
-    
-});
+OpenGeoportal.RequestQueue = Backbone.Collection.extend({
+	model: OpenGeoportal.Models.QueueItem,
+	
+	//processingIndicatorId: "",
+	pollId: "",
+	pollRunning: false,
+	pollInterval: 3000,
 
-
-OpenGeoportal.Models.RequestPoller = Backbone.Model.extend({
-	defaults: {
-		//pollId: "",//TODO: do I need all of these Id values? can I get rid of some?
-		//tickerId: "",
-		processingIndicatorId: "",
-		isPollRunning: false,
-		pollInterval: 3000
-	}
-});
-
-OpenGeoportal.RequestResponseCollection = Backbone.Collection.extend({
-});
-
-OpenGeoportal.Models.RequestQueue = Backbone.Model.extend({
-	defaults: {
-		poller: new OpenGeoportal.Models.RequestPoller(),
-		queue: new OpenGeoportal.QueueCollection(),
-		responses: new OpenGeoportal.RequestResponseCollection()
-	},
 	initialize: function(){
-		this.listenTo(this, "add", this.checkPoll);
-		this.listenTo(this, "change:status", this.checkPoll);
-		this.listenTo(this, "change:isPollRunning", this.pollStatus);
+		this.listenTo(this, "add change:status", this.handleStatusChange);
+	},
+	
+	handleStatusChange: function(model){
+		var status = model.get("status");
+		//do some stuff depending on the item's status 
+		if ((status == "COMPLETE_SUCCEEDED")||
+					(status == "COMPLETE_PARTIAL")){
+			//get the download
+			this.handleDownload(model);
+			this.createNotice(model);
+		} else if (status == "COMPLETE_FAILED"){
+			//should be a note to user that the download failed
+			this.createNotice(model);
+		}
+		
+		this.checkPoll();
+	},
+	
+	handleDownload: function(model){
+		var url;
+		var requestId = model.get("requestId");
+		var type = model.get("type");
+		if (type == "layer"){
+			url = "getDownload?requestId=" + requestId;
+			jQuery('body').append('<iframe id="' + requestId + '" class="download" src="' + url + '"></iframe>');
+
+		} else if (type == "image"){
+			url = "getImage?requestId=" + requestId;
+			jQuery('body').append('<iframe id="' + requestId + '" class="download" src="' + url + '"></iframe>');
+
+		} else if (type == "export"){
+			//should open map in GeoCommons
+			url = "geocommons/getExport?requestId=" + requestId;
+			var successFunction = function(data){
+				window.open(data.location);
+			};
+			var params = {
+					  url: url,
+					  dataType: "json",
+					  success: successFunction//,
+					  //error: failureFunction
+				};
+			jQuery.ajax(params);
+		}
 
 	},
 	
-	checkPoll: function(model){
-		var pending = model.get("queue").where({status: "pending"});
-		if (typeof pending == "undefined"){
-			model.set({isPollRunning: false});
-		} else {
-			var requestIds = [];
-			for (var i in pending){
-				requestIds.push(pending[i].get("requestId"));
+	createNotice: function(model){
+		console.log(model);
+		var layerInfo = model.get("requestedLayerStatuses");
+		//generate a notice using the info in requestedLayerStatuses
+		//if all succeeded, no need to pop up a message; the user should see the save file dialog
+		//		"requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
+		var failed = [];
+		for (var i in layerInfo){
+			var currentLayer = layerInfo[i];
+			var status = currentLayer.status.toLowerCase();
+			var layerName = currentLayer.id;
+			if (status != "success"){
+				failed.push(layerName);
 			}
-			model.get("responses").url = "requestStatus?requestIds=" +  requestIds.join();
-			model.set({isPollRunning: true});
+			
 		}
+		
+		if (failed.length > 0){
+			alert("These layers failed to download: " + failed.join());
+		}
+
 	},
+	
+	checkPoll: function(){
+		var pending = this.where({status: "PROCESSING"});
 
-	pollStatus: function(model){
-		var that = this;
-		if (model.get("isPollRunning")){
-			var options = {
-				success: function(){
-					//first, roll the response model updates into the queue
-					model.get("responses").each(function(responseModel){
+		if (typeof pending == "undefined" || pending.length === 0 ){
+			//if nothing in the queue has a status "PROCESSING", then stop the poll
+			this.stopPoll();
+		} else {
 
-						var rId = responseModel.get("requestId");
-						var lId = responseModel.get("layerId");
-						var status = responseModel.get("status");
-						var queueItem = model.get("queue").findWhere({requestId: rId, layerId: lId});
-						queueItem.set({status: status});
-						
-					});
-					
-					if (model.get("queue").where({status: "pending"}).length > 0){
-						//if pending statuses, keep polling
-						that.pollStatus(model);//better to trigger an event?
-					} else {
-						model.set({isPollRunning: false});
-					}
-
-				},
-				failure: function(){
-					model.set({isPollRunning: false});
-					//if failure statuses, notify the user
-					jQuery(document).trigger("requestStatus.failure", ids);
-					}
-			};
-			setTimeout(function(){model.get("responses").fetch(options);}, model.get("poller").get("pollInterval"));
+			this.startPoll();
 		} 
 	},
+	
+	stopPoll: function(){
+		if (this.pollRunning){
+			clearInterval(this.pollId);
+			this.pollRunning = false;
+		}
+	},
+	
+	startPoll: function(){
+		//called when a queue item is added
+		var that = this;
+		if (!this.pollRunning){
+			//instead of fetch, use plain old ajax request
+			this.pollId	= setInterval(function(){
+					var pending = that.where({status: "PROCESSING"});
+					var requestIds = [];
+					for (var i in pending){
+						requestIds.push(pending[i].get("requestId"));
+					}
+					that.checkStatus(requestIds);
+				}, 
+			that.pollInterval);
+			this.pollRunning = true;
+		}
+
+	},
+	
+	//{"requestStatus":[
+//	{"requestId":"26fe6ae7-274b-4b2d-aa58-9da1ee438dac","type":"layer","status":"PROCESSING",
+//		"requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
+
+	checkStatus: function(arrIds){
+		var requestIds = {requestIds: arrIds.join()};
+		var that = this;
+		var params = {
+			url: "requestStatus",
+			data: requestIds,
+			success: function(data){
+				that.updateRequestQueue(data.requestStatus);
+			},
+			error: function(){
+				//if failure statuses, notify the user
+				jQuery(document).trigger("requestStatus.failure");
+				}
+		};
+		jQuery.ajax(params);
+	},
+	
+	updateRequestQueue: function(requestStatus){
+		console.log("updateRequestQueue");
+		for (var i in requestStatus){
+			var rId = requestStatus[i].requestId;
+			var newStatus = requestStatus[i].status;
+			var layerInfo = requestStatus[i].requestedLayerStatuses;
+			var requestModel = this.findWhere({requestId: rId});
+			requestModel.set({status: newStatus, layerStatuses: layerInfo});
+		}
+	},
+	
     createRequest: function(requestObj){
 		var that = this;
 		var params = {
@@ -119,7 +191,10 @@ OpenGeoportal.Models.RequestQueue = Backbone.Model.extend({
 				data: requestObj,
 				dataType: "json",
 				type: "POST",
-				success: function(data){that.get("queue").add(jQuery.merge(data, requestObj));}
+				success: function(data){
+					requestObj.requestId = data.requestId;
+					that.add(requestObj);
+					}
 		};
 		jQuery.ajax(params);
 	}
@@ -128,59 +203,6 @@ OpenGeoportal.Models.RequestQueue = Backbone.Model.extend({
 
 
 /*
-
-this.pollRequestStatus = function(){
-	var ids = getLayerRequestIds().concat(getImageRequestIds());
-	ids = ids.concat(getExportRequestIds());
-	var that = this;
-	//console.log(getLayerRequestIds());
-	//console.log(getImageRequestIds());
-	var successFunction = function(data){
-		that.requestQueue.isPollRunning = false;
-		//parse this data, update request queue
-		handleStatusResponse(data);
-		//fire a LayerDownload completion event
-		
-	};
-	
-	var failureFunction = function(){
-		that.requestQueue.isPollRunning = false;
-		//fire a LayerDownload request failed event
-		that.requestsToFailedById(ids);
-		
-	};
-	var path = "requestStatus";
-	if (ids.length == 0){
-		failureFunction();
-		return;
-	}
-	var params = {
-			  url: path + "?requestIds=" + ids.join(","),
-			  dataType: "json",
-			  success: successFunction,
-			  error: failureFunction
-		};
-	
-		jQuery.ajax(params);
-};
-
-//poll handling
-this.firePoll = function(){
-	var t=setTimeout('OpenGeoportal.ogp.downloadQueue.pollRequestStatus()', INTERVAL_MS);
-	this.requestQueue.pollId = t;
-	this.requestQueue.isPollRunning = true;
-	this.setTickerText();
-};
-
-this.startPoll = function(){
-	if (!that.requestQueue.isPollRunning){
-		that.startTicker();
-		that.firePoll();
-	} else {
-		//poll is already running
-	}
-};
-
 this.startTicker = function(){
 	if (jQuery("#requestTickerContainer").length == 0){
 		jQuery("body").append('<div id="requestTickerContainer" class="raised"></div>');
@@ -227,95 +249,4 @@ this.setTickerText = function(){
 	jQuery("#requestTicker").text(tickerText);
 };
 
-	
-	var handleStatusResponse = function(data){
-		var statuses = data.requestStatus;
-		//console.log(statuses);
-		var pendingCounter = 0;
-		for (var i in statuses){
-			var currentStatus = statuses[i].status;
-			//console.log(currentStatus);
-			//should be a clause for each possible status message
-			if ((currentStatus == "COMPLETE_SUCCEEDED")||
-					(currentStatus == "COMPLETE_PARTIAL")){
-				//get the download
-				handleDownload(statuses[i]);
-				if (currentStatus == "COMPLETE_PARTIAL"){
-					//should be a note to the user for partial success
-				}
-			} else if (currentStatus == "PROCESSING"){
-				pendingCounter++;
-			} else if (currentStatus == "COMPLETE_FAILED"){
-				that.requestToFailedByStatus(statuses[i]);
-				//should be a note to user that the download failed
-			}
-		}
-		
-		if (pendingCounter > 0){
-			//console.log("should fire poll");
-			that.firePoll();
-		} else {
-			that.stopPoll();
-		}
-	};
-	
-	var handleDownload = function(statusObj){
-		var url;
-		var currentRequestId;
-		if (statusObj.type == "layer"){
-			currentRequestId = statusObj.requestId;
-			that.layerRequestToComplete(statusObj);
-			url = "getDownload?requestId=" + currentRequestId;
-			jQuery('body').append('<iframe id="' + currentRequestId + '" class="download" src="' + url + '"></iframe>');
-
-		} else if (statusObj.type == "image"){
-			currentRequestId = statusObj.requestId;
-			that.imageRequestToComplete(statusObj);
-			url = "getImage?requestId=" + currentRequestId;
-			jQuery('body').append('<iframe id="' + currentRequestId + '" class="download" src="' + url + '"></iframe>');
-
-		} else if (statusObj.type == "export"){
-			currentRequestId = statusObj.requestId;
-			that.exportRequestToComplete(statusObj);
-			//should open map in GeoCommons
-			url = "geocommons/getExport?requestId=" + currentRequestId;
-			var successFunction = function(data){
-				window.open(data.location);
-			};
-			var params = {
-					  url: url,
-					  dataType: "json",
-					  success: successFunction//,
-					  //error: failureFunction
-				};
-			jQuery.ajax(params);
-		}
-
-	};
-	
-
-	
-	this.createErrorMessageObj = function(statusObj){
-		var requestId = statusObj.requestId;
-		var statusMessage = statusObj.status;
-		var requestObj = this.getRequestById(requestId);
-		var layers = [];
-		var layerIds = [];
-		var layersParam = requestObj.layers;
-		for (var i in layersParam){
-			var arrLayer = layersParam[i].split("=");
-			var layerObj = {"layerId": arrLayer[0], "format": arrLayer[1]};
-			layerIds.push(arrLayer[0]);
-			layers.push(layerObj);
-		}
-		//get some info from solr about the layer
-        var solr = new OpenGeoportal.Solr();
-    	var query = solr.getInfoFromLayerIdQuery(layerIds);
-    	solr.sendToSolr(query, this.errorInfoSuccess, this.errorInfoError);
-    	//create message box here, but keep it hidden until solr callback
-	};
-	
-	this.errorInfoSuccess = function(data){
-		
-	};
-};*/
+*/

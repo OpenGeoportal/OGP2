@@ -53,12 +53,11 @@ jQuery(document).ready(function (){
 	ogp.appState = new OpenGeoportal.Models.OgpSettings();
 	ogp.appState.set({controls: new OpenGeoportal.CommonControls()});
 
-	ogp.ui = new OpenGeoportal.UserInterface();//TODO: when we add require, don't pass in the state obj as a dependency
+	ogp.ui = new OpenGeoportal.UserInterface();
 	ogp.ui.init();
 	
 	ogp.login = new OpenGeoportal.LogIn(OpenGeoportal.InstitutionInfo.getHomeInstitution());
 
-	//passing the OgpSettings object in makes the dependency explicit and obvious; supercede with require
 	ogp.map = new OpenGeoportal.MapController();
 	ogp.map.createMap("map");	
 	
@@ -69,12 +68,7 @@ jQuery(document).ready(function (){
 	ogp.resultsTableObj.initTable("searchResults");
 	
 	ogp.cartView = new OpenGeoportal.Views.Cart({collection: ogp.appState.get("cart"), el: $("#cart")});
-	ogp.cartView.cartTableObj.addSharedLayersToCart();
-	
-	ogp.downloadQueue = new OpenGeoportal.Downloader();
-	
-
-	
+	ogp.cartView.cartTableObj.addSharedLayersToCart();	
 
 	/*downtime notice */
 	//ogp.ui.showDowntimeNotice();

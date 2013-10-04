@@ -30,7 +30,7 @@ OpenGeoportal.Models.OgpSettings = Backbone.Model.extend({
 			cart: new OpenGeoportal.CartCollection(),
 			template: new OpenGeoportal.Template(),
 			login: new OpenGeoportal.Views.Login({model: new OpenGeoportal.Models.User()}),
-			requestQueue: new OpenGeoportal.Models.RequestQueue(),
+			requestQueue: new OpenGeoportal.RequestQueue(),
 			currentTab: 0
 		});
 	}

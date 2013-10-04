@@ -393,7 +393,7 @@ OpenGeoportal.CommonControls = function CommonControls(){
 		var newIframe = template.iframeDownload({iframeClass: iframeClass, iframeSrc: iframeSrc});
 		var iframe$ = jQuery(newIframe).appendTo('#iframes');
 		var timeout = 1 * 60 * 1000;//allow 1 minute for download before iframe is removed
-		jQuery(document).on("iframeload", iframe$, function(){setTimeout(function(){iframe$.remove();}, timeout)});
+		jQuery(document).on("iframeload", iframe$, function(){setTimeout(function(){iframe$.remove();}, timeout);});
 	};
 
 	// handles jsonp response from request for metadata call
@@ -466,11 +466,11 @@ OpenGeoportal.CommonControls = function CommonControls(){
 			}
 			if (arrYears.length > 0){
 				var yearObj = arrYears.shift();
-				lookupHTML += '<div><span>' + yearObj.label + ': </span>' + yearObj.value + '</div>' 
+				lookupHTML += '<div><span>' + yearObj.label + ': </span>' + yearObj.value + '</div>' ;
 			}
 			if (arrYears.length > 0){
 				var yearObj = arrYears.shift();
-				lookupHTML += '<div<span>>' + yearObj.label + ': </span>' + yearObj.value + '</div>' 
+				lookupHTML += '<div<span>>' + yearObj.label + ': </span>' + yearObj.value + '</div>' ;
 			}
 			if (data.notes.length > 0){
 				lookupHTML += '<div><span>Notes: </span>' + data.notes + '</div>';
@@ -669,4 +669,4 @@ OpenGeoportal.CommonControls = function CommonControls(){
 	};
 	
 	
-}
+};

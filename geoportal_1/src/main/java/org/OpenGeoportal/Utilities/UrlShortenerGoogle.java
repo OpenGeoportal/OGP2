@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.OpenGeoportal.Solr.SearchConfigRetriever;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -47,7 +47,7 @@ public class UrlShortenerGoogle implements UrlShortener {
     	 */
  	   RestTemplate template = new RestTemplate();
  	   List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
-	   messageConverters.add(new MappingJacksonHttpMessageConverter());
+	   messageConverters.add(new MappingJackson2HttpMessageConverter());
  	   template.setMessageConverters(messageConverters);
  	   //retrieve the google api key from a config file
  	   String apiKey = this.searchConfigRetriever.getArbitrary("googleAPIKey");
