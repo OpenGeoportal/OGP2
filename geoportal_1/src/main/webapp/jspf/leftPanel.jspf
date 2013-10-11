@@ -3,7 +3,6 @@
     	<div class="arrow_separator"></div>
     	<div class="arrow_right button" title="expand right"></div>
  	</div>
-<!--  <div id="left_tabs" class=""> -->
 	<div id="tabs" class="shadowDown slideVertical">
 		<ul>
 			<li><a href="#searchTab">
@@ -31,6 +30,5 @@
 			<%@include file="cart.jspf"%>
     	</div>
 	</div>
-<!--  </div>-->  
 
   

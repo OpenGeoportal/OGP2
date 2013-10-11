@@ -74,7 +74,9 @@ public abstract class AbstractDownloadMethod {
 		Set<File> fileSet = new HashSet<File>();
 		List<String> urls = this.getUrls(currentLayer);
 		for (String url: urls){
-			InputStream inputStream = this.httpRequester.sendRequest(url, requestString, getMethod());	
+			InputStream inputStream = null;
+			try{
+			inputStream = this.httpRequester.sendRequest(url, requestString, getMethod());	
 			int status = httpRequester.getStatus();
 			if (status != 200){
 				throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
@@ -87,7 +89,7 @@ public abstract class AbstractDownloadMethod {
 				if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
 					logger.error("Returned text: " + IOUtils.toString(inputStream));
 				} 
-			
+				inputStream.close();
 				throw new Exception("Unexpected content type");
 
 			}
@@ -110,12 +112,17 @@ public abstract class AbstractDownloadMethod {
 
 			 
 			
-			File outputFile = OgpFileUtils.createNewFileFromDownload(fileName, contentType, directory);
-			//OutputStream outputStream = new FileOutputStream(outputFile);
-			//FileUtils with a BufferedInputStream seems to be the fastest method with a small sample size.  requires more testing
-			InputStream bufferedIn = new BufferedInputStream(inputStream);
-			FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
-			fileSet.add(outputFile);
+				File outputFile = OgpFileUtils.createNewFileFromDownload(fileName, contentType, directory);
+			
+				//FileUtils with a BufferedInputStream seems to be the fastest method with a small sample size.  requires more testing
+				InputStream bufferedIn = new BufferedInputStream(inputStream);
+				FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
+				fileSet.add(outputFile);
+			
+			} finally {
+				//make sure the inputstream closes
+				inputStream.close();
+			}
 		}
 		return new AsyncResult<Set<File>>(fileSet);
 	}

@@ -1,12 +1,12 @@
 package org.OpenGeoportal.Download;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
+import org.OpenGeoportal.Ogc.AugmentedSolrRecord;
+import org.OpenGeoportal.Ogc.OwsInfo;
 import org.OpenGeoportal.Download.LayerDownloader;
 import org.OpenGeoportal.Download.Config.DownloadConfigRetriever;
 import org.OpenGeoportal.Layer.BoundingBox;
@@ -19,6 +19,7 @@ import org.OpenGeoportal.Solr.SolrRecord;
 import org.OpenGeoportal.Utilities.DirectoryRetriever;
 import org.OpenGeoportal.Utilities.LocationFieldUtils;
 import org.OpenGeoportal.Utilities.Http.HttpRequester;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -48,7 +49,6 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	protected DownloadConfigRetriever downloadConfigRetriever;
 	@Autowired
 	protected SearchConfigRetriever searchConfigRetriever;
-	private String emailAddress = "";
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -85,17 +85,6 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	public Boolean getLocallyAuthenticated(){
 		return this.locallyAuthenticated;
 	}
-
-	
-	/**
-	 * a method that sets an email address.  Only used for certain download types
-	 * 
-	 * @param a string containing the user's email address passed from the client
-	*/
-	public void setReplyEmail(String emailAddress){
-		this.emailAddress = emailAddress;
-	}
-	
 	
 
 	/**
@@ -107,13 +96,12 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	 * @return boolean that indicates the success of the function
 	 * @throws Exception
 	 */
-	public UUID requestLayers(String sessionId, Map<String,String> layerMap, String[] bounds, String emailAddress, Boolean locallyAuthenticated) throws Exception{
-		this.setReplyEmail(emailAddress);
+	public UUID requestLayers(DownloadRequest dlRequest, Boolean locallyAuthenticated) throws Exception{
 		this.setLocallyAuthenticated(locallyAuthenticated);
-		Map <String, List<LayerRequest>> downloadRequestMap = null;
 		UUID requestId = UUID.randomUUID();
-		downloadRequestMap = this.createDownloadRequestMap(layerMap, bounds);
-		this.submitDownloadRequest(sessionId, requestId, downloadRequestMap);
+		dlRequest.setRequestId(requestId);
+		this.populateDownloadRequest(dlRequest);
+		this.submitDownloadRequest(dlRequest);
 		return requestId;
 	}
 
@@ -141,12 +129,13 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		}
 	}
 	
-	private Map <String, List<LayerRequest>> createDownloadRequestMap (Map<String, String> layerMap, String[] bounds) throws Exception {
-		this.layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerMap.keySet());
-		Map <String, List<LayerRequest>> downloadMap = new HashMap<String, List<LayerRequest>>(); 
+	private void populateDownloadRequest (DownloadRequest dlRequest) throws Exception {
+		
+		this.layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(dlRequest.getRequestedLayerIds());
+
 		for (SolrRecord record: this.layerInfo){
-			logger.debug("Requested format: " + layerMap.get(record.getLayerId()));
-			LayerRequest layerRequest = this.createLayerRequest(record, layerMap.get(record.getLayerId()), bounds);
+			logger.debug("Requested format: " + dlRequest.getRequestedFormatForLayerId(record.getLayerId()));
+			LayerRequest layerRequest = this.createLayerRequest(record, dlRequest.getRequestedFormatForLayerId(record.getLayerId()), dlRequest.getBounds(), dlRequest.getEmail());
 			if (!isAuthorizedToDownload(record)){
 				layerRequest.setStatus(Status.FAILED);
 				logger.info("User is not authorized to download: '" + record.getLayerId() +"'");
@@ -165,28 +154,67 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 				logger.info("No download method found for: '" + record.getLayerId() +"'");
 				continue;
 			}
+			
 			//here, we're collecting layers that use the same download method
-			if (downloadMap.containsKey(currentClassKey)){
-				List<LayerRequest> currentLayerList = downloadMap.get(currentClassKey);
-				currentLayerList.add(layerRequest);
-			} else {
-				List<LayerRequest> newLayerList = new ArrayList<LayerRequest>();
-				newLayerList.add(layerRequest);
-				downloadMap.put(currentClassKey, newLayerList);
+			List<MethodLevelDownloadRequest> mlRequestList = dlRequest.getRequestList();
+			Boolean match = false;
+			for (MethodLevelDownloadRequest mlRequest: mlRequestList){
+				if (mlRequest.getDownloadKey().equals(currentClassKey)){
+					mlRequest.addLayerRequest(layerRequest);
+					match = true;
+				}
+			}
+			
+			if (!match){
+				LayerDownloader layerDownloader = this.getLayerDownloader(currentClassKey);
+				MethodLevelDownloadRequest mlRequest = new MethodLevelDownloadRequest(currentClassKey, layerDownloader);
+				mlRequest.addLayerRequest(layerRequest);
+				dlRequest.getRequestList().add(mlRequest);
+			}
+			
+		}
+		
+	}
+	
+	/**
+	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
+	 *  
+	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
+	 * LayerRequest objects that can be downloaded using that concrete class.
+	 */
+	@Async
+	public void submitDownloadRequest(DownloadRequest dlRequest) {
+		requestStatusManager.addDownloadRequest(dlRequest);
+		List<MethodLevelDownloadRequest> requestList = dlRequest.getRequestList();
+		for (MethodLevelDownloadRequest request: requestList){
+			try {
+				request.getLayerDownloader().downloadLayers(dlRequest.getRequestId(), request);
+			} catch (Exception e) {
+				logger.error("runDownloadRequest: " + e.getMessage());
+				//should put error info in the status manager for these layers
+				e.printStackTrace();
 			}
 		}
-		return downloadMap;
+
 		
 	}
 	
 	
-	private LayerRequest createLayerRequest(SolrRecord solrRecord, String requestedFormat, String[] bounds){
+	private LayerRequest createLayerRequest(SolrRecord solrRecord, String requestedFormat, BoundingBox bounds, String emailAddress){
 		LayerRequest layer = new LayerRequest(solrRecord, requestedFormat);
-		layer.setRequestedBounds(new BoundingBox(bounds[0], bounds[1], bounds[2], bounds[3]));
-		layer.setEmailAddress(this.emailAddress);
+		layer.setRequestedBounds(bounds);
+		layer.setEmailAddress(emailAddress);
 		layer.setTargetDirectory(this.directoryRetriever.getDownloadDirectory());
 		addOwsInfo(layer);
 		return layer;
+	}
+	
+	private void setOwsInfo(LayerRequest layer) throws Exception{
+		AugmentedSolrRecord asr = asrRetriever.getOgcAugmentedSolrRecord(layer.getLayerInfo());
+		List<OwsInfo> info = asr.getOwsInfo();
+		if (!info.isEmpty()){
+			layer.setOwsInfo(info);
+		}
 	}
 	
 	private void addOwsInfo(LayerRequest layer) {
@@ -195,21 +223,27 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 			//if there is a serviceStart url for the layer, try that first
 			if (LocationFieldUtils.hasServiceStart(location)){
 					String serviceStart = "";
+					InputStream is = null;
 					try {
 						serviceStart = LocationFieldUtils.getServiceStartUrl(location);
 						//requestObj.AddLayer = [layerModel.get("qualifiedName")];
 						//requestObj.ValidationKey = "OPENGEOPORTALROCKS";
+						String name = layer.getLayerInfo().getName();
+						//the HGL remote service starter does not use qualified names
+						name = name.substring(name.indexOf(".") + 1);
 						logger.info("Attempting to Start Service for ['" + layer.getId() + "']");
-						httpRequester.sendRequest(serviceStart, "AddLayer=" + layer.getLayerInfo().getName() + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
+						is = httpRequester.sendRequest(serviceStart, "AddLayer=" + name + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
 					} catch (JsonParseException e) {
 						logger.error("Problem parsing ServiceStart parameter from ['" + location + "']");
 					} catch (IOException e) {
 						logger.error("Problem sending ServiceStart request to : ['" + serviceStart + "']");
+					} finally {
+						IOUtils.closeQuietly(is);
 					}
 			}
 				
 			try {
-				layer.setOwsInfo(asrRetriever.getOgcAugmentedSolrRecord(layer.getLayerInfo()).getOwsInfo());
+				setOwsInfo(layer);
 			} catch (Exception e) {
 				logger.error("Problem setting info from OWS service for layer: ['" + layer.getId() + "']");
 			}	
@@ -233,36 +267,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		return layerDownloader;
 	}
 
-	/**
-	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
-	 *  
-	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
-	 * LayerRequest objects that can be downloaded using that concrete class.
-	 */
-	@Async
-	public void submitDownloadRequest(String sessionId, UUID requestId, Map <String, List<LayerRequest>> downloadMap) {
-		List<MethodLevelDownloadRequest> requestList = new ArrayList<MethodLevelDownloadRequest>();
-		for (String currentDownloader: downloadMap.keySet()){
-			//get concrete class key from config
-			List<LayerRequest> layerRequests = downloadMap.get(currentDownloader);
-			for (LayerRequest layer: layerRequests){
-				logger.info("LayerID: ['" + layer.getLayerInfo().getLayerId() + "'] requested for download");
-			}
-			MethodLevelDownloadRequest request = new MethodLevelDownloadRequest(layerRequests);
 
-			try{
-				LayerDownloader layerDownloader = this.getLayerDownloader(currentDownloader);
-				layerDownloader.downloadLayers(requestId, request);
-				requestList.add(request);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error("runDownloadRequest: " + e.getMessage());
-				//should put error info in the status manager for these layers
-			}
-		}
-		requestStatusManager.addDownloadRequest(requestId, sessionId, requestList);
-	}
 
 
 }

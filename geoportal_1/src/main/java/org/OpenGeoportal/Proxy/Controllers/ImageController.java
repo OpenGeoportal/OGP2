@@ -44,7 +44,7 @@ public class ImageController {
 	private String home;// = "Tufts";
 	private ImageRequest imageRequest;
 
-	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", consumes="application/json", produces="application/json")
+	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", produces="application/json")
 	public @ResponseBody Map<String,String> processImageRequest(@RequestBody String imageRequest) throws Exception {
 		 /**
 		 * This controller given the above parameters + z order, grabs images
@@ -57,13 +57,10 @@ public class ImageController {
 		 * @author Chris Barnett
 		 */
 		home = this.searchConfigRetriever.getHome();
-		//
+
 		ObjectMapper mapper = new ObjectMapper();
-		try {
-			this.imageRequest = mapper.readValue(URLDecoder.decode(imageRequest, "UTF-8"), ImageRequest.class);
-		} catch (Exception e){
-			e.printStackTrace();
-		}
+		this.imageRequest = mapper.readValue(URLDecoder.decode(imageRequest, "UTF-8"), ImageRequest.class);
+
 		this.isLocallyAuthenticated = ogpUserContext.isAuthenticatedLocally();
 
 		Map<String, String> map = new HashMap<String, String>();

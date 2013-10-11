@@ -1,5 +1,7 @@
 package org.OpenGeoportal.Download.Methods;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -87,14 +89,22 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	@Async
 	public Future<Boolean> sendEmail(List<LayerRequest> layerList) {
 		this.layerList = layerList;
+		InputStream inputStream = null;
 		try {
-			this.httpRequester.sendRequest(this.getUrl(layerList.get(0)), createDownloadRequest(), "GET");
+			inputStream = this.httpRequester.sendRequest(this.getUrl(layerList.get(0)), createDownloadRequest(), "GET");
 			this.setAllLayerStatus(Status.SUCCESS);
 			return new AsyncResult<Boolean>(true);
 		} catch (Exception e){
 			logger.error(e.getMessage());
 			this.setAllLayerStatus(Status.FAILED);
 			return new AsyncResult<Boolean>(false);
+		} finally {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				logger.error("Unable to close input stream");
+				e.printStackTrace();
+			}
 		}
 	}
 

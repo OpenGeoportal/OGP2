@@ -191,33 +191,38 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		var bbox = extent.join();
 		jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});		
 	},
-	colorPickerToggle: function(){
+	colorPickerToggle: function(model){
+		console.log("colorPickerToggle");
+		console.log(arguments);
+		console.log(this.model);
 		var val = this.model.get("colorPickerOn");
 		this.model.set({colorPickerOn: !val});
 	},
-	colorPicker: function(){
-		//toggle?
-		//add an element to the DOM;
-		if (jQuery("#colorDialog").length == 0){
-			var dialogDiv = '<div id="colorDialog" class="dialog"> \n';
-			dialogDiv += '</div> \n';
-			jQuery("#dialogs").append(dialogDiv);
-			jQuery("#colorDialog").dialog({
+	colorPicker: function(model){
+		//TODO: make sure colorDialogs are staggered, so that one doesn't get hidden behind the others
+		var dialogDiv$ = null;
+		if (!model.has("colorDialog")){
+			var dialogDiv = '<div class="dialog colorDialog"></div>';
+			dialogDiv$ = jQuery(dialogDiv);
+		
+			dialogDiv$.appendTo("#dialogs").dialog({
 				zIndex: 9999,
 				autoOpen: false,
 				width: 'auto',
 				height: 'auto',
 				title: "Colors",
-				resizable: false
+				resizable: false,
+				close: function( event, ui ) { model.set({colorPickerOn: false});}
 			});
-		}
-
-		this.colordialog = new OpenGeoportal.Views.ColorPicker({model: this.model, el: jQuery("#colorDialog")});
-		
-		if (this.model.changed.colorPickerOn){
-			jQuery("#colorDialog").dialog("open");
+		   model.set({colorDialog: new OpenGeoportal.Views.ColorPicker({model: model, el: dialogDiv$})});
 		} else {
-			jQuery("#colorDialog").dialog("close");
+			dialogDiv$ = model.get("colorDialog").$el;
+		}
+		
+		if (model.changed.colorPickerOn){
+			dialogDiv$.dialog("open");
+		} else {
+			dialogDiv$.dialog("close");
 		}
 	},
 	updateColorControl: function(){

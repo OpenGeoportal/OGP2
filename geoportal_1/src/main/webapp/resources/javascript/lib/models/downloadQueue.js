@@ -63,32 +63,32 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 	},
 	
 	handleDownload: function(model){
-		var url;
-		var requestId = model.get("requestId");
 		var type = model.get("type");
-		if (type == "layer"){
-			url = "getDownload?requestId=" + requestId;
-			jQuery('body').append('<iframe id="' + requestId + '" class="download" src="' + url + '"></iframe>');
+		this.requestTypes[type].successCallback.call(this, model);
+	},
+	
+	openGeoCommons: function(model){
+		//should open map in GeoCommons
+		var url = this.requestTypes[model.get("type")].retrieveUrl;	
+		url += "?requestId" + model.get("requestId");
 
-		} else if (type == "image"){
-			url = "getImage?requestId=" + requestId;
-			jQuery('body').append('<iframe id="' + requestId + '" class="download" src="' + url + '"></iframe>');
-
-		} else if (type == "export"){
-			//should open map in GeoCommons
-			url = "geocommons/getExport?requestId=" + requestId;
-			var successFunction = function(data){
-				window.open(data.location);
-			};
-			var params = {
-					  url: url,
-					  dataType: "json",
-					  success: successFunction//,
-					  //error: failureFunction
-				};
-			jQuery.ajax(params);
-		}
-
+		var successFunction = function(data){
+			window.open(data.location);
+		};
+		
+		var params = {
+			url: url,
+			dataType: "json",
+			success: successFunction
+		};
+			
+		jQuery.ajax(params);
+	},
+	
+	iframeDownload: function(model){
+		var url = this.requestTypes[model.get("type")].retrieveUrl;	
+		url += "?requestId=" + model.get("requestId");
+		jQuery('body').append('<iframe class="download" src="' + url + '"></iframe>');
 	},
 	
 	createNotice: function(model){
@@ -167,6 +167,8 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 			},
 			error: function(){
 				//if failure statuses, notify the user
+				//also stop the poll. change to failed?
+				that.stopPoll();
 				jQuery(document).trigger("requestStatus.failure");
 				}
 		};
@@ -184,11 +186,33 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 		}
 	},
 	
+	requestTypes: {
+		layer: {
+			requestUrl:"requestDownload",
+			retrieveUrl: "getDownload",
+			successCallback: function(){this.iframeDownload.apply(this, arguments);}
+			},
+		image: {
+			requestUrl: "requestImage",
+			retrieveUrl: "getImage",
+			successCallback: function(){this.iframeDownload.apply(this, arguments);}
+			},
+		exportTo: {
+			requestUrl: "requestExport",
+			retrieveUrl: "geocommons/getExport",
+			successCallback: function(){this.openGeoCommons.apply(this, arguments);}
+		}
+	},
+	
     createRequest: function(requestObj){
 		var that = this;
+
+		var requestInfo = this.requestTypes[requestObj.type];
+		console.log(requestObj);
+		//return;
 		var params = {
-				url: "requestDownload",
-				data: requestObj,
+				url: requestInfo.requestUrl,
+				data: JSON.stringify(requestObj),
 				dataType: "json",
 				type: "POST",
 				success: function(data){
@@ -200,6 +224,19 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 	}
 	
 });
+/*
+ * 		var params = {
+				url: "requestImage",
+				data: requestObj,
+				dataType: "json",
+				type: "POST",
+				success: function(data){
+					OpenGeoportal.ogp.appState.get("requestQueue").createRequest(requestObj);
+				}
+		};
+ * 
+ * 
+ */
 
 
 /*

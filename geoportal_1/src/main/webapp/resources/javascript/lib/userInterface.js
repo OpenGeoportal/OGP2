@@ -298,7 +298,7 @@ OpenGeoportal.UserInterface = function(){
 								}});
 					}});
 
-			jQuery(".slideVertical").animate({"margin-top": "+=" + hght * 3, duration: 300, easing: "linear"})
+			jQuery(".slideVertical").animate({"margin-top": "+=" + hght * 3, duration: 300, easing: "linear"});
 
 
 		} else if (thisId == 'lessSearchOptions'){
@@ -322,7 +322,7 @@ OpenGeoportal.UserInterface = function(){
 											});
 								}});
 					}});
-			jQuery(".slideVertical").animate({"margin-top": "-=" + hght * 3, duration: 300, easing: "linear"})
+			jQuery(".slideVertical").animate({"margin-top": "-=" + hght * 3, duration: 300, easing: "linear"});
 
 		}
 	};

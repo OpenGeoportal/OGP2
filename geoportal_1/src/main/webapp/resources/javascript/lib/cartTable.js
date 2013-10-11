@@ -231,7 +231,7 @@ OpenGeoportal.CartTable = function CartTable(){
 			bounds = [-180,-90,180,90];
 		}
 
-		var layerIds = [];
+		var layerList = [];
 		var needEmailInput = 0;
 		var layerNumber = 0;
 		for (var j in arrLayers){
@@ -241,11 +241,15 @@ OpenGeoportal.CartTable = function CartTable(){
 				needEmailInput++;
 			}
 			//this is ugly.  we should have a better "API" for download
+			var format = "";
 			if (currentLayer.get("baseType") == "vector"){
-				layerIds.push(currentLayer.get("LayerId") + "=" + vectorFormat);
+				format = vectorFormat;
 			} else if (arrLayers[j].get("baseType") == "raster"){
-				layerIds.push(currentLayer.get("LayerId") + "=" + rasterFormat);
+				format = rasterFormat;
 			}
+			
+			var layerId = currentLayer.get("LayerId");
+			layerList.push({layerId: layerId, format: format});
 		}
 		if (layerNumber == 0){
 			jQuery("#downloadDialog").dialog('close');
@@ -256,8 +260,8 @@ OpenGeoportal.CartTable = function CartTable(){
 		if (bounds.length > 0){
 			requestObj.bbox = bounds.join();
 		}
-		//requestObj.format = fileFormat;
-		requestObj.layers = layerIds;
+
+		requestObj.layers = layerList;
 
 		//first, check to see if anything is in savedLayers & checked
 		var that = this;

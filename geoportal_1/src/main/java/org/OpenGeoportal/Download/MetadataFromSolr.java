@@ -30,6 +30,13 @@ public class MetadataFromSolr implements MetadataRetriever {
 	MetadataFromSolr() {
 		// Create a factory
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
+		try {
+			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		} catch (ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		// Use document builder factory
 		try {
 			builder = factory.newDocumentBuilder();

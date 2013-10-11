@@ -267,7 +267,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 			//ghost: true,
 			start: function(event, ui){
 				var margin = parseInt(jQuery(".slideHorizontal").css("margin-left")); 
-				that.model.set({alsoMovesMargin: margin})
+				that.model.set({alsoMovesMargin: margin});
 				ui.element.resizable("option", "minWidth", that.model.get("panelMinWidth"));
 				var maxWidth = jQuery("#container").width() - that.model.get("mapMinWidth");
 				ui.element.resizable("option", "maxWidth", maxWidth);

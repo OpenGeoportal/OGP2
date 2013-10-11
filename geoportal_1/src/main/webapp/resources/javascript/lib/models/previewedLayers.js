@@ -64,7 +64,11 @@ OpenGeoportal.Models.DataTypeAware = OpenGeoportal.Models.ResultItem.extend({
 			return this.typeSpecificRasterAttr;
 		}
 	},
-	
+		
+	baseDefaults: {
+		raster:{},
+		vector: {}
+	},
 	typeSpecificRasterAttr: {},
 	typeSpecificVectorAttr: {}
 	

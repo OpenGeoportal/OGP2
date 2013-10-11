@@ -46,7 +46,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		return jQuery('#' + this.getTableId()).dataTable();
 	};
 	
-	this.backingData;
+	this.backingData = {};
 	this.addControlColumns = function(tableConfigCollection){
 		var that = this;
 		tableConfigCollection.add([

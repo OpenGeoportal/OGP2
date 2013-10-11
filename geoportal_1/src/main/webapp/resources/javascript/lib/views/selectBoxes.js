@@ -64,7 +64,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 				my: "left top",
 				at: "left bottom",
 				of: this
-			})
+			});
 			that.$el.one( "mouseleave", function() {
 				event.preventDefault;
 				menu.hide();        
@@ -113,7 +113,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	uiItemDeselected: function(thisObj){
 		jQuery(thisObj).removeClass("selected");
 	},
-	setValue: function(){throw new Error("no function for setValue defined.")},
+	setValue: function(){throw new Error("no function for setValue defined.");},
 	initRender: function(){
 		//template
 		var template = OpenGeoportal.ogp.appState.get("template");
@@ -157,9 +157,11 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		var selectionAttr = this.getSelectionAttribute();
 		var selectedModel = this.collection.filter(function(model){
 				return model.get(selectionAttr);
-		})[0];
-		this.$el.attr("ogpValue", selectedModel.get(this.getValueAttribute()));
-		this.$el.trigger("change");
+		});
+		if (selectedModel.length !== 0 ){
+			this.$el.attr("ogpValue", selectedModel[0].get(this.getValueAttribute()));
+			this.$el.trigger("change");
+		}
 	},
 	
 	selectCallback: function(event, ui, context){
@@ -172,11 +174,12 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		var selModel = this.collection.find(function(model) {
 			return model.get(valueAttr) === selValue;
 		});
-		prevSelected.set(selectAttr, false, {silent: true});//just trigger the listener once
+		prevSelected.set(selectAttr, false);//, {silent: true});//just trigger the listener once
 		selModel.set(selectAttr, true);
 		this.setValue();
 		this.$el.find("ul.ui-menu").hide();
 	},
+	
 	render: function(){
 		var selectionAttr = this.getSelectionAttribute();
 		var selectedModel = this.collection.filter(function(model){

@@ -27,8 +27,7 @@ OpenGeoportal.Solr = function() {
 	this.Institutions = [];
 	this.DataTypes = [];
 
-	this.ServerName = "";
-	// this.ServerPort = "80";
+	this.ServerName = "";//includes any path elements & port number
 
 	/**
 	 * config element from ogpConfig.json can contain either a single server or
@@ -100,10 +99,6 @@ OpenGeoportal.Solr = function() {
 		return shards;
 	};
 
-	this.getServerPort = function getServerPort() {
-		var portValue = OpenGeoportal.InstitutionInfo.getSearch().servicePort;
-		return portValue;
-	};
 
 	/*
 	 * Other queries
@@ -142,7 +137,7 @@ OpenGeoportal.Solr = function() {
 				wt: "json",
 				fl: this.getReturnedColumns(this.SearchRequest),
 				rows: 10000
-		}
+		};
 		return infoParams;
 	};
 
@@ -329,8 +324,8 @@ OpenGeoportal.Solr = function() {
 		var bf_array = [
 		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
                         this.getIntersectionAreaRelevancyClause() + "^" + this.LayerAreaIntersection.boost,
-                        this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost//,
-                       // this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost,
+                        this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost,
+                        this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost,
 		                ];
         var params = {
                         bf: bf_array,
@@ -347,24 +342,21 @@ OpenGeoportal.Solr = function() {
 	//term objects
 	this.LayerWithinMap = {
 		term : "LayerWithinMap",
-		boost : 15.0
+		boost : 9.0
 	};
 	
 	this.LayerMatchesScale = {
 		term : "LayerMatchesScale",
-		boost : 9.0
+		boost : 8.0
 	};
 	this.LayerMatchesCenter = {
 		term : "LayerMatchesCenter",
 		boost : 1.0
 	};
-	/*this.LayerIntersectionScale = {
-		term : "LayerIntersectionScale",
-		boost : 2.0
-	};*/
+
 	this.LayerAreaIntersection = {
 		term : "LayerAreaIntersection",
-		boost : 7.0
+		boost : 3.0
 	};
 	
 	/**
@@ -393,16 +385,22 @@ OpenGeoportal.Solr = function() {
 	};
 
 	/**
-	 * Calculates the reciprocal of the squared Euclidean distance of the layer
+	 * Calculates the reciprocal of the distance of the layer
 	 * center from the bounding box center.
+	 * 
+	 * note that, while the squared Euclidean distance is perfectly adequate to calculate relative
+	 * distances, it affects the score/ranking in a non-linear way; we may decide that is ok
 	 * 
 	 * @return {string} query string to calculate score for center distance
 	 */
 	this.getCenterRelevancyClause = function(centerLat, centerLon) {
-
+		//dist(2, x, y, 0, 0) 
+		var smoothingFactor = 1000;
 		var score = "if(and(exists(CenterX),exists(CenterY)),";
-		score += "recip(sqedist(CenterX,CenterY," + centerLon + ","
-				+ centerLat + "),1,$union,$union),0)";
+		//score += "recip(sqedist(CenterX,CenterY," + centerLon + ","
+
+		score += "recip(dist(2,CenterX,CenterY," + centerLon + ","
+				+ centerLat + "),1," + smoothingFactor + "," + smoothingFactor + "),0)";
 
 		return score;
 
@@ -411,20 +409,83 @@ OpenGeoportal.Solr = function() {
 
  	
 	/**
-	 * Compares the area of the layer to the area of the map extent
+	 * Compares the area of the layer to the area of the map extent; "scale"
 	 * 
 	 * @return {string} query string to calculate score for area comparison
 	 */
 	this.getBoundsAreaRelevancyClause = function() {
-		//why not "div(Area, $union)"
-		//smoothing factor really should be max of $union and Area
-		var areaClause = "if(exists(Area),recip(abs(sub(Area,$union)),1,$union,$union),0)";
-
+		//smoothing factor really should be examined;  is the curve shape appropriate?
+		var smoothingFactor = 1000;
+		var areaClause = "if(exists(Area),recip(abs(sub(Area,$union)),1," + smoothingFactor + "," + smoothingFactor + "),0)";
 		return areaClause;
-
 	};
 	
 	/**
+ * return a search clause whose score reflects how much of the map this layers covers
+ * 9 points in a 3x3 grid are used. we compute how many of those 9 points are within the 
+ *  the layer's bounding box.  This count is then normalized and multiplied by the boost
+ * the grid is evenly space and does not include points on the edge of the map. 
+ *  for example, for a 3x3 grid we use 9 points spaced at 1/4, 1/2 and 3/4 x and y
+ *  each point in the grid is weighted evenly 
+ */
+/*org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionStepSize = 3;
+org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX, mapMaxX, mapMinY, mapMaxY)
+{	
+	var stepCount = this.layerAreaIntersectionStepSize;  // use 3x3 grid
+	var mapDeltaX = Math.abs(mapMaxX - mapMinX);
+	var mapXStepSize = mapDeltaX / (stepCount + 1.);
+
+	var mapDeltaY = Math.abs(mapMaxY - mapMinY);
+	var mapYStepSize = mapDeltaY / (stepCount + 1.);
+
+	var clause = "sum(";  // add up all the map points within the layer
+	for (var i = 0 ; i < stepCount  ; i++) {
+
+		for (var j = 0 ; j < stepCount ; j++){
+
+			var currentMapX = mapMinX + ((i + 1) * mapXStepSize);
+			var currentMapY = mapMinY + ((j + 1) * mapYStepSize);
+
+			//console.log([currentMapX, currentMapY]);
+			// is the current map point in the layer
+			// that is, is currentMapX between MinX and MaxX and is currentMapY betweeen MinY and MaxY
+
+			//why 400?
+			var thisPointWithin = "map(sum(map(sub(" + currentMapX + ",MinX),0,400,1,0),";
+			thisPointWithin += "map(sub("+ currentMapX + ",MaxX),-400,0,1,0),";
+			thisPointWithin += "map(sub(" + currentMapY + ",MinY),0,400,1,0),";
+			thisPointWithin += "map(sub(" + currentMapY + ",MaxY),-400,0,1,0)),";
+			thisPointWithin += "4,4,1,0)";  // final map values
+			
+
+			// note that map(" + currentMapX + ",MinX,MaxX,1,0) doesn't work 
+			//  because the min,max,target in map must be constants, not field values
+			//  so we do many sub based comparisons
+
+			if ((i > 0) || (j > 0)){
+				clause += ",";  // comma separate point checks
+			}
+
+			clause += thisPointWithin;
+		}
+	}
+	clause += ")";
+
+	// clause has the sum of 9 point checks, this could be 9,6,4,3,2,1 or 0
+	// normalize to between 0 and 1, then multiple by boost
+
+	clause = "product(" + clause + "," + (1.0 / (stepCount * stepCount)) + ")";
+	clause = "product(" + clause + "," + this.LayerAreaIntersection.boost + ")";
+	//tempClause = clause;  // set global for debugging
+	//console.log(clause);
+	return clause;
+};*/
+
+
+	/**
+	 * 
+	 * 
+	 *
 	 * Compares the area of the layer's intersection with the map extent to the area of the map extent
 	 * $intx depends on the intersection function defined in "getIntersectionFunction", while $union
 	 * depends on the value of union being populated with the area of the map extent 
@@ -432,10 +493,10 @@ OpenGeoportal.Solr = function() {
 	 * @return {string} query string to calculate score for area comparison
 	 */
 	this.getIntersectionAreaRelevancyClause = function() {
-		//$intx is the area of intersection
-		//$union is the area of the map extent
-		var areaClause = "div($intx,$union)";
-		areaClause = "if($intx,recip(abs(sub($intx,$union)),1,$union,$union),0)";
+		//$intx is the area of intersection of the layer bounds and the search extent
+		//$union is the area of the search extent
+		//var areaClause = "scale(div($intx,$union),0,1)";
+		var areaClause = "if($intx,recip(abs(sub($intx,$union)),1,1000,1000),0)";
 		return areaClause;
 
 	};
@@ -498,8 +559,25 @@ OpenGeoportal.Solr = function() {
 		*/
 		//$intx is the area of intersection
 		//Area is the stored area of the layer extent
-		var areaClause = "div($intx,Area)";
-		areaClause = "if(exists(Area),recip(abs(sub($intx,Area)),1,Area,Area),0)";
+		//var areaClause = "div($intx,Area)";
+		//be careful with these reciprocal clauses the way they are weighted should generally be dynamic
+		//var areaClause = "if(exists(Area),recip(abs(sub($intx,Area)),1,Area,Area),0)";
+		// map(x,min,max,target,value)
+		//to give the boost if a certain percentage of the area is in the search extent
+		//map($intx,product(.95,Area),Area,0,1);
+		
+		//This clause is true to Steve's original conception of giving a straight-across
+		//boost to any layer fully contained by the search extent, translated into a more
+		//compact expression, as allowed by newer solr query syntax.
+		
+		//if the Area value exists, subtract the area of intersection from the total layer area.
+		//this will yield 0 if they are the same, which equates to a boolean false
+		//take "not" to yield a boolean true (= 1)
+		//if there is a differential, "not" will yield a boolean false (= 0)
+		//var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
+		var within = "1";
+		var notwithin = "0";
+		var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
 
 		return areaClause;
 	};
@@ -587,7 +665,8 @@ OpenGeoportal.Solr = function() {
             "f.PlaceKeywordsSort.facet.limit": 10,*/
             defType: "edismax",
             fl: this.getReturnedColumns(this.SearchRequest),
-            sort: this.getSortClause()
+            sort: this.getSortClause()//,
+            //debug: true
         };
 
         var params = this.combineParams(this.baseParams, this.spatialParams, this.textParams);
@@ -624,7 +703,8 @@ OpenGeoportal.Solr = function() {
     	//perhaps this can/should be abstracted to a higher level
     	
         var qf_array = [ 
-            "LayerDisplayNameSynonyms^5",
+            "LayerDisplayName^5",
+            "LayerDisplayNameSynonyms^2",
             "ThemeKeywordsSynonymsLcsh^1",
             "Originator^1",
             "Publisher^1"

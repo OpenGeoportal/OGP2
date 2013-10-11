@@ -434,7 +434,9 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 
 		},
 		
-
+		clearForm: function(){
+			//TODO: a placeholder
+		},
 		clearInput: function(divName){
 			jQuery('#' + divName + ' :input').each(function(){
 				var type = this.type;

@@ -95,13 +95,9 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	}
 	
 	@Override
-	public synchronized void addDownloadRequest(UUID requestId, String sessionId, List<MethodLevelDownloadRequest> layerRequests){
+	public synchronized void addDownloadRequest(DownloadRequest downloadRequest){
 		logger.info("Adding download request status object...");
-		DownloadRequest requestStatus = new DownloadRequest();
-		requestStatus.setRequestId(requestId);
-		requestStatus.setSessionId(sessionId);
-		requestStatus.setRequestList(layerRequests);
-		globalDownloadRequestRegistry.add(requestStatus);
+		globalDownloadRequestRegistry.add(downloadRequest);
 	}
 
 	@Override

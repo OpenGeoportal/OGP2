@@ -144,12 +144,11 @@ OpenGeoportal.MapController = function() {
 		//default background map
 		this.basemaps = this.createBaseMaps();
 		var defaultBasemapModel = this.basemaps.findWhere({name: "googlePhysical"});
-		this.setBasemap(defaultBasemapModel);
+		defaultBasemapModel.set({selected: true});
 		defaultBasemapModel.get("initialRenderCallback").apply(defaultBasemapModel, [this]);
 		var that = this;
-		this.basemaps.listenTo(this.basemaps, 'change:selected', function(model){that.setBasemap(model);});
+		//this.basemaps.listenTo(this.basemaps, 'change:selected', function(model){that.setBasemap(model);});
 
-		try{
 		var center = this.WGS84ToMercator(0, 0);
 		//set map position
 		this.setCenter(center);	
@@ -166,10 +165,7 @@ OpenGeoportal.MapController = function() {
 										itemClass: "baseMapMenuItem"
 										});
 		jQuery(".olMap").find("[id*=event]").addClass("shadowDown").addClass("shadowRight");
-		} catch (e){
-			console.log("problem creating basemap menu?");
-			console.log(e);
-		}
+
 	};
 
 	this.registerMapEvents = function(){
@@ -388,6 +384,7 @@ OpenGeoportal.MapController = function() {
 
 	
 	this.saveImage = function(imageFormat, resolution){
+		//TODO: add html5 canvas stuff...may have to wait for OL3?
 		imageFormat = 'png';
 		var format;
 		switch (imageFormat){
@@ -403,7 +400,7 @@ OpenGeoportal.MapController = function() {
 		default: throw new Error("This image format (" + imageFormat + ") is unavailable.");
 		}
 
-		var requestObj = {};
+		var requestObj = {type: "image"};
 		requestObj.layers = [];
 
 		for (var layer in this.layers){
@@ -446,23 +443,11 @@ OpenGeoportal.MapController = function() {
 		requestObj.format = format;
 		requestObj.bbox = bbox;
 		requestObj.srs = 'EPSG:900913';
-		requestObj.width = jQuery('#' + this.mapDiv).width();
-		requestObj.height = jQuery('#' + this.mapDiv).height();
-		//return a url from the servlet
-		var params = {
-				url: "requestImage",
-				data: JSON.stringify(requestObj),
-				dataType: "json",
-				type: "POST",
-				context: this,
-				complete: function(){
-				},
-				success: function(data){
-					OpenGeoportal.ogp.downloadQueue.registerImageRequest(data.requestId, requestObj);
-				}
-		};
-
-		jQuery.ajax(params);
+		var offset = this.getMapOffset();
+		requestObj.width = jQuery('#' + this.mapDiv).width() - offset.x;
+		requestObj.height = jQuery('#' + this.mapDiv).height() - offset.y;
+		//add the request to the queue
+		OpenGeoportal.ogp.appState.get("requestQueue").createRequest(requestObj);
 	};
 	
 
@@ -496,47 +481,50 @@ OpenGeoportal.MapController = function() {
 		models.push({
 			displayName: "Google Physical",
 			name: "googlePhysical",
-			selected: true,
+			selected: false,
 			subType: google.maps.MapTypeId.TERRAIN,
 			type: "Google",
 			zoomLevels: 15,
 			getLayerDefinition: function(){
-				console.log("layer definition arguments");
-				console.log(arguments);
 				var bgMap = new OpenLayers.Layer.Google(
 					this.get("displayName"),
 					{
-						type: this.get("subType")
+						type: this.get("subType"),
+						basemapType: this.get("type"),
+						layerRole: "basemap"
 					},
 					{
-						layerRole: "basemap",
-						animationEnabled: true,
-						basemapType: this.get("subType") 
+						animationEnabled: true
 					}
 					);
 				return bgMap;
 				},
-			showOperations: function(layer){
-				layer.mapObject.setMapTypeId(this.get("subType"));
-				layer.type = this.get("subType");
-				layer.setVisibility(true);
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.mapObject.setMapTypeId(model.get("subType"));
+					layer.type = model.get("subType");
+					layer.setVisibility(true);
+				}
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
 			},
-			hideOperations: function(layer){
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
 				layer.setVisibility(false);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
 			},
 			initialRenderCallback: function(mapController){
-				console.log("mapcontroller");
-				console.log(mapController);
-				console.log(this.get("subType"));
-				var bgMap = mapController.getLayersBy("type", this.get("subType"))[0];
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
 				console.log(bgMap);
 				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
 					//console.log("Tiles loaded");
 					mapController.render(mapController.mapDiv);
 					jQuery(document).trigger("mapReady");
-					//really should only fire the first time
+					//really should only fire the first time (or should only listen the first time)
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 
@@ -555,25 +543,36 @@ OpenGeoportal.MapController = function() {
 				var bgMap = new OpenLayers.Layer.Google(
 					this.get("displayName"),
 					{
-						basemapType: this.get("subType"),
-						layerRole: "basemap",
+						type: this.get("subType"),
+						basemapType: this.get("type"),
+						layerRole: "basemap"
+					},
+					{
 						animationEnabled: true
 					}
 					);
 				return bgMap;
 				},
-			showOperations: function(layer){
-				layer.mapObject.setMapTypeId(this.get("subType"));
-				layer.type = this.get("subType");
-				layer.setVisibility(true);
-				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.mapObject.setMapTypeId(model.get("subType"));
+					layer.type = model.get("subType");
+					layer.setVisibility(true);
+				}
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
 			},
-			hideOperations: function(layer){
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
 				layer.setVisibility(false);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
 			},
 			initialRenderCallback: function(mapController){
-				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
 				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
 					//console.log("Tiles loaded");
 					mapController.render(mapController.mapDiv);
@@ -597,25 +596,37 @@ OpenGeoportal.MapController = function() {
 				var bgMap = new OpenLayers.Layer.Google(
 					this.get("displayName"),
 					{
-						basemapType: this.get("subType"),
-						layerRole: "basemap",
+						type: this.get("subType"),
+						basemapType: this.get("type"),
+						layerRole: "basemap"
+					},
+					{
 						animationEnabled: true
 					}
 					);
 				return bgMap;
 				},
-			showOperations: function(layer){
-				layer.mapObject.setMapTypeId(this.get("subType"));
-				layer.type = this.get("subType");
-				layer.setVisibility(true);
-				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.mapObject.setMapTypeId(model.get("subType"));
+					layer.type = model.get("subType");
+					layer.setVisibility(true);
+				}
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
 			},
-			hideOperations: function(layer){
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+				//if the new base map is the same type, don't change visibility
 				layer.setVisibility(false);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
 			},
 			initialRenderCallback: function(mapController){
-				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
 				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
 					//console.log("Tiles loaded");
 					mapController.render(mapController.mapDiv);
@@ -639,25 +650,36 @@ OpenGeoportal.MapController = function() {
 				var bgMap = new OpenLayers.Layer.Google(
 					this.get("displayName"),
 					{
-						basemapType: this.get("subType"),
-						layerRole: "basemap",
+						type: this.get("subType"),
+						basemapType: this.get("type"),
+						layerRole: "basemap"
+					},
+					{
 						animationEnabled: true
 					}
 					);
 				return bgMap;
 				},
-			showOperations: function(layer){
-				layer.mapObject.setMapTypeId(this.get("subType"));
-				layer.type = this.get("subType");
-				layer.setVisibility(true);
-				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.mapObject.setMapTypeId(model.get("subType"));
+					layer.type = model.get("subType");
+					layer.setVisibility(true);
+				}
+				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
 			},
-			hideOperations: function(layer){
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
 				layer.setVisibility(false);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");	
 			},
 			initialRenderCallback: function(mapController){
-				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
 				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
 					//console.log("Tiles loaded");
 					mapController.render(mapController.mapDiv);
@@ -674,42 +696,227 @@ OpenGeoportal.MapController = function() {
 			displayName: "OpenStreetMap",
 			name: "osm",
 			selected: false,
-			type: "TMS",
-			url: "http://tile.openstreetmap.org/",
-			tileFunction: function(bounds){
-				console.log(arguments);
-				var res = that.map.getResolution();
-				var x = Math.round((bounds.left - that.getMaxExtent().left) / (res * that.tileSize.w));
-				var y = Math.round((that.getMaxExtent().top - bounds.top) / (res * that.tileSize.h));
-				var z = that.map.getZoom() + 1;
-				var limit = Math.pow(2, z);
-
-				if (y < 0 || y >= limit) {
-					//console.log["ol 404"];
-					return OpenGeoportal.Utility.getImage("404.png");
-				} else {
-					x = ((x % limit) + limit) % limit;
-					//console.log([this.url, this.type]);
-					return this.get("url") + z + "/" + x + "/" + y + ".png";
-				}
-			},
+			type: "osm",
+			subType: "osm",
 			zoomLevels: 17,
 			getLayerDefinition: function(){
 				var bgMap = new OpenLayers.Layer.OSM(
-						this.get("name")
+					this.get("displayName"),
+					null,
+					{
+						basemapType: this.get("type"),
+						layerRole: "basemap"
+					}
 				);
+				console.log(bgMap);
 				return bgMap;
 				},
-			showOperations: function(layer){
-				layer.setVisibility(true);
+				
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.setVisibility(true);
+				}
+
+
 			},
-			hideOperations: function(layer){
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
 				console.log("hide operations");
 				console.log(layer);
 				layer.setVisibility(false);
 			},
 			initialRenderCallback: function(mapController){
-				var bgMap = mapController.getLayersByName(this.get("name"))[0];
+				console.log("osm initial render callback");
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
+				bgMap.events.register(bgMap.mapObject, "loadend", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					//really should only fire the first time
+					bgMap.events.unregister(bgMap.mapObject, "loadend");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "Bing Aerial",
+			name: "bingAerial",
+			selected: false,
+			type: "bingAerial",
+			subType: "Aerial",
+			zoomLevels: 17,
+			getLayerDefinition: function(){
+			 	
+
+/*Aerial - Aerial imagery.
+
+AerialWithLabels - Aerial imagery with a road overlay.
+
+Birdseye - Bird’s eye (oblique-angle) imagery
+
+BirdseyeWithLabels - Bird’s eye imagery with a road overlay.
+
+Road - Roads without additional imagery.	*/
+				var bgMap = new OpenLayers.Layer.Bing(
+					{
+						name: this.get("displayName"),
+						type: this.get("subType"),
+						key: "AooVYTRT_gUIpHJzyG0lM9v39OvPRj6ThwwCjqV1LXVPvJ6HFos0oRuzk02wJfHl"
+					}
+				);
+				bgMap.basemapType = this.get("type");
+				bgMap.layerRole= "basemap";
+				bgMap.wrapDateLine = true;
+				console.log(bgMap);
+				return bgMap;
+				},
+				
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.setVisibility(true);
+				}
+
+			},
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+				console.log("hide operations");
+				console.log(layer);
+				layer.setVisibility(false);
+			},
+			initialRenderCallback: function(mapController){
+				console.log("bing initial render callback");
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
+				bgMap.events.register(bgMap.mapObject, "loadend", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					//really should only fire the first time
+					bgMap.events.unregister(bgMap.mapObject, "loadend");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "Bing Hybrid",
+			name: "bingAerialWithLabels",
+			selected: false,
+			type: "bingHybrid",
+			subType: "AerialWithLabels",
+			zoomLevels: 17,
+			getLayerDefinition: function(){
+			 	
+
+/*Aerial - Aerial imagery.
+
+AerialWithLabels - Aerial imagery with a road overlay.
+
+Birdseye - Bird’s eye (oblique-angle) imagery
+
+BirdseyeWithLabels - Bird’s eye imagery with a road overlay.
+
+Road - Roads without additional imagery.	*/
+				var bgMap = new OpenLayers.Layer.Bing(
+					{
+						name: this.get("displayName"),
+						type: this.get("subType"),
+						key: "AooVYTRT_gUIpHJzyG0lM9v39OvPRj6ThwwCjqV1LXVPvJ6HFos0oRuzk02wJfHl"
+					}
+				);
+				bgMap.basemapType = this.get("type");
+				bgMap.layerRole= "basemap";
+				console.log(bgMap);
+				return bgMap;
+				},
+				
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					that.addLayer(model.get("getLayerDefinition").call(model));
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.setVisibility(true);
+				}
+
+
+			},
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+
+				layer.setVisibility(false);
+			},
+			initialRenderCallback: function(mapController){
+				console.log("bing initial render callback");
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
+				bgMap.events.register(bgMap.mapObject, "loadend", function() {
+					//console.log("Tiles loaded");
+					mapController.render(mapController.mapDiv);
+					//really should only fire the first time
+					bgMap.events.unregister(bgMap.mapObject, "loadend");
+					jQuery("#geoportalMap").fadeTo("slow", 1);
+				});
+			}
+		});
+		
+		models.push({
+			displayName: "Bing Road",
+			name: "bingRoad",
+			selected: false,
+			type: "bingRoad",
+			subType: "Road",
+			zoomLevels: 17,
+			getLayerDefinition: function(){
+
+				var bgMap = new OpenLayers.Layer.Bing(
+					{
+						name: this.get("displayName"),
+						type: this.get("subType"),
+						key: "AooVYTRT_gUIpHJzyG0lM9v39OvPRj6ThwwCjqV1LXVPvJ6HFos0oRuzk02wJfHl"
+					}
+				);
+				bgMap.basemapType = this.get("type");
+				bgMap.layerRole= "basemap";
+				console.log(bgMap);
+				return bgMap;
+				},
+				
+			showOperations: function(model){
+				//see if there is a basemap layer of the specified type
+				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
+					//add the appropriate basemap layer
+					var bgLayer = model.get("getLayerDefinition").call(model);
+					that.addLayer(bgLayer);
+					bgLayer.setVisibility(false);
+					bgLayer.setVisibility(true);
+					//var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					//layer.setVisibility(true);
+					
+
+				} else {
+					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+					layer.setVisibility(true);
+				}
+
+			},
+			hideOperations: function(model){
+				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
+				console.log("hide operations");
+				console.log(layer);
+				layer.setVisibility(false);
+			},
+			initialRenderCallback: function(mapController){
+				console.log("bing initial render callback");
+				var bgMap = mapController.getLayersBy("basemapType", this.get("type"))[0];
 				bgMap.events.register(bgMap.mapObject, "loadend", function() {
 					//console.log("Tiles loaded");
 					mapController.render(mapController.mapDiv);
@@ -782,40 +989,19 @@ OpenGeoportal.MapController = function() {
 	};
 */	
 
-	this.showBasemap = function(model, layer){
-		if (model.has("showOperations")){
-			model.get("showOperations").apply(model, [layer]);
-		}
-	};
-	this.hideBasemap = function(model, layer){
-		if (model.has("hideOperations")){
-			model.get("hideOperations").apply(model, [layer]);
-		}
-	};
-
-	this.setBasemap = function(model){
-
-		//see if there is a basemap layer of the specified type
-		if (this.getLayersBy("basemapId", model.get("type")).length == 0){
-			//add the appropriate basemap layer
-			this.addLayer(model.get("getLayerDefinition").call(model));
-		}
-		
-		//make sure selected basemap is in the foreground and others are hidden
-		var basemapLayers = this.getLayersBy("layerRole", "basemap");
-		
-		//iterate over this array, set visibility false, unless it is represented by the passed model
-		for (var i = 0; i < basemapLayers.length; i++){
-			var currLayer = basemapLayers[i];
-
-			if (currLayer.basemapType == model.get("subType")){
-				this.showBasemap(model, currLayer);
-			} else {
-				this.hideBasemap(model, currLayer);
+		/*this.setBasemap = function(model){
+			console.log("setBasemap");
+			//see if there is a basemap layer of the specified type
+			if (this.getLayersBy("type", model.get("type")).length === 0){
+				//add the appropriate basemap layer
+				this.addLayer(model.get("getLayerDefinition").call(model));
 			}
-		}
-	};
+		
+			model.set({selected: true});
+		};
+	*/
 	
+
 
 	
 
@@ -1563,12 +1749,17 @@ OpenGeoportal.MapController = function() {
         //check to see if layer is on openlayers map, if so, show layer
         var opacitySetting = layerModel.get("opacity");
         
-  
-        if (this.getLayersByName(layerId).length > 0){
+  		var matchingLayers = this.getLayersBy("ogpLayerId", layerId);
+        for (var i in matchingLayers){
             	this.showLayer(layerId);
-            	this.getLayersByName(layerId)[0].setOpacity(opacitySetting * .01);
+            	matchingLayers[i].setOpacity(opacitySetting * .01);
             	return;
         } 
+        
+        if (matchingLayers.length > 1){
+        	console.log("ERROR: There should never be more than one copy of the layer on the map");
+        }
+        
 		//use a tilecache if we are aware of it
 
 
@@ -1805,17 +1996,20 @@ OpenGeoportal.MapController = function() {
 
 	this.hideLayer = function(layerId){
 		var layers = this.getLayersBy("ogpLayerId", layerId);
+		console.log("hiding layer");
 		console.log(layers);
-		if (layers.length == 0){
-			//probably don't need to do anything;  the layer probably never made it to the map
-		} else {
-			layers[0].setVisibility(false);
+
+		for (var i in layers){
+			layers[i].setVisibility(false);
 		}
+		
 	};
 
 	this.showLayer = function(layerId){
-		var layer = this.getLayersBy("ogpLayerId", layerId)[0];
-		layer.setVisibility(true);
+		var layers = this.getLayersBy("ogpLayerId", layerId);
+			for (var i in layers){
+				layers[i].setVisibility(true);
+			}
 	};
 
 	this.getMapOffset = function(){
@@ -1849,7 +2043,8 @@ OpenGeoportal.MapController = function() {
 	this.getSearchExtent = function(){
 		this.updateSize();
 		var rawExtent = this.getGeodeticExtent();
-		return this.clipToWorld(rawExtent);
+		//return this.clipToWorld(rawExtent);
+		return rawExtent;
 	};
 
 	this.clipToWorld = function(bounds){
@@ -2018,7 +2213,7 @@ OpenGeoportal.MapController = function() {
    			var currentObj = previewObj[i];
    	   		if (typeof location[currentObj.type] != "undefined"){
    	   			return currentObj;
-   	   		} else if (location[currentObj.type] == "default"){
+   	   		} else if (currentObj.type === "default"){
    	   			defaultObj = currentObj;
    	   		}
    		}
