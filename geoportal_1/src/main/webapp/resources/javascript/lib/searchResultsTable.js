@@ -27,11 +27,11 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 
 	this.backingData = OpenGeoportal.ogp.results;
 
-	//this.tableOrganize = this.tableSettings.tableSorter;
 	
 	this.addTableDrawCallback("sortGraphics", function(){this.createSortGraphics();});
-	this.addTableDrawCallback("markPreviewed", function(){this.markPreviewedLayers();});
+	//this.addTableDrawCallback("markPreviewed", function(){this.markPreviewedLayers();});
 	
+
 	/*
 	 * insert into tableConfig
 	"Save": {"ajax": false, "resizable": false, "organize": false, "columnConfig": 
@@ -68,7 +68,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 		//TODO: find the column index for "score"..probably can use tableHeadingsObj since this is initialization
 		var sortArr = [3, "desc"];
 		var columnDefs = this.getColumnDefinitions();
-		
+		var scrollY = Math.floor(jQuery("#tabs").height() - 60) + "px";
 		var params = {
 			"aoColumnDefs": columnDefs,
 			"fnDrawCallback": that.runTableDrawCallbacks,
@@ -81,11 +81,12 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			"bServerSide": true,
 			"aaSorting": [sortArr],
 			"iDeferLoading": [ 0 ],
-			"sScrollY": "596px",	//TODO: should be set elsewhere
+			"sScrollY": scrollY,	//should be a function to set this when table height should change
 			"bScrollAutoCss": false,
 			"oScroller": {
-				"loadingIndicator": false,
-				"rowHeight": 25, //TODO: should be adaptive
+				//"loadingIndicator": true,
+				"serverWait": 100,
+				//"rowHeight": 25, 
 				"displayBuffer": 3
 			},
 			"bDeferRender": true,
@@ -184,6 +185,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			});
 
 		this.adjustColumnsHandler();
+		this.previewedLayers = new OpenGeoportal.Views.PreviewedLayersTable({collection: OpenGeoportal.ogp.appState.get("previewed"), el: jQuery(".dataTables_scrollHead table")});
+
 	};
 
 	this.adjustColumnsHandler = function(){
@@ -255,9 +258,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	
 	//*******Search Results only
 
-	
+	//save "view"
 	this.saveControlShowOn = function(saveControl$){
-		var that = this;
 		saveControl$.removeClass("notInCart").addClass("inCart");
 		var tooltipText = "Remove this layer from your cart.";
 		saveControl$.attr("title", tooltipText);
@@ -272,20 +274,16 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	this.saveToCartViewHandler = function(){
 		var that = this;
 		jQuery(document).on("view.showInCart", function(event, data){
-			console.log(data);
 			var control$ = that.findSaveControl(data.layerId);
-			that.saveControlShowOn(control$);
+			if (control$.length > 0){
+				that.saveControlShowOn(control$);
+			}
 		});
 		jQuery(document).on("view.showNotInCart", function(event, data){
 			var control$ = that.findSaveControl(data.layerId);
-			that.saveControlShowOff(control$);
-		});
-	};
-	
-	this.saveHandler = function(){
-		var that = this;
-		jQuery(document).on("click.save", "#" + this.getTableId() + " div.saveControl", function(event){
-			that.toggleCartState(this);
+			if (control$.length > 0){
+				that.saveControlShowOff(control$);
+			}
 		});
 	};
 	
@@ -293,29 +291,24 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 		return this.findTableControl(layerId, "td.colSave", "div.saveControl");
 	};
 	
+	//save "controller"
+	this.saveHandler = function(){
+		var that = this;
+		jQuery(document).on("click.save", "#" + this.getTableId() + " div.saveControl", function(event){
+			var cart = OpenGeoportal.ogp.cartView.collection;
+			var aData = that.getRowData(this).data;
+			var layerId = that.getColumnData(aData, "LayerId");
+			var layerModel = that.backingData.get(layerId);
+			cart.toggleCartState(layerModel);
+		});
+	};
+	
+
+	
 	//*******Search Results only
 	//saveLayer or previewLayer add a layer to the layerState obj, if it is not there.
 	//click-handler for save column
 
-	this.toggleCartState = function(thisObj){
-		var cart = OpenGeoportal.ogp.cartView.collection;
-		var aData = this.getRowData(thisObj).data;
-		var layerId = this.getColumnData(aData, "LayerId");
-		console.log("save layer:");
-		console.log(layerId);
-		//var dataType = this.getColumnData(aData, "DataType");
-
-		var layerModel = cart.get(layerId);
-
-		if (typeof layerModel == "undefined"){
-			var cartItem = this.backingData.get(layerId).clone();//Do I need to clone, since I am passing just the attributes?
-			cart.addLayer(new OpenGeoportal.Models.CartLayer(cartItem.attributes));
-
-		} else {
-			cart.remove(layerId);
-		}
-	};
-	
 	/******
 	 * Sorting
 	 *****/
@@ -430,7 +423,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 
 
 	//*******Search Results only
-	this.tableEffect = function(status){
+	/*this.tableEffect = function(status){
 		if (status == 'searchStart'){
 			jQuery("#searchResults").animate({
 				opacity: 0.5
@@ -440,7 +433,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 				opacity: 1
 			}, {queue: false, duration: 25});
 		}
-	};
+	};*/
 
 	
 	this.updateResultsNumber = function(numFound){
@@ -478,7 +471,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			previewedLayer$.last().addClass('previewSeparator');
 	};
 	
-	this.addToPreviewedLayers = function(tableRow){
+	/*this.addToPreviewedLayers = function(tableRow){
 		var tableObj = this.getTableObj();
 		var rowData = tableObj.fnGetData(tableRow);
 		//this.previewed.addLayer(rowData);
@@ -490,7 +483,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 				tableData.unshift(rowData);
 				tableObj.fnAddData(tableData);
 				var rowOne = tableObj.fnGetNodes(0);
-				var num_previewed = this.previewed.length
+				var num_previewed = this.previewed.length;
 				if (num_previewed == 0){
 					jQuery(rowOne).find('.expandControl').first().trigger('click');
 				} else {
@@ -514,11 +507,11 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 
 	this.removeFromPreviewedLayers = function(matchValue, matchIndex){
 		this.previewedLayers.removeLayer(matchValue, matchIndex);
-	};
+	};*/
 	
 
 	this.updateSortMenu = function(){
-		new OpenGeoportal.View.Sort
+		new OpenGeoportal.View.Sort();
 		var organize = this.tableOrganize;
 
 		var fields = this.tableHeadingsObj;

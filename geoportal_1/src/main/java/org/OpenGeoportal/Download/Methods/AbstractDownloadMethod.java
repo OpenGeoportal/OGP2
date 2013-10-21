@@ -69,59 +69,62 @@ public abstract class AbstractDownloadMethod {
 			logger.error("problem creating download request");
 			throw new Exception("Problem creating download request");
 		}
-		
+
 		File directory = getDirectory();
 		Set<File> fileSet = new HashSet<File>();
 		List<String> urls = this.getUrls(currentLayer);
 		for (String url: urls){
 			InputStream inputStream = null;
+			
 			try{
-			inputStream = this.httpRequester.sendRequest(url, requestString, getMethod());	
-			int status = httpRequester.getStatus();
-			if (status != 200){
-				throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
-			}
-			String contentType = httpRequester.getContentType().toLowerCase();
-			Boolean contentMatch = expectedContentTypeMatched(contentType);
-			if (!contentMatch){
-				logger.error("Unexpected content type: " + contentType);
-				//If their is a mismatch with the expected content, but the response is text, we want to at least log the response
-				if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
-					logger.error("Returned text: " + IOUtils.toString(inputStream));
-				} 
-				inputStream.close();
-				throw new Exception("Unexpected content type");
+				inputStream = this.httpRequester.sendRequest(url, requestString, getMethod());	
+				int status = httpRequester.getStatus();
+				if (status != 200){
+					throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
+				}
+				String contentType = httpRequester.getContentType().toLowerCase();
+				Boolean contentMatch = expectedContentTypeMatched(contentType);
+				if (!contentMatch){
+					logger.error("Unexpected content type: " + contentType);
+					//If their is a mismatch with the expected content, but the response is text, we want to at least log the response
+					if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
+						logger.error("Returned text: " + IOUtils.toString(inputStream));
+					} 
+					
+					throw new Exception("Unexpected content type");
 
-			}
-			//Content-Disposition	attachment;filename="middle_east_dams.xls"
-			String fileName = null;
+				}
+				//Content-Disposition	attachment;filename="middle_east_dams.xls"
+				String fileName = null;
 
-			String contentDisp = ""; 
-			try{		
-				contentDisp = httpRequester.getHeaderValue("Content-Disposition");
-			} catch (Exception e){
-				//ignore
-			}
-			if (contentDisp.toLowerCase().contains("filename")){
-				contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("filename="));
-				contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("=") + 1);
-				fileName = contentDisp.replaceAll("\"", "");
-			} else {
-				fileName = currentLayer.getLayerInfo().getName();
-			}
+				String contentDisp = ""; 
+				try{		
+					contentDisp = httpRequester.getHeaderValue("Content-Disposition");
+				} catch (Exception e){
+					//ignore
+				}
+				if (contentDisp.toLowerCase().contains("filename")){
+					contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("filename="));
+					contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("=") + 1);
+					fileName = contentDisp.replaceAll("\"", "");
+				} else {
+					fileName = currentLayer.getLayerInfo().getName();
+				}
 
-			 
-			
+
 				File outputFile = OgpFileUtils.createNewFileFromDownload(fileName, contentType, directory);
-			
 				//FileUtils with a BufferedInputStream seems to be the fastest method with a small sample size.  requires more testing
-				InputStream bufferedIn = new BufferedInputStream(inputStream);
-				FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
-				fileSet.add(outputFile);
-			
+				BufferedInputStream bufferedIn = null;
+				try {
+					bufferedIn = new BufferedInputStream(inputStream);
+					FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
+					fileSet.add(outputFile);
+				} finally {
+					IOUtils.closeQuietly(bufferedIn);
+				}
 			} finally {
-				//make sure the inputstream closes
-				inputStream.close();
+				IOUtils.closeQuietly(inputStream);
+				
 			}
 		}
 		return new AsyncResult<Set<File>>(fileSet);
@@ -182,9 +185,9 @@ public abstract class AbstractDownloadMethod {
 			}
 
 		} catch (Exception e){
-			logger.error(e.getMessage());	
+			logger.debug(e.getMessage());	
 		}
-		logger.info("Layer does not have required info for DownloadMethod");
+		logger.debug("Layer does not have required info for DownloadMethod");
 		return false;
 	}
 

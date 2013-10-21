@@ -28,6 +28,7 @@ public class LayerRequest {
 	private File targetDirectory;
 	private BoundingBox requestedBounds;
 	private String epsgCode;
+	private Boolean shouldHaveFiles = true; //defaults to true.  right now, only emailed layers shouldn't have Files
 	public Set<File> downloadedFiles = new HashSet<File>();
 	public String responseMIMEType;
 	public Map<String, List<String>> responseHeaders;
@@ -215,6 +216,14 @@ public class LayerRequest {
 
 	public void setFutureValue(Future<?> futureValue) {
 		this.futureValue = futureValue;
+	}
+
+	public Boolean getShouldHaveFiles() {
+		return shouldHaveFiles;
+	}
+
+	public void setShouldHaveFiles(Boolean shouldHaveFiles) {
+		this.shouldHaveFiles = shouldHaveFiles;
 	}
 
 }

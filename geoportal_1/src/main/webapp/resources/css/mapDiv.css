@@ -62,10 +62,10 @@
 }
 
 #mapLoadIndicator {
-	float: left;
-	width: 27px;
-	height: 25px;
-	margin: 5px 11px;
+   float: left;
+    height: 28px;
+    margin: -3px 5px;
+    width: 28px;
 }
 
 div.olControlMousePosition {
@@ -162,88 +162,87 @@ div.olControlMousePosition {
 }
 
 .olControlNavigationHistoryPreviousItemActive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px transparent;
 }
 .olControlNavigationHistoryPreviousItemActive:hover { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -31px -183px transparent;
 }
 .olControlNavigationHistoryPreviousItemInactive { 
-   background: url("../media/geodata-sprite.png") no-repeat scroll -31px -161px transparent;
+   background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px transparent;
 }
+
 .olControlNavigationHistoryNextItemActive { 
-   background: url("../media/geodata-sprite.png") no-repeat scroll -61px -161px transparent;
+   background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px transparent;
 }
 
 .olControlNavigationHistoryNextItemActive:hover { 
-   background: url("../media/geodata-sprite.png") no-repeat scroll -61px -161px transparent;
+   background: url("../media/ogp-sprite.png") no-repeat scroll -61px -183px transparent;
 }
 
 .olControlNavigationHistoryNextItemInactive { 
-   background: url("../media/geodata-sprite.png") no-repeat scroll -61px -161px transparent;
+   background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px transparent;
 }
 
+
 .olControlPanel .olControlNavigationItemActive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -122px -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
   width: 38px;
   height: 38px;
   cursor: pointer;
 }
+
+
+
 .olControlPanel .olControlNavigationItemInactive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -122px -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -122px -139px transparent;
   width: 38px;
   height: 38px;
   cursor: pointer;
 }
+
+.olControlPanel .olControlNavigationItemInactive:hover { 
+  background: url("../media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
+}
+
 .olControlPanel .olControlZoomBoxItemActive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -91px -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
   width: 31px;
   height: 38px;
   cursor: pointer;
 }
 .olControlPanel .olControlZoomBoxItemInactive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -91px -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -91px -139px transparent;
   width: 31px;
   height: 38px;
   cursor: pointer;
 }
 
-div.olControlZoomBoxItemInactive:hover {
-	background-image: url("../media/geodata-sprite.png");
+.olControlPanel .olControlZoomBoxItemInactive:hover { 
+  background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
 }
+
 
 .olControlPanel .olControlZoomToMaxExtentItemInactive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll 0 -161px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll 0 -139px transparent;
   width: 31px;
   height: 38px;
   cursor: pointer;
 }
 
-div.olControlZoomToMaxExtentItemInactive:hover {
-	background-image: url("../media/geodata-sprite.png") !important; 
-}
-
-.olControlZoomToMaxExtentItemInactiveHover {
-	 background-image: url("../media/geodata-sprite.png") !important;
-	 cursor: pointer;
-	 
-} 
-
-.olControlPanel .olControlZoomToMaxExtentItemActive { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll 0 0 transparent;
-  width: 24px;
-  height: 38px;
+.olControlPanel .olControlZoomToMaxExtentItemInactive:hover {
+  background: url("../media/ogp-sprite.png") no-repeat scroll 0 -183px transparent;
 }
 
 .zoomPlus { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -11px -207px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -165px -12px transparent;
 }
 
 .zoomMinus { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -11px -432px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -165px -240px transparent;
 }
 
 .zoomSlideBar { 
-  background: url("../media/geodata-sprite.png") no-repeat scroll -16px -229px transparent;
+  background: url("../media/ogp-sprite.png") no-repeat scroll -170px -30px transparent;
 }
 
 .zoomSlider { 

@@ -17,17 +17,20 @@ import org.OpenGeoportal.Layer.AccessLevel;
 import org.OpenGeoportal.Metadata.LayerInfoRetriever;
 import org.OpenGeoportal.Solr.SolrRecord;
 import org.OpenGeoportal.Utilities.*;
-
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.impl.auth.BasicSchemeFactory;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,28 +92,25 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 		}
 
 		public void initializeClient(String username, String password) {
-	    	//this.layerName = null;
-	    	DefaultHttpClient httpclient = new DefaultHttpClient();
+	    	CloseableHttpClient httpclient = null;
+	    	
 	    	HttpHost targetHost = new HttpHost(this.serverName, 80, "http");
 	    	
 	    	if (!(username.isEmpty() && password.isEmpty())){
-	    		this.credentials = new UsernamePasswordCredentials(username, password);
+	    		CredentialsProvider credsProvider = new BasicCredentialsProvider();
+	    		credsProvider.setCredentials(new AuthScope(AuthScope.ANY), new UsernamePasswordCredentials(username, password));	    		
+	    		
+	    		HttpClientBuilder builder = HttpClients.custom();
+	    		builder.setDefaultCredentialsProvider(credsProvider);
+	    		final Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
+	    		            .register("basic", new BasicSchemeFactory())
+	    		            .build();
+				builder.setDefaultAuthSchemeRegistry(authSchemeRegistry);
+	    		httpclient = builder.build();
 
-	    		httpclient.getCredentialsProvider().setCredentials(
-	    	        new AuthScope(AuthScope.ANY), 
-	    	        this.credentials);
-	    	
-	    		// Create AuthCache instance
-	    		AuthCache authCache = new BasicAuthCache();
-	    		// Generate BASIC scheme object and add it to the local auth cache
-	    		BasicScheme basicAuth = new BasicScheme();
-	    		authCache.put(targetHost, basicAuth);
-
-	    		// Add AuthCache to the execution context
-	    		BasicHttpContext localcontext = new BasicHttpContext();
-	    		localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
 	    	} else {
 	    		this.anonymous = true;
+	    		httpclient = HttpClients.createDefault();
 	    	}
 			HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpclient);
 			
@@ -162,7 +162,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 
 	    	return resultString;
 	    }
-	    
+
 	    @Override
 	    public String createMap(String basemap, String extent, String title, String description) throws Exception{
 	    	//requires auth
@@ -172,16 +172,16 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 	    	String url = this.serverName + "/maps.json";
 	    	CreateMapRequestJson createMapRequestJson = this.createMapRequestObject(basemap, extent, title, description);
 	    	try {
-	    	CreateMapResponseJson result = restTemplate.postForObject(url, createMapRequestJson, CreateMapResponseJson.class);
-	    	
-	    	return result.getId();
+	    		CreateMapResponseJson result = restTemplate.postForObject(url, createMapRequestJson, CreateMapResponseJson.class);
+
+	    		return result.getId();
 
 	    	} catch (HttpClientErrorException e){
 	    		//{"error": "an unknown error occurred"}
 	    		throw new Exception (e.getResponseBodyAsString());
 	    	}
 	    }
-	    
+
 	    public SearchResponseJson searchForLayer(String layerName){
 	    	String url = this.serverName + "/search.json?query=" + layerName;
 	    	SearchResponseJson result = restTemplate.getForObject(url, SearchResponseJson.class);
@@ -232,20 +232,20 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 	    	}
 	    }
 	    
-		private CreateMapRequestJson createMapRequestObject(String basemap, String extent, String title, String description) {
-			CreateMapRequestJson createMapRequestJson = new CreateMapRequestJson();
+	    private CreateMapRequestJson createMapRequestObject(String basemap, String extent, String title, String description) {
+	    	CreateMapRequestJson createMapRequestJson = new CreateMapRequestJson();
 
-				createMapRequestJson.setBasemap(cleanString(basemap));
-				String[] extentArray = extent.split(",");
-				createMapRequestJson.setExtent(extentArray);
-				//extent should be calculated based on layers in map
-			createMapRequestJson.setTags(cleanString(this.getTagString(), 500));//tags should be collated from layers in map
-			//System.out.println(this.getTagString());
-			createMapRequestJson.setTitle(cleanString(title));
-			createMapRequestJson.setDescription(cleanString(description));//aggregate layer titles
+	    	createMapRequestJson.setBasemap(cleanString(basemap));
+	    	String[] extentArray = extent.split(",");
+	    	createMapRequestJson.setExtent(extentArray);
+	    	//extent should be calculated based on layers in map
+	    	createMapRequestJson.setTags(cleanString(this.getTagString(), 500));//tags should be collated from layers in map
+	    	//System.out.println(this.getTagString());
+	    	createMapRequestJson.setTitle(cleanString(title));
+	    	createMapRequestJson.setDescription(cleanString(description));//aggregate layer titles
 
-			return createMapRequestJson;
-		}
+	    	return createMapRequestJson;
+	    }
 
 		private String getTagString() {
 			String tagString = "";
@@ -279,9 +279,9 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 		
 		private Metadata createLayerInfoObject(String layerId) throws Exception{
 			Metadata layerInfo = new Metadata(layerId);
-			
+
 			SolrRecord layerInfoMap = layerInfoRetriever.getAllLayerInfo(layerId);
-			
+
 			layerInfo.setGeometryType(layerInfoMap.getDataType());
 			layerInfo.setAccessLevel(layerInfoMap.getAccess());
 			layerInfo.setTitle(layerInfoMap.getLayerDisplayName().trim());
@@ -298,21 +298,21 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 		}
 		
 		public static String[] concat(String[] first, String[] second) {
-			  String[] result = Arrays.copyOf(first, first.length + second.length);
-			  System.arraycopy(second, 0, result, first.length, second.length);
-			  return result;
-			}
+			String[] result = Arrays.copyOf(first, first.length + second.length);
+			System.arraycopy(second, 0, result, first.length, second.length);
+			return result;
+		}
 
-		static String combine(String[] s, String glue)
-		{
-		  int k=s.length;
-		  if (k==0)
-		    return null;
-		  StringBuilder out=new StringBuilder();
-		  out.append(s[0]);
-		  for (int x=1;x<k;++x)
-		    out.append(glue).append(s[x]);
-		  return out.toString();
+		static String combine(String[] s, String glue){
+			int k=s.length;
+			if (k==0)
+				return null;
+			StringBuilder out=new StringBuilder();
+			out.append(s[0]);
+			for (int x=1;x<k;++x){
+				out.append(glue).append(s[x]);
+			}
+			return out.toString();
 		}
 
 		private CreateStreamDataSetRequestJson createStreamDataSetRequestObject(String layerId) {

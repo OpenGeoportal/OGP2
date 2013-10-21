@@ -2,8 +2,8 @@
 	<div id="footerLogos"> 
 		<div class="institutionLogo" title="Tufts" onclick="location.href='http://tufts.edu'">
 	    </div>
-		<div class="itLogo infoLinks" title="UIT" onclick="location.href='http://uit.tufts.edu'">
-			University Information Technology
+		<div class="itLogo infoLinks" title="TTS" onclick="location.href='https://it.tufts.edu/'">
+			Technology Services
 	    </div>
 	    <div class="gisLogo infoLinks" title="GIS@Tufts" onclick="location.href='http://gis.tufts.edu'">
 	    	GIS@Tufts.edu

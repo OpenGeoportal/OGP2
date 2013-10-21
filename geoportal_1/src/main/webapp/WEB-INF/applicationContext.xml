@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	    xmlns:aop="http://www.springframework.org/schema/aop"
 	    xmlns:task="http://www.springframework.org/schema/task"
 		xmlns:oxm="http://www.springframework.org/schema/oxm"
 		xmlns:context="http://www.springframework.org/schema/context"
@@ -9,15 +8,16 @@
        		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
            	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd
            	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
-           	http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm.xsd
-           	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
+           	http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm.xsd">
 
 	<context:annotation-config />
 	<context:property-placeholder location="WEB-INF/ogp.properties,classpath*:org/OpenGeoportal/**/*.properties" />
 
+	<!--experimental -->
 	<oxm:jaxb2-marshaller id="marshaller">
-   	 	<oxm:class-to-be-bound name="org.OpenGeoportal.Ogc.Wmc.JaxB.ViewContextType"/>   
+		<oxm:class-to-be-bound name="org.OpenGeoportal.Ogc.Wmc.JaxB.ViewContextType"/>
 	</oxm:jaxb2-marshaller>
+	
 	<beans:bean id="proxy.simple" class="org.OpenGeoportal.Proxy.GenericProxyImpl" />
 	<beans:bean id="userContext.ogp" class="org.OpenGeoportal.Security.OgpUserContextImpl" />
 	<beans:bean id="userDetailsMapper.custom" class="org.OpenGeoportal.Security.SimpleLdapUserDetailsMapper" >
@@ -30,10 +30,12 @@
 			<beans:property name="resource" value="classpath:org/OpenGeoportal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" />
 	</beans:bean>
 	-->
+	<!--
 	<beans:bean id="ogcRestTemplate" class="org.springframework.web.client.RestTemplate">
 		<beans:property name="messageConverters" ref="ogcMarshallingHttpMessageConverter"/>
 	</beans:bean>
-	
+	-->
+	<!--
 	<beans:bean id="ogcMarshallingHttpMessageConverter" class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter">
 		<beans:property name="marshaller" ref="ogcJaxb2Marshaller" />
 		<beans:property name="unmarshaller" ref="ogcJaxb2Marshaller" />
@@ -45,18 +47,19 @@
 					</beans:list>
 					</beans:property>
 	</beans:bean>
-	
-	<beans:bean id="ogcJaxb2Marshaller" class="org.OpenGeoportal.Download.Methods.CustomMarshaller">
+	-->
+	<!--
+	<beans:bean id="ogcJaxb2Marshaller" class="org.OpenGeoportal.Download.Methods.CustomMarshaller">-->
 		<!-- <beans:property name="schemaResourceResolver" ref="localSchemaLSResourceResolver.wmsDescribeLayerResponse"/>-->
 		<!-- <beans:property name="schema" value="classpath:org/OpenGeoportal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" />-->
-		<beans:property name="classesToBeBound">
+	<!--	<beans:property name="classesToBeBound">
 			<beans:list>
 				<beans:value>org.OpenGeoportal.Download.Types.Generated.Ogc.WMSDescribeLayer.WMSDescribeLayerResponse
 				</beans:value>
 			</beans:list>
 		</beans:property>
 	</beans:bean>
-	
+		-->
 	
 	<beans:bean id="jsonpCallbackFilter" class="org.OpenGeoportal.Utilities.JsonpCallbackFilter" />
 	
@@ -68,13 +71,13 @@
 	<beans:bean id="exporter.geocommons" class="org.OpenGeoportal.Export.GeoCommons.GeoCommonsExporterImpl" scope="prototype"/>
 	<beans:bean id="restClient.geocommons" class="org.OpenGeoportal.Export.GeoCommons.GeoCommonsJsonClient" scope="prototype" />
 	
-	<beans:bean id="wmsDescribeLayer" class="org.OpenGeoportal.Download.Methods.WmsDescribeLayerImpl" />
+	<!--<beans:bean id="wmsDescribeLayer" class="org.OpenGeoportal.Download.Methods.WmsDescribeLayerImpl" />-->
 	
 	<beans:bean id="requestStatusManager" class="org.OpenGeoportal.Download.RequestStatusManagerImpl" />
 
 	<beans:bean id="cleanupDirectory.download" class="org.OpenGeoportal.Utilities.CleanupDirectoryImpl" />
 		
-	<beans:bean id="urlShortener.Google" class="org.OpenGeoportal.Utilities.UrlShortenerGoogle">
+	<beans:bean id="urlShortener.Google" class="org.OpenGeoportal.Utilities.UrlShortenerGoogle" scope="prototype">
 		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
 	</beans:bean>
 
@@ -91,20 +94,26 @@
 		<beans:property name="resource" value="resources/ogpConfig.json" />
 	</beans:bean>
 
-	<!--<beans:bean id="solrClient.solrJ" class="org.OpenGeoportal.Solr.SolrJClient">
-		<beans:constructor-arg ref="configRetriever.search" />
-	</beans:bean>-->
-
-	<beans:bean id="quickDownload" class="org.OpenGeoportal.Utilities.QuickWfsDownload"/>
+	<beans:bean id="quickDownload" class="org.OpenGeoportal.Utilities.QuickWfsDownload" scope="prototype"/>
 	
 	<beans:bean id="directoryRetriever.simple" class="org.OpenGeoportal.Utilities.GetDirectory">
 		<beans:property name="resource" value="WEB-INF/ogp.properties" />
 	</beans:bean>
 
-	<beans:bean id="downloadPackager" class="org.OpenGeoportal.Download.DownloadPackagerImpl" />
+	<beans:bean id="downloadPackager" class="org.OpenGeoportal.Download.DownloadPackagerImpl" scope="prototype"/>
 
-	<beans:bean id="downloadHandler" class="org.OpenGeoportal.Download.DownloadHandlerImpl">
+	<beans:bean id="downloadHandler" class="org.OpenGeoportal.Download.DownloadHandlerImpl" scope="prototype"/>
+
+	<beans:bean id="downloadHandlerFactory" class="org.OpenGeoportal.Download.DownloadHandlerFactory">
+		<beans:lookup-method name="create" bean="downloadHandler"/>
 	</beans:bean>
+	
+	<beans:bean id="layerDownloaderProvider" class="org.OpenGeoportal.Download.LayerDownloaderProvider" scope="prototype" />
+
+	<beans:bean id="layerDownloaderProviderFactory" class="org.OpenGeoportal.Download.LayerDownloaderProviderFactory">
+		<beans:lookup-method name="create" bean="layerDownloaderProvider"/>
+	</beans:bean>
+	
 	<!-- http requesters -->
 	<beans:bean id="httpRequester.generic"
 		class="org.OpenGeoportal.Utilities.Http.HttpComponentsHttpRequester" scope="prototype">

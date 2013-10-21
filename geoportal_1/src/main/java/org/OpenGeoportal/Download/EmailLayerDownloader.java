@@ -41,6 +41,9 @@ public class EmailLayerDownloader implements LayerDownloader {
 	@Override
 	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest request) throws Exception {
 		List<LayerRequest> layerList = request.getRequestList();
+		for (LayerRequest layer: layerList){
+			layer.setShouldHaveFiles(false);
+		}
 		//check to see if the filename exists
 		//this should fire off a callable that asynchronously calls the download method
 

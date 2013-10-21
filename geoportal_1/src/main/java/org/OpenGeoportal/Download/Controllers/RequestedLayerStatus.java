@@ -8,6 +8,7 @@ public class RequestedLayerStatus {
 	private String id;
 	private String bounds;
 	private String name;
+	private String responseType;
 	
 	public Status getStatus() {
 		return status;
@@ -35,6 +36,12 @@ public class RequestedLayerStatus {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getResponseType() {
+		return responseType;
+	}
+	public void setResponseType(String responseType) {
+		this.responseType = responseType;
 	}
 	
 

@@ -1,4 +1,4 @@
-   	<div id="searchBox" class="searchBox">
+   	<div id="searchBox" class="searchBox shadowDownOuter">
 		<form id="searchForm" onsubmit="return false;">
 			<div id="searchCol1" class="searchCol">
 		   		<div id="geosearchDiv" class="basicSearch whereBox searchFormRow searchRow1">

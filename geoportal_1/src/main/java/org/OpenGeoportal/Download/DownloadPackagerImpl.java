@@ -6,7 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
+import org.OpenGeoportal.Download.DownloadRequest;
+import org.OpenGeoportal.Download.MethodLevelDownloadRequest;
 import org.OpenGeoportal.Download.Types.LayerRequest;
 import org.OpenGeoportal.Download.Types.LayerRequest.Status;
 import org.OpenGeoportal.Layer.GeometryType;
@@ -16,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 
 
 /**
@@ -38,29 +42,26 @@ public class DownloadPackagerImpl implements DownloadPackager {
 	 * 
 	 */
 	@Async
-	public void packageFiles(UUID requestId) throws Exception{
+	public Future<Boolean> packageFiles(UUID requestId) throws Exception{
 		//first determine if all requests are complete
 		DownloadRequest downloadRequest = requestStatusManager.getDownloadRequest(requestId);
 		if (!downloadRequest.isReadyForPackaging()){
 			logger.info("Request is not yet complete; not ready to package.");
-			return;
+			return new AsyncResult<Boolean>(false);
 		}
 		List<LayerRequest> layerList = new ArrayList<LayerRequest>();
 		List<MethodLevelDownloadRequest> requests = downloadRequest.getRequestList();
 		for (MethodLevelDownloadRequest request: requests){
 			layerList.addAll(request.getRequestList());
 		}
-		logger.info("Packaging files");
-		Set<File> filesToPackage = null;
-		try {
-			filesToPackage = getFilesToPackage(layerList);
-		} catch (Exception e){
-			e.printStackTrace();
-		}
+		Set<File> filesToPackage = getFilesToPackage(layerList);
+
 		logger.debug(directory.getAbsolutePath());
+		logger.info("Packaging files");
 		File zipArchive = new File(directory, "OGPDownload.zip");
 		ZipFilePackager.addFilesToArchive(filesToPackage, zipArchive);
 		downloadRequest.setDownloadPackage(zipArchive);
+		return new AsyncResult<Boolean>(true);
 	}
 	
 	private Set<File> getFilesToPackage(List<LayerRequest> layers) throws Exception{
@@ -70,6 +71,10 @@ public class DownloadPackagerImpl implements DownloadPackager {
 	    directory = null;
 	    logger.debug(Integer.toString(layers.size()) + " layer(s) found");
 	    for (LayerRequest layer : layers) {
+	    	if (!layer.getShouldHaveFiles()){
+	    		//skip
+	    		continue;
+	    	}
 	    	logger.debug(layer.getStatus().toString());
 	    	if (layer.getStatus() == Status.SUCCESS){
 	    		Set<File> downloadedFiles = layer.getDownloadedFiles();
@@ -107,7 +112,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 		logger.info("Retrieving metadata...");
 		File xmlFile;
 		for (File temp: layer.downloadedFiles){
-			logger.info(temp.getName());
+			logger.debug(temp.getName());
 		}
 		if (GeometryType.isVector(GeometryType.parseGeometryType(layer.getLayerInfo().getDataType()))&&(!layer.getRequestedFormat().equals("kmz"))){
 			xmlFile = new File(directory, OgpFileUtils.filterName(layer.getLayerInfo().getName()) + ".shp.xml");

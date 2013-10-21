@@ -22,9 +22,7 @@ import org.OpenGeoportal.Utilities.Http.HttpRequester;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
@@ -40,7 +38,7 @@ import com.fasterxml.jackson.core.JsonParseException;
  *
  */
 
-public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
+public class DownloadHandlerImpl implements DownloadHandler {
 	private List<SolrRecord> layerInfo;
 	private Boolean locallyAuthenticated = false;
 	@Autowired
@@ -61,7 +59,8 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 	@Qualifier("httpRequester.generic")
 	HttpRequester httpRequester;
 	
-	protected BeanFactory beanFactory;
+	@Autowired
+	private LayerDownloaderProvider layerDownloaderProvider;
 	
 	
 	
@@ -143,7 +142,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 			}
 			String currentClassKey = null;
 			try {
-				currentClassKey = this.downloadConfigRetriever.getClassKey(layerRequest);
+				currentClassKey = this.layerDownloaderProvider.getClassKey(layerRequest);
 				if (currentClassKey == null){
 					throw new Exception();
 				}
@@ -166,7 +165,7 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 			}
 			
 			if (!match){
-				LayerDownloader layerDownloader = this.getLayerDownloader(currentClassKey);
+				LayerDownloader layerDownloader = this.layerDownloaderProvider.getLayerDownloader(currentClassKey);
 				MethodLevelDownloadRequest mlRequest = new MethodLevelDownloadRequest(currentClassKey, layerDownloader);
 				mlRequest.addLayerRequest(layerRequest);
 				dlRequest.getRequestList().add(mlRequest);
@@ -251,21 +250,6 @@ public class DownloadHandlerImpl implements DownloadHandler, BeanFactoryAware {
 		}
 	}
 
-	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-		this.beanFactory = beanFactory;
-	}
-
-	/**
-	 * a method to get a concrete class of type LayerDownloader given a string key defined in WEB-INF/download.xml
-	 * 
-	 * 
-	 * @param downloaderKey a string key that identifies a concrete class of LayerDownloader
-	 * @return the concrete LayerDownloader object
-	 */
-	public LayerDownloader getLayerDownloader(String downloaderKey){
-		LayerDownloader layerDownloader = (LayerDownloader) beanFactory.getBean(downloaderKey);
-		return layerDownloader;
-	}
 
 
 

@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.OpenGeoportal.Download.MethodLevelDownloadRequest;
+import org.OpenGeoportal.Download.Types.LayerRequest;
 import org.OpenGeoportal.Download.DownloadRequest;
 import org.OpenGeoportal.Download.RequestStatusManager;
 import org.apache.commons.io.FileUtils;
@@ -28,23 +30,39 @@ public class DownloadRetrievalController {
 	
 	@RequestMapping(method=RequestMethod.GET)
 	public void getDownload(@RequestParam("requestId") String requestId, HttpServletResponse response) throws IOException, InterruptedException  {
-		
+
 		DownloadRequest layerDownloadRequest = requestStatusManager.getDownloadRequest(UUID.fromString(requestId));
 		File downloadPackage = layerDownloadRequest.getDownloadPackage();
 		long counter = 0;
-		//a final check.  should never get here via the client
-		while (!downloadPackage.exists()){
-			Thread.sleep(INTERVAL);
-			counter += INTERVAL;
-			if (counter >= TIMEOUT){
-				logger.error("Download timed out.  File could not be found.");
-				throw new IOException("File does not exist.");
+		//a final check.  
+		Boolean shouldHaveFiles = false;
+		for (MethodLevelDownloadRequest mldlRequest:layerDownloadRequest.getRequestList()){
+			for (LayerRequest layerRequest: mldlRequest.getRequestList()){
+				if (layerRequest.getShouldHaveFiles()){
+					shouldHaveFiles = true;
+					break;
+				}
 			}
 		}
-		logger.info("Milliseconds slept: " + Long.toString(counter));
-		response.setContentLength((int) downloadPackage.length());
-		response.setContentType("application/zip");
-		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());
-		FileUtils.copyFile(downloadPackage, response.getOutputStream());
+		if (shouldHaveFiles){
+			while ((downloadPackage == null)||!downloadPackage.exists()){
+				Thread.sleep(INTERVAL);
+				counter += INTERVAL;
+				if (counter >= TIMEOUT){
+					logger.error("Download timed out.  File could not be found.");
+					throw new IOException("File does not exist.");
+				}
+			}
+			if (counter > 0){
+				logger.info("Milliseconds slept: " + Long.toString(counter));
+			}
+			
+			response.setContentLength((int) downloadPackage.length());
+			response.setContentType("application/zip");
+			response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());
+			FileUtils.copyFile(downloadPackage, response.getOutputStream());
+		} else {
+			throw new IOException("No files to download.");
+		}
 	}
 }

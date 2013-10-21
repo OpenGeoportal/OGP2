@@ -2,6 +2,7 @@ package org.OpenGeoportal.Ogc;
 
 import java.io.InputStream;
 
+import org.OpenGeoportal.Ogc.OwsInfo;
 import org.OpenGeoportal.Metadata.LayerInfoRetriever;
 import org.OpenGeoportal.Solr.SearchConfigRetriever;
 import org.OpenGeoportal.Solr.SolrRecord;
@@ -75,55 +76,57 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	}
 		
 	public OwsInfo getOwsInfo(SolrRecord solrRecord, String owsUrl) throws Exception {
-		
-		String layerName = OgpUtils.getLayerNameNS(solrRecord.getWorkspaceName(), solrRecord.getName());
-		
-		String request = ogcInfoRequest.createRequest(layerName);
-		String method = ogcInfoRequest.getMethod();
-		logger.info(owsUrl);
-		logger.info(request);
-		logger.info(method);
-		InputStream is = httpRequester.sendRequest(owsUrl, request, method);
-		
-		int status = httpRequester.getStatus();
-		logger.info(Integer.toString(status));
+		InputStream is = null;
+		try{
+			String layerName = OgpUtils.getLayerNameNS(solrRecord.getWorkspaceName(), solrRecord.getName());
 
-		if (status == 200){
-			String contentType = httpRequester.getContentType().toLowerCase();
-			return handleResponse(contentType, is);
-		} else {
-			throw new Exception("Error communicating with server! response: " + Integer.toString(status));
+			String request = ogcInfoRequest.createRequest(layerName);
+			String method = ogcInfoRequest.getMethod();
+
+			is = httpRequester.sendRequest(owsUrl, request, method);
+
+			int status = httpRequester.getStatus();
+			if (status == 200){
+				String contentType = httpRequester.getContentType().toLowerCase();
+				return handleResponse(contentType, is);
+			} else {
+				throw new Exception("Error communicating with server! response: " + Integer.toString(status));
+			}
+		} finally {
+			IOUtils.closeQuietly(is);
 		}
 	}
 	
 
 	public OwsInfo getOwsInfo(SolrRecord solrRecord) throws Exception {
-		
-		String layerName = OgpUtils.getLayerNameNS(solrRecord.getWorkspaceName(), solrRecord.getName());
-		
-		String request = ogcInfoRequest.createRequest(layerName);
-		String method = ogcInfoRequest.getMethod();
-		String protocol = ogcInfoRequest.getOgcProtocol();
-		String url = "";
-		if (protocol.equalsIgnoreCase("wms")){
-			url = searchConfigRetriever.getWmsUrl(solrRecord); 
-		} else if (protocol.equalsIgnoreCase("wfs")){
-			url = searchConfigRetriever.getWfsUrl(solrRecord);
-		} else if (protocol.equalsIgnoreCase("wcs")){
-			url = searchConfigRetriever.getWcsUrl(solrRecord);
-		}
-		
-		InputStream is = httpRequester.sendRequest(url, request, method);
+		InputStream is = null;
+		try{
+			String layerName = OgpUtils.getLayerNameNS(solrRecord.getWorkspaceName(), solrRecord.getName());
 
-		int status = httpRequester.getStatus();
-		logger.info(Integer.toString(status));
-		if (status == 200){
-			String contentType = httpRequester.getContentType().toLowerCase();
-			return handleResponse(contentType, is);
-		} else {
-			throw new Exception("Error communicating with server! response: " + Integer.toString(status));
+			String request = ogcInfoRequest.createRequest(layerName);
+			String method = ogcInfoRequest.getMethod();
+			String protocol = ogcInfoRequest.getOgcProtocol();
+			String url = "";
+			if (protocol.equalsIgnoreCase("wms")){
+				url = searchConfigRetriever.getWmsUrl(solrRecord); 
+			} else if (protocol.equalsIgnoreCase("wfs")){
+				url = searchConfigRetriever.getWfsUrl(solrRecord);
+			} else if (protocol.equalsIgnoreCase("wcs")){
+				url = searchConfigRetriever.getWcsUrl(solrRecord);
+			}
+
+			is = httpRequester.sendRequest(url, request, method);
+
+			int status = httpRequester.getStatus();
+			if (status == 200){
+				String contentType = httpRequester.getContentType().toLowerCase();
+				return handleResponse(contentType, is);
+			} else {
+				throw new Exception("Error communicating with server! response: " + Integer.toString(status));
+			}
+		} finally {
+			IOUtils.closeQuietly(is);
 		}
-		
 	}
 	
 

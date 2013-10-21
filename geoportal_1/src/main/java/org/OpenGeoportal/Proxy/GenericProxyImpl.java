@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.OpenGeoportal.Utilities.Http.OgpHttpClient;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -52,17 +54,16 @@ public class GenericProxyImpl implements GenericProxy {
 			logger.error("generic proxy failed");
 			logger.error(e.getMessage());
 			try {
-				response.getOutputStream().print(e.getMessage());
+				ServletOutputStream sos = response.getOutputStream();
+				sos.print(e.getMessage());
+				sos.close();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			e.getStackTrace();
 		} finally {
-			// When HttpClient instance is no longer needed,
-			// shut down the connection manager to ensure
-			// immediate deallocation of all system resources
-			//httpclient.getConnectionManager().shutdown();
+
 		}
 	}
 	
@@ -106,20 +107,14 @@ public class GenericProxyImpl implements GenericProxy {
 		BufferedInputStream bufferedInputStream = new BufferedInputStream(entity.getContent());
 
 		try {
-			int currentBytes;
-			while ((currentBytes = bufferedInputStream.read()) != -1) {
-				 //System.out.println("Receiving " + currentBytes + " bytes");
-				bufferedOutputStream.write(currentBytes);
-			} 
+			IOUtils.copy(bufferedInputStream, bufferedOutputStream);
+
 		} catch (Exception e){
 			e.getStackTrace();
-			}
-		finally {
-			try {
-				bufferedInputStream.close();
-			} finally {
-				bufferedOutputStream.close();
-			}
+		} finally {
+			IOUtils.closeQuietly(outputStream);
+			IOUtils.closeQuietly(bufferedInputStream);
+			IOUtils.closeQuietly(bufferedOutputStream);
 		}
 
 		EntityUtils.consume(entity);

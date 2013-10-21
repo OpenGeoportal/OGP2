@@ -1,64 +1,78 @@
 package org.OpenGeoportal.Utilities.Http;
 
 import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
+import org.OpenGeoportal.Utilities.Http.AllTrustingTrustStrategy;
+import org.OpenGeoportal.Utilities.Http.OgpHttpClient;
 import org.apache.http.client.HttpClient;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.scheme.SchemeSocketFactory;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
+
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AllTrustingCertPoolingHttpClient implements OgpHttpClient {
+	//Not sure if this does what it's supposed to..however it's not currently being used
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	private PoolingClientConnectionManager connectionManager;
+	private PoolingHttpClientConnectionManager connectionManager;
 	private HttpClient client;
+	private boolean initCalled = false;
 	
-	AllTrustingCertPoolingHttpClient(){
-		//since the php script we are accessing is https, but doesn't require certs, we need to create a context that essentially 
+	private void init() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
+		//since the php script we are accessing is https, (self-signed cert) but doesn't require certs, we need to create a context that essentially 
 		//ignores certs
-		TrustManager[] trustAllCerts = new TrustManager[] { new AllTrustingTrustManager() };
-		SSLContext sc = null;
-		try {
-			sc = SSLContext.getInstance("TLS");
-		} catch (NoSuchAlgorithmException e1) {
-			logger.error("NoSuchAlgorithm :" + e1.getMessage());
-			e1.printStackTrace();
-		}
-		try {
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-		} catch (KeyManagementException e1) {
-			logger.error("KeyManagementException :" + e1.getMessage());
-			e1.printStackTrace();
-		}
-		SchemeSocketFactory sf = (SchemeSocketFactory) new SSLSocketFactory(sc, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 		
-		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		schemeRegistry.register(
-		         new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
-		schemeRegistry.register(
-				new Scheme("https", 443, sf));
-		connectionManager = new PoolingClientConnectionManager(schemeRegistry);
-		// Increase max total connection to 200
-		//cm.setMaxTotal(200);
-		// Increase default max connection per route to 20
-		//cm.setDefaultMaxPerRoute(20);
-		// Increase max connections for localhost:80 to 50
-		//HttpHost localhost = new HttpHost("locahost", 80);
-		//cm.setMaxPerRoute(new HttpRoute(localhost), 50);
-		client =  new DefaultHttpClient(connectionManager);
+		ConnectionSocketFactory plainsf = PlainConnectionSocketFactory.getSocketFactory();
+        KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
+
+		SSLContext sc = SSLContexts.custom()
+		        .useTLS()
+		        .loadTrustMaterial(trustStore, new AllTrustingTrustStrategy())
+		        .setSecureRandom(new java.security.SecureRandom())
+		        .build();
+		
+		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sc);
+		Registry<ConnectionSocketFactory> r = RegistryBuilder.<ConnectionSocketFactory>create()
+		        .register("http", plainsf)
+		        .register("https", sslsf)
+		        .build();
+
+		connectionManager = new PoolingHttpClientConnectionManager(r);
+
+		client = HttpClients.custom()
+				.setConnectionManager(connectionManager)
+				.build();
+		initCalled = true;
 	}
 	
 	@Override
-	public HttpClient getHttpClient() {
+	public HttpClient getHttpClient(){
+		if (!initCalled){
+			try {
+				init();
+			} catch (KeyManagementException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (KeyStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return client;
 	}
 

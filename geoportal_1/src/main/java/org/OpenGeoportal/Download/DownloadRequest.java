@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.OpenGeoportal.Download.MethodLevelDownloadRequest;
 import org.OpenGeoportal.Download.Controllers.RequestStatusController.StatusSummary;
 import org.OpenGeoportal.Download.Types.LayerRequest;
 import org.OpenGeoportal.Download.Types.LayerRequest.Status;
@@ -102,6 +103,9 @@ public class DownloadRequest {
 	private Boolean downloadPackageSet = false;
 	@JsonIgnore
 	private Boolean emailSent = false;
+	@JsonIgnore
+	private Integer dlpackageSetCounter = 0;
+	
 	
 	public UUID getRequestId() {
 		return requestId;
@@ -119,10 +123,15 @@ public class DownloadRequest {
 	public File getDownloadPackage() {
 		return downloadPackage;
 	}
+
 	public void setDownloadPackage(File downloadPackage) {
 		this.downloadPackage = downloadPackage;
 		logger.info("Download package: " + downloadPackage.getAbsolutePath());
+		dlpackageSetCounter++;
 		this.downloadPackageSet = true;
+		if (dlpackageSetCounter > 1){
+			logger.error("something squirrely: the download package has been set more than once for this request.");
+		}
 	}
 	
 	public List<MethodLevelDownloadRequest> getRequestList() {
@@ -134,38 +143,49 @@ public class DownloadRequest {
 	}
 	
 	private Boolean isPostProcessingComplete(){
-		if (downloadPackageSet){
-			if (this.downloadPackage.exists()){
-				return true;
-			} else {
-				return false;
+		for (MethodLevelDownloadRequest mldlRequest: requestList){
+			for (LayerRequest layerRequest: mldlRequest.getRequestList()){
+				if(layerRequest.getShouldHaveFiles()){
+					if (downloadPackageSet){
+						if (!this.downloadPackage.exists()){
+							return false;
+						} 
+					} else {
+						return false;
+					}
+				} 
 			}
-		} else if (emailSent){
-			return true;
 		}
-		return false;
+
+		return true;
 	}
 	
 	public Boolean isReadyForPackaging(){
-		StatusSummary completionStatus = getRawStatusSummary();
+		List<LayerRequest> layerList = new ArrayList<LayerRequest>();
+		for (MethodLevelDownloadRequest request: requestList){
+			for (LayerRequest layer: request.getRequestList()){
+				if (layer.getShouldHaveFiles()){
+					layerList.add(layer);
+				}
+			}		
+		}
+		
+		StatusSummary completionStatus = getStatusSummaryForList(layerList);
+		
 		if (completionStatus.equals(StatusSummary.COMPLETE_SUCCEEDED) || completionStatus.equals(StatusSummary.COMPLETE_PARTIAL)){
-			if (!isPostProcessingComplete()){
-				return true;
-			}
-		} 
-		return false;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
-	private StatusSummary getRawStatusSummary(){
+	private StatusSummary getStatusSummaryForList(List<LayerRequest> layerList){
 		//Processing or Complete for the request
 		logger.debug("Getting raw status summary");
 		StatusSummary completionStatus = null;
 		int successCount = 0;
 		int failureCount = 0;
-		List<LayerRequest> layerList = new ArrayList<LayerRequest>();
-		for (MethodLevelDownloadRequest request: requestList){
-			layerList.addAll(request.getRequestList());
-		}
+
 		for (LayerRequest request: layerList){
 			logger.debug("status: " + request.getStatus().toString());
 			if (request.getStatus().equals(Status.PROCESSING)){
@@ -188,6 +208,19 @@ public class DownloadRequest {
 		return completionStatus;
 	}
 	
+	private StatusSummary getRawStatusSummary(){
+		//Processing or Complete for the request
+		logger.debug("Getting raw status summary");
+
+		List<LayerRequest> layerList = new ArrayList<LayerRequest>();
+		for (MethodLevelDownloadRequest request: requestList){
+			layerList.addAll(request.getRequestList());
+		}
+		
+		return getStatusSummaryForList(layerList);
+
+	}
+	
 	public StatusSummary getStatusSummary() {
 		logger.debug("getting status summary");
 		StatusSummary completionStatus = StatusSummary.COMPLETE_FAILED;
@@ -204,6 +237,7 @@ public class DownloadRequest {
 		}
 		return completionStatus;
 	}
+	
 	
 	public Boolean getEmailSent() {
 		return emailSent;

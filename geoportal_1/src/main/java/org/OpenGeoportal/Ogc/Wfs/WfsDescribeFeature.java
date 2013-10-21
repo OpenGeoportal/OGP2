@@ -25,7 +25,7 @@ public class WfsDescribeFeature implements OgcInfoRequest{
 	            + " xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/wfs.xsd\">"
 	            + 	"<TypeName>" + qualifiedLayerName + "</TypeName>"
 	            + "</DescribeFeatureType>";*/
-	 	String describeFeatureQuery = "SERVICE=WFS&VERSION=" + VERSION + "&REQUEST=DescribeFeatureType&typeName=" + qualifiedLayerName;
+	 	String describeFeatureQuery = "SERVICE=WFS&VERSION=" + VERSION + "&REQUEST=DescribeFeatureType&TYPENAME=" + qualifiedLayerName;
 	 	
 	 	return describeFeatureQuery;
 	}

@@ -10,6 +10,7 @@ import org.OpenGeoportal.Layer.BoundingBox;
 import org.OpenGeoportal.Ogc.OgcInfoRequest;
 import org.OpenGeoportal.Ogc.OwsInfo;
 import org.OpenGeoportal.Solr.SolrRecord;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -93,13 +94,17 @@ public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerL
 	
 	 OwsInfo getWfsDescribeLayerInfo()
 	 	throws Exception {
+		 InputStream inputStream = null;
+		 try{
+			 String layerName = this.currentLayer.getLayerNameNS();
 
-		String layerName = this.currentLayer.getLayerNameNS();
+			 inputStream = this.httpRequester.sendRequest(this.getUrl(this.currentLayer), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
+			 logger.info(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
 
-		InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(this.currentLayer), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
-		System.out.println(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
-
-		return ogcInfoRequest.parseResponse(inputStream);
+			 return ogcInfoRequest.parseResponse(inputStream);
+		 } finally {
+			 IOUtils.closeQuietly(inputStream);
+		 }
 	 }
 
 

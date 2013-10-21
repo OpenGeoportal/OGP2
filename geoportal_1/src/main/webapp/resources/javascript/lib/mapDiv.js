@@ -61,9 +61,8 @@ OpenGeoportal.MapController = function() {
 		div$.html(resultsHTML);
 	};
 	
-	this.createDefaultOLPanel = function(){
-		var nav = new OpenLayers.Control.NavigationHistory({nextOptions: {title: "Zoom to next geographic extent"}, 
-			previousOptions:{title: "Zoom to previous geographic extent"}});
+	this.createDefaultOLPanel = function(nav){
+
 		var zoomBox = new OpenLayers.Control.ZoomBox(
 				{title:"Click or draw rectangle on map to zoom in"});
 		var that = this;
@@ -103,12 +102,16 @@ OpenGeoportal.MapController = function() {
 		var mapBounds = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
 	
 		var initialZoom = 1;
-		
-		if (jQuery('#' + this.containerDiv).parent().height() > 896){
+		//console.log(jQuery('#' + this.containerDiv));
+		if (jQuery('#' + this.containerDiv).parent().height() > 810){
 			initialZoom = 2;
 			//TODO: this should be more sophisticated.  width is also important
 			//initialZoom = Math.ceil(Math.sqrt(Math.ceil(jQuery('#' + this.containerDiv).parent().height() / 256)));
 		}
+		//console.log(initialZoom);
+		var nav = new OpenLayers.Control.NavigationHistory({nextOptions: {title: "Zoom to next geographic extent"}, 
+			previousOptions:{title: "Zoom to previous geographic extent"}});
+		
 		var options = {
 				allOverlays: true,
 				projection: new OpenLayers.Projection("EPSG:900913"),
@@ -119,8 +122,8 @@ OpenGeoportal.MapController = function() {
 				controls: [new OpenLayers.Control.ModPanZoomBar(),
 				           new OpenLayers.Control.ScaleLine(),
 				           displayCoords,
-				           //nav,
-				           this.createDefaultOLPanel()]
+				           nav,
+				           this.createDefaultOLPanel(nav)]
 		};
 
 		//merge default options and user specified options into 'options'--not recursive
@@ -146,8 +149,6 @@ OpenGeoportal.MapController = function() {
 		var defaultBasemapModel = this.basemaps.findWhere({name: "googlePhysical"});
 		defaultBasemapModel.set({selected: true});
 		defaultBasemapModel.get("initialRenderCallback").apply(defaultBasemapModel, [this]);
-		var that = this;
-		//this.basemaps.listenTo(this.basemaps, 'change:selected', function(model){that.setBasemap(model);});
 
 		var center = this.WGS84ToMercator(0, 0);
 		//set map position
@@ -211,7 +212,6 @@ OpenGeoportal.MapController = function() {
 		this.events.register('moveend', this, function(){
 			console.log("moveend");
 			var newExtent = that.getSearchExtent();
-			console.log(newExtent);
 			//TODO: move this to the map object, register the map object in app state
 			//that.appState.set({mapExtent: newExtent});
 			jQuery(document).trigger('map.extentChanged', {mapExtent: newExtent});
@@ -226,32 +226,22 @@ OpenGeoportal.MapController = function() {
 		this.geocodeLocation();
 		this.clearLayersHandler();
 		this.attributeDescriptionHandler();
+		this.mouseCursorHandler();
 	};
 
 	this.mouseCursorHandler = function(){
 		var that = this;
-		jQuery('.olMap').css('cursor', "-moz-grab");
-		jQuery(document).bind('zoomBoxActivated', function(){
-			/*
-			var mapLayers = that.mapObject.layers;
-			for (var i in mapLayers){
-				var currentLayer = mapLayers[i];
-				if (layerStateObject.layerStateDefined(currentLayer.name)){
-					if (layerStateObject.getState(currentLayer.name, "getFeature")){
-						//that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
-						layerStateObject.setState(currentLayer.name, {"getFeature": false});
-					}
-				} else {
-					continue;
+		jQuery(document).on("attributeInfoOn", ".olMap", function(){
+				jQuery(this).css('cursor', "crosshair");
+				//also deactivate regular map controls
+				var zoomControl = that.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
+				if(zoomControl.active){
+					zoomControl.deactivate();
 				}
-			}*/
-			
-			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
-		});
-		
-		jQuery(document).bind('panActivated', function(){
-
-			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+				var panControl = that.getControlsByClass("OpenLayers.Control.Navigation")[0];
+				if(panControl.active){
+					panControl.deactivate();
+				}
 		});
 	};
 
@@ -263,7 +253,6 @@ OpenGeoportal.MapController = function() {
 		mapClear$.button();
 		mapClear$.on("click", function(event){
 			//alert("button clicked");
-			console.log(event);
 			that.clearMap();}
 		);
 	};
@@ -310,15 +299,13 @@ OpenGeoportal.MapController = function() {
 		jQuery("." + displayParams.displayClass).button().on("click", function(){callbackHandler.call(that);});
 	};
 	
-
-	//default text for the geocoder input box
-	this.geocodeText = "Find Place (Example: Boston, MA)";
 	/**
 	 * geocodes the value typed into the geocoder text input using the Google maps geocoder,
 	 * then zooms to the returned extent.  also animates the response
 	 */
 	this.geocodeLocation = function(){
-		var geocodeField$ = jQuery("#geosearch");
+		var geocodeField$ = jQuery("#whereField");
+
 		var geocoder = new google.maps.Geocoder();
 		var that = this;
 		var geocodeResponse = {};
@@ -366,9 +353,9 @@ OpenGeoportal.MapController = function() {
 
 				var currentFontSize = geocodeField$.css("font-size");
 				var currentOpacity = geocodeField$.css("opacity");
-				geocodeField$.animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500)
-					.delay(1500)
-					.animate({ "font-size": 0 }, 300, function(){geocodeField$.val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity});});
+				//geocodeField$.animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500);
+					//.delay(1500)
+					//.animate({ "font-size": 0 }, 300, function(){geocodeField$.val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity});});
 			},
 
 			open: function() {
@@ -477,8 +464,7 @@ OpenGeoportal.MapController = function() {
 */
 	this.createBaseMaps = function(){
 		var that = this;
-		var models = [];
-		models.push({
+		var googlePhysical = {
 			displayName: "Google Physical",
 			name: "googlePhysical",
 			selected: false,
@@ -530,9 +516,9 @@ OpenGeoportal.MapController = function() {
 
 				});
 			}
-		});
+		};
 		
-		models.push({
+		var googleHybrid = {
 			displayName: "Google Hybrid",
 			name: "googleHybrid",
 			selected: false,
@@ -583,9 +569,9 @@ OpenGeoportal.MapController = function() {
 
 				});
 			}
-		});
+		};
 		
-		models.push({
+		var googleSat = {
 			displayName: "Google Satellite",
 			name: "googleSatellite",
 			selected: false,
@@ -637,9 +623,9 @@ OpenGeoportal.MapController = function() {
 
 				});
 			}
-		});
+		};
 		
-		models.push({
+		var googleStreets = {
 			displayName: "Google Streets",
 			name: "googleStreets",
 			selected: false,
@@ -690,9 +676,9 @@ OpenGeoportal.MapController = function() {
 
 				});
 			}
-		});
+		};
 		
-		models.push({
+		var osm = {
 			displayName: "OpenStreetMap",
 			name: "osm",
 			selected: false,
@@ -708,7 +694,7 @@ OpenGeoportal.MapController = function() {
 						layerRole: "basemap"
 					}
 				);
-				console.log(bgMap);
+				//console.log(bgMap);
 				return bgMap;
 				},
 				
@@ -716,7 +702,19 @@ OpenGeoportal.MapController = function() {
 				//see if there is a basemap layer of the specified type
 				if (that.getLayersBy("basemapType", model.get("type")).length === 0){
 					//add the appropriate basemap layer
-					that.addLayer(model.get("getLayerDefinition").call(model));
+					var newLayer = model.get("getLayerDefinition").call(model);
+					var displayLayers = that.layers; //getLayerIndex
+					var highestBasemap = 0;
+					for (var i in displayLayers){
+						if (displayLayers[i].layerRole != "basemap"){
+							var indx = that.getLayerIndex(displayLayers[i]);
+							that.setLayerIndex(displayLayers[i], indx + 1);
+						} else {
+							highestBasemap = Math.max(highestBasemap, that.getLayerIndex(displayLayers[i]));
+						}
+					}
+					that.addLayer(newLayer);
+					that.setLayerIndex(newLayer, highestBasemap + 1);
 				} else {
 					var layer = that.getLayersBy("basemapType", model.get("type"))[0];
 					layer.setVisibility(true);
@@ -741,9 +739,9 @@ OpenGeoportal.MapController = function() {
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 				});
 			}
-		});
+		};
 		
-		models.push({
+		var bingAerial = {
 			displayName: "Bing Aerial",
 			name: "bingAerial",
 			selected: false,
@@ -804,9 +802,9 @@ Road - Roads without additional imagery.	*/
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 				});
 			}
-		});
+		};
 		
-		models.push({
+		var bingHybrid = {
 			displayName: "Bing Hybrid",
 			name: "bingAerialWithLabels",
 			selected: false,
@@ -866,9 +864,10 @@ Road - Roads without additional imagery.	*/
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 				});
 			}
-		});
+		};
 		
-		models.push({
+		
+		var bingRoad = {
 			displayName: "Bing Road",
 			name: "bingRoad",
 			selected: false,
@@ -925,7 +924,10 @@ Road - Roads without additional imagery.	*/
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 				});
 			}
-		});
+		};
+		
+		var models = [googlePhysical, googleHybrid, googleSat, osm];
+
 		//create an instance of the basemap collection
 		var collection = new OpenGeoportal.BasemapCollection(models);
 		return collection;
@@ -1647,7 +1649,8 @@ Road - Roads without additional imagery.	*/
 				type: "GET",
 				traditional: true,
 				complete: function(){
-					//jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
+					jQuery(document).trigger("hideLoadIndicator");
+
 				},
 				statusCode: {
 					200: function(){
@@ -1658,6 +1661,9 @@ Road - Roads without additional imagery.	*/
 					}
 				}
 		};
+	
+		jQuery(document).trigger("showLoadIndicator");
+
 		jQuery.ajax(params);
 	};
 	
@@ -1683,9 +1689,14 @@ Road - Roads without additional imagery.	*/
 					//let the user know the layer is not previewable
 					throw new Error("layer could not be added");
 				}
+			},
+			complete: function(){
+				jQuery(document).trigger("hideLoadIndicator");
 			}
     	};
     	jQuery.ajax(ajaxParams);
+    	jQuery(document).trigger("showLoadIndicator");
+
 	};
 	
 	
@@ -1815,8 +1826,8 @@ Road - Roads without additional imagery.	*/
 					ogpLayerRole: "LayerPreview"
 				});
 		//how should this change? trigger custom events with jQuery
-		//newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.name);});
-		//newLayer.events.register('loadend', newLayer, function() {OpenGeoportal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.name);});
+		newLayer.events.register('loadstart', newLayer, function() {jQuery(document).trigger("showLoadIndicator");});
+		newLayer.events.register('loadend', newLayer, function() {jQuery(document).trigger("hideLoadIndicator");});
 		var that = this;
 		//we do a check to see if the layer exists before we add it
 		jQuery("body").bind(layerModel.get("qualifiedName") + 'Exists', function(){that.addLayer(newLayer);});
@@ -1850,8 +1861,8 @@ Road - Roads without additional imagery.	*/
 				});
 		newLayer.projection = new OpenLayers.Projection("EPSG:3857");
 		//how should this change? trigger custom events with jQuery
-		//newLayer.events.register('loadstart', newLayer, function() {OpenGeoportal.Utility.showLoadIndicator("mapLoadIndicator", newLayer.ogpLayerId);});
-		//newLayer.events.register('loadend', newLayer, function() {OpenGeoportal.Utility.hideLoadIndicator("mapLoadIndicator", newLayer.ogpLayerId);});
+		newLayer.events.register('loadstart', newLayer, function() {jQuery(document).trigger("showLoadIndicator");});
+		newLayer.events.register('loadend', newLayer, function() {jQuery(document).trigger("hideLoadIndicator");});
 		var that = this;
 		//we do a cursory check to see if the layer exists before we add it
 		jQuery("body").bind(newLayer.ogpLayerId + 'Exists', function(){that.addLayer(newLayer);});
@@ -2096,15 +2107,42 @@ Road - Roads without additional imagery.	*/
 		});
 	};
 	
+	this.adjustExtent = function(){
+		var offset = this.getMapOffset();
+		var fullMapHeight = jQuery('#' + this.mapDiv).height();
+		var fullMapWidth = jQuery('#' + this.mapDiv).width();
+		var adjust = {};
+		adjust.x = (fullMapWidth - offset.x)/fullMapWidth;
+		adjust.y = (fullMapHeight - offset.y)/fullMapHeight;
+		return adjust;
+	};
+	
 	this.zoomToLayerExtent = function(extent){
 		var layerExtent = OpenLayers.Bounds.fromString(extent);
 		var lowerLeft = this.WGS84ToMercator(layerExtent.left, layerExtent.bottom);
 		var upperRight = this.WGS84ToMercator(layerExtent.right, layerExtent.top);
+		
 
 		var newExtent = new OpenLayers.Bounds();
 		newExtent.extend(new OpenLayers.LonLat(lowerLeft.lon, lowerLeft.lat));
 		newExtent.extend(new OpenLayers.LonLat(upperRight.lon, upperRight.lat));
-		this.zoomToExtent(newExtent);
+		
+		var size = newExtent.getSize();
+		var adjustFactor = this.adjustExtent();
+		var newWidth = size.w / adjustFactor.x;
+		var newHeight = size.h / adjustFactor.y;
+		
+		var adjustedExtent = new OpenLayers.Bounds();
+		var newWLon = Math.max(upperRight.lon - newWidth, -20037508.34);
+		var newNLat = Math.min(lowerLeft.lat + newHeight, 20037508.34);
+		var newELon = Math.min(upperRight.lon, 20037508.34);
+		var newSLat = Math.max(lowerLeft.lat, -20037508.34);
+
+		adjustedExtent.extend(new OpenLayers.LonLat(newWLon, newSLat));
+		adjustedExtent.extend(new OpenLayers.LonLat(newELon, newNLat));
+		console.log(newExtent);
+		console.log(adjustedExtent);
+		this.zoomToExtent(adjustedExtent);
 
 	};
 

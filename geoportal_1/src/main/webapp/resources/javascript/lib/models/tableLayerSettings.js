@@ -32,7 +32,7 @@ OpenGeoportal.Models.RowSetting = Backbone.Model.extend({
 				return "Both 'layerId' and 'expanded' parameters required";
 			}
 			if (typeof model.changed.expanded != "boolean"){
-				return "'expanded' must be a boolean value"
+				return "'expanded' must be a boolean value";
 			}
 		}
 	

@@ -73,9 +73,10 @@ OpenGeoportal.CommonControls = function CommonControls(){
 	};
 	
 	  //the layer table should handle creating the control;  the preview obj should handle the logic to determine which
-	  this.renderPreviewControl = function(layerId, access, institution){		  
+	  this.renderPreviewControl = function(layerId, access, institution, previewState){		 
+	  	access = access.toLowerCase(); 
 		  if (access == "public"){
-			  return this.renderActivePreviewControl(layerId);
+			  return this.renderActivePreviewControl(layerId, previewState);
 		  } else {
 			  //check user object
 			  return this.renderLoginPreviewControl(layerId, institution);
@@ -118,13 +119,18 @@ OpenGeoportal.CommonControls = function CommonControls(){
 			return previewControl;
 		};
 
-		this.renderActivePreviewControl = function(layerId){
-			var currModel = this.previewed.get(layerId);
-			var stateVal = "off";
-			if (typeof currModel != "undefined"){
-				stateVal = currModel.get("preview");
-				if (typeof stateVal == "undefined"){
-					stateVal = "off";
+		this.renderActivePreviewControl = function(layerId, previewState){
+			var stateVal = null;
+			if (typeof previewState != "undefined"){
+				stateValue = previewState;
+			} else {
+				var currModel = this.previewed.get(layerId);
+				stateVal = "off";
+				if (typeof currModel != "undefined"){
+					stateVal = currModel.get("preview");
+					if (typeof stateVal == "undefined"){
+						stateVal = "off";
+					}
 				}
 			}
 

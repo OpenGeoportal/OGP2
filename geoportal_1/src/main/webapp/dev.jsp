@@ -9,9 +9,9 @@
 
 	<%@include file="jspf/header.jspf"%>
 	<%@include file="jspf/search.jspf"%>
-	<div id="container" class="shadowDown">
-		<div id="roll_right" class="shadowDown"><div class="arrow_right button" ></div></div>
-		<div id="left_col">
+	<div id="container">
+		<div id="roll_right" class="shadowRightOuter"><div class="arrow_right button" ></div></div>
+		<div id="left_col" class="shadowRightOuter">
 			<%@include file="jspf/leftPanel.jspf"%>
 		</div>
 		<div id="map">

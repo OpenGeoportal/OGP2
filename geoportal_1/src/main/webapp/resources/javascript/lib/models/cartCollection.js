@@ -170,6 +170,19 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		}
 	},
 	
+	toggleCartState: function(itemModel){
+
+		var layerId = itemModel.get("LayerId");
+		var layerModel = this.get(layerId);
+
+		if (typeof layerModel == "undefined"){
+			var cartItem = itemModel.clone();//Do I need to clone, since I am passing just the attributes?
+			this.addLayer(new OpenGeoportal.Models.CartLayer(cartItem.attributes));
+
+		} else {
+			this.remove(layerId);
+		}
+	},
 	
 	IgnoreAuthenticationWarning: {local: false, external: false},
 			//TODO: add this to cart view

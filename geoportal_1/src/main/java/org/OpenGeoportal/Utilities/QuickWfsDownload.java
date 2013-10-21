@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.OpenGeoportal.Utilities.LocationFieldUtils;
+import org.OpenGeoportal.Utilities.OgpFileUtils;
 import org.OpenGeoportal.Layer.BoundingBox;
 import org.OpenGeoportal.Metadata.LayerInfoRetriever;
 import org.OpenGeoportal.Solr.SolrRecord;
@@ -52,7 +54,6 @@ public class QuickWfsDownload implements QuickDownload {
 	@Override
 	public File downloadZipFile(String layerId, BoundingBox bounds) throws Exception{
 
-		//retrieve the record for the layer from Solr
 		SolrRecord layerInfo = layerInfoRetriever.getAllLayerInfo(layerId);
 		
 		//requests too near the poles are problematic
@@ -68,7 +69,6 @@ public class QuickWfsDownload implements QuickDownload {
 		requestBounds = new BoundingBox(bounds.getMinX(), requestMinY, bounds.getMaxX(), requestMaxY);
 		String workspace = layerInfo.getWorkspaceName();
 		String layerName = layerInfo.getName();
-		//generate the WFS query string
 		String requestString = "request=GetFeature&version=1.1.0&outputFormat=shape-zip";
 		requestString += "&typeName=" + workspace + ":" + layerName;
 		requestString += "&srsName=EPSG:4326";
@@ -96,13 +96,21 @@ public class QuickWfsDownload implements QuickDownload {
 				logger.error(responseContent);
 				throw new Exception("Remote server reported an error");
 			}
-			//get a reference to the "download" directory
 			File directory = directoryRetriever.getDirectory("download");
 			outputFile = new File(directory, OgpFileUtils.filterName(layerName) + ".zip");
-			InputStream inputStream = entity.getContent();
-			InputStream bufferedIn = new BufferedInputStream(inputStream);
-			FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
-			bufferedIn.close();
+			
+			InputStream inputStream = null;
+			BufferedInputStream bufferedIn = null;
+			try {
+				inputStream = entity.getContent();
+				bufferedIn = new BufferedInputStream(inputStream);
+				FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
+			} catch (Exception e){
+				
+			} finally {
+				bufferedIn.close();
+				inputStream.close();
+			}
 			
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block

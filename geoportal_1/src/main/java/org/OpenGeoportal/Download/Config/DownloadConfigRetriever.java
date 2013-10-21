@@ -1,7 +1,10 @@
 package org.OpenGeoportal.Download.Config;
 
-import org.OpenGeoportal.Download.Types.LayerRequest;
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public interface DownloadConfigRetriever {
-	String getClassKey(LayerRequest layer) throws Exception;
+
+	JsonNode getDownloadConfig() throws IOException;
 }

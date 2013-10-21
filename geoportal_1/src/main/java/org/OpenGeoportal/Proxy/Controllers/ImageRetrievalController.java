@@ -39,7 +39,9 @@ public class ImageRetrievalController {
 				throw new IOException("File does not exist.");
 			}
 		}
-		logger.info("Milliseconds slept: " + Long.toString(counter));
+		if (counter > 0){
+			logger.info("Milliseconds slept: " + Long.toString(counter));
+		}
 		response.setContentLength((int) downloadPackage.length());
 		response.setContentType("application/octet-stream");
 		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());

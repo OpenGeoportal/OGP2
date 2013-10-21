@@ -31,7 +31,8 @@ public class DownloadRequestController {
 	
 	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", produces="application/json")
 	public @ResponseBody Map<String,String> processDownload(@RequestBody String downloadRequest) throws Exception {
-		 /**
+
+		/**
 		 * This servlet should receive a POST request with an object containing 
 		 * all the info needed for each layer to be downloaded.  The servlet calls a class 
 		 * that handles all of the download logic.  Additionally, it checks the session

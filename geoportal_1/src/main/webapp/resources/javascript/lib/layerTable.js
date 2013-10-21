@@ -528,7 +528,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	
 	this.findTableControl = function(layerId, columnClass, controlClass){
 		var that = this;
-		var control$ = "";
+		var control$ = [];
 		jQuery("#" + this.getTableId() + " " + columnClass).each(function(){
 			var currentLayerId = that.getLayerIdFromTableCell(this);
 			if (currentLayerId == layerId){
@@ -1193,12 +1193,14 @@ OpenGeoportal.LayerTable = function LayerTable(){
 				//"model" to be called
 				that.previewed.add(layerAttr);
 				model = that.previewed.get(layerId);
-
-			}				
-			if (model.get("preview") == "on"){
-				model.set({preview: "off"});
-			} else {
 				model.set({preview: "on"});
+
+			} else {			
+				if (model.get("preview") == "on"){
+					model.set({preview: "off"});
+				} else {
+					model.set({preview: "on"});
+				}
 			}
 		});
 	};

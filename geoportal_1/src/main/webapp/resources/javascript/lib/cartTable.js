@@ -283,6 +283,8 @@ OpenGeoportal.CartTable = function CartTable(){
 		jQuery("#downloadDialog").html(downloadContinue);
 		jQuery("#downloadDialog").dialog({title: "Download",
 			width: 350,
+			show: "fade",
+			hide: "fade",
 			buttons: {
 				Download: function() {
 					if (layerNumber === 0){
@@ -299,8 +301,9 @@ OpenGeoportal.CartTable = function CartTable(){
 						}
 					}
 					requestObj.email = emailAddress;
-					that.toProcessingAnimation(jQuery(this).parent());
-					that.requestDownload(requestObj);
+					
+					that.requestDownload(requestObj, jQuery(this));
+
 				},
 				Cancel: function() {
 					jQuery(this).dialog('close');
@@ -421,23 +424,23 @@ OpenGeoportal.CartTable = function CartTable(){
 
 	};
 
-	this.requestDownload = function(requestObj){
-		jQuery("#downloadDialog").dialog( "option", "disabled", true );
-
+	this.requestDownload = function(requestObj, dialog$){
 		this.appState.get("requestQueue").createRequest(requestObj);
-		//TODO: move this somewhere else
-		/*jQuery("#savedLayers tr").has(".cartCheckBox:checked").each(function() {
-			var data = jQuery("#savedLayers").dataTable().fnGetData(this),
-			inst_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("Institution"),
-			layer_idx = that.resultsTableObject.tableHeadingsObj.getColumnIndex("LayerId");
-			analytics.track("Layer Downloaded", data[inst_idx], data[layer_idx]);
-		});*/
+					
+		try {
+			var options = { to: "#requestTickerContainer", className: "ui-effects-transfer"};
+			dialog$.parent().effect( "transfer", options, 500, function(){		
+							dialog$.dialog('close');}
+							);
 		
-	//where should this go?
+		} catch (e){
+			console.log(e);
+			dialog$.dialog("close");					
+		}
+		
+		
+		//where should this go?
 		//jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
-
-		//close the download box;
-		jQuery("#downloadDialog").dialog("close");
 		
 	};
 	
@@ -535,20 +538,6 @@ OpenGeoportal.CartTable = function CartTable(){
 	this.getLayerInfoJsonpError = function(){
 		throw new Error("The attempt to retrieve layer information from layerIds failed.");
 	};
-	
-	this.toProcessingAnimation = function($fromObj){
-		if (jQuery("#requestTickerContainer").length == 0){
-			jQuery("body").append('<div id="requestTickerContainer" class="raised"></div>');
-		}
-
-		jQuery("#requestTickerContainer").show();
-		var options = { to: "#requestTickerContainer", className: "ui-effects-transfer"};
-		$fromObj.effect( "transfer", options, 500, function(){
-			//OpenGeoportal.ui.updateSavedLayersNumber();
-		});
-	};
-
-
 
 
 

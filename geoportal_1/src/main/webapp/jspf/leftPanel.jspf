@@ -3,7 +3,7 @@
     	<div class="arrow_separator"></div>
     	<div class="arrow_right button" title="expand right"></div>
  	</div>
-	<div id="tabs" class="shadowDown slideVertical">
+	<div id="tabs" class="slideVertical">
 		<ul>
 			<li><a href="#searchTab">
 				<div id="searchTabText" class="tabText">
@@ -18,7 +18,7 @@
 			<li><a href="#cartTab">
 				<div id="cartTabText" class="tabText">
 					<div class="shoppingCartIcon"></div>
-					<div>Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span></div>
+					<div id="cartTabTextInner">Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span></div>
 				</div>
 				</a> 
 			</li>

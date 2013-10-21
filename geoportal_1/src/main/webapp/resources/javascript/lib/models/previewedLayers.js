@@ -79,6 +79,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.DataTypeAware.extend({
 		preview: "off", 
 		resourceName: "",
 		previewType: "",
+		showControls: false
 	},
 
 	baseDefaults: {
@@ -164,6 +165,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 	
 	changePreview:function( model, val, options){
+		console.log(arguments);
 		var preview = model.get("preview");
 		var layerId = model.get("LayerId");
 		if (preview == "on"){
@@ -193,6 +195,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 	
 	getLayerModel: function(resultModel){
+		console.log("getLayerModel");
 		this.add(resultModel.attributes);
 		var layerModel = this.get(resultModel.get("LayerId"));
 		return layerModel;

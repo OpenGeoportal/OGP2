@@ -203,6 +203,11 @@
 	left: 0;
 	cursor: default;
 }
+
+.ui-autocomplete.ui-menu {
+	z-index: 9999;
+}
+
 .ui-button {
 	display: inline-block;
 	position: relative;
@@ -523,7 +528,16 @@ button.ui-button::-moz-focus-inner {
 	color: #404143;
 }
 .ui-dialog-titlebar button.ui-dialog-titlebar-close {
-	position: absolute;
+	border: medium none;
+    height: 15px;
+    margin: -8px 0 0;
+    padding: 1px;
+    position: absolute;
+    right: 0.3em;
+    top: 57%;
+    width: 17px;
+    
+	/*position: absolute;
 	right: .3em;
 	top: 57%;
 	width: 21px;
@@ -531,11 +545,11 @@ button.ui-button::-moz-focus-inner {
 	padding: 1px;
 	height: 20px;
 	background-image: none;
-	background-color: #6F6F72;
+	background-color: #6F6F72;*/
 }
 
 .ui-dialog .ui-dialog-titlebar-close .ui-icon {
-		background-image: url(images/ui-icons_ffffff_256x240.png);
+		background: url("../media/ogp-sprite.png") no-repeat scroll -9px -116px rgba(0, 0, 0, 0);
 
 }
 .ui-dialog .ui-dialog-content {
@@ -821,6 +835,8 @@ button.ui-button::-moz-focus-inner {
     border-top-left-radius: 4px;
     background-image: none;	
     background-color: #F9F9F9;
+    text-align: center;
+    font-weight: bold;
 }
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
 	margin-bottom: -1px;
@@ -1217,7 +1233,7 @@ body .ui-tooltip {
 .ui-icon-grip-dotted-horizontal { background-position: -16px -224px; }
 .ui-icon-grip-solid-vertical { background-position: -32px -224px; }
 .ui-icon-grip-solid-horizontal { background-position: -48px -224px; }
-.ui-icon-gripsmall-diagonal-se { background-position: -64px -224px; }
+.ui-icon-gripsmall-diagonal-se { background: none; }
 .ui-icon-grip-diagonal-se { background-position: -80px -224px; }
 
 

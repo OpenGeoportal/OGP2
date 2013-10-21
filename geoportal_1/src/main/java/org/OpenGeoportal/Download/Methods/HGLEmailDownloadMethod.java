@@ -1,6 +1,5 @@
 package org.OpenGeoportal.Download.Methods;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -10,6 +9,7 @@ import org.OpenGeoportal.Download.Types.LayerRequest.Status;
 import org.OpenGeoportal.Layer.BoundingBox;
 import org.OpenGeoportal.Utilities.OgpUtils;
 import org.OpenGeoportal.Utilities.Http.HttpRequester;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -64,13 +64,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	@Override
 	public String createDownloadRequest() {
 		LayerRequest representativeLayer = this.layerList.get(0);
-		try {
-			this.validate(representativeLayer);
-		} catch (Exception e){
-			//die gracefully
-			this.setAllLayerStatus(Status.FAILED);
-			return null;
-		}
+
 		BoundingBox bounds = representativeLayer.getRequestedBounds();
 		String userEmail = representativeLayer.getEmailAddress();
 
@@ -91,20 +85,14 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 		this.layerList = layerList;
 		InputStream inputStream = null;
 		try {
+			this.validate(layerList.get(0));
 			inputStream = this.httpRequester.sendRequest(this.getUrl(layerList.get(0)), createDownloadRequest(), "GET");
-			this.setAllLayerStatus(Status.SUCCESS);
 			return new AsyncResult<Boolean>(true);
 		} catch (Exception e){
 			logger.error(e.getMessage());
-			this.setAllLayerStatus(Status.FAILED);
 			return new AsyncResult<Boolean>(false);
 		} finally {
-			try {
-				inputStream.close();
-			} catch (IOException e) {
-				logger.error("Unable to close input stream");
-				e.printStackTrace();
-			}
+			IOUtils.closeQuietly(inputStream);
 		}
 	}
 

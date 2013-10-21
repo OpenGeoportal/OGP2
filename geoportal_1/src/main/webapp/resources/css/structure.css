@@ -69,10 +69,24 @@ h3 {
   box-shadow:         0px 3px 4px -1px #888888 inset;
 }
 
+.shadowDownOuter {
+  -moz-box-shadow:    0px 4px 6px -2px #888888;
+  -webkit-box-shadow: 0px 4px 6px -2px #888888;
+  box-shadow:         0px 4px 6px -2px #888888;
+}
+
+
+
 .shadowRight {
   -moz-box-shadow:    3px 0px 4px 1px #888888 inset;
   -webkit-box-shadow: 3px 0px 4px 1px #888888 inset;
   box-shadow:         3px 0px 4px 1px #888888 inset;
+}
+
+.shadowRightOuter {
+  -moz-box-shadow:    2px 0px 9px 1px #888888;
+  -webkit-box-shadow: 2px 0px 9px 1px #888888;
+  box-shadow:         2px 0px 9px 1px #888888;
 }
 
 .searchButton {
@@ -229,9 +243,14 @@ h3 {
 	display: inline-block;
 }
 
+.basicSearchButtons {
+	margin-left: -32px;
+}
 .basicSearchButtons > div {
 	display: inline-block;
 }
+
+
 /*
 .styledSelect > span {
 	width: 100% !important;
@@ -246,7 +265,7 @@ h3 {
 /*
 .styledSelectArrow {
 	float: right;
-	background: url("../media/geodata-sprite.png") no-repeat scroll -66px -83px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -66px -83px transparent;
   	width: 11px;
  	height: 12px;
  	margin-right: 5px;
@@ -314,8 +333,8 @@ h3 {
 /* Container */
 #container {
 	background-color: #fff;
-	border-right: #CCCCCC solid 1px;
-	border-left: #CCCCCC solid 1px; 
+	/*border-right: #CCCCCC solid 1px;
+	border-left: #CCCCCC solid 1px; */
 	/*min-height:512px;*/
 	/*height: 100%;*/
 	overflow: hidden;
@@ -324,10 +343,10 @@ h3 {
 /* left column panel */
 #left_col {
 	height: 100%;
-	border-right: #999 solid 1px; 	 
 	float:left;
 	cursor: default;
 	display: none;
+	z-index: 1000;rol
 }
 
 #left_tabs {
@@ -337,7 +356,7 @@ h3 {
 }
 
 #tabs {
-	border: 0;
+	border-right: #999 solid 1px; 	 container
 	z-index: 1001;
 	min-height: 100%;
 }
@@ -384,7 +403,7 @@ h3 {
  }
  
  .shoppingCartIcon {
-    background: url("../media/geodata-sprite.png") no-repeat scroll -127px -81px transparent;
+    background: url("../media/ogp-sprite.png") no-repeat scroll -127px -61px transparent;
  	width: 31px;
  	height: 22px;
  	display: inline-block;
@@ -392,20 +411,20 @@ h3 {
  }
  
  .arrow_left {
-   background: url("../media/geodata-sprite.png") no-repeat scroll 0 -77px transparent;
+   background: url("../media/ogp-sprite.png") no-repeat scroll 0 -58px transparent;
  	width: 30px;
  	height: 26px;
  	display: inline-block;
  }
  
  .arrow_separator {
-    background: url("../media/geodata-sprite.png") no-repeat scroll -29px -77px transparent;
+    background: url("../media/ogp-sprite.png") no-repeat scroll -29px -58px transparent;
   	width: 10px;
  	height: 26px;
  	display: inline-block;
  }
  .arrow_right {
-   background: url("../media/geodata-sprite.png") no-repeat scroll -39px -77px transparent;
+   background: url("../media/ogp-sprite.png") no-repeat scroll -39px -58px transparent;
   	width: 27px;
  	height: 26px;
  	display: inline-block;
@@ -425,10 +444,18 @@ h3 {
 	width: 119px;
 }
 
+#searchTabText > div {
+	margin-top: 2px;
+}
+
 #cartTabText {
 	width: 107px;
 }
 
+#cartTabTextInner {
+	margin-right: 24px;
+    margin-top: 1px;
+}
 .tabText > img {
 	margin-bottom: -3px;
 	position: relative;
@@ -634,11 +661,12 @@ div#goButton:hover {
 }
 
 #moreSearchOptions {
-
+	margin-right: 145px;
 }
 
 #lessSearchOptions {
 	float: right;
+	margin-right: 25px;
 }
 
 #searchForm {
@@ -667,6 +695,7 @@ div#goButton:hover {
 	white-space: nowrap;
 	font-size: 11px;
 	display: inline-block;
+	float: right;
 }
 
 .searchToggle span:hover {
@@ -803,7 +832,7 @@ div#goButton:hover {
 }
 	
 #footerLogos .institutionLogo{
-	background: url("../media/geodata-sprite.png") no-repeat scroll -46px -206px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -9px -59px transparent;
 	height: 30px;
 	width: 66px;
 }
@@ -894,28 +923,41 @@ div.colorCell:hover {
 	/*word-wrap: break-word;*/
 }
 
+td div.button {
+	margin: auto;
+}
 .viewLibraryRecordControl {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -131px -55px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -131px -35px transparent;
 	height: 17px;
 	width: 17px;	
 }
 
 .viewMetadataControl {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -131px -55px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -131px -35px transparent;
 	height: 17px;
 	width: 17px;	
 }
+
+td div.typeIcon {
+	margin: auto;
+}
+
+td div.repositoryIcon {
+	margin: auto;
+}
+
 
 .saveControl {
 	height: 17px;
 	width: 17px;
 }
+
 .notInCart {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -102px -33px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -102px -13px transparent;
 }
 
 .inCart {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -130px -33px transparent;	
+	background: url("../media/ogp-sprite.png") no-repeat scroll -130px -13px transparent;	
 }
 
 .dialog {
@@ -1078,17 +1120,16 @@ td.attributeName:hover {
 }
 
 #requestTickerContainer {
-	-moz-border-radius: 4px 0px 0px 0px;
-	border-radius: 4px 0px 0px 0px;
-	border-left: 1px solid #AAAAAA;
-	border-top: 1px solid #AAAAAA;
-	display: none;
-	color: #333333;
-	position: fixed;
-	bottom: 0;
-	right: 1px;
-	height: 31px;
-	width: 170px;
+    border-left: 1px solid #AAAAAA;
+    border-radius: 4px 0 0 4px;
+    border-top: 1px solid #AAAAAA;
+    bottom: 71px;
+    color: #333333;
+    display: none;
+    height: 31px;
+    position: fixed;
+    right: 0;
+    width: 170px;
 	background-color: #DDDDDD;
 	background: -moz-linear-gradient(left, #BBBBBB, #DDDDDD);
 	background: -webkit-gradient(linear, left, right, from(#BBBBBB), to(#DDDDDD));
@@ -1105,10 +1146,10 @@ td.attributeName:hover {
 }
 
 #processingIndicator {
-	position: absolute;
-	margin: 4px;
-	height: 25px;
-    width: 27px;
+    height: 28px;
+    margin: 2px;
+    position: absolute;
+    width: 28px;
 }
 
 iframe.download {
@@ -1163,19 +1204,19 @@ iframe.download {
 Preview controls
 *********/
 .checkOff {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -61px -109px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -89px transparent;
 	width: 25px;
 	height: 17px;
 }
 
 .checkOn {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -84px -109px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -84px -89px transparent;
 	width: 25px;
 	height: 17px;
 }
 
 .loginButton {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -67px -32px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -67px -12px transparent;
 	width: 25px;
 	height: 17px;
 }
@@ -1185,31 +1226,31 @@ DataTypes
 ********/
 
 .polygonIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -101px -56px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -101px -36px transparent;
 	width: 17px;
 	height: 17px;
 }
 
 .pointIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -80px -56px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -80px -36px transparent;
 	width: 17px;
 	height: 17px;
 }
 
 .lineIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -10px -56px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -10px -36px transparent;
 	width: 17px;
 	height: 17px;
 }
 
 .rasterIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -35px -56px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -35px -36px transparent;
 	width: 17px;
 	height: 17px;
 }
 
 .mapIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -58px -56px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -58px -36px transparent;
 	width: 17px;
 	height: 17px;
 }
@@ -1218,35 +1259,35 @@ DataTypes
 Repositories
 *************/
 .tuftsIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -33px -10px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -33px -10px transparent;
 }
 
 .mitIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -129px -10px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -129px -10px transparent;
 }
 
 .harvardIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -79px -10px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -79px -10px transparent;
 }
 
 .berkeleyIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -35px -35px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -35px -35px transparent;
 }
 
 .marylandIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -12px -35px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -12px -35px transparent;
 }
 
 .unIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -10px -10px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -10px -10px transparent;
 }
 
 .massgisIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -102px -10px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -102px -10px transparent;
 }
 
 .princetonIcon {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -56px -10px transparent;
+	background: url("../media/ogp-institutions.png") no-repeat scroll -56px -10px transparent;
 }
 
 /*************
@@ -1254,7 +1295,7 @@ Info Bubble
 *************/
 
 .closeBubble {
-		background: url("../media/geodata-sprite.png") no-repeat scroll -66px -134px transparent;
+		background: url("../media/ogp-sprite.png") no-repeat scroll -66px -114px transparent;
 		width: 20px;
 		height: 20px;
 		float: right;

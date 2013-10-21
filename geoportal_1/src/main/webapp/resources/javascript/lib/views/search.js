@@ -46,7 +46,12 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 	facets: "",
 	searchType: "basic"
 */
+	whereText: "(Example: Boston, MA)",
+	whatText: "(Example: buildings)",
 	initialize: function(){
+		jQuery("#whereField").attr("placeholder", this.whereText);
+		jQuery("#whatField").attr("placeholder", this.whatText);
+
 		this.controls = OpenGeoportal.ogp.appState.get("controls");
 		this.controls.addButton(jQuery(".basicSearchButtons"), "basicSearchSubmit", "Search", this.fireSearch).addClass("searchButton");		
 		

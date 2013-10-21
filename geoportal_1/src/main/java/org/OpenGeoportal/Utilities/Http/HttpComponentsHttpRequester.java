@@ -14,6 +14,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.AuthCache;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -80,31 +81,33 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 	}
 	
 	public InputStream sendGetRequest(String url) throws MalformedURLException, IOException{
-
 		logger.debug("about to send url: " + url);
 		HttpClient httpclient = ogpHttpClient.getHttpClient();
 		InputStream replyStream = null;
+		HttpResponse response = null;
 		try {
 			HttpGet httpget = new HttpGet(url);
-			
+
 			logger.info("executing get request " + httpget.getURI());
 
-			HttpResponse response = httpclient.execute(httpget);
+			response = httpclient.execute(httpget);
 			this.setStatus(response.getStatusLine().getStatusCode());
 			this.setHeaders(response.getAllHeaders());
 			HttpEntity entity = response.getEntity();
 			this.setContentType(entity.getContentType().getValue());
-			
+
 			if (entity != null) {
-				 replyStream = entity.getContent();
+				replyStream = entity.getContent();
 			} 
-			
-		} finally {
-			// When HttpClient instance is no longer needed,
-			// shut down the connection manager to ensure
-			// immediate deallocation of all system resources
-			//httpclient.getConnectionManager().shutdown();
-		}
+		} catch (ClientProtocolException e) {
+
+			e.printStackTrace();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		} 
+		//make sure you close the input stream at the other end
+
 		return replyStream;
 	}
 	
@@ -118,14 +121,14 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 			String requestBody, String contentType) throws IOException{
 		HttpClient httpclient = ogpHttpClient.getHttpClient();
 		InputStream replyStream = null;
-		try {
+		try{
 			HttpPost httppost = new HttpPost(serviceURL);
 			logger.info(requestBody);
 			StringEntity postEntity = new StringEntity(requestBody, ContentType.create(contentType, "UTF-8"));
 			httppost.setEntity(postEntity);
 			logger.info("executing POST request to " + httppost.getURI());
 			HttpResponse response = httpclient.execute(httppost);
-			
+
 			StatusLine status = response.getStatusLine();
 			int statusCode = status.getStatusCode();
 			this.setStatus(statusCode);
@@ -134,18 +137,19 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 			}
 			this.setHeaders(response.getAllHeaders());
 			HttpEntity entity = response.getEntity();
-			
+
 			this.setContentType(entity.getContentType().getValue());
 			if (entity != null) {
-				 replyStream = entity.getContent();
+				replyStream = entity.getContent();
 			} 
-
-		} finally {
-			// When HttpClient instance is no longer needed,
-			// shut down the connection manager to ensure
-			// immediate deallocation of all system resources
-			//httpclient.getConnectionManager().shutdown();
-		}
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		//make sure you close the input stream at the other end
 		return replyStream;
 	}
 
@@ -181,31 +185,6 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 		} else {
 			throw new IOException("The method " + requestMethod + " is not supported.");
 		}
-	}
-	
-	public BasicHttpContext getHttpContext(DefaultHttpClient httpclient, HttpHost targetHost){
-		//should be user dependent (session scoped?)
-		//available only to authenticated users (method level authentication?)
-		//authcache object can be stored in user's session 
-		
-		String username = "geoserverUser";
-		String password = "blah";
-		
-        httpclient.getCredentialsProvider().setCredentials(
-                new AuthScope(targetHost.getHostName(), targetHost.getPort()),
-                new UsernamePasswordCredentials(username, password));
-
-        // Create AuthCache instance
-        AuthCache authCache = new BasicAuthCache();
-        // Generate BASIC scheme object and add it to the local
-        // auth cache
-        BasicScheme basicAuth = new BasicScheme();
-        authCache.put(targetHost, basicAuth);
-        
-        // Add AuthCache to the execution context
-        BasicHttpContext localcontext = new BasicHttpContext();
-        localcontext.setAttribute(ClientContext.AUTH_CACHE, authCache);
-        return localcontext;
 	}
 
 	@Override

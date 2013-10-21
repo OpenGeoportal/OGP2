@@ -12,6 +12,7 @@ import org.OpenGeoportal.Ogc.OgcInfoRequest;
 import org.OpenGeoportal.Ogc.OwsInfo;
 import org.OpenGeoportal.Ogc.Wfs.WfsGetFeature;
 import org.OpenGeoportal.Solr.SolrRecord;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,18 +82,24 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	}
 	
 	 OwsInfo getWfsDescribeLayerInfo() throws Exception {
-		String layerName = this.currentLayer.getLayerNameNS();
-	 	String describeFeatureRequest = ogcInfoRequest.createRequest(layerName);
-	 	String method = ogcInfoRequest.getMethod();
-	 	String url = this.getUrl(this.currentLayer);
-		InputStream inputStream = this.httpRequester.sendRequest(url, describeFeatureRequest, method);
-		String contentType = this.httpRequester.getContentType();
+		 InputStream inputStream = null;
+		 
+		 try{
+			 String layerName = this.currentLayer.getLayerNameNS();
+			 String describeFeatureRequest = ogcInfoRequest.createRequest(layerName);
+			 String method = ogcInfoRequest.getMethod();
+			 String url = this.getUrl(this.currentLayer);
+			 inputStream = this.httpRequester.sendRequest(url, describeFeatureRequest, method);
+			 String contentType = this.httpRequester.getContentType();
 
-		if (!contentType.contains("xml")){
-			throw new Exception("Expecting an XML response; instead, got content type '" + contentType + "'");
-		}
+			 if (!contentType.contains("xml")){
+				 throw new Exception("Expecting an XML response; instead, got content type '" + contentType + "'");
+			 }
 		
-		return ogcInfoRequest.parseResponse(inputStream);
+			 return ogcInfoRequest.parseResponse(inputStream);
+		 } finally {
+			IOUtils.closeQuietly(inputStream);
+		 }
 	 }
 
 

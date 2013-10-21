@@ -57,7 +57,7 @@ public class RequestStatusController {
 					this.downloadRequests.add(dlRequest);
 				}
 			} catch (Exception e){
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			try {
 				ImageRequest imRequest = requestStatusManager.getImageRequest(UUID.fromString(requestId));
@@ -65,7 +65,7 @@ public class RequestStatusController {
 					this.imageRequests.add(imRequest);
 				}
 			} catch (Exception e){
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			try {
 				GeoCommonsExportRequest exRequest = requestStatusManager.getExportRequest(UUID.fromString(requestId));
@@ -73,7 +73,7 @@ public class RequestStatusController {
 					this.exportRequests.add(exRequest);
 				}
 			} catch (Exception e){
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 		}
 		if ((this.downloadRequests.size() + this.imageRequests.size() + this.exportRequests.size()) > 0){
@@ -95,6 +95,11 @@ public class RequestStatusController {
 			for (MethodLevelDownloadRequest mldRequest: requests){
 				for (LayerRequest layerRequest : mldRequest.getRequestList()){
 					RequestedLayerStatus layerStatus = new RequestedLayerStatus();
+					if (layerRequest.getShouldHaveFiles()){
+						layerStatus.setResponseType("download");
+					} else {
+						layerStatus.setResponseType("email");
+					}
 					layerStatus.setStatus(layerRequest.getStatus());
 					layerStatus.setId(layerRequest.getId());
 					layerStatus.setBounds(layerRequest.getRequestedBounds().toStringLatLon());

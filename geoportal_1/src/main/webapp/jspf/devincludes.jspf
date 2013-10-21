@@ -14,6 +14,8 @@
 <script type="text/javascript" src="resources/javascript/dataTables.scroller.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script type="text/javascript" src="resources/javascript/jquery.scrollTo-min.js"></script>
+<script type="text/javascript" src="resources/javascript/spinners/spinners/spinners.min.js"></script>
+
 <!--  <script type="text/javascript" src="resources/javascript/jquery.ba-resize.js"></script>-->
 
 <script type="text/javascript" src="//maps.google.com/maps/api/js?v=3.10&sensor=false"></script>

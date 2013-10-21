@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -39,18 +40,22 @@ public class OgpXmlUtils {
 	 * @throws ParserConfigurationException
 	 */
 	public static Document getDocument(InputStream inputStream) throws SAXException, IOException, ParserConfigurationException{
-		// Create a factory
-		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		
-		documentBuilderFactory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
-		documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-		documentBuilderFactory.setNamespaceAware(true);
-		
-		// Use document builder factory
-		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
-		//Parse the document
-		Document document = builder.parse(inputStream);
-		return document;
+		try{
+			// Create a factory
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+
+			documentBuilderFactory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
+			documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			documentBuilderFactory.setNamespaceAware(true);
+
+			// Use document builder factory
+			DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+			//Parse the document
+			Document document = builder.parse(inputStream);
+			return document;
+		} finally {
+			IOUtils.closeQuietly(inputStream);
+		}
 	}
 
 
@@ -84,9 +89,9 @@ public class OgpXmlUtils {
 	  * @throws Exception	if the parent Document is an ows service exception report; 
 	  * 					message contains the exception code returned
 	 */
-	public static void handleServiceException(Node baseNode) throws Exception{
+	 public static void handleServiceException(Node baseNode) throws Exception{
 		 /*
-		  * An example ows exception:
+		  * 
 		  * <ows:ExceptionReport version="1.0.0"
   				xsi:schemaLocation="http://www.opengis.net/ows http://data.fao.org/maps/schemas/ows/1.0.0/owsExceptionReport.xsd"
   				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ows="http://www.opengis.net/ows">
@@ -96,6 +101,7 @@ public class OgpXmlUtils {
 			</ows:ExceptionReport>
 		  */
 
+		 logger.debug("Full response: " + baseNode.getTextContent());
 			String errorMessage = "";
 			
 			if (alwaysGetName(baseNode).toLowerCase().contains("serviceexception")){
@@ -114,10 +120,13 @@ public class OgpXmlUtils {
 				try{
 					errorMessage += baseNode.getFirstChild().getAttributes().getNamedItem("exceptionCode").getTextContent();
 				} catch (Exception e){
-					errorMessage += "Full response: " + baseNode.getTextContent().trim();
+					errorMessage += "Abridged response: " + baseNode.getTextContent().trim();
 				}
 			} else {
 				return;
+			}
+			if (errorMessage.length() > 1024){
+				errorMessage = errorMessage.substring(0, 1023);
 			}
 			throw new Exception(errorMessage);
 	 }

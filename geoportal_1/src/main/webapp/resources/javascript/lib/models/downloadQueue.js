@@ -52,8 +52,16 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 		if ((status == "COMPLETE_SUCCEEDED")||
 					(status == "COMPLETE_PARTIAL")){
 			//get the download
-			this.handleDownload(model);
-			this.createNotice(model);
+			try{
+				this.handleDownload(model);
+			} catch (e){
+				console.log("Download handler failed.");
+			}
+			try {
+				this.createNotice(model);
+			} catch (e){
+				console.log("Download notice creation failed.");
+			}
 		} else if (status == "COMPLETE_FAILED"){
 			//should be a note to user that the download failed
 			this.createNotice(model);
@@ -63,8 +71,25 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 	},
 	
 	handleDownload: function(model){
-		var type = model.get("type");
-		this.requestTypes[type].successCallback.call(this, model);
+		var statuses = model.get("layerStatuses");
+		var doDownload = false;
+
+		if (typeof statuses != "undefined"){
+			for (var i in statuses){
+				var responseType = statuses[i].responseType;
+				if (responseType === "download"){
+					doDownload = true;
+					break;
+				}
+			}
+		} else {
+			doDownload = true;
+		}
+		
+		if (doDownload){
+			var type = model.get("type");
+			this.requestTypes[type].successCallback.call(this, model);
+		}
 	},
 	
 	openGeoCommons: function(model){
@@ -92,24 +117,30 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 	},
 	
 	createNotice: function(model){
-		console.log(model);
-		var layerInfo = model.get("requestedLayerStatuses");
+		var layerInfo = model.get("layerStatuses");
 		//generate a notice using the info in requestedLayerStatuses
 		//if all succeeded, no need to pop up a message; the user should see the save file dialog
 		//		"requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
 		var failed = [];
+		var succeeded = [];
 		for (var i in layerInfo){
 			var currentLayer = layerInfo[i];
 			var status = currentLayer.status.toLowerCase();
 			var layerName = currentLayer.id;
 			if (status != "success"){
 				failed.push(layerName);
+			} else {
+				succeeded.push(layerName);
 			}
 			
 		}
 		
 		if (failed.length > 0){
-			alert("These layers failed to download: " + failed.join());
+			alert("These layers failed: " + failed.join());
+		}
+		
+		if (succeeded.length > 0){
+			//alert("These layers succeeded!: " + succeeded.join());
 		}
 
 	},
@@ -130,6 +161,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 		if (this.pollRunning){
 			clearInterval(this.pollId);
 			this.pollRunning = false;
+			jQuery(document).trigger("hideRequestSpinner");
 		}
 	},
 	
@@ -147,11 +179,24 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 					that.checkStatus(requestIds);
 				}, 
 			that.pollInterval);
+			
 			this.pollRunning = true;
+
 		}
+		
+		var layerCount = this.getLayerCount();
+		jQuery(document).trigger("showRequestSpinner", {layers: layerCount});
 
 	},
 	
+	getLayerCount: function(){
+		var processing = this.where({status: "PROCESSING"});
+		var count = 0;
+		for (var i in processing){
+			count += processing[i].get("layers").length;
+		}
+		return count;
+	},
 	//{"requestStatus":[
 //	{"requestId":"26fe6ae7-274b-4b2d-aa58-9da1ee438dac","type":"layer","status":"PROCESSING",
 //		"requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
@@ -208,8 +253,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 		var that = this;
 
 		var requestInfo = this.requestTypes[requestObj.type];
-		console.log(requestObj);
-		//return;
+
 		var params = {
 				url: requestInfo.requestUrl,
 				data: JSON.stringify(requestObj),
@@ -218,72 +262,14 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 				success: function(data){
 					requestObj.requestId = data.requestId;
 					that.add(requestObj);
-					}
+				},
+				error: function(){
+					jQuery(document).trigger("hideRequestSpinner");
+				}
 		};
 		jQuery.ajax(params);
+		jQuery(document).trigger("showRequestSpinner");
+
 	}
 	
 });
-/*
- * 		var params = {
-				url: "requestImage",
-				data: requestObj,
-				dataType: "json",
-				type: "POST",
-				success: function(data){
-					OpenGeoportal.ogp.appState.get("requestQueue").createRequest(requestObj);
-				}
-		};
- * 
- * 
- */
-
-
-/*
-this.startTicker = function(){
-	if (jQuery("#requestTickerContainer").length == 0){
-		jQuery("body").append('<div id="requestTickerContainer" class="raised"></div>');
-	}
-
-	//show ticker (a div with transparent black background, fixed to bottom of screen, loader
-	//put a counter in a closure to iterate over the array
-	if (jQuery("#requestTicker").length == 0){
-		jQuery("#requestTickerContainer").html('<div id="processingIndicator"></div><div id="requestTicker"></div></div>');
-	} 
-	
-	jQuery("#requestTickerContainer").fadeIn();
-
-	this.requestQueue.processingIndicatorId = OpenGeoportal.Utility.indicatorAnimationStart("processingIndicator");
-};
-
-this.stopTicker = function(){
-	try {
-		var intervalId = this.requestQueue.tickerId;
-		clearInterval(intervalId);
-	} catch (e) {}
-	//hide ticker
-	jQuery("#requestTickerContainer").fadeOut();
-	clearInterval(this.requestQueue.processingIndicatorId);
-};
-
-this.setTickerText = function(){
-	var pending = this.requestQueue.requests.pending;
-	var imageRequests = pending.images.length; 
-	var layerRequests = pending.layers.length;
-	var totalRequests = imageRequests + layerRequests;
-	//console.log(imageRequests + " " + layerRequests + " " + totalRequests);
-	var tickerText = "Processing ";
-
-	if (totalRequests > 1){
-		tickerText += totalRequests;
-		tickerText += " Requests";
-		//var that = this;
-		//this.requestQueue.tickerId = setInterval(function(){ that.tick () }, 3000);
-	} else {
-		tickerText += "Request";
-	}
-
-	jQuery("#requestTicker").text(tickerText);
-};
-
-*/

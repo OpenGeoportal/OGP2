@@ -24,20 +24,26 @@ public class ImageDownloaderImpl implements ImageDownloader {
 	@Override
 	@Async
 	public Future<File> getImage(String baseUrl, String queryString) throws IOException {
-		File tempFile = File.createTempFile("img", ".png");
-		logger.info(baseUrl);
-		InputStream is = this.httpRequester.sendRequest(baseUrl, queryString, "GET");
-		String contentType = this.httpRequester.getContentType();
-		if (contentType.toLowerCase().contains("png")){
-			FileUtils.copyInputStreamToFile(is, tempFile);
-		} else {
-			if ((contentType.toLowerCase().contains("xml"))||(contentType.toLowerCase().contains("html"))||
-					(contentType.toLowerCase().contains("text"))){
-				logger.error("Response content: " + IOUtils.toString(is));
+		InputStream is = null;
+		try {
+			File tempFile = File.createTempFile("img", ".png");
+			logger.info(baseUrl);
+			is = this.httpRequester.sendRequest(baseUrl, queryString, "GET");
+			String contentType = this.httpRequester.getContentType();
+			if (contentType.toLowerCase().contains("png")){
+				FileUtils.copyInputStreamToFile(is, tempFile);
+			} else {
+				if ((contentType.toLowerCase().contains("xml"))||(contentType.toLowerCase().contains("html"))||
+						(contentType.toLowerCase().contains("text"))){
+					logger.error("Response content: " + IOUtils.toString(is));
+				}
+				throw new IOException("Unexpected content-type: " + contentType);
 			}
-			throw new IOException("Unexpected content-type: " + contentType);
+			return new AsyncResult<File>(tempFile);
+			
+		} finally {
+			IOUtils.closeQuietly(is);
 		}
-		return new AsyncResult<File>(tempFile);
 	}
 
 }

@@ -42,6 +42,7 @@ OpenGeoportal.UserInterface = function(){
 		this.initializeTabs();
 
 		this.loadIndicatorHandler();
+		this.requestIndicatorHandler();
 		
 		jQuery("body").fadeTo('fast', 1);
 		
@@ -161,16 +162,50 @@ OpenGeoportal.UserInterface = function(){
 	this.loadIndicatorHandler = function(){
 		var loadIndicator = "#mapLoadIndicator";
 		jQuery(document).bind("showLoadIndicator",function(e){
-			that.utility.showLoadIndicator("mapLoadIndicator");
+			that.utility.showLoadIndicator(loadIndicator);
 		});
 
 		jQuery(document).bind("hideLoadIndicator", function(e){
-			that.utility.hideLoadIndicator("mapLoadIndicator");
+			that.utility.hideLoadIndicator(loadIndicator);
 		});
 	};
 		
+		
+	this.requestIndicatorHandler = function(){
+		var loadIndicator = "#processingIndicator";
+		var that = this;
+		jQuery(document).bind("showRequestSpinner",function(e, data){
+			var tickerText = "Sending Request...";
+			if (typeof data != "undefined" && typeof data.layers != "undefined"){
+				tickerText = "Processing " + data.layers;
+				if (data.layers > 1){
+					tickerText += " layers...";
+				} else {
+					tickerText += " layer...";
+				}
+			}
+			that.showRequestTicker(tickerText);
+			that.utility.showLoadIndicator(loadIndicator, {color: "#000000"});
+		});
+
+		jQuery(document).bind("hideRequestSpinner", function(e){
+			jQuery("#requestTickerContainer").fadeOut();
+			that.utility.hideLoadIndicator(loadIndicator);
+		});
+	};
+	
+	this.showRequestTicker = function(tickerText){
+		if (jQuery("#requestTickerContainer").length == 0){
+			jQuery("body").append('<div id="requestTickerContainer" class="raised"><div id="processingIndicator"></div><div id="requestTicker"></div></div></div>');
+		}
+		jQuery("#requestTicker").html(tickerText);
+		jQuery("#requestTickerContainer").fadeIn();
+		
+	};
+	
+	
 	this.resizeWindowHandler = function(){
-		var rollRightWidth = jQuery("#roll_right").width();
+		var rollRightWidth = jQuery("#roll_right").width() + 1;//border
 		var headerHeight = jQuery("#header").height();
 		var footerHeight = jQuery("#footer").height();
 		var fixedHeights = headerHeight + footerHeight + 4;
@@ -329,37 +364,32 @@ OpenGeoportal.UserInterface = function(){
 
 
 
-
-
-
-
-
-	
-
-//	OpenGeoportal.UserInterface.prototype.downloadFromMapServer = function(requestObj) {
-	//modularize wms call so I can use the same code for 'save image'
-	/*if (!jQuery("#attachment")[0]){
-		jQuery("body").append('<div id="attachment" style="display:none;"></div>');
-	}*/
-	//var url = "WMSGetMapProxy.jsp?server=" + requestObj.server + '&format=' + requestObj.format + '&bbox=' + requestObj.bbox;
-	/*var url = "getImage?server=" + requestObj.server + '&format=' + requestObj.format + '&bbox=' + requestObj.bbox;
-	url += '&srs=' + requestObj.srs + '&layers=' + requestObj.layers;
-	url += '&width=' + requestObj.width + '&height=' + requestObj.height + '&type=' + requestObj.type;
-	if (typeof requestObj.sld != 'undefined'){
-		url += '&sld=' + requestObj.sld;
-	}
-	jQuery("#downloadDialog").dialog("close");
-	var downloadFrameId;
-	do {
-		downloadFrameId = "downloadFrame" + parseInt(Math.random() * 10000);
-	} while (jQuery("#" + downloadFrameId).length > 0)
+	this.mouseCursorHandler = function(){
 		var that = this;
-	this.utility.showLoadIndicator("mapLoadIndicator", downloadFrameId);
-	jQuery("body").append('<iframe id="' + downloadFrameId + '" style="display:none" src="' + url + '"></iframe>');
-	jQuery("#" + downloadFrameId).bind("load", function(e){
-		that.utility.hideLoadIndicator("mapLoadIndicator", downloadFrameId);
-	});*/
-//	};
+		
+		jQuery(document).bind('zoomBoxActivated', function(){
+			/*
+			var mapLayers = that.mapObject.layers;
+			for (var i in mapLayers){
+				var currentLayer = mapLayers[i];
+				if (layerStateObject.layerStateDefined(currentLayer.name)){
+					if (layerStateObject.getState(currentLayer.name, "getFeature")){
+						//that.mapObject.events.unregister("click", currentLayer, that.mapObject.wmsGetFeature);
+						layerStateObject.setState(currentLayer.name, {"getFeature": false});
+					}
+				} else {
+					continue;
+				}
+			}*/
+			
+			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+		});
+		
+		jQuery(document).bind('panActivated', function(){
+			jQuery('.olMap').css('cursor', "-moz-grab");
+			//jQuery('.attributeInfoControl').attr('src', that.utility.getImage('preview.gif'));
+		});
+	};
 
 	this.doPrint = function(){
 		window.print();

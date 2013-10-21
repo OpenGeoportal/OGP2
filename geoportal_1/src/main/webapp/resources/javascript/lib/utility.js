@@ -128,82 +128,83 @@ OpenGeoportal.Utility.stripExtraSpaces = function(stringOfInterest){
 	return stringOfInterest.replace(/\s+/g, ' ');
 };
 
-OpenGeoportal.Utility.loadIndicatorStatus = {"intervalId": "", "currentRequests": 0};
+OpenGeoportal.Utility.loadIndicatorStatus = [];//{selector: "", currentRequests: 0}; keep track of how many requests there are for this spinner
 
-OpenGeoportal.Utility.indicatorAnimationStart = function(div){
-	var indicatorFunction = function(){
-		try{
-			indicator.css("background-position", 
-				function(a,b){
-					var y = parseInt(b.substr(b.indexOf(" "))); 
-					y -= 25; 
-					var value =  "0 " + y + "px";
-					return value;});
-		} catch (e){}
-	};
-	var indicator = jQuery('#' + div);
-	indicator.css("background-image", "url('" + OpenGeoportal.Utility.getImage("progress.png") + "')");
-	var intervalId = setInterval(indicatorFunction, 84);
-	return intervalId;
+OpenGeoportal.Utility.getIndicatorStatus = function(selector){
+	var indicators = OpenGeoportal.Utility.loadIndicatorStatus;
+	for (var i in indicators){
+		if (indicators[i].selector === selector){
+			return indicators[i];
+		}
+	}
+	
+	return {};
 };
 
-OpenGeoportal.Utility.showLoadIndicator = function(div){
-	var that = this;
-	/*var indicatorFunction = function(){
-		try{
-			indicator.css("background-position", 
-				function(a,b){
-					var y = parseInt(b.substr(b.indexOf(" "))); 
-					y -= 25; 
-					var value =  "0 " + y + "px";
-					return value;});
-		} catch (e){}
-	};*/
-	var indicator = jQuery('#' + div);
-		//var j = 1;
-		//no current ajax requests, so we can start a new indicator
-		if (that.loadIndicatorStatus["currentRequests"] == 0){
-			//indicator.css("background-image", "url('" + OpenGeoportal.Utility.getImage("progress.png") + "')");
+OpenGeoportal.Utility.showLoadIndicator = function(selector, options){
+	/*
+	 * 
+	 * 
+	 * Spinners.create('.loading').play();
+		Spinners.get('.loading').pause();
+		Spinners.get('.loading').stop();
+		Spinners.get('.loading').remove();
+		Spinners.get(document.getElementById('mySpinner')).toggle();
+	 * 
+	 * 
+	 */
+	//jQuery(selector).hide();
 
-			that.loadIndicatorStatus["intervalId"] = OpenGeoportal.Utility.indicatorAnimationStart(div);
-			indicator.fadeIn();
-			that.loadIndicatorStatus["currentRequests"] = 1;
-		} else {
-			//we don't need to setInterval or change intervalId; we do need to push a value into currentRequests
-			/*var requests = that.loadIndicatorStatus["currentRequests"];
-			for (var i in requests){
-				if (requests[i] > j){
-					j = requests[i];
-				}
-			}
-			j++;*/
-			//pass in a value that is 1 larger than the largest value in the array to keep uniqueness
-			that.loadIndicatorStatus["currentRequests"] += 1;
-		}
-		//return j;
-		//console.log(that.loadIndicatorStatus["currentRequests"]);
-	};
+		
+	var spinner = Spinners.get(selector);
+	if (spinner.items().length === 0){
+		//create new spinner
+		var params = {
+  			height: 5,
+  			width: 5,
+  			dashes: 8,
+  			color: '#ffffff'
+		};
 	
-OpenGeoportal.Utility.hideLoadIndicator = function(div){
-	var that = this;
-	var indicator = jQuery('#' + div);
-
-		//remove the passed ajaxRequestId from the currentRequests array.  if the array is now empty, then proceed
-
-		/*var requests = that.loadIndicatorStatus["currentRequests"];
-		for (var i in requests){
-			if (requests[i] == requestId){
-				that.loadIndicatorStatus["currentRequests"].splice(i, 1);
-				break;
-			}
-		}*/
-	that.loadIndicatorStatus["currentRequests"] -= 1;
-		if (that.loadIndicatorStatus["currentRequests"] == 0){
-			indicator.fadeOut();
-			clearInterval(that.loadIndicatorStatus["intervalId"]);
-			that.loadIndicatorStatus["intervalId"] = "";
+		if (typeof options != "undefined"){
+			params = jQuery.extend(params, options);
 		}
+		spinner = Spinners.create(selector, params);
+	} 
 	
+	spinner.play();
+	
+	var status = OpenGeoportal.Utility.getIndicatorStatus(selector);
+	if (typeof status.currentRequests == "undefined"){
+		OpenGeoportal.Utility.loadIndicatorStatus.push({
+				selector: selector,
+				currentRequests: 1
+		});
+	} else {
+		status.currentRequests++;
+	}
+
+	jQuery(selector).fadeIn();
+};
+
+	
+OpenGeoportal.Utility.hideLoadIndicator = function(selector){
+	var status = OpenGeoportal.Utility.getIndicatorStatus(selector);
+	if (typeof status.currentRequests != "undefined"){
+		if (status.currentRequests > 0){
+			status.currentRequests--;
+		}
+	}
+
+	if (typeof status.currentRequests == "undefined" || status.currentRequests === 0){
+		jQuery(selector).fadeOut();
+	
+		var spinner = Spinners.get(selector);
+		if (spinner.items().length !== 0){
+			spinner.stop();
+		}
+	}
+
 };
 
 	

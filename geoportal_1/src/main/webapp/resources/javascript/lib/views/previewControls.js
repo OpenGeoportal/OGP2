@@ -23,14 +23,14 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	initialize: function(){
         this.listenTo(this.model, "change:colorPickerOn", this.colorPicker);
         this.listenTo(this.model, "change:color", this.updateColorControl);
-        this.listenTo(this.model, "change:getFeature", this.setGetFeatureTitle);
+        this.listenTo(this.model, "change:getFeature", this.featureInfoButtonState);
         this.listenTo(this.model, "change:opacity", this.changeOpacity);
         this.listenTo(this.model, "change:graphicWidth", this.changeGraphicWidth);
 
 		this.initRender();
 	},
 
-	setGetFeatureTitle: function( model, val, options){
+	setGetFeatureTitle: function( model){
 		if (model.get("getFeature")){
 			console.log(model.get("LayerDisplayName"));
 			this.getFeatureTitle = model.get("LayerDisplayName");
@@ -63,7 +63,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			markup += template.sliderControl({controlClass: "opacityControlCell", label: label, value: this.model.get("opacity"), units: "%", tooltip: tooltip});
 
 		}
-		console.log(this.model);
+		//console.log(this.model);
 		if (this.model.has("graphicWidth")){
 			var label = "";
 			var type = this.model.get("DataType").toLowerCase();
@@ -192,9 +192,6 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});		
 	},
 	colorPickerToggle: function(model){
-		console.log("colorPickerToggle");
-		console.log(arguments);
-		console.log(this.model);
 		var val = this.model.get("colorPickerOn");
 		this.model.set({colorPickerOn: !val});
 	},
@@ -226,15 +223,13 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		}
 	},
 	updateColorControl: function(){
-		console.log("updateColorControl");
 		var paletteColor = this.model.get("color");
-		console.log(paletteColor);
 		this.$el.find(".colorControl").css("background-color", paletteColor);
-		console.log(this.$el);
 		//trigger map sld update from here, or is there another view watching these models in the map?
 	},
 	//toggle the attribute info button & functionality
-	toggleFeatureInfo: function(){
+	toggleFeatureInfo: function(event){
+
 		var getFeature = this.model.get("getFeature");
 		if (!getFeature){
 			//update layer state
@@ -244,10 +239,22 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			this.model.set({getFeature: false});
 		}
 
+	},
+	featureInfoButtonState: function(model){
+		var button$ = this.$el.find(".attributeInfoControl");
+		var onClass = "attributeInfoControlOn";
+		var offClass = "attributeInfoControlOff";
+		var getFeature = model.get("getFeature");
+		if (getFeature){
+			button$.removeClass(offClass).addClass(onClass);
+			jQuery(".olMap").trigger("attributeInfoOn");
+		} else {
+			button$.removeClass(onClass).addClass(offClass);
+		}
+		this.setGetFeatureTitle(model);
 	}
 });
 
-//how do I make this more self-contained?
 OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
 	  tagName : "div",
 	  events: {

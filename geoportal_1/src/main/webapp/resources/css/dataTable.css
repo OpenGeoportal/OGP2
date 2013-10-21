@@ -148,13 +148,26 @@ table.display thead th {
 }
 
 /* text columns */
-td.colTitle .searchResultsTableCell {
-   	margin-right: 3px;
+
+   
+ .colOriginator .cellWrapper {
+    margin-left: 2px;
+    margin-right: 2px;
     overflow: hidden;
-    color: #000000;
-}
+} 
     
-    
+ .colTitle .cellWrapper {
+    margin-left: 2px;
+    margin-right: 2px;
+    overflow: hidden;
+} 
+
+ .colPublisher .cellWrapper {
+    margin-left: 2px;
+    margin-right: 2px;
+    overflow: hidden;
+} 
+
 #resultsTable th:hover {
 	color:#417dc1;
 }
@@ -219,7 +232,14 @@ th.colChkBoxes {
 
 .dataTables_scrollHead {
 	border-bottom: 1px solid #cccccc !important;	
-	height: 24px; /*preserve basic layout, even if header gets wonky */
+	/*height: 24px;*/ /*preserve basic layout, even if header gets wonky */
+	height: 100%;
+	/*max-height: 200px;
+	 */
+}
+
+table.display > tbody > tr > td.previewTools {
+    overflow: visible;
 }
 
 .dataTables_scrollHead tbody{
@@ -353,7 +373,7 @@ div.box {
 .previewControls > div {
 	display: inline-block;
 	height: 17px;
-	position: absolute;
+	position: relative;
 }
 
 /*.opacitySlider {
@@ -369,6 +389,7 @@ div.box {
 .sliderControl > div {
 	color: #231F20;
 	background-color: #FFFFFF;
+	z-index: 10;
 }
 
 .sliderDisplay {
@@ -381,7 +402,7 @@ div.box {
 }
 
 .sliderArrow {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -65px -84px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -65px -64px transparent;
    	border-bottom: 1px solid #aaaaaa;
     border-radius: 0 3px 3px 0;
     border-right: 1px solid #aaaaaa;
@@ -431,6 +452,7 @@ div.box {
 
 td.colTitle {
 	cursor: pointer;
+	color: #000000 !important;
 }
 
 /*.ui-resizable-helper { */
@@ -461,6 +483,7 @@ td.colTitle {
 
 .opacityControlCell {
 	left: 71px;
+	top: -3px;
 }
 
 .opacityControlCell .sliderValue {
@@ -469,12 +492,13 @@ td.colTitle {
 	text-align: right;
 }
 .sizeControlCell {
-	left: 172px;
+	left: 83px;
+	top: -3px;
 }
 
 .colorControlCell {
-    left: 271px;
-    margin-top: 1px;
+    left: 89px;
+    top: -1px;
 }
 
 .expandControl {
@@ -483,35 +507,37 @@ td.colTitle {
 }
 
 .expanded {
-		background: url("../media/geodata-sprite.png") no-repeat scroll -66px -83px transparent;
+		background: url("../media/ogp-sprite.png") no-repeat scroll -92px -115px transparent;
 }
 
 .notExpanded {
-		background: url("../media/geodata-sprite.png") no-repeat scroll -83px -83px transparent;
+		background: url("../media/ogp-sprite.png") no-repeat scroll -83px -63px transparent;
 }
 
 .zoomToLayerControl {
-	left: 301px;
-	background: url("../media/geodata-sprite.png") no-repeat scroll -9px -110px transparent;
+	left: 104px;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -9px -90px transparent;
     height: 17px;
 	width: 17px;
+	top: 1px;
 }
 
 .attributeInfoControl {
-	left: 323px;
+	left: 110px;
     height: 17px;
 	width: 17px;
+	top: 1px;
 }
 
 .attributeInfoControlOn {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -36px -110px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -115px -115px transparent;
 }
 .attributeInfoControlOff {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -36px -110px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -36px -90px transparent;
 }
 
 .cartIconTable {
-	background: url("../media/geodata-sprite.png") no-repeat scroll -102px -82px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -102px -62px transparent;
     height: 17px;
 	width: 17px;
 }

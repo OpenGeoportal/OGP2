@@ -11,7 +11,7 @@ import org.OpenGeoportal.Metadata.LayerInfoRetriever;
 import org.OpenGeoportal.Solr.SearchConfigRetriever;
 import org.OpenGeoportal.Solr.SolrRecord;
 import org.OpenGeoportal.Utilities.Http.HttpRequester;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class GetFeatureInfoController {
 	private static final int NUMBER_OF_FEATURES = 1;
 	//private static final int BUFFER_MULTIPLIER = 5;
-	
+
 	//unfortunately, not every source supports gml response
 	private static final String RESPONSE_FORMAT = "text/html";
 	private static final String EXCEPTION_FORMAT = "application/vnd.ogc.se_xml";
@@ -50,13 +50,7 @@ public class GetFeatureInfoController {
 	    
 	    Set<String> layerIds = new HashSet<String>();
 	    layerIds.add(layerId);
-	    SolrRecord layerInfo = null;
-	    try {
-			layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerIds).get(0);
-		} catch (Exception e) {
-			e.printStackTrace();
-			//response.sendError(500);
-		}
+	    SolrRecord layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerIds).get(0);
 	    
 	    //remove any query string
 	    String previewUrl = searchConfigRetriever.getWmsUrl(layerInfo);
@@ -89,17 +83,22 @@ public class GetFeatureInfoController {
 	    	previewUrl = previewUrl.substring(0, previewUrl.indexOf("?"));
 	    }
 		logger.info("executing WMS getFeatureRequest: " + previewUrl + "?" + query);
-		
+
 		
 		if (!previewUrl.contains("http")){
-			
+			//this is a relative path
 			request.getRequestDispatcher(previewUrl + "?" + query).forward(request, response);
-			
+
 		} else {
-			InputStream input = httpRequester.sendRequest(previewUrl, query, method);
-			logger.info(httpRequester.getContentType());
-			response.setContentType(httpRequester.getContentType());
-			IOUtils.copy(input, response.getOutputStream());
+			InputStream input = null;
+			try{
+				input = httpRequester.sendRequest(previewUrl, query, method);
+				logger.info(httpRequester.getContentType());
+				response.setContentType(httpRequester.getContentType());
+				IOUtils.copy(input, response.getOutputStream());
+			} finally {
+				IOUtils.closeQuietly(input);
+			}
 		}
 	
 	}

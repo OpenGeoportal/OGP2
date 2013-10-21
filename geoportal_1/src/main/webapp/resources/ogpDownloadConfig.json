@@ -1,9 +1,9 @@
 {"config":{
 	"institutions":{
-		"Tufts":[
+		"tufts":[
 			{"classKey": "layerDownloader.wfs.proxied", "accessLevel":["restricted"],"dataType":["vector"], "outputFormats":["shp"]},
 			{"classKey": "layerDownloader.wcs.proxied", "accessLevel":["restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}],
-		"Harvard":[
+		"harvard":[
 			{"classKey": "layerDownloader.email.HGL", "accessLevel":["public","restricted"],"dataType":["raster","paper map"],"outputFormats":["geotiff"]}],
 		"default":[{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"], "preference": 1},
 			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 1},

@@ -14,6 +14,7 @@ import org.OpenGeoportal.Ogc.Wcs.Wcs1_0_0.CoverageOffering1_0_0;
 import org.OpenGeoportal.Ogc.Wcs.Wcs1_0_0.WcsGetCoverage1_0_0;
 import org.OpenGeoportal.Solr.SolrRecord;
 import org.OpenGeoportal.Utilities.OgpUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -141,12 +142,17 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	
 	 OwsInfo getWcsDescribeCoverageInfo()
 	 	throws Exception {
-
+		 InputStream inputStream = null;
+		 
+		 try{
 			String layerName = this.currentLayer.getLayerNameNS();
 			
-			InputStream inputStream = this.httpRequester.sendRequest(OgpUtils.filterQueryString(this.getUrl(this.currentLayer)), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
+			inputStream = this.httpRequester.sendRequest(OgpUtils.filterQueryString(this.getUrl(this.currentLayer)), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
 			//parse the returned XML and return needed info as a map
 			return ogcInfoRequest.parseResponse(inputStream);
+		 } finally {
+			 IOUtils.closeQuietly(inputStream);
+		 }
 	 }
 
 	 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
 import org.OpenGeoportal.Download.Methods.PerLayerDownloadMethod;
 import org.OpenGeoportal.Download.Types.LayerRequest;
@@ -62,7 +63,9 @@ public class PerLayerDownloader implements LayerDownloader {
 		}
 		
 		if (successCount > 0){
-			downloadPackager.packageFiles(requestId);
+			Future<Boolean> ready = downloadPackager.packageFiles(requestId); //this is going to try to package files each time a download method is complete.
+			Boolean response = ready.get();
+			logger.info("Packager response: " + Boolean.toString(response));
 		} else {
 			logger.error("No Files to package.  Download failed.");
 		}

@@ -10,6 +10,7 @@ import javax.xml.transform.stream.*;
 
 import org.xml.sax.*;
 import org.OpenGeoportal.Metadata.LayerInfoRetriever;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocumentList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,14 +99,20 @@ public class MetadataFromSolr implements MetadataRetriever {
 		if ((layerId.equalsIgnoreCase(this.layerId))&&(this.xmlDocument != null)){
 			return this.xmlDocument;
 		} else {
-		//parse the returned XML to make sure it is well-formed & to format
-		//filter extra spaces from xmlString
-		rawXMLString = rawXMLString.replaceAll(">[ \t\n\r\f]+<", "><").replaceAll("[\t\n\r\f]+", "");
-		InputStream xmlInputStream = new ByteArrayInputStream(rawXMLString.getBytes("UTF-8"));
+			InputStream xmlInputStream = null;
 
-		//Parse the document
-		Document document = builder.parse(xmlInputStream);
-		return document;
+			try{
+				//parse the returned XML to make sure it is well-formed & to format
+				//filter extra spaces from xmlString
+				rawXMLString = rawXMLString.replaceAll(">[ \t\n\r\f]+<", "><").replaceAll("[\t\n\r\f]+", "");
+				xmlInputStream = new ByteArrayInputStream(rawXMLString.getBytes("UTF-8"));
+
+				//Parse the document
+				Document document = builder.parse(xmlInputStream);
+				return document;
+			} finally {
+				IOUtils.closeQuietly(xmlInputStream);
+			}
 		}
 	}
 	
@@ -152,13 +159,19 @@ public class MetadataFromSolr implements MetadataRetriever {
 	 * @throws Exception 
 	 */
 	public File getXMLFile(String metadataLayerName, File xmlFile) throws Exception{
-		String xmlString = this.getXMLStringFromSolr(metadataLayerName, "Name");
-		xmlString = this.filterXMLString("", xmlString);
-		//write this string to a file
-		OutputStream xmlFileOutputStream = new FileOutputStream (xmlFile);
-		new PrintStream(xmlFileOutputStream).print(xmlString);
-		xmlFileOutputStream.close();
-		return xmlFile;
+		OutputStream xmlFileOutputStream = null;
+		try{
+			String xmlString = this.getXMLStringFromSolr(metadataLayerName, "Name");
+			xmlString = this.filterXMLString("", xmlString);
+			//write this string to a file
+			xmlFileOutputStream = new FileOutputStream (xmlFile);
+			new PrintStream(xmlFileOutputStream).print(xmlString);
+
+			return xmlFile;
+
+		} finally {
+			IOUtils.closeQuietly(xmlFileOutputStream);
+		}
 	}
 
 	@Override

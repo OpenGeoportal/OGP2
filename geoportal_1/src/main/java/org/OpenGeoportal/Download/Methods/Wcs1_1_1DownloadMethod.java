@@ -13,6 +13,7 @@ import org.OpenGeoportal.Ogc.OwsInfo;
 import org.OpenGeoportal.Ogc.Wcs.WcsGetCoverage1_1_1;
 import org.OpenGeoportal.Solr.SolrRecord;
 import org.OpenGeoportal.Utilities.OgpUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -79,22 +80,28 @@ public class Wcs1_1_1DownloadMethod extends AbstractDownloadMethod implements Pe
 		this.checkUrl(url);
 		return urlToUrls(url);
 	}
-	
+
 	private OwsInfo getWcsDescribeCoverageInfo() throws Exception {
-		
+		InputStream inputStream = null;
+		try{
 			String layerName = this.currentLayer.getLayerNameNS();
 			String describeCoverageRequest = ogcInfoRequest.createRequest(layerName);
 
-			InputStream inputStream = this.httpRequester.sendRequest(OgpUtils.filterQueryString(this.getUrl(this.currentLayer)), describeCoverageRequest, ogcInfoRequest.getMethod());
+			inputStream = this.httpRequester.sendRequest(OgpUtils.filterQueryString(this.getUrl(this.currentLayer)), describeCoverageRequest, ogcInfoRequest.getMethod());
 			//parse the returned XML and return needed info as a map
-			
-			return ogcInfoRequest.parseResponse(inputStream);
-		 }
-	 
-		@Override
-		public Boolean includesMetadata() {
-			return INCLUDES_METADATA;
+
+			OwsInfo info = ogcInfoRequest.parseResponse(inputStream);
+			return info;
+
+		} finally {
+			IOUtils.closeQuietly(inputStream);
 		}
+	}
+
+	@Override
+	public Boolean includesMetadata() {
+		return INCLUDES_METADATA;
+	}
 
 
 }
