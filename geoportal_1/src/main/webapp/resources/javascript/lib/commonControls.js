@@ -74,12 +74,16 @@ OpenGeoportal.CommonControls = function CommonControls(){
 	
 	  //the layer table should handle creating the control;  the preview obj should handle the logic to determine which
 	  this.renderPreviewControl = function(layerId, access, institution, previewState){		 
-	  	access = access.toLowerCase(); 
+	  		access = access.toLowerCase(); 
 		  if (access == "public"){
 			  return this.renderActivePreviewControl(layerId, previewState);
 		  } else {
 			  //check user object
-			  return this.renderLoginPreviewControl(layerId, institution);
+			  if (OpenGeoportal.InstitutionInfo.getHomeInstitution().toLowerCase() === institution.toLowerCase() && OpenGeoportal.ogp.appState.get("login").model.get("authenticated")){
+			  	return this.renderActivePreviewControl(layerId, previewState);
+			  } else {
+			  	return this.renderLoginPreviewControl(layerId, institution);
+			  }
 		  }
 	  };
 		//TODO: fix this
@@ -133,7 +137,6 @@ OpenGeoportal.CommonControls = function CommonControls(){
 					}
 				}
 			}
-
 			var params = {};
 			params.controlClass = "previewControl";
 			params.text = "";

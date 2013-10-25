@@ -1030,31 +1030,6 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		//analytics.track("Change Results Columns Displayed", action, column);
 	};
 
-	
-
-	//should be part of a view on a user model
-	this.changeLoginButtonsToControls = function(){
-		//change login button to checkbox for institution logged in
-		var that = this;
-		//loginButton login
-		//previewControl previewOff
-		jQuery(".colPreview .loginButton").each(function(){
-			var node = jQuery(this).closest("tr");
-			var layerId = that.getRowData(node).LayerId;
-			jQuery(this).parent().html(tableObject.controls.renderActivePreviewControl(layerId));
-		});
-	};
-
-	this.changeControlsToLoginButtons = function(logoutInstitution){
-		//change checkbox to login button for institution logged out
-		var that = this;
-		jQuery(".colPreview .previewControl").each(function(){
-			var node = jQuery(this).closest("tr");
-			var layerId = that.getRowData(node).LayerId;
-
-			jQuery(this).parent().html(tableObject.controls.renderPreviewControl(layerId));
-		});
-	};
 
 	//function to expand row, expose preview controls
 	this.expandRow = function(thisObj){
@@ -1131,6 +1106,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		this.viewMetadataHandler();
 		this.expandHandler();	
 		this.titleClickHandler();
+		this.loginViewHandler();
 		this.expandViewHandler();
 		this.expandView = new OpenGeoportal.Views.TableRowSettings({collection: this.tableLayerState, el: $("#" +this.getTableId())});
 
@@ -1171,6 +1147,21 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	};
 
 
+	this.loginViewHandler = function(){
+		var that = this;
+		var tableDiv = this.getTableDiv();
+		jQuery(document).on("loginSucceeded", "#" + tableDiv + " td .loginButton", function(){
+			var data = that.getRowData(jQuery(this)).data;
+			jQuery(this).parent().html(that.controls.renderPreviewControl(data.LayerId, data.Access, data.Institution));	
+		});
+		
+		jQuery(document).on("logoutSucceeded", "#" + tableDiv + " td .previewControl", function(){
+			var data = that.getRowData(jQuery(this)).data;
+			jQuery(this).parent().html(that.controls.renderPreviewControl(data.LayerId, data.Access, data.Institution));	
+		});
+		
+	};
+	
 	/*
 	 * Preview control.  Interacts with LayerSettings Collection and MapController
 	 */

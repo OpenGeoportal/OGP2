@@ -1,9 +1,10 @@
-<%@page import="org.OpenGeoportal.Utilities.LocationFieldUtils"%>
+<%@page import="org.opengeoportal.utilities.LocationFieldUtils"%>
 <%@ page language="java" contentType="application/xml; charset=UTF-8"
-    pageEncoding="UTF-8" import="java.util.*, javax.xml.transform.*, org.apache.commons.compress.utils.IOUtils, java.net.URLDecoder, java.net.URL, javax.xml.transform.dom.*, javax.xml.transform.stream.*, 
-    org.OpenGeoportal.Utilities.Http.HttpRequester, org.OpenGeoportal.Metadata.LayerInfoRetriever, org.OpenGeoportal.Solr.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, 
+	pageEncoding="UTF-8"
+	import="java.util.*, javax.xml.transform.*, org.apache.commons.compress.utils.IOUtils, java.net.URLDecoder, java.net.URL, javax.xml.transform.dom.*, javax.xml.transform.stream.*,org.opengeoportal.utilities.http.HttpRequester,org.opengeoportal.metadata.LayerInfoRetriever,org.opengeoportal.solr.*, java.io.*, javax.xml.parsers.DocumentBuilderFactory, 
     javax.xml.parsers.DocumentBuilder, org.w3c.dom.NodeList, org.w3c.dom.Node, org.w3c.dom.Document, java.net.URLConnection, java.util.Set, java.util.HashSet, java.util.Map, 
-    org.springframework.context.*, org.springframework.web.context.support.*, org.springframework.beans.factory.* "%><%
+    org.springframework.context.*, org.springframework.web.context.support.*, org.springframework.beans.factory.* "%>
+<%
     	response.setHeader("Content-disposition","inline; filename=\"getCapabilities.xml\"");
 
     	Enumeration<String> sentParams = request.getParameterNames();
@@ -111,12 +112,12 @@
 	xmlns:ogc="http://www.opengis.net/ogc"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.opengis.net/wfs http://geoserver01.uit.tufts.edu/schemas/wfs/1.0.0/WFS-capabilities.xsd">
-<Service>
-<Name>WFS</Name>
-<Title>OpenGeoportal Web Feature Service</Title>
-<Abstract>A dynamically created capabilites document including only certain layers.  For use in a mapping client that supports WFS services.</Abstract>
-<Keywords>WFS, WMS, GEOSERVER</Keywords>
-<OnlineResource><%out.write(servicePoint);%></OnlineResource>
+<Service> <Name>WFS</Name> <Title>OpenGeoportal Web
+Feature Service</Title> <Abstract>A dynamically created capabilites
+document including only certain layers. For use in a mapping client that
+supports WFS services.</Abstract> <Keywords>WFS, WMS, GEOSERVER</Keywords> <OnlineResource>
+<%out.write(servicePoint);%>
+</OnlineResource>
 <Fees>NONE</Fees>
 <AccessConstraints>NONE</AccessConstraints>
 </Service>
@@ -125,7 +126,8 @@
 <GetCapabilities>
 <DCPType>
 <HTTP>
-<Get onlineResource="<%out.write(requestURL.toString() + "?OGPIDS=" + layers);%>" />
+<Get
+	onlineResource="<%out.write(requestURL.toString() + "?OGPIDS=" + layers);%>" />
 </HTTP>
 </DCPType>
 </GetCapabilities>
@@ -135,7 +137,8 @@
 </SchemaDescriptionLanguage>
 <DCPType>
 <HTTP>
-<Get onlineResource="<%out.write(servicePoint);%>?request=DescribeFeatureType" />
+<Get
+	onlineResource="<%out.write(servicePoint);%>?request=DescribeFeatureType" />
 </HTTP>
 </DCPType>
 </DescribeFeatureType>
@@ -157,9 +160,11 @@
 <FeatureTypeList>
 <Operations>
 <Query />
-</Operations><%
+</Operations>
+<%
 		out.write(featureTypeInfo);
-   %></FeatureTypeList>
+   %>
+</FeatureTypeList>
 <ogc:Filter_Capabilities>
 	<ogc:Spatial_Capabilities>
 		<ogc:Spatial_Operators>
@@ -351,4 +356,5 @@
 		</ogc:Arithmetic_Operators>
 	</ogc:Scalar_Capabilities>
 </ogc:Filter_Capabilities>
-</WFS_Capabilities><%} %>
+</WFS_Capabilities>
+<%} %>

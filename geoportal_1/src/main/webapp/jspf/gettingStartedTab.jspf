@@ -1,33 +1,53 @@
 <div id="home_text" class="welcomeText">
 	<h1><%@include file="institutionWelcome.jspf"%></h1>
-	<p>
-	Search, discover, preview, and retrieve geospatial data from multiple repositories
-	</p> 
+	<p>Search, discover, preview, and retrieve geospatial data from
+		multiple repositories</p>
 
-    <h2>Search</h2> 
-    <p>There are two ways to search for data. The two methods can be used individually or combined for more effective search</p>
-   	<ul> 	
-   		<li>Use <span style="font-weight:bold">basic</span> or <span style="font-weight:bold">advanced</span> search</li> 
-    	<li>Interact with the map to search for data by relevant geographic extent</li>    
-    </ul> 
-    <h2>Interacting with the map  </h2>  
-    <ul> 
-      	<li>Interacting with the map will perform a search for relevant data</li> 
-       	<li>Enter a place in the <span style="font-weight:bold">Find Place</span> field to zoom to a location</li> 
-       	<li>Click the <span style="font-weight:bold">Zoom</span> or <span style="font-weight:bold">Pan</span> tool and drag the map with the mouse</li> 
-       	<li>Double-click to zoom in on an area</li>
-       	<li>Hold down shift and click-drag a box to zoom to an area</li>
-       	<li>Click on <span style="font-weight:bold">Basemap</span> to set the background layer to OpenStreetMap, Google Maps, etc.</li>
-    </ul> 
-    <h2>Preview</h2>
-    <ul>
-    	<li>Click the <span style="font-weight:bold">Preview</span> checkbox to preview the layer on the map from your search results or from your Cart</li>
-    	<li>Expand the layer dropdown to access the preview controls</li>
-    	<li>Click the attribute preview tool <span><img src="resources/media/preview.gif"/></span> and click on a feature on the map to view its attributes</li>
-    </ul> 
-    <h2>Download</h2>
+	<h2>Search</h2>
+	<p>There are two ways to search for data. The two methods can be
+		used individually or combined for more effective search</p>
 	<ul>
-		<li>Click the <span style="font-weight:bold">Cart</span> checkbox to add the selected layer to your Cart for download, additional preview, or to create web mapping services</li>
-	</ul> 
-</div> 
+		<li>Use <span style="font-weight: bold">basic</span> or <span
+			style="font-weight: bold">advanced</span> search
+		</li>
+		<li>Interact with the map to search for data by relevant
+			geographic extent</li>
+	</ul>
+	<h2>Interacting with the map</h2>
+	<ul>
+		<li>Interacting with the map will perform a search for relevant
+			data</li>
+		<li>Enter a place in the <span style="font-weight: bold">Find
+				Place</span> field to zoom to a location
+		</li>
+		<li>Click the <span style="font-weight: bold">Zoom</span> or <span
+			style="font-weight: bold">Pan</span> tool and drag the map with the
+			mouse
+		</li>
+		<li>Double-click to zoom in on an area</li>
+		<li>Hold down shift and click-drag a box to zoom to an area</li>
+		<li>Click on <span style="font-weight: bold">Basemap</span> to
+			set the background layer to OpenStreetMap, Google Maps, etc.
+		</li>
+	</ul>
+	<h2>Preview</h2>
+	<ul>
+		<li>Click the <span style="font-weight: bold">Preview</span>
+			checkbox to preview the layer on the map from your search results or
+			from your Cart
+		</li>
+		<li>Expand the layer dropdown to access the preview controls</li>
+		<li>Click the attribute preview tool <span><img
+				src="resources/media/preview.gif" /></span> and click on a feature on the
+			map to view its attributes
+		</li>
+	</ul>
+	<h2>Download</h2>
+	<ul>
+		<li>Click the <span style="font-weight: bold">Cart</span>
+			checkbox to add the selected layer to your Cart for download,
+			additional preview, or to create web mapping services
+		</li>
+	</ul>
+</div>
 

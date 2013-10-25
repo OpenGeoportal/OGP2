@@ -1,34 +1,33 @@
-    <div class="arrow_buttons slideVertical">
-    	<div class="arrow_left button" title="collapse left"></div>
-    	<div class="arrow_separator"></div>
-    	<div class="arrow_right button" title="expand right"></div>
- 	</div>
-	<div id="tabs" class="slideVertical">
-		<ul>
-			<li><a href="#searchTab">
+
+<div class="arrow_buttons slideVertical">
+	<div class="arrow_left button" title="collapse left"></div>
+	<div class="arrow_separator"></div>
+	<div class="arrow_right button" title="expand right"></div>
+</div>
+<div id="tabs" class="slideVertical">
+	<ul>
+		<li><a href="#searchTab">
 				<div id="searchTabText" class="tabText">
 					<div>
-			    	<span id="resultsNumber" class="resultsNumber">
-    				0
-    		   		</span>
-					Results
+						<span id="resultsNumber" class="resultsNumber"> 0 </span> Results
 					</div>
-				</div></a> 
-			</li>				
-			<li><a href="#cartTab">
+				</div>
+		</a></li>
+		<li><a href="#cartTab">
 				<div id="cartTabText" class="tabText">
 					<div class="shoppingCartIcon"></div>
-					<div id="cartTabTextInner">Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span></div>
+					<div id="cartTabTextInner">
+						Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span>
+					</div>
 				</div>
-				</a> 
-			</li>
-		</ul>
-    	<div id="searchTab">
-			<%@include file="results.jspf"%>
-    	</div>
-    	<div id="cartTab">
-			<%@include file="cart.jspf"%>
-    	</div>
+		</a></li>
+	</ul>
+	<div id="searchTab">
+		<%@include file="results.jspf"%>
 	</div>
+	<div id="cartTab">
+		<%@include file="cart.jspf"%>
+	</div>
+</div>
 
-  
+

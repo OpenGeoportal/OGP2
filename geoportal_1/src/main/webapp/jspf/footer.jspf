@@ -1,17 +1,16 @@
 <div id="footer">
-	<div id="footerLogos"> 
-		<div class="institutionLogo" title="Tufts" onclick="location.href='http://tufts.edu'">
-	    </div>
-		<div class="itLogo infoLinks" title="TTS" onclick="location.href='https://it.tufts.edu/'">
-			Technology Services
-	    </div>
-	    <div class="gisLogo infoLinks" title="GIS@Tufts" onclick="location.href='http://gis.tufts.edu'">
-	    	GIS@Tufts.edu
-	    </div>
-	</div> 
-	<span id="footerInfo">
-		<span id="ogpLink" class="infoLinks" onclick="location.href='http://www.opengeoportal.org'">Powered by OpenGeoportal</span> 
+	<div id="footerLogos">
+		<div class="institutionLogo" title="Tufts"
+			onclick="location.href='http://tufts.edu'"></div>
+		<div class="itLogo infoLinks" title="TTS"
+			onclick="location.href='https://it.tufts.edu/'">Technology
+			Services</div>
+		<div class="gisLogo infoLinks" title="GIS@Tufts"
+			onclick="location.href='http://gis.tufts.edu'">GIS@Tufts.edu</div>
+	</div>
+	<span id="footerInfo"> <span id="ogpLink" class="infoLinks"
+		onclick="location.href='http://www.opengeoportal.org'">Powered
+			by OpenGeoportal</span>
 	</span>
 </div>
 
-    	

@@ -6,16 +6,18 @@
 <%@include file="jspf/includes.jspf"%>
 </head>
 <body>
-<div id="main">
-	<%@include file="jspf/header.jspf"%>
-	<div id="container" class="shadowDown">
-		<div id="roll_right" class="shadowDown"><div class="arrow_right button" ></div></div>
-		<div id="left_col">
-			<%@include file="jspf/leftPanel.jspf"%>
+	<div id="main">
+		<%@include file="jspf/header.jspf"%>
+		<div id="container" class="shadowDown">
+			<div id="roll_right" class="shadowDown">
+				<div class="arrow_right button"></div>
+			</div>
+			<div id="left_col">
+				<%@include file="jspf/leftPanel.jspf"%>
+			</div>
+			<div id="map"></div>
 		</div>
-		<div id="map"></div>
+		<%@include file="jspf/footer.jspf"%>
 	</div>
-	<%@include file="jspf/footer.jspf"%>	
-</div>
 </body>
 </html>

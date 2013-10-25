@@ -56,8 +56,6 @@ jQuery(document).ready(function (){
 	ogp.ui = new OpenGeoportal.UserInterface();
 	ogp.ui.init();
 	
-	ogp.login = new OpenGeoportal.LogIn(OpenGeoportal.InstitutionInfo.getHomeInstitution());
-
 	ogp.map = new OpenGeoportal.MapController();
 	ogp.map.createMap("map");	
 	

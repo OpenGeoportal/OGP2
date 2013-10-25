@@ -33,10 +33,23 @@ if (typeof OpenGeoportal.Views == 'undefined'){
  */
 //this should really allow us to help manage multiple repository access, instead of just assuming "local"
 OpenGeoportal.Models.User = Backbone.Model.extend({
+
 	defaults: {
 		username: "anonymous",
 		authenticated: false,
-		authorities: []
+		authorities: [],
+		message: ""
+	},
+	initialize: function(){
+		var institution = OpenGeoportal.InstitutionInfo.getHomeInstitution();
+		var type = OpenGeoportal.InstitutionInfo.getLoginType(institution);
+		var authUrl = this.getUrl() + OpenGeoportal.InstitutionInfo.getAuthenticationPage(institution);
+		var usernameLabel = institution + " Username:";
+		var passwordLabel = institution + " Password:";
+		this.set({type: type});
+		this.set({authUrl: authUrl});
+		this.set({userNameLabel: usernameLabel});
+		this.set({passwordLabel: passwordLabel});
 	},
 	url: function(){return this.getUrl() + "loginStatus";},
 	getUrl: function(){
@@ -62,72 +75,221 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 		}
 		var url = protocol + "://" + hostname + port + "/" + extraPath;
 		return url;
+	},
+	
+	logout: function() {
+		//for logout capability
+		var that = this;
+		var url = this.getUrl() + "logout";
+		var ajaxArgs = {
+			url : url,
+			crossDomain : true,
+			xhrFields : {
+				withCredentials : true
+			},
+			context : that,
+			dataType : "json",
+			success : function(data){that.set(data);}
+		};
+		jQuery.ajax(ajaxArgs);
 	}
 });
 
 OpenGeoportal.Views.Login = Backbone.View.extend({
 	model: OpenGeoportal.Models.User,
+
 	events: {
-		//"click .loginButton: promptLogin"
-	},
-	initialize: function(){
-		this.model.fetch();
-		//we could put this on setInterval, so that when the user's session expires, they get properly logged out
-		//this.listenTo(this.model, "change:authenticated", this.processLogin);
-	
-	}
-});
+		"loginSucceeded" 	: "loginSuccess",
+		"loginFailed"		: "loginFailure"
+		}, 
+		
+		initialize: function() {
+			this.model.fetch();
+			//we could put this on setInterval, so that when the user's session expires, they get properly logged out
+			var that = this;
+			jQuery(document).on("click", ".loginButton", function(){that.promptLogin.apply(that, arguments);});
 
-OpenGeoportal.LogIn = function(institution){
-	this.TYPE = OpenGeoportal.InstitutionInfo.getLoginType(institution); //"iframe"; other choice is "form"; would be nice to get this from ogp config
+			jQuery("#headerLogin").on("click.login", function(){that.headerLogin.apply(that, arguments);});
 
-	this.userNameLabel = institution + " Username:";
-	this.passwordLabel = institution + " Password:";
-	this.dialogTitle = "LOGIN";
-	
-	this.authenticationPage = OpenGeoportal.InstitutionInfo.getAuthenticationPage(institution);;
-	this.ogpBase = window.location.protocol + "//" + window.location.host;
-	//this.responseObject = null;
-	// userId is null if no user is logged in
-	// when non-null, it is the id of the logged in user
-	this.userId = null;
+			this.listenTo(this.model, "change:authenticated", this.processLoginState);
 
-	this.isLoggedIn = function(){
-		if (this.userId == null){
-			return false;
-		} else {
-			return true;
-		}
-	};
-	
-	
-	this.loginHandler = function(){
-		var that = this;
-		jQuery(document).off(".login");
+		}, 
+		
+		headerLogin: function(event) {
+			if (!this.model.get("authenticated")){
+				this.promptLogin(event);
+			} else {
+				this.model.logout();
+			}
+		},
+		promptLogin: function(event) {
+			var dialogTitle = "Login";
 
-		var promptLogin = function(e){that.promptLogin(e);};
-		jQuery(document).on("click.login", ".loginButton", promptLogin); 
-		jQuery("#headerLogin").on("click.login", promptLogin);
+			var dialogContent = dialogContent = this.getLoginContent();
 
-	};
-	
-	/*
-	 * 
-	 * login code
-	 * 
-	 */
+			var that = this;
+			if ( typeof jQuery('#loginDialog')[0] == 'undefined') {
+				var shareDiv = '<div id="loginDialog" class="dialog"> \n';
+				shareDiv += dialogContent;
+				shareDiv += '</div> \n';
+				jQuery('body').append(shareDiv);
+
+				var loginButtons;
+				var type = this.model.get("type");
+				if (type == "form") {
+					loginButtons = {
+						Login : function() {
+							that.processFormLogin();
+						},
+						Cancel : function() {
+							jQuery(this).dialog('close');
+							jQuery(document).trigger("loginCancel");
+						}
+					};
+				} else if (type == "iframe") {
+					loginButtons = {
+						Cancel : function() {
+							jQuery(this).dialog('close');
+							jQuery(document).trigger("loginCancel");
+						}
+					};
+				}
+
+				jQuery("#loginDialog").dialog({
+					autoOpen : false,
+					width : 'auto',
+					title : dialogTitle,
+					context : that,
+					resizable : false,
+					zIndex : 3000,
+					stack : true,
+					buttons : loginButtons
+				});
+			} else {
+				//replace dialog text/controls & open the instance of 'dialog' that already exists
+				jQuery("#loginDialog").html(dialogContent);
+			}
+
+			if (type == "form") {
+				jQuery("#loginDialog").unbind("keypress");
+				jQuery('#loginDialog').bind("keypress", function(event) {
+					if (event.keyCode == '13') {
+						that.processFormLogin();
+					}
+				});
+			} else if (type == "iframe") {
+				this.processIframeLogin();
+			}
+
+			jQuery("#loginDialog").dialog('open');
+		},
+		//return the login form to be presented to the user
+
+			getLoginContent: function() {
+				var dialogContent;
+				var type = this.model.get("type");
+				if (type == "form") {
+					dialogContent = '<form><table>' + '<tr><td>' + this.model.get("userNameLabel") + '</td>' + '<td><input type="text" id="loginFormUsername" name="loginFormUsername"/></td></tr>' + '<tr><td>'
+					 + this.model.get("passwordLabel") + '</td>' + '<td><input type="password" id="loginFormPassword" name="loginFormUsername"/></td></tr>' + '</table></form>';
+				} else if (type == "iframe") {
+					dialogContent = '<form><table>' + '<iframe  id="loginIframe"  frameborder="0"  vspace="0"  hspace="0"  marginwidth="2"  marginheight="2" width="700"  ' + 'height="600"  src="' 
+					+ this.model.get("authUrl") + '"></iframe></table></form>';
+				}
+
+				dialogContent = dialogContent + '<br/><span class="warning"></span>';
+				
+
+				return dialogContent;
+			},
+			
+			// retrieve user entered values, generate https request and set login flag
+
+				// some special processing is included for running on localhost
+				processFormLogin :function() {
+					var that = this;
+					var url = this.model.get("authUrl");
+					//var url = this.authenticationPage;
+					var username = jQuery("#loginFormUsername").val();
+					var password = jQuery("#loginFormPassword").val();
+					var ajaxArgs = {
+						type : "POST",
+						url : url,
+						context : that,
+						crossDomain : true,
+						xhrFields : {
+							withCredentials : true
+						},
+						data : {
+							"username" : username,
+							"password" : password
+						},
+						dataType : "json",
+
+			success : function(data) {
+				console.log(data);
+				that.model.set(data);
+				if (data.message !== null) {
+					that.showLoginMessage(data.message);
+				}
+			},
+
+						error : that.loginResponseError
+					};
+					jQuery.ajax(ajaxArgs);
+
+				},
+				
+				showLoginMessage: function(passedMessage){
+					if (passedMessage.length > 0){
+						jQuery("#loginDialog .warning").text(passedMessage);
+					}
+				},
+				processIframeLogin: function(){
+					var that = this;
+					jQuery.receiveMessage(
+						function(e) {
+							that.model.set(jQuery.parseJSON(e.data));
+						},
+						window.location.protocol + "//" + window.location.host);
+				},
+				
+			loginResponseError: function(data){
+				showLoginMessage(data.message);
+			},
+			//callback handler invoked with response to authenticate server call
+			//sets the userId variable to hold the id of the logged in user
+			processLoginState: function(model) {
+				if (model.get("authenticated")) {
+					
+					console.log("authchanged true");
+					jQuery("#headerLogin").text("Logout");
+
+					jQuery("#loginDialog").dialog('close');
+					jQuery(".loginButton").trigger("loginSucceeded");
+					
+				} else {
+					jQuery("#headerLogin").text("Login");
+					console.log("authchanged false");	
+					jQuery(".previewControl").trigger("logoutSucceeded");
+				
+				}
+			}
 
 
-	this.loginStatusHandler = function(){
-		jQuery(document).bind("loginSucceeded", function(){
-			jQuery(document).trigger("loginSuccess.addToCart");
-			that.applyLoginActions();
-			analytics.track("Login", "Login Success");
-		});
-		jQuery(document).on("loginFailed", function() {
-			analytics.track("Login", "Login Failure");
-		});	
-	};
+
+	});
+
+
+
+
+
+
+
+
+
+
+/*
+
 	
 	this.logoutResponse = function() {
 		var that = this;
@@ -143,132 +305,10 @@ OpenGeoportal.LogIn = function(institution){
 	};
 
 	this.promptLogin = function(event){
+		console.log("promptLogin");
 		this.loginDialog();
 	};
 
-	this.applyLoginActions = function(){
-		// how do we update the UI so the user know login succeeded?
-		this.changeLoginButtonsToControls();
-		//change the login button in top right to logout
-		var that = this;
-		//console.log(this);
-		jQuery("#headerLogin").text("Logout");
-		jQuery("#headerLogin").unbind("click");
-		jQuery("#headerLogin").click(function(event){event.preventDefault();
-		//for logout capability
-		that.login.processLogout();
-		/*var ajaxArgs = {url: "logout", 
-			crossDomain: true,
-			xhrFields: {
-				withCredentials: true
-				},
-			context: that,
-			dataType: "json",
-			success: that.logoutResponse
-			};
-		jQuery.ajax(ajaxArgs);*/
-		});
-	};
-
-//return the login form to be presented to the user
-	this.getLoginContent = function(message){
-		var dialogContent;
-		if (this.TYPE == "form"){
-			dialogContent = '<form><table>' + 
-			'<tr><td>' + this.userNameLabel + '</td>' + 
-			'<td><input type="text" id="loginFormUsername" name="loginFormUsername"/></td></tr>' +
-			'<tr><td>' + this.passwordLabel + '</td>' + 
-			'<td><input type="password" id="loginFormPassword" name="loginFormUsername"/></td></tr>' +
-			'</table></form>';
-		} else if (this.TYPE == "iframe"){
-			dialogContent = '<form><table>' +
-			'<iframe  id="loginIframe"  frameborder="0"  vspace="0"  hspace="0"  marginwidth="2"  marginheight="2" width="700"  ' +
-			'height="600"  src="' + this.authenticationPage + '"></iframe></table></form>';
-		}
-		if (message != null) {
-			dialogContent = dialogContent + '<br/><span class="warning">' + message + "</span>";
-		}
-		
-		return dialogContent;
-	};
-
-	this.loginDialog = function(loginObj){
-		var dialogContent = "";
-		if (loginObj == null){
-			dialogContent = this.getLoginContent();
-		} else if (typeof loginObj.message == "undefined"){
-			dialogContent = this.getLoginContent();
-		} else {
-			dialogContent = this.getLoginContent(loginObj.message);
-		}
-	
-		var that = this;
-		if (typeof jQuery('#loginDialog')[0] == 'undefined'){
-			var shareDiv = '<div id="loginDialog" class="dialog"> \n';
-			shareDiv += dialogContent;
-			shareDiv += '</div> \n';
-			jQuery('body').append(shareDiv);
-		
-			var loginButtons;
-			if (this.TYPE == "form"){
-				loginButtons = {
-						Login: function() {
-							that.processFormLogin();
-						},
-						Cancel: function() {
-							jQuery(this).dialog('close');
-							jQuery(document).trigger("loginCancel");
-						}
-				};
-			} else if (this.TYPE == "iframe"){
-				loginButtons = {
-						Cancel: function() {
-							jQuery(this).dialog('close');
-							jQuery(document).trigger("loginCancel");
-						}
-					};
-			}
-		
-		jQuery("#loginDialog").dialog({
-			autoOpen: false,
-			width: 'auto',
-			title: this.dialogTitle,
-			context: that,
-			resizable: false,
-			zIndex: 3000,
-			stack: true,
-			buttons: loginButtons });
-    } else {
-    	//replace dialog text/controls & open the instance of 'dialog' that already exists
-		jQuery("#loginDialog").html(dialogContent);
-	}
-
-	
-	if (this.TYPE == "form"){
-		jQuery("#loginDialog").unbind("keypress");
-		jQuery('#loginDialog').bind("keypress", function(event){
-			if (event.keyCode == '13') {
-				that.processFormLogin();
-			} 
-		});
-	} else if (this.TYPE == "iframe"){
-		this.processIframeLogin();
-	}
-	
-	jQuery("#loginDialog").dialog('open');
-};
-
-this.checkLoginStatus = function(){
-	var that = this;
-	var url = this.getUrl() + "loginStatus";
-	var ajaxArgs = {url: url, type: "GET", 
-			context: that,
-			crossDomain: true,
-			dataType: "json",
-			success: that.loginStatusResponse
-			};
-	jQuery.ajax(ajaxArgs);
-};
 
 
 // retrieve user entered values, generate https request and set login flag
@@ -296,14 +336,7 @@ this.processFormLogin = function()
 	
 };
 	
-this.processIframeLogin = function(){
-	var that = this;
-	jQuery.receiveMessage(
-			function(e) {
-				that.loginResponse(jQuery.parseJSON(e.data));
-				},
-			that.ogpBase);
-};
+
 
 
 this.processLogout = function(){
@@ -380,4 +413,4 @@ this.loginStatusError = function(jqXHR, textStatus, errorThrown){
 };
 
 	
-};
+*/

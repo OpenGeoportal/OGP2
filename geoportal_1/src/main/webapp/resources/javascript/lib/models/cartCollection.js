@@ -105,7 +105,9 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		if (dataType == "libraryrecord"){
 			return false;
 		}
-		if ((institution != "tufts")||(access != "public")){
+		//if ((institution != "tufts")||(access != "public")){
+		if (access != "public"){
+
 			return false;
 		} else {
 			return true;

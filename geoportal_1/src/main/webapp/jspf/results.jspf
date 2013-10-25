@@ -1,17 +1,12 @@
 
- 	<div id="resultsTableHeader" class="tableHeader"> 
-    	<div id="sortDropdown">
-    		Sort Results
-      	</div>
-    	<div id="columnDropdown">
-    		Columns
-		</div>	
-    	<div id="mapClearButton" title="Clear all layers from the map" >
-    		Clear Views
-		</div>			
- 	</div>
+<div id="resultsTableHeader" class="tableHeader">
+	<div id="sortDropdown">Sort Results</div>
+	<div id="columnDropdown">Columns</div>
+	<div id="mapClearButton" title="Clear all layers from the map">
+		Clear Views</div>
+</div>
 <div id="searchResults">
- 	<div id="searchResultsMessage" class="tableFooter"></div>
+	<div id="searchResultsMessage" class="tableFooter"></div>
 </div>
 
 

@@ -10,20 +10,21 @@
 	<%@include file="jspf/header.jspf"%>
 	<%@include file="jspf/search.jspf"%>
 	<div id="container">
-		<div id="roll_right" class="shadowRightOuter"><div class="arrow_right button" ></div></div>
+		<div id="roll_right" class="shadowRightOuter">
+			<div class="arrow_right button"></div>
+		</div>
 		<div id="left_col" class="shadowRightOuter">
 			<%@include file="jspf/leftPanel.jspf"%>
 		</div>
-		<div id="map">
-		</div>
+		<div id="map"></div>
 	</div>
-	<%@include file="jspf/footer.jspf"%>	
+	<%@include file="jspf/footer.jspf"%>
 
-<div id="dialogs" class="hiddenElements">
-	<%@include file="jspf/about.jspf"%> 
-	<%@include file="jspf/contact.jspf"%> 
-</div>
-<div id="iframes" class="hiddenElements"></div>
-<div id="infoBubbles"></div>
+	<div id="dialogs" class="hiddenElements">
+		<%@include file="jspf/about.jspf"%>
+		<%@include file="jspf/contact.jspf"%>
+	</div>
+	<div id="iframes" class="hiddenElements"></div>
+	<div id="infoBubbles"></div>
 </body>
 </html>

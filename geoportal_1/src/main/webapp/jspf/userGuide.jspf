@@ -11,27 +11,37 @@ div#userGuide {
 	overflow: auto;
 }
 
-div#userGuide@font-face {
+div
+#userGuide
+@font-face {
 	font-family: Wingdings;
 	panose-1: 5 0 0 0 0 0 0 0 0 0;
 }
 
-div#userGuide@font-face {
+div
+#userGuide
+@font-face {
 	font-family: Wingdings;
 	panose-1: 5 0 0 0 0 0 0 0 0 0;
 }
 
-div#userGuide@font-face {
+div
+#userGuide
+@font-face {
 	font-family: Calibri;
 	panose-1: 2 15 5 2 2 2 4 3 2 4;
 }
 
-div#userGuide@font-face {
+div
+#userGuide
+@font-face {
 	font-family: Tahoma;
 	panose-1: 2 11 6 4 3 5 4 4 2 4;
 }
 
-div#userGuide@font-face {
+div
+#userGuide
+@font-face {
 	font-family: Georgia;
 	panose-1: 2 4 5 2 5 4 5 2 3 3;
 }
@@ -183,9 +193,9 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 		<b><span style='font-size: 16.0pt; color: black'>Table of
 				Contents</span></b>
 	</p>
-	<span class="button" onclick="jQuery('#userGuide').scrollTo(0);" style="position:absolute;top:30px;right:25px;color:blue;">
-	top
-	</span>
+	<span class="button" onclick="jQuery('#userGuide').scrollTo(0);"
+		style="position: absolute; top: 30px; right: 25px; color: blue;">
+		top </span>
 
 
 	<ol>
@@ -559,13 +569,11 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					Princeton, MassGIS, Stanford and UC Berkeley. The single interface
 					is skinnable and may have slight differences in appearance based on
 					the institution hosting the application.</span>
-			</p>
-			<br/>
+			</p> <br />
 			<p class=MsoNormal align=center>
 				<span style='color: black'><img border=0 width=624 height=383
 					id="Picture2" src="resources/media/userGuide/image001.gif"></span>
-			</p>
-			<br/>
+			</p> <br />
 		</li>
 		<li>
 			<p class=MsoListParagraph>
@@ -581,14 +589,12 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					quickly on how to interact with the map, search, preview, and
 					download data.
 				</span>
-			</p>
-			<br/>
-			<p class=MsoNormal align=center >
+			</p> <br />
+			<p class=MsoNormal align=center>
 				<b><span style='font-size: 16.0pt'><img border=0
 						width=455 height=416 id="Picture13"
 						src="resources/media/userGuide/image002.gif"></span></b>
-			</p>
-			<br/>
+			</p> <br />
 		</li>
 		<li>
 			<p class=MsoListParagraphCxSpMiddle>
@@ -614,7 +620,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 								Place</span> is used for a geospatial search. When you use the Find
 							Place field, the OpenGeoportal provides a view of the location
 							you entered and restricts the returned data records to those
-							intersecting the spatial search area.  Returned results are ranked according to a unique set of spatial algorithms.
+							intersecting the spatial search area. Returned results are ranked
+							according to a unique set of spatial algorithms.
 						</p>
 					</li>
 					<li>
@@ -640,8 +647,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 							<span style='color: black; text-decoration: none'>Forward</span>
 							<img border=0 width=21 height=19 id="Picture32"
 								src="resources/media/userGuide/image005.jpg"><span
-								style='color: black'> Moves you through subsequent map extents
-								</span>
+								style='color: black'> Moves you through subsequent map
+								extents </span>
 						</p>
 					</li>
 					<li>
@@ -667,18 +674,18 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					</li>
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
-							<span style='color: black; text-decoration: none'>Zoom Slider
-								Bar</span><span style='color: black'> displays for each map,
-								allowing you to zoom in or zoom out by clicking the ends of the
-								slider bar, or by dragging the slider up or down on the bar.</span>
+							<span style='color: black; text-decoration: none'>Zoom
+								Slider Bar</span><span style='color: black'> displays for each
+								map, allowing you to zoom in or zoom out by clicking the ends of
+								the slider bar, or by dragging the slider up or down on the bar.</span>
 						</p>
 					</li>
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black; text-decoration: none'>Clear
 								Previews</span><img border=0 width=77 height=22 id="Picture297"
-								src="resources/media/userGuide/image008.gif">Used to deselect any
-							results checked to preview and remove them from the
+								src="resources/media/userGuide/image008.gif">Used to
+							deselect any results checked to preview and remove them from the
 							map
 						</p>
 					</li>
@@ -686,9 +693,9 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				<p class=MsoNormal
 					style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 					<span style='color: black'><img border=0 width=622
-						height=362 id="Picture3" src="resources/media/userGuide/image009.gif"></span>
-				</p>
-				<br/>
+						height=362 id="Picture3"
+						src="resources/media/userGuide/image009.gif"></span>
+				</p> <br />
 			</li>
 
 			<li>
@@ -699,15 +706,12 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				<p class=MsoNormal
 					style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 					In order to search for data, click on the <b>Search</b> tab.
-				</p>
-
-<br/>
+				</p> <br />
 				<p class=MsoNormal
 					style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 					<img border=0 width=626 height=311 id="Picture4"
 						src="resources/media/userGuide/image010.gif">
-				</p>
-<br/>
+				</p> <br />
 				<p class=MsoNormal
 					style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 					There are two ways to locate, explore and download data. These two
@@ -721,22 +725,19 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>Using the Map to Search
 							can be done in several ways:</p>
-						<p class=MsoListParagraph >
-							(a)The <b>Find
-								Place</b> field is used for a geospatial search. When you use the
-							Find Place field, the OpenGeoportal zooms to the
+						<p class=MsoListParagraph>
+							(a)The <b>Find Place</b> field is used for a geospatial search.
+							When you use the Find Place field, the OpenGeoportal zooms to the
 							location you entered and restricts the returned data records to
 							those intersecting the resulting map extent.
-						</p>
-<br/>
-						<p class=MsoNormal >
+						</p> <br />
+						<p class=MsoNormal>
 							For example, to search for data in the Boston area: 1. In the <b>Find
 								Place </b>field, type<b> Boston, MA</b> and click "go". 2. In <b>Search
 								Results</b>, you see all the data layers that are within or
-							partially within the Boston area. By default they are ordered by a unique spatial relevance algorithm.
-						</p>
-
-<br/>
+							partially within the Boston area. By default they are ordered by
+							a unique spatial relevance algorithm.
+						</p> <br />
 						<p class=MsoNormal>
 							<img border=0 width=628 height=484 id="Picture5"
 								src="resources/media/userGuide/image011.gif">
@@ -745,9 +746,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoNormal>
 							If you hover your mouse pointer over a data layer in the <b>Results</b>
 							list, you can see its extent previewed in blue on the map.
-						</p>
-
-<br/>
+						</p> <br />
 						<p class=MsoNormal>
 							<img border=0 width=624 height=457 id="Picture312"
 								src="resources/media/userGuide/image012.gif">
@@ -756,32 +755,32 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 						<p class=MsoListParagraph>
 							(b)<span style='font: 7.0pt "Times New Roman"'> </span><b>Drag
-								and Draw a Box</b> to perform a search similar to "Find Place". Using
-							the <b><span style='color: black'>Zoom In</span></b><span
+								and Draw a Box</b> to perform a search similar to "Find Place".
+							Using the <b><span style='color: black'>Zoom In</span></b><span
 								style='color: black'> </span><img border=0 width=26 height=21
 								id="Picture44" src="resources/media/userGuide/image006.jpg"><span
 								style='color: black'> tool while clicking and dragging
-								draws a box that zooms to the extent of the area of interest. By default the OpenGeoportal returns 
-								relevant results each time the displayed map extent changes.</span>
+								draws a box that zooms to the extent of the area of interest. By
+								default the OpenGeoportal returns relevant results each time the
+								displayed map extent changes.</span>
 						</p>
 
 						<p class=MsoNormal
 							style='margin-bottom: 0in; margin-bottom: .0001pt; line-height: normal'>
 							For example, to search for data for the Boston area: 1. Drag and
 							draw a box over<b> Boston, MA</b>. 2. In <b>Search Results</b>,
-							you will see all the data layers that are within or partially within
-							Boston.
-						</p>
-
-<br/>
+							you will see all the data layers that are within or partially
+							within Boston.
+						</p> <br />
 						<p class=MsoNormal>
 							<img border=0 width=624 height=486 id="Picture313"
 								src="resources/media/userGuide/image013.gif">
-						</p>
-<br/>
+						</p> <br />
 						<p class=MsoNormal>Also, panning or zooming in to a different
-							area imresources/mediately initiates another search for the new area.</p>
-						<p>Try combining your spatial search with a text search to further refine your results.</p>
+							area imresources/mediately initiates another search for the new
+							area.</p>
+						<p>Try combining your spatial search with a text search to
+							further refine your results.</p>
 					</li>
 					<li>
 						<p class=MsoListParagraph>
@@ -843,7 +842,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 								<p class=MsoNormal
 									style='margin-top: 0in; margin-right: 0in; margin-bottom: 0in; margin-left: .25in; margin-bottom: .0001pt; line-height: normal'>
 									<span style='color: black'><img border=0 width=597
-										height=356 id="Picture11" src="resources/media/userGuide/image016.gif"></span>
+										height=356 id="Picture11"
+										src="resources/media/userGuide/image016.gif"></span>
 								</p>
 
 								<ol type="i">
@@ -862,7 +862,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 											<li>
 												<p class=MsoListParagraphCxSpMiddle
 													style='line-height: normal'>
-													<b>Agriculture and Farming<br/>
+													<b>Agriculture and Farming<br />
 													</b>The rearing of animals or cultivation of plants. For
 													example, resources describing irrigation, aquaculture,
 													herding, and pests and diseases affecting crops and
@@ -872,7 +872,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 											<li>
 												<p class=MsoListParagraphCxSpMiddle
 													style='line-height: normal'>
-													<b>Biology and Ecology<br/>
+													<b>Biology and Ecology<br />
 													</b>Naturally occurring flora and fauna. For example, resources
 													describing wildlife, biological sciences, ecology,
 													wilderness, sea life, wetlands, and habitats.
@@ -1127,10 +1127,9 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 									<li>
 										<p class=MsoListParagraphCxSpMiddle>
 											<a id="datacategory"></a><span style='color: black'>Repository</span>
-											- Click the <i><b>Select
-													Repositories</b></i> dropdown. Use the checkboxes to include all or a
-											select set of the data available from the contributing data
-											repositories.
+											- Click the <i><b>Select Repositories</b></i> dropdown. Use
+											the checkboxes to include all or a select set of the data
+											available from the contributing data repositories.
 										</p>
 
 										<p class=MsoNormal
@@ -1147,11 +1146,11 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 											view or download the restricted data. Generally speaking,
 											individuals from each of the data repositories will have
 											privileges to log in to data from their own institution. By
-											checking this, results might be returned that you would
-											be unable to preview or download through the portal.
+											checking this, results might be returned that you would be
+											unable to preview or download through the portal.
 										</p>
 
-										<p class=MsoNormal >
+										<p class=MsoNormal>
 											<img border=0 width=237 height=38 id="Picture48"
 												src="resources/media/userGuide/image023.gif">
 										</p>
@@ -1173,14 +1172,14 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 											</li>
 											<li>
 												<p class=MsoListParagraphCxSpLast>
-													If you uncheck <b>Limit the Visible Map Area</b>,
-													the spatial component of the search will be removed. 
-													The search results will include layers from different
-													parts of the world. Only the text search will be in effect.
+													If you uncheck <b>Limit the Visible Map Area</b>, the
+													spatial component of the search will be removed. The search
+													results will include layers from different parts of the
+													world. Only the text search will be in effect.
 												</p>
 											</li>
 										</ul>
-										<p class=MsoNormal >
+										<p class=MsoNormal>
 											<img border=0 width=223 height=44 id="Picture53"
 												src="resources/media/userGuide/image024.gif">
 										</p>
@@ -1197,10 +1196,15 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				</p>
 				<ul>
 					<li>
-					<p><b>Combine spatial and text searches</b> - For example, zoom in to Boston, MA and type "buildings" in the search box
-					for an effective way to search for Boston buildings. An advantage to this type of search is that buildings layers for towns in the Boston area,
-					but not a part of Boston proper will appear.  Use the "Find a Place" search box for a quick way to zoom in to a location.
-					</p>
+						<p>
+							<b>Combine spatial and text searches</b> - For example, zoom in
+							to Boston, MA and type "buildings" in the search box for an
+							effective way to search for Boston buildings. An advantage to
+							this type of search is that buildings layers for towns in the
+							Boston area, but not a part of Boston proper will appear. Use the
+							"Find a Place" search box for a quick way to zoom in to a
+							location.
+						</p>
 					</li>
 					<li>
 						<p class=MsoListParagraphCxSpFirst>
@@ -1230,9 +1234,9 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 			</li>
 			<li id="search_tab_pref">
-				<p class=MsoNoSpacing >
-					<b> <span
-							style='text-decoration: none'>Search Tab Preferences</span></b>
+				<p class=MsoNoSpacing>
+					<b> <span style='text-decoration: none'>Search Tab
+							Preferences</span></b>
 				</p>
 				<p class=MsoNormal>
 					<span style='color: black'>Elements on the <b>Search</b> tab
@@ -1245,32 +1249,33 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Collapse/Expand</span> <img border=0
 								width=17 height=16 id="Picture20"
-								src="resources/media/userGuide/image025.jpg">collapses or expands
-							the portion of the Search tab where criteria are entered. Having
-							this portion of the tab collapsed allows more search results to
-							appear on the screen.
+								src="resources/media/userGuide/image025.jpg">collapses or
+							expands the portion of the Search tab where criteria are entered.
+							Having this portion of the tab collapsed allows more search
+							results to appear on the screen.
 						</p>
 					</li>
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Collapse Left</span> <img border=0
 								width=16 height=13 id="Picture21"
-								src="resources/media/userGuide/image026.jpg"> collapses the tabbed
-							area of the interface completely, maximizing the map view. When
-							the left side of the screen is collapsed, the button to expand
-							right displays at the left edge of the screen. Using the expand
-							right button will restore the interface to the default view.
+								src="resources/media/userGuide/image026.jpg"> collapses
+							the tabbed area of the interface completely, maximizing the map
+							view. When the left side of the screen is collapsed, the button
+							to expand right displays at the left edge of the screen. Using
+							the expand right button will restore the interface to the default
+							view.
 						</p>
 					</li>
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Expand Right</span> <img border=0
 								width=15 height=14 id="Picture22"
-								src="resources/media/userGuide/image027.jpg"> collapses the map area
-							of the interface completely, maximizing the tabbed potion of the
-							interface. When the right side of the screen is collapsed, using
-							the expand left button will restore the interface to the default
-							view.
+								src="resources/media/userGuide/image027.jpg"> collapses
+							the map area of the interface completely, maximizing the tabbed
+							potion of the interface. When the right side of the screen is
+							collapsed, using the expand left button will restore the
+							interface to the default view.
 						</p>
 						<p class=MsoNormal>
 							<img border=0 width=629 height=233 id="Picture12"
@@ -1278,7 +1283,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						</p>
 					</li>
 					<li>
-											<p class=MsoNormal>Above the map on the right, three buttons are displayed:</p>
+						<p class=MsoNormal>Above the map on the right, three buttons
+							are displayed:</p>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Save Image</span> <img border=0
 								width=88 height=21 id="Picture24"
@@ -1293,20 +1299,23 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Print</span> <img border=0 width=89
-								height=20 id="Picture27" src="resources/media/userGuide/image030.jpg"><span
+								height=20 id="Picture27"
+								src="resources/media/userGuide/image030.jpg"><span
 								style='color: black'> The Print button allows you to
 								print the current map.<br> Tip - Consider using a PDF
-								printer to avoid having to download a map, saving the map with
-								a name and location of your choosing.
+								printer to avoid having to download a map, saving the map with a
+								name and location of your choosing.
 							</span>
 						</p>
 					</li>
 					<li>
 						<p class=MsoListParagraphCxSpMiddle>
 							<span style='color: black'>Basemap</span> <img border=0 width=87
-								height=25 id="Picture30" src="resources/media/userGuide/image031.jpg"><b><span
+								height=25 id="Picture30"
+								src="resources/media/userGuide/image031.jpg"><b><span
 								style='color: black'> </span></b><span style='color: black'>There
-								are five options for the basemap you can use in the OpenGeoportal.</span>
+								are five options for the basemap you can use in the
+								OpenGeoportal.</span>
 						</p>
 						<p class=MsoNormal>
 							<img border=0 width=556 height=182 id="Picture9"
@@ -1324,8 +1333,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 								<p class=MsoListParagraphCxSpMiddle>
 									<b><span style='color: black'>Google Hybrid</span></b><span
 										style='color: black'> - The Hybrid view shows a map
-										depicting roads, parks, borders, and more, overlayed on satellite
-										imagery.</span>
+										depicting roads, parks, borders, and more, overlayed on
+										satellite imagery.</span>
 								</p>
 							</li>
 							<li>
@@ -1347,8 +1356,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 								<p class=MsoListParagraphCxSpMiddle>
 									<b><span style='color: black'>Google Physical - </span></b><span
 										style='color: black'>This shows the topography and
-										physical features of the land along with major roads.
-									</span>
+										physical features of the land along with major roads. </span>
 								</p>
 							</li>
 							<li>
@@ -1356,7 +1364,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 									<b><span style='color: black'>Open Street Map</span></b><span
 										style='color: black'> - This option is a free, editable
 										source of geographic data, which is built similar to
-										Wikipedia. OSM has mapped some parts of the world not easily available from other sources.</span>
+										Wikipedia. OSM has mapped some parts of the world not easily
+										available from other sources.</span>
 								</p>
 							</li>
 						</ul>
@@ -1412,14 +1421,15 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 							src="resources/media/userGuide/image036.jpg"><span
 							style='color: black'> Expands the result to provide
 							options to customize opacity, font size and color, adjusting how
-							the data will preview on the map. Click on the arrow by the
-							data layer to show controls. </span>
+							the data will preview on the map. Click on the arrow by the data
+							layer to show controls. </span>
 					</p>
 
 					<p class=MsoNormal
 						style='margin-top: 0in; margin-right: 0in; margin-bottom: 0in; margin-left: .5in; margin-bottom: .0001pt; line-height: normal'>
 						<span style='color: black'><img border=0 width=442
-							height=131 id="Picture15" src="resources/media/userGuide/image037.gif"></span>
+							height=131 id="Picture15"
+							src="resources/media/userGuide/image037.gif"></span>
 					</p>
 
 				</li>
@@ -1428,8 +1438,9 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<span style='color: black'>Add to Cart</span> <span
 							style='color: black'> - A checkbox used to save a result
 							to the Cart. Simply check the box and the data layer will be
-							placed in the cart. The cart is a temporary holding place to preview or download chosen results, which
-							can be accessed by clicking the Cart tab.</span>
+							placed in the cart. The cart is a temporary holding place to
+							preview or download chosen results, which can be accessed by
+							clicking the Cart tab.</span>
 					</p>
 
 					<p class=MsoNormal>
@@ -1442,9 +1453,10 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<span style='color: black'>Data Type</span>
 					</p>
 					<p class=MsoNormal>
-						<img width=18 height=115 src="resources/media/userGuide/image039.jpg"
-							align=left hspace=12><span style='color: black'>Raster
-							- a generally rectangular grid of pixels</span>
+						<img width=18 height=115
+							src="resources/media/userGuide/image039.jpg" align=left hspace=12><span
+							style='color: black'>Raster - a generally rectangular grid
+							of pixels</span>
 					</p>
 
 					<p class=MsoNormal>
@@ -1472,8 +1484,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				</li>
 				<li>
 					<p class=MsoListParagraphCxSpMiddle>
-						<span style='color: black'>Name</span> 
-						<span style='color: black'> - The document or data set name</span>
+						<span style='color: black'>Name</span> <span style='color: black'>
+							- The document or data set name</span>
 					</p>
 
 					<p class=MsoNormal>
@@ -1483,8 +1495,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				</li>
 				<li>
 					<p class=MsoListParagraphCxSpMiddle>
-						<span style='color: black'>Originator</span> 
-						<span style='color: black'> - The office or agency providing the
+						<span style='color: black'>Originator</span> <span
+							style='color: black'> - The office or agency providing the
 							source data for the search result</span>
 					</p>
 
@@ -1529,14 +1541,15 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<span style='color: black'><img border=0 width=628
-							height=335 id="Picture461" src="resources/media/userGuide/image045.gif"></span>
+							height=335 id="Picture461"
+							src="resources/media/userGuide/image045.gif"></span>
 					</p>
 					<p class=MsoNormal>
 						<span style='color: black'>Within Preview, there are
-							several options for controlling how your features look and exploring
-							their attribute data. They are <b>a. Opacity, b. Width, c.
-								Color, d. Zoom to Geographic Extent of Layer, </b>and<b> e.
-								Click a Previewed Feature on the Map to View its Attributes.</b>
+							several options for controlling how your features look and
+							exploring their attribute data. They are <b>a. Opacity, b.
+								Width, c. Color, d. Zoom to Geographic Extent of Layer, </b>and<b>
+								e. Click a Previewed Feature on the Map to View its Attributes.</b>
 						</span>
 					</p>
 					<ol type="a">
@@ -1544,23 +1557,24 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Opacity</span><span
 									style='color: black'> - controls the transparency of the
-									data layer in the view. Hover your cursor over the control and a
-									scale bar appears. Move the arrow up and down the scale to adjust
-									the opacity of the layer.</span>
+									data layer in the view. Hover your cursor over the control and
+									a scale bar appears. Move the arrow up and down the scale to
+									adjust the opacity of the layer.</span>
 							</p>
 
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=627
-									height=343 id="Picture462" src="resources/media/userGuide/image046.gif"></span>
+									height=343 id="Picture462"
+									src="resources/media/userGuide/image046.gif"></span>
 							</p>
 						</li>
 						<li>
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Size/Ln Width</span><span
-									style='color: black'>- This controls the size of points or the width of the
-									lines (or borders for polygons) in the data layers. Move the
-									arrow on the scale to adjust. Note this option is
-									not available for raster data. </span>
+									style='color: black'>- This controls the size of points
+									or the width of the lines (or borders for polygons) in the data
+									layers. Move the arrow on the scale to adjust. Note this option
+									is not available for raster data. </span>
 							</p>
 
 							<p class=MsoNormal>
@@ -1571,41 +1585,45 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<li>
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Color</span> <span> - Click on
-									the color icon to bring up the color palette. Note this option is
-									not available for raster data. </span>
+									the color icon to bring up the color palette. Note this option
+									is not available for raster data. </span>
 							</p>
 
 
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=627
-									height=293 id="Picture38" src="resources/media/userGuide/image048.gif"></span>
+									height=293 id="Picture38"
+									src="resources/media/userGuide/image048.gif"></span>
 							</p>
 						</li>
 						<li>
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Zoom to Geographic Extent of
 									Layer</span> <img border=0 width=23 height=22 id="Picture113"
-									src="resources/media/userGuide/image049.jpg"> By clicking on the
-								magnifying glass, the map pans and zooms to the full extent of the layer.
+									src="resources/media/userGuide/image049.jpg"> By clicking
+								on the magnifying glass, the map pans and zooms to the full
+								extent of the layer.
 							</p>
 
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=628
-									height=250 id="Picture40" src="resources/media/userGuide/image050.gif"></span>
+									height=250 id="Picture40"
+									src="resources/media/userGuide/image050.gif"></span>
 							</p>
 						</li>
 						<li>
 							<p class=MsoListParagraphCxSpMiddle>
 								<span style='color: black'>Click a Previewed Feature on
 									the Map to View its Attributes</span> <img border=0 width=22 height=21
-									id="Picture115" src="resources/media/userGuide/image051.jpg"><span style='color: black'>By
-									clicking on this, the cursor turns into a crosshairs. Then,
-									click on any feature to bring up the attribute information
-									about it. </span>
+									id="Picture115" src="resources/media/userGuide/image051.jpg"><span
+									style='color: black'>By clicking on this, the cursor
+									turns into a crosshairs. Then, click on any feature to bring up
+									the attribute information about it. </span>
 							</p>
 							<p class=MsoNormal>
 								<span style='color: black'><img border=0 width=622
-									height=260 id="Picture42" src="resources/media/userGuide/image052.gif"></span>
+									height=260 id="Picture42"
+									src="resources/media/userGuide/image052.gif"></span>
 							</p>
 						</li>
 					</ol>
@@ -1623,7 +1641,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoNormal>
 						<span style='color: black'><img border=0 width=435
-							height=273 id="Picture484" src="resources/media/userGuide/image053.gif"></span>
+							height=273 id="Picture484"
+							src="resources/media/userGuide/image053.gif"></span>
 					</p>
 
 					<p class=MsoListParagraphCxSpFirst>
@@ -1635,7 +1654,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 
 					<p class=MsoListParagraphCxSpMiddle>
 						<span style='color: black'><img border=0 width=225
-							height=223 id="Picture485" src="resources/media/userGuide/image054.gif"></span>
+							height=223 id="Picture485"
+							src="resources/media/userGuide/image054.gif"></span>
 					</p>
 
 					<p class=MsoListParagraphCxSpMiddle>
@@ -1697,8 +1717,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				<li>
 					<p class=MsoListParagraphCxSpLast>
 						<span style='color: black'>Clear Previews</span> - Used to
-						deselect any results checked to preview and remove them
-						from the map
+						deselect any results checked to preview and remove them from the
+						map
 					</p>
 
 					<p class=MsoNormal>
@@ -1712,11 +1732,13 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 			<p class=MsoListParagraphCxSpMiddle>
 				<a id="Cart"><b><span style='text-decoration: none'>Cart</span></b></a>
 			<p class=MsoNormal style='line-height: normal'>The Cart tab
-				provides temporary storage for data sets and map images you have selected. From the cart, several actions are possible;
-				downloading layers, creating web services, sharing the contents of your cart, and opening layers in GeoCommons (coming soon). 
-				Hovering on each button will highlight which layers are available for that particular action. Additionally, you can
-				preview the data in the cart the same way you preview data on the
-				Search tab.</p>
+				provides temporary storage for data sets and map images you have
+				selected. From the cart, several actions are possible; downloading
+				layers, creating web services, sharing the contents of your cart,
+				and opening layers in GeoCommons (coming soon). Hovering on each
+				button will highlight which layers are available for that particular
+				action. Additionally, you can preview the data in the cart the same
+				way you preview data on the Search tab.</p>
 
 			<p class=MsoNormal style='line-height: normal'>
 				While in the Search tab, <b>check the layer</b> you want to
@@ -1748,7 +1770,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						<span style='color: black; text-decoration: none'>Download</span>
 						- Used to save selected data and maps to the location of your
 						choice. When you choose to download items in your cart, you are
-						given options on the format and map extent to include.  
+						given options on the format and map extent to include.
 					</p>
 
 					<p class=MsoListParagraphCxSpFirst>
@@ -1781,7 +1803,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 						2.<span style='font: 7.0pt "Times New Roman"'> </span><b>Clip
 							to map extent </b> - Clip to map extent limits the
 						properties/attributes to only those shapes visible in the
-						shapefile.  This is an advised option for raster layers and large data sets.
+						shapefile. This is an advised option for raster layers and large
+						data sets.
 					</p>
 
 					<p class=MsoNormal>
@@ -1820,7 +1843,7 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 		<li>
 			<p class=MsoListParagraphCxSpMiddle>
 				<a id="interface"></a><b><span style='text-decoration: none'>The
-						OpenGeoportal Interface</span></b><br/> <span style='color: black'>Several
+						OpenGeoportal Interface</span></b><br /> <span style='color: black'>Several
 					links are always visible on the Open Geoportal interface. They
 					include four links on a menu bar on the upper right of the site: </span>
 			</p>
@@ -1828,8 +1851,8 @@ normal;border:none;padding:0in'><a id="_top"></a><b><span style='font-size:
 				<li>
 					<p class=MsoListParagraphCxSpMiddle>
 						<span style='color: black; text-decoration: none'>Reset</span> <span
-							style='color: black'> - restores the OpenGeoportal to its default state, 
-							erasing any previously entered search criteria and
+							style='color: black'> - restores the OpenGeoportal to its
+							default state, erasing any previously entered search criteria and
 							emptying your Cart</span>
 					</p>
 				</li>

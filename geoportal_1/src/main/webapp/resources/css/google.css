@@ -1,18 +1,19 @@
 .olLayerGoogleCopyright {
-    right: 3px;
-    bottom: 2px;
-    left: auto;  
-}
-.olLayerGooglePoweredBy {
-	display: none !important;
-    left: 2px;
-    bottom: 2px;   
+	right: 3px;
+	bottom: 2px;
+	left: auto;
 }
 
-.olLayerGoogleCopyright > img{
+.olLayerGooglePoweredBy {
+	display: none !important;
+	left: 2px;
+	bottom: 2px;
+}
+
+.olLayerGoogleCopyright>img {
 	display: none;
 }
 
-.olLayerGoogleCopyright > div{
+.olLayerGoogleCopyright>div {
 	display: none;
 }

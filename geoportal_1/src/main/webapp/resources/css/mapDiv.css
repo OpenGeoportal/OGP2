@@ -1,10 +1,10 @@
 /* map panel */
 #map {
 	min-height: 512px;
-    margin: 0;
- 	min-width: 512px;
- 	position: absolute;
- 	right: 0;
+	margin: 0;
+	min-width: 512px;
+	position: absolute;
+	right: 0;
 }
 
 .map_expanded {
@@ -12,32 +12,30 @@
 	z-index: 500;
 	/*position:absolute;*/
 }
- 
+
 .clearfloats {
-	clear:both;
+	clear: both;
 }
 
 #mapToolBar {
-    height: 31px;
-    position: absolute;
-    right: 0;
-    z-index: 1000;
+	height: 31px;
+	position: absolute;
+	right: 0;
+	z-index: 1000;
 }
 
 #ogpMapButtons {
-  	margin-right:20px;
-  	margin-top: 5px;
+	margin-right: 20px;
+	margin-top: 5px;
 }
 
-
 #ogpMapButtons .ui-button {
-    margin-right: 6px;
+	margin-right: 6px;
 }
 
 #basemapMenu {
-    display: inline-block;
+	display: inline-block;
 }
-
 
 .mapClearButtonItemInactive {
 	height: 20px;
@@ -46,9 +44,9 @@
 	/*background: #cccccc url(../media/bg_grayfade.png)  repeat-x;*/
 	background: #FFFFFF;
 	color: #666666;
-	border:1px solid #AEAEAE;
-	font-family:tahoma;
-	font-size:12px;
+	border: 1px solid #AEAEAE;
+	font-family: tahoma;
+	font-size: 12px;
 	-moz-border-radius: 4px 4px 4px 4px;
 	border-radius: 4px 4px 4px 4px;
 	cursor: pointer;
@@ -58,14 +56,14 @@
 }
 
 .mapClearButtonItemInactive:hover {
-	color:#417dc1; 
+	color: #417dc1;
 }
 
 #mapLoadIndicator {
-   float: left;
-    height: 28px;
-    margin: -3px 5px;
-    width: 28px;
+	float: left;
+	height: 28px;
+	margin: -3px 5px;
+	width: 28px;
 }
 
 div.olControlMousePosition {
@@ -73,297 +71,330 @@ div.olControlMousePosition {
 }
 
 #geoportalMap {
-  margin: 0px;
-  padding: 0px;  
-  opacity: 0;
+	margin: 0px;
+	padding: 0px;
+	opacity: 0;
 }
-  
+
 .olControlScaleLine {
-  margin-left: 60px;
-  padding: 1px;
-  opacity: 0.65;
-  filter:Alpha(Opacity=65);
-  background-color: white;
+	margin-left: 60px;
+	padding: 1px;
+	opacity: 0.65;
+	filter: Alpha(Opacity = 65);
+	background-color: white;
 }
 
 .olControlPanel {
-  left: 50px;
-  top: 5px;
+	left: 50px;
+	top: 5px;
 }
 
 /*.olImageLoadError_custom {
 	display: none;
 }*/
-
 .olControlPanel div {
-  float: left;
+	float: left;
 }
 
 .olControlOverviewMapContainer {
-    position: absolute;
-    bottom: 100%;
-    top: 53px;
-    right: 4px;
+	position: absolute;
+	bottom: 100%;
+	top: 53px;
+	right: 4px;
 }
 
 .olControlOverviewMapElement {
-    padding: 2px 2px 2px 2px;
-    background-color: #CCCCCC;
-    -moz-border-radius: 0 0 0 0;
-    margin-right: -3px;
-    margin-top: -21px;
+	padding: 2px 2px 2px 2px;
+	background-color: #CCCCCC;
+	-moz-border-radius: 0 0 0 0;
+	margin-right: -3px;
+	margin-top: -21px;
 }
 
 .olControlOverviewMapMinimizeButton {
-    right: 0px;
-    bottom: 0px;
-    cursor: pointer;
-}    
+	right: 0px;
+	bottom: 0px;
+	cursor: pointer;
+}
 
 .olControlOverviewMapMaximizeButton {
-    right: 0px;
-    bottom: 0px;
-    cursor: pointer;
+	right: 0px;
+	bottom: 0px;
+	cursor: pointer;
 }
 
 .olControlOverviewMapExtentRectangle {
-    overflow: hidden;
-    /*background-image: url("img/blank.gif");*/
-    cursor: move;
-    border: 2px dotted red;
-}
-.olControlOverviewMapRectReplacement {
-    overflow: hidden;
-    cursor: move;
-    background-image: url("img/overview_replacement.gif");
-    background-repeat: no-repeat;
-    background-position: center;
+	overflow: hidden;
+	/*background-image: url("img/blank.gif");*/
+	cursor: move;
+	border: 2px dotted red;
 }
 
-.olControlNavToolbar { 
-    width:60px;
-    height:30px;
-}    
-.olControlNavToolbar div { 
-  display:block;
-  width:  100px;
-  height: 28px;
-  top: 10px;
-  left: 6px;
-  position: relative;
+.olControlOverviewMapRectReplacement {
+	overflow: hidden;
+	cursor: move;
+	background-image: url("img/overview_replacement.gif");
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.olControlNavToolbar {
+	width: 60px;
+	height: 30px;
+}
+
+.olControlNavToolbar div {
+	display: block;
+	width: 100px;
+	height: 28px;
+	top: 10px;
+	left: 6px;
+	position: relative;
 }
 
 .olControlNavigationHistory {
 	background-image: none;
-	background-repeat:no-repeat;
-	height:38px;
-	width:30px;
-  	cursor: pointer;
+	background-repeat: no-repeat;
+	height: 38px;
+	width: 30px;
+	cursor: pointer;
 }
 
-.olControlNavigationHistoryPreviousItemActive { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px transparent;
-}
-.olControlNavigationHistoryPreviousItemActive:hover { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -31px -183px transparent;
-}
-.olControlNavigationHistoryPreviousItemInactive { 
-   background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px transparent;
+.olControlNavigationHistoryPreviousItemActive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
+		transparent;
 }
 
-.olControlNavigationHistoryNextItemActive { 
-   background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px transparent;
+.olControlNavigationHistoryPreviousItemActive:hover {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -183px
+		transparent;
 }
 
-.olControlNavigationHistoryNextItemActive:hover { 
-   background: url("../media/ogp-sprite.png") no-repeat scroll -61px -183px transparent;
+.olControlNavigationHistoryPreviousItemInactive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
+		transparent;
 }
 
-.olControlNavigationHistoryNextItemInactive { 
-   background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px transparent;
+.olControlNavigationHistoryNextItemActive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
+		transparent;
 }
 
-
-.olControlPanel .olControlNavigationItemActive { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
-  width: 38px;
-  height: 38px;
-  cursor: pointer;
+.olControlNavigationHistoryNextItemActive:hover {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -183px
+		transparent;
 }
 
-
-
-.olControlPanel .olControlNavigationItemInactive { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -122px -139px transparent;
-  width: 38px;
-  height: 38px;
-  cursor: pointer;
+.olControlNavigationHistoryNextItemInactive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
+		transparent;
 }
 
-.olControlPanel .olControlNavigationItemInactive:hover { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
+.olControlPanel .olControlNavigationItemActive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
+		-183px transparent;
+	width: 38px;
+	height: 38px;
+	cursor: pointer;
 }
 
-.olControlPanel .olControlZoomBoxItemActive { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
-  width: 31px;
-  height: 38px;
-  cursor: pointer;
-}
-.olControlPanel .olControlZoomBoxItemInactive { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -91px -139px transparent;
-  width: 31px;
-  height: 38px;
-  cursor: pointer;
+.olControlPanel .olControlNavigationItemInactive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
+		-139px transparent;
+	width: 38px;
+	height: 38px;
+	cursor: pointer;
 }
 
-.olControlPanel .olControlZoomBoxItemInactive:hover { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
+.olControlPanel .olControlNavigationItemInactive:hover {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
+		-183px transparent;
 }
 
+.olControlPanel .olControlZoomBoxItemActive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px
+		transparent;
+	width: 31px;
+	height: 38px;
+	cursor: pointer;
+}
 
-.olControlPanel .olControlZoomToMaxExtentItemInactive { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll 0 -139px transparent;
-  width: 31px;
-  height: 38px;
-  cursor: pointer;
+.olControlPanel .olControlZoomBoxItemInactive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -139px
+		transparent;
+	width: 31px;
+	height: 38px;
+	cursor: pointer;
+}
+
+.olControlPanel .olControlZoomBoxItemInactive:hover {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px
+		transparent;
+}
+
+.olControlPanel .olControlZoomToMaxExtentItemInactive {
+	background: url("../media/ogp-sprite.png") no-repeat scroll 0 -139px
+		transparent;
+	width: 31px;
+	height: 38px;
+	cursor: pointer;
 }
 
 .olControlPanel .olControlZoomToMaxExtentItemInactive:hover {
-  background: url("../media/ogp-sprite.png") no-repeat scroll 0 -183px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll 0 -183px
+		transparent;
 }
 
-.zoomPlus { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -165px -12px transparent;
+.zoomPlus {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -165px -12px
+		transparent;
 }
 
-.zoomMinus { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -165px -240px transparent;
+.zoomMinus {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -165px
+		-240px transparent;
 }
 
-.zoomSlideBar { 
-  background: url("../media/ogp-sprite.png") no-repeat scroll -170px -30px transparent;
+.zoomSlideBar {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -170px -30px
+		transparent;
 }
 
-.zoomSlider { 
+.zoomSlider {
 	background-color: #ffffff;
 	border: 1px solid #555555;
 	z-index: 9;
-	-moz-box-shadow:    3px 0px 5px -1px #777777;
-  	-webkit-box-shadow: 3px 0px 5px -1px #777777;
-  	box-shadow:         3px 0px 5px -1px #777777;
+	-moz-box-shadow: 3px 0px 5px -1px #777777;
+	-webkit-box-shadow: 3px 0px 5px -1px #777777;
+	box-shadow: 3px 0px 5px -1px #777777;
 }
 
 .olHandlerBoxZoomBox {
-    border: 2px solid red;
-    position: absolute;
-    background-color: white;
-    opacity: 0.50;
-    font-size: 1px;
-    filter: alpha(opacity=50);
+	border: 2px solid red;
+	position: absolute;
+	background-color: white;
+	opacity: 0.50;
+	font-size: 1px;
+	filter: alpha(opacity = 50);
 }
+
 .olHandlerBoxSelectFeature {
-    border: 2px solid blue;
-    position: absolute;
-    background-color: white;
-    opacity: 0.50;
-    font-size: 1px;
-    filter: alpha(opacity=50);
-}   
+	border: 2px solid blue;
+	position: absolute;
+	background-color: white;
+	opacity: 0.50;
+	font-size: 1px;
+	filter: alpha(opacity = 50);
+}
 
 .olControlPanPanel {
-    top: 37px;
-    left: 5px;
-    width: 41px;
-    height: 41px;
-    background: url("../media/panarrows_bg.png") no-repeat scroll 0 0 transparent;    
-}  
+	top: 37px;
+	left: 5px;
+	width: 41px;
+	height: 41px;
+	background: url("../media/panarrows_bg.png") no-repeat scroll 0 0
+		transparent;
+}
 
 .olControlPanPanel div {
-    cursor: pointer;
-    position: absolute;
-	width:41px;
-	height:41px;
+	cursor: pointer;
+	position: absolute;
+	width: 41px;
+	height: 41px;
 }
 
 .olControlPanPanel .olControlPanNorthItemInactive {
 	width: 18px;
 	height: 18px;
-    top: 2px;
-    left: 13px;
-    background: url("../media/pandarrows_north.png") no-repeat scroll 0 0 transparent;
+	top: 2px;
+	left: 13px;
+	background: url("../media/pandarrows_north.png") no-repeat scroll 0 0
+		transparent;
 }
+
 .olControlPanPanel .olControlPanSouthItemInactive {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 30px;
-    left: 13px;
-    background: url("../media/pandarrows_south.png") no-repeat scroll 0 0 transparent;
+	top: 30px;
+	left: 13px;
+	background: url("../media/pandarrows_south.png") no-repeat scroll 0 0
+		transparent;
 }
+
 .olControlPanPanel .olControlPanWestItemInactive {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 15px;
-    left: 2px;
-    background: url("../media/pandarrows_west.png") no-repeat scroll 0 0 transparent;
+	top: 15px;
+	left: 2px;
+	background: url("../media/pandarrows_west.png") no-repeat scroll 0 0
+		transparent;
 }
+
 .olControlPanPanel .olControlPanEastItemInactive {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 15px;
-    left: 28px;
-    background: url("../media/pandarrows_east.png") no-repeat scroll 0 0 transparent;
+	top: 15px;
+	left: 28px;
+	background: url("../media/pandarrows_east.png") no-repeat scroll 0 0
+		transparent;
 }
 
 .olControlPanPanel .olControlPanNorth {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 2px;
-    left: 13px;
-    background: url("../media/pandarrows_north.png") no-repeat scroll 0 0 transparent;
+	top: 2px;
+	left: 13px;
+	background: url("../media/pandarrows_north.png") no-repeat scroll 0 0
+		transparent;
 }
+
 .olControlPanPanel .olControlPanSouth {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 30px;
-    left: 13px;
-    background: url("../media/pandarrows_south.png") no-repeat scroll 0 0 transparent;
+	top: 30px;
+	left: 13px;
+	background: url("../media/pandarrows_south.png") no-repeat scroll 0 0
+		transparent;
 }
+
 .olControlPanPanel .olControlPanWest {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 15px;
-    left: 2px;
-    background: url("../media/pandarrows_west.png") no-repeat scroll 0 0 transparent;
+	top: 15px;
+	left: 2px;
+	background: url("../media/pandarrows_west.png") no-repeat scroll 0 0
+		transparent;
 }
+
 .olControlPanPanel .olControlPanEast {
-		width: 18px;
+	width: 18px;
 	height: 18px;
-    top: 15px;
-    left: 28px;
-    background: url("../media/pandarrows_east.png") no-repeat scroll 0 0 transparent;
+	top: 15px;
+	left: 28px;
+	background: url("../media/pandarrows_east.png") no-repeat scroll 0 0
+		transparent;
 }
 
 .olControlZoomPanel .olControlZoomOutItemInactive {
-    top: 36px;
-    left: 0px;
-    background-position: 0px 0px;
+	top: 36px;
+	left: 0px;
+	background-position: 0px 0px;
 }
 
 .olImageLoadError {
-    background-color: pink;
-    opacity: 0.5;
-    filter: alpha(opacity=50); /* IE */
+	background-color: pink;
+	opacity: 0.5;
+	filter: alpha(opacity = 50); /* IE */
 }
 
 #OpenLayers.Map_46_GMap2Container {
-	background-color:white !important;
+	background-color: white !important;
 }
 
 .olControlModPanZoomBar {
 	top: 0px !important;
 	left: 0px !important;
-	}
+}
 
 #OpenLayers_Control_PanZoomBar_ZoombarOpenLayers.Map_61 {
 	left: 19px !important;
@@ -374,4 +405,3 @@ div.olControlMousePosition {
 .olLayerGoogleCopyright {
 	z-index: 0 !important;
 }
-

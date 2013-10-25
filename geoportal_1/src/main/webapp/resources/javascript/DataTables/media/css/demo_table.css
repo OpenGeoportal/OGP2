@@ -29,7 +29,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * DataTables features
  */
-
 .dataTables_wrapper {
 	position: relative;
 	/*min-height: 302px;
@@ -71,14 +70,15 @@
 }
 
 .dataTables_paginate {
-	width: 44px;
-	* width: 50px;
+	width: 44px; *
+	width: 50px;
 	float: right;
 	text-align: right;
 }
 
 /* Pagination nested */
-.paginate_disabled_previous, .paginate_enabled_previous, .paginate_disabled_next, .paginate_enabled_next {
+.paginate_disabled_previous,.paginate_enabled_previous,.paginate_disabled_next,.paginate_enabled_next
+	{
 	height: 19px;
 	width: 19px;
 	margin-left: 3px;
@@ -101,8 +101,6 @@
 	background-image: url('../images/forward_enabled.jpg');
 }
 
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * DataTables display
  */
@@ -110,7 +108,7 @@ table.display {
 	margin: 0px;
 	font-family: Arial, sans-serif;
 	border-collapse: collapse;
-/*	width: 100%;
+	/*	width: 100%;
 	clear: both;
 	*/
 	/* Note Firefox 3.5 and before have a bug with border-collapse
@@ -128,15 +126,15 @@ table.display {
 }
 
 table.display thead th {
-	border-collapse:collapse;
+	border-collapse: collapse;
 	padding: 3px 18px 3px 10px;
 	margin: 0px;
 	border: 1px solid rgb(204, 204, 204);
 	font-size: 11px;
 	color: #333333;
 	font-weight: normal;
-	cursor: pointer;
-	* cursor: hand;
+	cursor: pointer; *
+	cursor: hand;
 }
 /*
 table.display tfoot th {
@@ -156,7 +154,7 @@ table.display td {
 	color: #333333;
 	height: .5em;
 	border: 0px;
-	white-space: nowrap;	
+	white-space: nowrap;
 }
 
 table.display td.center {
@@ -165,13 +163,11 @@ table.display td.center {
 
 .searchResultsCell {
 	overflow: hidden;
-
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * DataTables sorting
  */
-
 .sorting_asc {
 	background: url('../images/sort_asc.png') no-repeat center right;
 }
@@ -185,16 +181,14 @@ table.display td.center {
 }
 
 .sorting_asc_disabled {
-	background: url('../images/sort_asc_disabled.png') no-repeat center right;
+	background: url('../images/sort_asc_disabled.png') no-repeat center
+		right;
 }
 
 .sorting_desc_disabled {
-	background: url('../images/sort_desc_disabled.png') no-repeat center right;
+	background: url('../images/sort_desc_disabled.png') no-repeat center
+		right;
 }
-
-
-
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * DataTables row classes
@@ -249,9 +243,6 @@ tr.even {
 }
 */
 
-
-
-
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Misc
  */
@@ -263,7 +254,7 @@ tr.even {
 	*margin-top: -1px;
 }
 
-.top, .bottom {
+.top,.bottom {
 	padding: 15px;
 	background-color: white;
 	border: none;
@@ -301,7 +292,6 @@ td.details {
 	border-bottom: 1px solid rgb(236, 236, 236);
 }
 
-
 .example_alt_pagination div.dataTables_info {
 	width: 40%;
 }
@@ -312,8 +302,8 @@ td.details {
 	line-height: 22px;
 }
 
-.paging_full_numbers span.paginate_button,
- 	.paging_full_numbers span.paginate_active {
+.paging_full_numbers span.paginate_button,.paging_full_numbers span.paginate_active
+	{
 	border: 1px solid #aaa;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
@@ -342,7 +332,6 @@ table.display tr.even.row_selected td {
 table.display tr.odd.row_selected td {
 	background-color: #CCCCDD;
 }
-
 
 /*
  * Sorting classes for columns
@@ -479,15 +468,16 @@ tr.even.gradeU td.sorting_3 {
 	background-color: #e2e2e2;
 }
 
-
 /*
  * Row highlighting example
  */
-.ex_highlight #example tbody tr.even:hover, #example tbody tr.even td.highlighted {
+.ex_highlight #example tbody tr.even:hover,#example tbody tr.even td.highlighted
+	{
 	background-color: #ECFFB3;
 }
 
-.ex_highlight #example tbody tr.odd:hover, #example tbody tr.odd td.highlighted {
+.ex_highlight #example tbody tr.odd:hover,#example tbody tr.odd td.highlighted
+	{
 	background-color: #E6FF99;
 }
 
@@ -523,7 +513,6 @@ tr.even.gradeU td.sorting_3 {
 	background-color: #DBFF70;
 }
 
-
 /*
  * KeyTable
  */
@@ -555,6 +544,6 @@ div.box {
 	height: 100px;
 	padding: 10px;
 	overflow: auto;
-/*	border: 1px solid #8080FF;
+	/*	border: 1px solid #8080FF;
 	background-color: #E5E5FF;*/
 }
