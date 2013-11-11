@@ -102,4 +102,7 @@ OpenGeoportal.Template = function() {
 			"function(value) { %><td><%= value %></td> <% }); %></tr><% }); %>" +
 			"</table>";
 	this.attributeTable= _.template(attributeTableHtml);
+	
+	var tableCellHtml = '<td class="<%= colClass %>"><div class="cellWrapper"><%= contents %></div></td>';
+	this.tableCell = _.template(tableCellHtml);
 };

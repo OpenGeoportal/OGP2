@@ -338,13 +338,13 @@ OpenGeoportal.UserInterface = function(){
 
 		} else if (thisId == 'lessSearchOptions'){
 			jQuery(document).trigger("search.setBasic");
-			jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
+			jQuery(".slideVertical").animate({"margin-top": "-=" + hght * 3, queue: false, duration: 300, easing: "linear"});
 
 			jQuery("#searchForm .advancedSearch.searchRow4").hide();
 			jQuery('#searchBox').animate(
 					{height: "-=" + hght},
 					{queue: false, duration: 100, easing: "linear", complete: function(){
-						jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
+						//jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
 						jQuery("#searchForm .advancedSearch.searchRow3").hide();
 						jQuery('#searchBox').animate(
 								{height: "-=" + hght},
@@ -353,7 +353,7 @@ OpenGeoportal.UserInterface = function(){
 									jQuery('#searchBox').animate(
 											{height: "-=" + hght},
 											{queue: false, duration: 100, easing: "linear", complete: function(){
-												jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
+												//jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
 												jQuery("#geosearchDiv").removeClass("advancedSearch").addClass("basicSearch");
 												jQuery("#searchForm .advancedSearch.searchRow1").hide();
 												jQuery("#searchForm .basicSearch").show();		

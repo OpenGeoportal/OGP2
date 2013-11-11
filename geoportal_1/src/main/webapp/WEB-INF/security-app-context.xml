@@ -7,15 +7,13 @@
                     http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
 	<security:http pattern="/resources/**" security="none" />
+	
 	<security:http use-expressions="true">
-		<security:intercept-url pattern="/login*"
-			access="permitAll" requires-channel="https" />
-		<security:intercept-url pattern="/admin/**"
-			access="hasRole('ROLE_ADMIN')" />
-		<security:intercept-url pattern="/restricted/**"
-			access="isAuthenticated()" />
-		<security:form-login login-page="/logout"
-			login-processing-url="/j_spring_security_logout" />
+		<security:form-login login-page="/login" />
+		<security:logout delete-cookies="JSESSIONID"/>
+		<security:intercept-url pattern="/login*" access="permitAll" requires-channel="https" />
+		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+		<security:intercept-url pattern="/restricted/**" access="isAuthenticated()" />
 		<security:intercept-url pattern="/**" access="permitAll" />
 	</security:http>
 
@@ -25,10 +23,8 @@
 			user-context-mapper-ref="userDetailsMapper.custom" /> -->
 		<security:authentication-provider>
 			<security:user-service>
-				<security:user name="admin" password="pachyderm"
-					authorities="ROLE_ADMIN,ROLE_USER" />
-				<security:user name="user" password="jumbo"
-					authorities="ROLE_USER" />
+				<security:user name="admin" password="pachyderm" authorities="ROLE_ADMIN,ROLE_USER" />
+				<security:user name="user" password="jumbo" authorities="ROLE_USER" />
 			</security:user-service>
 		</security:authentication-provider>
 	</security:authentication-manager>

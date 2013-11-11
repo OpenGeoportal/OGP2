@@ -586,7 +586,7 @@ OpenGeoportal.CommonControls = function CommonControls(){
 				zIndex: 3000,
 				autoOpen: false,
 				width: 'auto',
-				title: dialogTitle.toUpperCase(),
+				title: dialogTitle,
 				resizable: true,
 				buttons: buttonsObj
 			});

@@ -2168,12 +2168,12 @@ Road - Roads without additional imagery.	*/
 		return newExtent;
 	};
 
-	this.boundsArrayToOLObject = function (arrBbox){
+	this.boundsToOLObject = function (model){
 		var newExtent = new OpenLayers.Bounds();
-		newExtent.left = arrBbox[0];
-		newExtent.right = arrBbox[2];
-		newExtent.top = arrBbox[3];
-		newExtent.bottom = arrBbox[1];
+		newExtent.left = model.get("MinX");
+		newExtent.right = model.get("MaxX");
+		newExtent.top = model.get("MaxY");
+		newExtent.bottom = model.get("MinY");
 
 		return newExtent;
 	};
@@ -2182,10 +2182,11 @@ Road - Roads without additional imagery.	*/
 		//this code should be in mapDiv.js, since it has access to the openlayers object
 		var extentArr = [];
 		var maxExtentForLayers;
-		if (extentType == "maxForLayers"){
-			for (var layerId in layerObj){
-				var arrBbox = layerObj[layerId].bounds;
-				extentArr.push(this.boundsArrayToOLObject(arrBbox));
+		if (extentType === "maxForLayers"){
+			for (var indx in layerObj){
+
+				var arrBbox = this.boundsToOLObject(layerObj[indx]);
+				extentArr.push(arrBbox);
 			}
 			if (extentArr.length > 1){
 				maxExtentForLayers = this.getCombinedBounds(extentArr).toBBOX();

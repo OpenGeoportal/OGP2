@@ -33,7 +33,11 @@ OpenGeoportal.CartTable = function CartTable(){
 			header: "<input type=\"checkbox\" id=\"downloadHeaderCheck\" checked />", 
 			columnClass: "colChkBoxes",
 			width: 21,
-			renderFunction: function(data, type, full){return that.controls.renderDownloadControl();}
+			dtRender: function(data, type, full){
+				return that.controls.renderDownloadControl();				},
+		    modelRender: function(model){
+				return that.controls.renderDownloadControl();		
+			}
 	};
 
 	this.tableHeadingsObj.add(columnObj);
@@ -100,7 +104,7 @@ OpenGeoportal.CartTable = function CartTable(){
 	this.downloadDialog = function(){
 		//first, check to see if anything is in savedLayers & checked
 		//backingData is the CartCollection
-		var layerList = this.backingData.getItemsWithAction("download");
+		var layerList = this.getLayerList("download");
 		var dialogContent = "";
 
 		if (layerList.length === 0){

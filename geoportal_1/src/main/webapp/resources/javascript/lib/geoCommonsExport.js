@@ -20,6 +20,11 @@ if (typeof OpenGeoportal.Export == 'undefined'){
 
 OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 	//console.log(exportObj);
+	this.appState = OpenGeoportal.ogp.appState;
+	this.template = this.appState.get("template");
+	this.controls = this.appState.get("controls");
+	
+	console.log(exportObj);
 	this.layerObj = exportObj.layers;
 	this.descriptor = "geoCommonsExport";
 	
@@ -32,7 +37,8 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 		
 	};
 	
-	this.exportDialog = function(uiObject){
+	this.exportDialog = function(){
+		
 		var dialogContent = this.getGeoCommonsExportDialogContent();		
 		var that = this;
 		var dialogTitle = "Export Layers to GeoCommons";
@@ -45,7 +51,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 				jQuery(this).dialog('close');
 			}
 		};
-		uiObject.dialogTemplate(dialogDivId, dialogContent, dialogTitle, buttonsObj);
+		this.controls.dialogTemplate(dialogDivId, dialogContent, dialogTitle, buttonsObj);
 		jQuery("#" + dialogDivId).dialog({"width":"375"});
 		jQuery("#" + dialogDivId).dialog('open');
 		jQuery("#" + dialogDivId).dialog('moveToTop');
@@ -97,7 +103,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 			break;
 		}
 		return elementAsText;
-	}
+	};
 	
 	this.getGeoCommonsExportDialogContent = function() {
 		var identifier = this.descriptor;
@@ -117,7 +123,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 		var layerObj = this.layerObj;
 		var titleArr = [];
 		for (var i in layerObj){
-			titleArr.push(layerObj[i].title);
+			titleArr.push(layerObj[i].get("LayerDisplayName"));
 		}
 		textBoxObj.value = titleArr.join(", ");
 		content += this.getInputElement(textBoxObj);
@@ -155,7 +161,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 		
 		textBoxObj.id = identifier + "Password";
 		textBoxObj.name = "Password";
-		textBoxObj.type = "password"
+		textBoxObj.type = "password";
 		content += this.getInputElement(textBoxObj);
 		
 		content += '<div class="button linkButton" id="createGeoCommonsAccountControl">Create GeoCommons Account</div>';
@@ -163,7 +169,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 
 		content += '</form>';
 		return content;
-	}
+	};
 	
 	//need code to create dialog
 	//code to send ajax request to export servlet
@@ -172,6 +178,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 			//title, description....most of these will be provided by a form
 			var descriptor = this.descriptor;
 			var requestObj = {};
+			requestObj.type = "exportTo";
 			requestObj.basemap = jQuery("#" + descriptor + "Basemap").val();
 			requestObj.username = jQuery("#" + descriptor + "Username").val();
 			requestObj.password = jQuery("#" + descriptor + "Password").val();
@@ -179,8 +186,8 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 			requestObj.title = jQuery("#" + descriptor + "Title").val();
 			requestObj.description = jQuery("#" + descriptor + "Description").val();
 			this.ogpids = [];
-			for (var layerId in this.layerObj){
-				this.ogpids.push(layerId);
+			for (var indx in this.layerObj){
+				this.ogpids.push(this.layerObj[indx].get("LayerId"));
 			}
 			requestObj.OGPIDS = this.ogpids;
 			return requestObj;
@@ -199,7 +206,8 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 		
 		this.exportLayers = function exportLayers(){
 			var requestObj = this.createExportRequest();
-			var that = this;
+			this.appState.get("requestQueue").createRequest(requestObj);
+			/*var that = this;
 			var params = {
 				url: "geocommons/requestExport",
 				data: JSON.stringify(requestObj),
@@ -207,9 +215,9 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 				dataType: "json",
 				type: "POST",
 	    		context: this,
-	    		success: function(data){OpenGeoportal.downloadQueue.registerExportRequest(data.requestId, requestObj);}
+	    		success: function(data){that.appState.get("requestQueue").createRequest(requestObj);}
 			};
-			jQuery.ajax(params);
+			jQuery.ajax(params);*/
 		};
 		
 };

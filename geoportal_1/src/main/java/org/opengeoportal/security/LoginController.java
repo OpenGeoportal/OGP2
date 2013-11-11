@@ -19,17 +19,22 @@ public class LoginController {
 
 	@RequestMapping(value="loginStatus", method=RequestMethod.GET, produces="application/json")
 	@ResponseBody public LoginStatus getStatus() {
+		logger.debug("Login status checked");
 		return loginService.getStatus();
 	}
 
 	@RequestMapping(value="login", method=RequestMethod.POST, produces="application/json")
 	@ResponseBody public LoginStatus login(@RequestParam("username") String username,
                          @RequestParam("password") String password) {
+		logger.debug("Login attempted");
+
 		return loginService.login(username, password);
 	}
 	
 	@RequestMapping(value="logout", method=RequestMethod.GET, produces="application/json")
 	@ResponseBody public LoginStatus logout() {
+		logger.debug("Logout attempted");
+
 		return loginService.logout();
 	}
 }

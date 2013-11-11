@@ -95,7 +95,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 	openGeoCommons: function(model){
 		//should open map in GeoCommons
 		var url = this.requestTypes[model.get("type")].retrieveUrl;	
-		url += "?requestId" + model.get("requestId");
+		url += "?requestId=" + model.get("requestId");
 
 		var successFunction = function(data){
 			window.open(data.location);
@@ -230,7 +230,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 			requestModel.set({status: newStatus, layerStatuses: layerInfo});
 		}
 	},
-	
+	//Each of these should move to the code that generates the request.
 	requestTypes: {
 		layer: {
 			requestUrl:"requestDownload",
@@ -243,7 +243,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 			successCallback: function(){this.iframeDownload.apply(this, arguments);}
 			},
 		exportTo: {
-			requestUrl: "requestExport",
+			requestUrl: "geocommons/requestExport",
 			retrieveUrl: "geocommons/getExport",
 			successCallback: function(){this.openGeoCommons.apply(this, arguments);}
 		}

@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app id="OGP_Tufts" version="2.4"
+<web-app id="OGP" version="2.4"
 	xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-	<display-name>OpenGeoPortal</display-name>
+	<display-name>OpenGeoportal</display-name>
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml classpath*:org/OpenGeoportal/**/applicationContext.xml</param-value>
+		<param-value>/WEB-INF/applicationContext.xml /WEB-INF/security-app-context.xml classpath*:org/opengeoportal/**/applicationContext.xml</param-value>
 	</context-param>
 	<filter>
 		<filter-name>jsonpCallbackFilter</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
 	</filter>
-	<filter-mapping>
-		<filter-name>jsonpCallbackFilter</filter-name>
-		<url-pattern>/login</url-pattern>
-	</filter-mapping>
 	<filter-mapping>
 		<filter-name>jsonpCallbackFilter</filter-name>
 		<url-pattern>/loginStatus</url-pattern>
@@ -41,7 +37,7 @@
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 	<listener>
-		<listener-class>org.OpenGeoportal.Download.RequestStatusSessionListener</listener-class>
+		<listener-class>org.opengeoportal.download.RequestStatusSessionListener</listener-class>
 	</listener>
 	<servlet>
 		<servlet-name>appServlet</servlet-name>

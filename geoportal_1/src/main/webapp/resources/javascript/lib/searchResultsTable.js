@@ -49,8 +49,16 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			header: "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>", 
 			columnClass: "colSave",
 			width: 19,
-			renderFunction: function(data, type, full){return that.controls.renderSaveControl(full.LayerId);}
-	};
+			dtRender: function(data, type, full){
+				var layerId = full.LayerId;
+				return that.controls.renderSaveControl(layerId);
+				},
+		    modelRender: function(model){
+		    	var layerId = model.get("LayerId");
+		    	return that.controls.renderSaveControl(layerId);
+		    	}
+   
+		 };
 	
 	this.tableHeadingsObj.add(columnObj);
 	
@@ -141,8 +149,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			}
 			if (aoData[i].name == "iSortCol_0"){
         		console.log("sort col:" + aoData[i].value);
-        		var sortColumn = this.tableHeadingsObj.getHeadingFromTargetIndex(aoData[i].value);
-        		console.log("sort col name:" + sortColumn);
+        		//var sortColumn = this.tableHeadingsObj.getHeadingFromTargetIndex(aoData[i].value);
+        		//console.log("sort col name:" + sortColumn);
 			}
 			if (aoData[i].name == "sSortDir_0"){
         		console.log("sort dir:" + aoData[i].value);
@@ -154,9 +162,11 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	this.getAdditionalQueryData = function(aoData){
 
 		var data = this.processAoData(aoData);
-		var queryData = {};
-		queryData.start = data.start;
-		queryData.rows = data.rows;
+		var queryData = {
+			start: data.start,
+			rows: data.rows
+		};
+
 		return queryData;		
 	};
 	

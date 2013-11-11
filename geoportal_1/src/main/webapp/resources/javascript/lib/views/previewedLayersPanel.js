@@ -14,7 +14,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 	 tagName: "tr",
 	 className: "previewedRow",
 	  events: {
-		    "click .viewMetadataControl"   : "viewMetadata",//should be on the sub-view for the row?
+		    "click .viewMetadataControl"   : "viewMetadata",
 		    "click .colSave"    : "toggleSave",
 		    "click .colPreview" : "togglePreview",
 		    "click .colExpand"	: "toggleExpand",
@@ -24,7 +24,13 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 
 		 },
 			initialize: function(){
+				this.template = OpenGeoportal.ogp.appState.get("template");
 				this.controls = OpenGeoportal.ogp.appState.get("controls");
+				//share config with the results table
+				this.tableConfig = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
+				var that = this;
+				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(){that.render.apply(that, arguments);});
+
 				this.listenTo(this.model, "change:preview", this.render);
 				this.listenTo(this.model, "change:showControls", this.toggleControls);
 
@@ -40,6 +46,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 				cart.toggleCartState(this.model);
 
 			},
+			
 			togglePreview: function(){
 				var previewState = this.model.get("preview");
 				if (previewState === "on"){
@@ -48,6 +55,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 					this.model.set({preview: "on"});
 				}
 			},
+			
 			toggleExpand: function(){
 				console.log("toggleExpand");
 				var controls = this.model.get("showControls");
@@ -55,37 +63,51 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			},
 
 			render: function(){
+				console.log("render");
+				console.log(this);
 				var html = "";
 				var that = this;
 				var model = this.model;
+				//determine which td elements are visible from the the tableConfig model
+				var visibleColumns = this.tableConfig.where({visible: true});
+				var toolsRow$ = this.$el.next();
+				if (toolsRow$.hasClass("controls")){
+					toolsRow$.find("td.previewTools").attr("colspan", visibleColumns.length);
+					
+				}
+				for (var i in visibleColumns) {
+					var currCol = visibleColumns[i];
+					var contents = "";
+					if (currCol.has("modelRender")) {
+						contents = currCol.get("modelRender")(model);
+					} else {
+						contents = model.get(currCol.get("columnName"));
+					}
+			 
+					html += this.template.tableCell({
+						colClass : visibleColumns[i].get("columnClass"),
+						contents : contents
+					});
+				}
 
-						//there should be a subview for each cell that has state?
-						//this view should be able to determine which td elements are visible from the the tableConfig model
-						html += 
-							'<td class="colExpand"><div class="cellWrapper">' + that.controls.renderExpandControl(model.get("showControls")) + '</div></td>' +
-							'<td class="colSave"><div class="cellWrapper">' + that.controls.renderSaveControl(model.get("LayerId")) + '</div></td>' +
-							'<td class="colType"><div class="cellWrapper">' + that.controls.renderTypeIcon(model.get("DataType")) + '</div></td>' +
-							'<td class="colTitle"><div class="cellWrapper">' + model.get("LayerDisplayName") + "</div></td>" +
-							'<td class="colOriginator"><div class="cellWrapper">' + model.get("Originator") + "</div></td>" +
-							'<td class="colSource"><div class="cellWrapper">' + that.controls.renderRepositoryIcon(model.get("Institution")) + '</div></td>' +
-							'<td class="colMetadata"><div class="cellWrapper">' + that.controls.renderMetadataControl(model.get("DataType")) + '</div></td>' +
-							'<td class="colPreview"><div class="cellWrapper">' + that.controls.renderPreviewControl(model.get("LayerId"), model.get("Access"), model.get("Institution")) + '</div></td>';
-				
 				var fullRow$ = this.$el;
 				if (model.get("showControls")){
 					fullRow$.add(this.$el.next());
 				}
+				
 				if (model.get("preview") == "off"){
 					model.set({showControls: false});
 					fullRow$.hide();
 				} else {
 					fullRow$.show();
 				}
+				
 				this.$el.html(html);
 				
 				return this;
 				
 			},
+			
 			toggleControls: function(){
 				this.render();
 				var colspan = 8;

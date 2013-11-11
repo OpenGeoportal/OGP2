@@ -11,16 +11,10 @@
 	<context:property-placeholder location="WEB-INF/ogp.properties" />
 	<!-- DispatcherServlet Context: defines this servlet's request-processing 
 		infrastructure -->
-	<!-- <context:property-placeholder location = "WEB-INF/ogp.properties" /> -->
 	<!-- Scans within the base package of the application for @Components to 
 		configure as beans -->
 	<!-- @Controller, @Service, @Configuration, etc. -->
-	<context:component-scan base-package="org.OpenGeoportal" />
-	<!--<context:component-scan base-package="org.OpenGeoportal.Security" /> 
-		<context:component-scan base-package="org.OpenGeoportal.Download.Controllers" 
-		/> <context:component-scan base-package="org.OpenGeoportal.Proxy.Controllers" 
-		/> <context:component-scan base-package="org.OpenGeoportal.Export.GeoCommons" 
-		/> -->
+	<context:component-scan base-package="org.opengeoportal" />
 
 	<beans:bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">

@@ -61,14 +61,21 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        	   header: "",
 		                        	   columnClass: "colExpand",
 		                        	   width: 10,
-		                        	   renderFunction: function(data, type, full){
-		                        			   var layerId = full.LayerId; 
-		                        				if ((typeof layerId == "undefined")||(layerId === null)){
+		                        	   dtRender: function(data, type, full){
+		                        	   		var layerId = full.LayerId; 
+		                        			if ((typeof layerId == "undefined")||(layerId === null)){
 		                        					return "";
-		                        				}
-		                        				var layerExpanded = that.tableLayerState.isExpanded(layerId);
-		                        				return that.controls.renderExpandControl(layerExpanded);
-		                        		   }
+		                        			}
+		                        			
+		                        			var layerExpanded = that.tableLayerState.isExpanded(layerId);
+		                        			return that.controls.renderExpandControl(layerExpanded);
+		                        	   },
+		                        	   modelRender: function(model){
+		                        	   		var layerId = model.get("LayerId"); 
+		                        			var layerExpanded = that.tableLayerState.isExpanded(layerId);
+		                        			return that.controls.renderExpandControl(layerExpanded);
+		                        	   }
+
 		                           },
 		                           {
 		                        	   order: 13,
@@ -81,8 +88,14 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        	   header: "Meta",
 		                        	   columnClass: "colMetadata",
 		                        	   width: 30,
-		                        	   renderFunction: function(data, type, full){var dataType = that.getColumnData(full, "DataType"); return that.controls.renderMetadataControl(dataType);}
-		                        
+		                        	   dtRender: function(data, type, full){
+		                        	   		var dataType = that.getColumnData(full, "DataType"); 
+		                        	   		return that.controls.renderMetadataControl(dataType);
+		                        	   },
+		                        	   modelRender: function(model){
+		                        	   		var dataType = model.get("DataType"); 
+		                        	   		return that.controls.renderMetadataControl(dataType);
+		                        	   	}
 		                           },
 		                           {
 		                        	   order: 14,
@@ -95,12 +108,18 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        	   header: "View",
 		                        	   columnClass: "colPreview",
 		                        	   width: 39,
-		                        	   renderFunction: function(data, type, full){	
-		                        			   var layerId = full.LayerId;
-		                        			   var access = full.Access.toLowerCase();
-		                        			   var institution = full.Institution;
-		                        			   return that.controls.renderPreviewControl(layerId, access, institution);
-		                        		   }		                        	   
+		                        	   dtRender: function(data, type, full){	
+		                        	   		var layerId = full.LayerId;
+		                        			var access = full.Access.toLowerCase();
+		                        			var institution = full.Institution;
+		                        			return that.controls.renderPreviewControl(layerId, access, institution);
+		                        	   },
+		                        	   modelRender: function(model){	
+		                        			   var layerId = model.get("LayerId");
+		                        			   var access = model.get("Access").toLowerCase();
+		                        			   var institution = model.get("Institution");
+		                        			return that.controls.renderPreviewControl(layerId, access, institution);
+		                        		  }		                        	   
 		                           }
 		                           ]);
 	};
@@ -120,7 +139,15 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        	   header: "Type",
 		                        	   columnClass: "colType",
 		                        	   width: 29,
-		                        	   renderFunction: function(data, type, full){return that.controls.renderTypeIcon(data);}
+		                        	   dtRender: function(data, type, full){
+		                        	   		var dataType = data;
+		                        	   		return that.controls.renderTypeIcon(dataType);
+		                        	   },
+		                        	   modelRender: function(model){
+		                        	   		var dataType = model.get("DataType");
+		                        	   		return that.controls.renderTypeIcon(dataType);
+		                        	   },
+		                        	   renderFunction: function(dataType){}
 		                        		   
 		                           },
 		                           {
@@ -220,8 +247,15 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        	   hidable: true,
 		                        	   header: "Date",
 		                        	   columnClass: "colDate",
-		                        	   renderFunction: function(data, type, full){return that.controls.renderDate(data);}
-		                        		   
+		                        	   dtRender: function(data, type, full){
+		                        	   		var date = data;
+		                        	   		return that.controls.renderDate(date);
+		                        	   	},
+		                        	   modelRender: function(model){
+		                        	   		var date = model.get("ContentDate");
+		                        	   		return that.controls.renderDate(date);
+		                        	   		}
+		                        	   		                        		   
 		                           },
 		                           {
 		                        	   order: 11,
@@ -235,7 +269,16 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        	   header: "Rep",
 		                        	   columnClass: "colSource",
 		                        	   width: 24,
-		                        	   renderFunction: function(data, type, full){return that.controls.renderRepositoryIcon(data);}
+		                        	   dtRender: function(data, type, full){
+		                        	   		var repository = data;
+		                        	   		return that.controls.renderRepositoryIcon(repository);
+
+		                        	   		},
+		                        	   modelRender: function(model){
+		                        	   		var repository = model.get("Institution");
+		                        	   		return that.controls.renderRepositoryIcon(repository);
+
+		                        	   		}
 		                        		   
 		                           },
 		                           {
@@ -331,8 +374,8 @@ OpenGeoportal.LayerTable = function LayerTable(){
 			if (model.has("order")){
 				config.aTargets = [model.get("order")];
 			}
-			if (model.has("renderFunction")){
-				config.mRender = model.get("renderFunction");
+			if (model.has("dtRender")){
+				config.mRender = model.get("dtRender");
 			}
 			columnDefinitions.push(config);
 		});

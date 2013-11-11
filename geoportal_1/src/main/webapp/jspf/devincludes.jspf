@@ -27,6 +27,7 @@
 	src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 
 <!--  <script type="text/javascript" src="resources/javascript/jquery.ba-resize.js"></script>-->
+<script type="text/javascript" src="resources/javascript/jquery.ba-postmessage.min.js"></script>
 
 <script type="text/javascript"
 	src="//maps.google.com/maps/api/js?v=3.10&sensor=false"></script>

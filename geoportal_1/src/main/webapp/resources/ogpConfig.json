@@ -2,7 +2,7 @@
         "institutionSpecificJavaScript": "", 
 	"googleAnalyticsId": "UA-19787732-1", 
 	"search":{"serviceType": "solr", "serviceAddress": "http://geodata.tufts.edu/solr/select"}, 
-	"institutions": {"Tufts": {"login": {"loginType": "form", "authenticationPage": "login"}, 
+	"institutions": {"Tufts": {"login": {"loginType": "iframe", "authenticationPage": "restricted/weblogin"}, 
 				"proxy": {"id": "proxy.Restricted.Tufts", "accessLevel": ["restricted"], "wms": "restricted/wms", "wfs": "restricted/wfs"}, 
 				"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_tufts.png", "uiClass": "tuftsIcon", "altDisplay": "Tufts", "tooltipText": "Tufts University"}}}, 
 	"Harvard":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_harvard.png", "uiClass": "harvardIcon", 

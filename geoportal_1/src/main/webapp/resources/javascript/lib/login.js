@@ -126,6 +126,13 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 			var dialogTitle = "Login";
 
 			var dialogContent = dialogContent = this.getLoginContent();
+			
+			var type = this.model.get("type");
+
+			if (type === "iframe") {
+				//add listener for postMessage
+				this.processIframeLogin();
+			}
 
 			var that = this;
 			if ( typeof jQuery('#loginDialog')[0] == 'undefined') {
@@ -135,7 +142,6 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 				jQuery('body').append(shareDiv);
 
 				var loginButtons;
-				var type = this.model.get("type");
 				if (type == "form") {
 					loginButtons = {
 						Login : function() {
@@ -177,10 +183,8 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 						that.processFormLogin();
 					}
 				});
-			} else if (type == "iframe") {
-				this.processIframeLogin();
-			}
-
+			} 
+			
 			jQuery("#loginDialog").dialog('open');
 		},
 		//return the login form to be presented to the user
@@ -228,7 +232,7 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 			success : function(data) {
 				console.log(data);
 				that.model.set(data);
-				if (data.message !== null) {
+				if (typeof data.message !== "undefined" && data.message !== null) {
 					that.showLoginMessage(data.message);
 				}
 			},
@@ -246,15 +250,20 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 				},
 				processIframeLogin: function(){
 					var that = this;
-					jQuery.receiveMessage(
+					//IE uses "onmessage" instead of "message"
+					var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+					var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+					jQuery(window).on(messageEvent, 						
 						function(e) {
-							that.model.set(jQuery.parseJSON(e.data));
-						},
-						window.location.protocol + "//" + window.location.host);
+							that.model.set(jQuery.parseJSON(e.originalEvent.data));
+						}
+					);
+
 				},
 				
 			loginResponseError: function(data){
-				showLoginMessage(data.message);
+				
+				this.showLoginMessage("Error communicating with login server.");
 			},
 			//callback handler invoked with response to authenticate server call
 			//sets the userId variable to hold the id of the logged in user
