@@ -35,6 +35,7 @@ if (typeof OpenGeoportal.Views == 'undefined'){
 OpenGeoportal.Models.User = Backbone.Model.extend({
 
 	defaults: {
+		repository: "",
 		username: "anonymous",
 		authenticated: false,
 		authorities: [],
@@ -42,6 +43,7 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 	},
 	initialize: function(){
 		var institution = OpenGeoportal.InstitutionInfo.getHomeInstitution();
+		this.set({repository: institution});
 		var type = OpenGeoportal.InstitutionInfo.getLoginType(institution);
 		var authUrl = this.getUrl() + OpenGeoportal.InstitutionInfo.getAuthenticationPage(institution);
 		var usernameLabel = institution + " Username:";
@@ -92,6 +94,40 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 			success : function(data){that.set(data);}
 		};
 		jQuery.ajax(ajaxArgs);
+	},
+	canLogin: function(layerModel){
+		var repository = layerModel.get("institution");
+		return this.canLoginLogic(repository);
+	},
+	canLoginLogic: function(repository){
+		//only supporting local login for now
+		if (repository.toLowerCase() === this.get("repository").toLowerCase()){
+			return true;
+		} else {
+			return false;
+		}
+	},
+	hasAccess: function(layerModel){
+
+		var layerRep = layerModel.get("Institution");
+		var layerAccess = layerModel.get("Access");
+		return this.hasAccessLogic(layerAccess, layerRep);
+
+	},
+	
+	hasAccessLogic: function(layerAccess, layerRep){
+		layerAccess = layerAccess.toLowerCase();
+		layerRep = layerRep.toLowerCase();
+		var authenticated = this.get("authenticated");
+		var authRep = this.get("repository").toLowerCase();
+		
+		if (layerAccess === "public"){
+			return true;
+		} else if (authenticated && (authRep === layerRep)){
+			return true;
+		} else {
+			return false;
+		}
 	}
 });
 
@@ -144,13 +180,14 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 				var loginButtons;
 				if (type == "form") {
 					loginButtons = {
-						Login : function() {
-							that.processFormLogin();
-						},
 						Cancel : function() {
 							jQuery(this).dialog('close');
 							jQuery(document).trigger("loginCancel");
+						},
+						Login : function() {
+							that.processFormLogin();
 						}
+
 					};
 				} else if (type == "iframe") {
 					loginButtons = {

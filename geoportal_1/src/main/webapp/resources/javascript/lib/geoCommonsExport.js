@@ -45,11 +45,12 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj){
 		var dialogDivId = this.descriptor + "Dialog";
 		//this.layerObj = uiObject.getLayerList("mapIt");
 		var buttonsObj = {
-			"Export": function(){that.exportLayers.call(that);
-				jQuery(this).dialog('close');},
 			Cancel: function() {
 				jQuery(this).dialog('close');
-			}
+			},
+			"Export": function(){that.exportLayers.call(that);
+				jQuery(this).dialog('close');}
+
 		};
 		this.controls.dialogTemplate(dialogDivId, dialogContent, dialogTitle, buttonsObj);
 		jQuery("#" + dialogDivId).dialog({"width":"375"});

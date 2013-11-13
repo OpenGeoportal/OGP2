@@ -192,14 +192,15 @@ OpenGeoportal.CartTable = function CartTable(){
 			};
 		} else {
 			buttons = {
-					Continue: function() {
-						that.downloadContinue(layerList);
-					},
 					Cancel: function() {
 						jQuery(this).dialog('close');
 						jQuery("#optionDetails").html("");
 						jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+					},
+					Continue: function() {
+						that.downloadContinue(layerList);
 					}
+
 			};
 		}
 		jQuery("#downloadDialog").dialog("option", "buttons", buttons);
@@ -290,6 +291,11 @@ OpenGeoportal.CartTable = function CartTable(){
 			show: "fade",
 			hide: "fade",
 			buttons: {
+				Cancel: function() {
+					jQuery(this).dialog('close');
+					jQuery("#optionDetails").html("");
+					jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
+				},
 				Download: function() {
 					if (layerNumber === 0){
 						jQuery(this).dialog('close');
@@ -308,12 +314,8 @@ OpenGeoportal.CartTable = function CartTable(){
 					
 					that.requestDownload(requestObj, jQuery(this));
 
-				},
-				Cancel: function() {
-					jQuery(this).dialog('close');
-					jQuery("#optionDetails").html("");
-					jQuery(".downloadSelection, .downloadUnselection").removeClass("downloadSelection downloadUnselection");
 				}
+
 			}});
 		jQuery("#emailAddress").focus();
 	};

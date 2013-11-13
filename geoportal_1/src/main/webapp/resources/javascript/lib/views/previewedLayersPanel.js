@@ -28,6 +28,8 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 				this.controls = OpenGeoportal.ogp.appState.get("controls");
 				//share config with the results table
 				this.tableConfig = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
+
+
 				var that = this;
 				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(){that.render.apply(that, arguments);});
 
@@ -110,7 +112,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			
 			toggleControls: function(){
 				this.render();
-				var colspan = 8;
+				var colspan = this.$el.find("td").length;
 				if (this.model.get("showControls")){
 					if (!this.model.has("toolView")){
 						this.$el.after('<tr class="controls"><td class="previewTools" colspan="' + colspan + '"><div></div></td></tr>');
@@ -158,7 +160,6 @@ OpenGeoportal.Views.PreviewedLayersTable = Backbone.View.extend({
 	},
 	initRender: function(){
 		jQuery(".dataTables_scrollHead table").append("<tbody></tbody>");
-		this.tableLayerState = new OpenGeoportal.TableRowSettings();
 	},
 	refreshRow: function(event, data){
 		var model = this.collection.findWhere({LayerId: data.layerId});

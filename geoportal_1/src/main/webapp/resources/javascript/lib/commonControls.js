@@ -72,22 +72,22 @@ OpenGeoportal.CommonControls = function CommonControls(){
 		return template.genericControl(params);
 	};
 	
-	  //the layer table should handle creating the control;  the preview obj should handle the logic to determine which
-	  this.renderPreviewControl = function(layerId, access, institution, previewState){		 
-	  		access = access.toLowerCase(); 
-		  if (access == "public"){
-			  return this.renderActivePreviewControl(layerId, previewState);
-		  } else {
-			  //check user object
-			  if (OpenGeoportal.InstitutionInfo.getHomeInstitution().toLowerCase() === institution.toLowerCase() && OpenGeoportal.ogp.appState.get("login").model.get("authenticated")){
-			  	return this.renderActivePreviewControl(layerId, previewState);
-			  } else {
-			  	return this.renderLoginPreviewControl(layerId, institution);
-			  }
-		  }
-	  };
+	         this.renderPreviewControl = function(layerId, access, institution, previewState){                
+                 access = access.toLowerCase();
+                 institution = institution.toLowerCase();
+                 var hasAccess = OpenGeoportal.ogp.appState.get("login").model.hasAccessLogic(access, institution);
+                 if (hasAccess){
+                         return this.renderActivePreviewControl(layerId, previewState);
+                 } else {
+                        return this.renderInActivePreviewControl(layerId, institution);
+                         
+                 }
+         };
+         
+
 		//TODO: fix this
-	/*	this.getExternalPreviewControl = function(rowObj){
+	
+	this.renderExternalPreviewControl = function(layerId){
 			//what defines external?
 			var imgSource = this.getImage("view_external.png");
 			var layerSource = this.getColumnData(rowObj.aData, "Institution");
@@ -116,12 +116,23 @@ OpenGeoportal.CommonControls = function CommonControls(){
 			previewControl += '/>';
 			return previewControl;
 		};
-*/
-	  this.renderLoginPreviewControl = function(layerId){
+
+	  this.renderInActivePreviewControl = function(layerId, institution){
+	  	var canLogin = OpenGeoportal.ogp.appState.get("login").model.canLoginLogic(institution);
+	  	if (canLogin){
+	  		return this.renderLoginPreviewControl();
+	  	} else {
+	  		//this.renderExternalPreviewControl(layerId);
+	  		return "";
+	  	}
+
+	  };
+	  
+	  this.renderLoginPreviewControl = function(){
 			var tooltipText = "Login to access this layer";
 			var previewControl = '<div class="button loginButton login" title="' + tooltipText + '" ></div>';
 			return previewControl;
-		};
+	  };
 
 		this.renderActivePreviewControl = function(layerId, previewState){
 			var stateVal = null;

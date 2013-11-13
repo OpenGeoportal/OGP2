@@ -71,9 +71,8 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		                        			return that.controls.renderExpandControl(layerExpanded);
 		                        	   },
 		                        	   modelRender: function(model){
-		                        	   		var layerId = model.get("LayerId"); 
-		                        			var layerExpanded = that.tableLayerState.isExpanded(layerId);
-		                        			return that.controls.renderExpandControl(layerExpanded);
+		                        	   		var showControls = model.get("showControls"); 
+		                        			return that.controls.renderExpandControl(showControls);
 		                        	   }
 
 		                           },
