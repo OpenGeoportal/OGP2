@@ -1148,6 +1148,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		this.viewMetadataHandler();
 		this.expandHandler();	
 		this.titleClickHandler();
+		this.loginHandler();
 		this.loginViewHandler();
 		this.expandViewHandler();
 		this.expandView = new OpenGeoportal.Views.TableRowSettings({collection: this.tableLayerState, el: $("#" +this.getTableId())});
@@ -1188,16 +1189,34 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		});
 	};
 
-
+	this.loginHandler = function(){
+		var that = this;
+	
+		var tableDiv = this.getTableId();
+		jQuery(document).on("click", "#" + tableDiv + " td .loginButton", function(){
+				var layerId = that.getLayerIdFromTableCell(this);
+				console.log(layerId);
+								
+				var loginPromise = that.appState.get("login").promptLogin();
+				jQuery.when( loginPromise ).then(
+					function(){that.addToPreviewed(layerId);},
+					null,
+					null
+				);
+		});
+	};
+	
 	this.loginViewHandler = function(){
 		var that = this;
-		var tableDiv = this.getTableDiv();
+		var tableDiv = this.getTableId();
 		jQuery(document).on("loginSucceeded", "#" + tableDiv + " td .loginButton", function(){
+			//console.log(this);
 			var data = that.getRowData(jQuery(this)).data;
 			jQuery(this).parent().html(that.controls.renderPreviewControl(data.LayerId, data.Access, data.Institution));	
 		});
 		
 		jQuery(document).on("logoutSucceeded", "#" + tableDiv + " td .previewControl", function(){
+			//console.log(this);
 			var data = that.getRowData(jQuery(this)).data;
 			jQuery(this).parent().html(that.controls.renderPreviewControl(data.LayerId, data.Access, data.Institution));	
 		});
@@ -1216,28 +1235,32 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		jQuery("#" + that.getTableId() + " tbody").on("click.preview", "div.previewControl", function(event){
 			//this should update the preview model
 			var layerId = that.getLayerIdFromTableCell(this);
+			that.addToPreviewed(layerId);
 
-			var model = that.previewed.get(layerId);
-			if (typeof model == "undefined"){
-				//get the attributes for the layer retrieved from solr
-				var layerAttr = that.backingData.get(layerId).attributes;
-				//add them to the previewed collection.  Add them as attributes since we 
-				//are using different models in the previewed collection, and we want
-				//"model" to be called
-				that.previewed.add(layerAttr);
-				model = that.previewed.get(layerId);
-				model.set({preview: "on"});
-
-			} else {			
-				if (model.get("preview") == "on"){
-					model.set({preview: "off"});
-				} else {
-					model.set({preview: "on"});
-				}
-			}
 		});
 	};
 	
+	this.addToPreviewed = function(layerId){
+		var model = this.previewed.get(layerId);
+		if (typeof model == "undefined"){
+			//get the attributes for the layer retrieved from solr
+			var layerAttr = this.backingData.get(layerId).attributes;
+			//add them to the previewed collection.  Add them as attributes since we 
+			//are using different models in the previewed collection, and we want
+			//"model" to be called
+			this.previewed.add(layerAttr);
+			model = this.previewed.get(layerId);
+			model.set({preview: "on"});
+
+		} else {			
+			if (model.get("preview") == "on"){
+				model.set({preview: "off"});
+			} else {
+				model.set({preview: "on"});
+			}
+		}
+		
+	};
 	/*
 	 * Retrive the needed information from the data table and pass in an event.  The map listens for this event.
 	 */

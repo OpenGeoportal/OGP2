@@ -6,5 +6,5 @@ public interface LoginService {
 
 	  LoginStatus login(String username, String password);
 
-	LoginStatus logout();
+	LoginStatus logoutResponse();
 	}

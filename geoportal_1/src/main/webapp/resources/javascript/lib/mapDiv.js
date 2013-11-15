@@ -1191,7 +1191,7 @@ Road - Roads without additional imagery.	*/
 	};
 
 	this.getFeatureAttributes = function(e){
-		console.log("getFeatureAttributes");
+		//console.log("getFeatureAttributes");
 		if (typeof this.map != "undefined"){
 			var mapObject = this.map;//since this is an event handler, the context isn't the MapController Object, it's the map layer. Should it be?
 
@@ -1355,7 +1355,11 @@ Road - Roads without additional imagery.	*/
 				}
 				var rowArr = [];
 				cells$.each(function() {
-					rowArr.push(jQuery(this).text());
+					var cellText = jQuery(this).text().trim();
+					if (cellText.indexOf('http') === 0) {
+						cellText = '<a href="' + cellText + '">' + cellText + '</a>';
+					}
+					rowArr.push(cellText);
 				});
 				tableArr.push(rowArr);
 			});

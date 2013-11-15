@@ -32,7 +32,8 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 
 				var that = this;
 				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(){that.render.apply(that, arguments);});
-
+				this.login = OpenGeoportal.ogp.appState.get("login");
+				this.login.listenTo(this.login, "change:authentication", function(){that.render.apply(that, arguments);});
 				this.listenTo(this.model, "change:preview", this.render);
 				this.listenTo(this.model, "change:showControls", this.toggleControls);
 
@@ -65,8 +66,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			},
 
 			render: function(){
-				console.log("render");
-				console.log(this);
+
 				var html = "";
 				var that = this;
 				var model = this.model;
@@ -166,10 +166,6 @@ OpenGeoportal.Views.PreviewedLayersTable = Backbone.View.extend({
 		if (typeof model != "undefined"){
 			this.renderedViews[model.cid].render();
 		}
-	},
-
-	assign : function (view, selector) {
-	    view.setElement(this.$(selector)).render();
 	},
 
 	renderedViews: {}, //keep a reference to rendered views

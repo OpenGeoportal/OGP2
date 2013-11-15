@@ -31,10 +31,11 @@ public class LoginController {
 		return loginService.login(username, password);
 	}
 	
-	@RequestMapping(value="logout", method=RequestMethod.GET, produces="application/json")
+	@RequestMapping(value="logoutResponse", method=RequestMethod.GET, produces="application/json")
 	@ResponseBody public LoginStatus logout() {
-		logger.debug("Logout attempted");
+		
+		logger.info("Logout attempted");
 
-		return loginService.logout();
+		return loginService.logoutResponse();
 	}
 }

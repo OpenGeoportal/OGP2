@@ -129,6 +129,7 @@ OpenGeoportal.CommonControls = function CommonControls(){
 	  };
 	  
 	  this.renderLoginPreviewControl = function(){
+	  		//console.log("renderLogin");
 			var tooltipText = "Login to access this layer";
 			var previewControl = '<div class="button loginButton login" title="' + tooltipText + '" ></div>';
 			return previewControl;

@@ -32,6 +32,20 @@ if (typeof OpenGeoportal.Views == 'undefined'){
  * 
  */
 //this should really allow us to help manage multiple repository access, instead of just assuming "local"
+
+/**
+ * Override Backbone.sync to pass cookies via CORS
+ */
+Backbone.sync = _.wrap(Backbone.sync, function(sync, method, model, options) {
+    if (!options.xhrFields) {
+        options.xhrFields = {withCredentials:true};
+    }
+
+    options.headers = options.headers || {};
+
+    sync(method, model, options);
+});
+
 OpenGeoportal.Models.User = Backbone.Model.extend({
 
 	defaults: {
@@ -71,7 +85,7 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 			port = ":" + port;
 		}
 		var protocol = "https";
-		if (hostname == "localhost"){
+		if (hostname === "localhost"){
 			//protocol = "http";
 			port = ":8443";
 		}
@@ -90,17 +104,21 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 				withCredentials : true
 			},
 			context : that,
-			dataType : "json",
-			success : function(data){that.set(data);}
+			dataType : "json"
+
 		};
-		jQuery.ajax(ajaxArgs);
+		//eh.  should modify spring security to return a 200 instead of a 302
+
+		jQuery.ajax(ajaxArgs).always(function(){ that.fetch();});
 	},
 	canLogin: function(layerModel){
-		var repository = layerModel.get("institution");
+		var repository = layerModel.get("Institution");
 		return this.canLoginLogic(repository);
 	},
 	canLoginLogic: function(repository){
 		//only supporting local login for now
+		//console.log("canLoginLogic");
+		//console.log(this);
 		if (repository.toLowerCase() === this.get("repository").toLowerCase()){
 			return true;
 		} else {
@@ -142,6 +160,7 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 		initialize: function() {
 			this.model.fetch();
 			//we could put this on setInterval, so that when the user's session expires, they get properly logged out
+			//or will this just keep the session open?
 			var that = this;
 			jQuery(document).on("click", ".loginButton", function(){that.promptLogin.apply(that, arguments);});
 
@@ -158,7 +177,9 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 				this.model.logout();
 			}
 		},
-		promptLogin: function(event) {
+		
+		promptLogin: function() {
+			var deferred = jQuery.Deferred();
 			var dialogTitle = "Login";
 
 			var dialogContent = dialogContent = this.getLoginContent();
@@ -167,7 +188,7 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 
 			if (type === "iframe") {
 				//add listener for postMessage
-				this.processIframeLogin();
+				this.processIframeLogin(deferred);
 			}
 
 			var that = this;
@@ -185,7 +206,7 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 							jQuery(document).trigger("loginCancel");
 						},
 						Login : function() {
-							that.processFormLogin();
+							that.processFormLogin(deferred);
 						}
 
 					};
@@ -217,12 +238,14 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 				jQuery("#loginDialog").unbind("keypress");
 				jQuery('#loginDialog').bind("keypress", function(event) {
 					if (event.keyCode == '13') {
-						that.processFormLogin();
+						that.processFormLogin(deferred);
 					}
 				});
 			} 
 			
 			jQuery("#loginDialog").dialog('open');
+			
+			return deferred.promise();
 		},
 		//return the login form to be presented to the user
 
@@ -246,7 +269,7 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 			// retrieve user entered values, generate https request and set login flag
 
 				// some special processing is included for running on localhost
-				processFormLogin :function() {
+				processFormLogin :function(deferred) {
 					var that = this;
 					var url = this.model.get("authUrl");
 					//var url = this.authenticationPage;
@@ -266,17 +289,21 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 						},
 						dataType : "json",
 
-			success : function(data) {
-				console.log(data);
-				that.model.set(data);
-				if (typeof data.message !== "undefined" && data.message !== null) {
-					that.showLoginMessage(data.message);
-				}
-			},
+						success : function(data) {
+							that.model.set(data);
+							if (that.model.get("authenticated")){
+								console.log("resolve");
+								deferred.resolve();
+							}
+							
+							if (typeof data.message !== "undefined" && data.message !== null) {
+								that.showLoginMessage(data.message);
+							}
+						},
 
 						error : that.loginResponseError
 					};
-					jQuery.ajax(ajaxArgs);
+					return jQuery.ajax(ajaxArgs);
 
 				},
 				
@@ -285,7 +312,8 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 						jQuery("#loginDialog .warning").text(passedMessage);
 					}
 				},
-				processIframeLogin: function(){
+				
+				processIframeLogin: function(deferred){
 					var that = this;
 					//IE uses "onmessage" instead of "message"
 					var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
@@ -293,6 +321,11 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 					jQuery(window).on(messageEvent, 						
 						function(e) {
 							that.model.set(jQuery.parseJSON(e.originalEvent.data));
+							if (that.model.get("authenticated")){
+								deferred.resolve();
+							} else {
+								deferred.fail();
+							}
 						}
 					);
 

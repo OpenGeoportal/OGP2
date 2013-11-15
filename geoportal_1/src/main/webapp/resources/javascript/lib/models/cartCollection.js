@@ -170,36 +170,30 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 	
 	ignoreAuthenticationWarning: {local: false, external: false},
 
-	addWithWarning: function(model){
+	addWithWarning: function(layerModel){
 		var ignoreWarning = false;
 		if (typeof options != "undefined" && typeof options.ignoreWarning != "undefined"){
 			ignoreWarning = options.ignoreWarning;
 		}
 		//TODO: check IgnoreAuthenticationWarning (or whatever replaces it)
-		var canLogin = OpenGeoportal.ogp.appState.get("login").model.canLogin(model);
+		var canLogin = OpenGeoportal.ogp.appState.get("login").model.canLogin(layerModel);
 
-		var institution = model.get("institution");
+		var institution = layerModel.get("Institution");
 		var ignoreWarningId = "ignoreAuthenticationWarning";
 		var disposition;
 		var warningMessage = '<span>This layer is restricted by licensing agreement to the ' + institution + ' community. </span>';
 		var that = this;
 		
-		jQuery(document).on("change", "#" + ignoreWarningId, function(){
-			that.ignoreWarningId = jQuery(this).is(":checked");
-		});
+
 		
 		if (canLogin){
-			if (this.ignoreAuthenticationWarning.local){
-				this.add(model);
-				return;
-			}
+			disposition = "local";
+
 			warningMessage += '<span class="notice">Restricted layers can be added to the Cart, but you must login before you can preview or download restricted layers.</span>'; 
 			
 		} else {
-			if (this.ignoreAuthenticationWarning.external){
-				this.add(model);
-				return;
-			}
+			disposition = "external";			
+
 			warningMessage += '<span class="notice">Restricted layers can be added to the Cart here, but you must use ' + institution;
 			warningMessage += "'s site and login to preview or download restricted layers.</span>"; 
 
@@ -208,70 +202,58 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		warningMessage += "<br />";
 		warningMessage += '<span class="ignoreWarning"><input id="' + ignoreWarningId + '" type="checkbox" /><label for="ignoreAuthenticationWarning">Don\'t show this message again.</span>';
 
-		var divId = this.genericModalDialog(warningMessage, "Restricted Layer");
-	},
-	
-	authenticationWarning: function(checkboxObj, rowData, canLogin){
-		var instIndx = this.getColumnsIndex()["Institution"];
-		var that = this;
-		var institution = rowData[instIndx];
-		
-		var ignoreWarningId = "ignoreAuthenticationWarning";
-		var disposition;
-		var warningMessage = '<span>This layer is restricted by licensing agreement to the ' + institution + ' community. </span>';
-		if (canLogin){
-			if (this.IgnoreAuthenticationWarning.home){
-				this.addToCart(checkboxObj, rowData);
+		if (this.ignoreAuthenticationWarning[disposition]){
+				this.add(layerModel);
 				return;
-			}
-			warningMessage += '<span class="notice">Restricted layers can be added to the Cart, but you must login before you can preview or download restricted layers.</span>'; 
-			ignoreWarningId += "Internal";
-			disposition = "home";
-		} else {
-			if (this.IgnoreAuthenticationWarning.external){
-				this.addToCart(checkboxObj, rowData);
-				return;
-			}
-			warningMessage += '<span class="notice">Restricted layers can be added to the Cart here, but you must use ' + institution;
-			warningMessage += "'s site and login to preview or download restricted layers.</span>"; 
-			ignoreWarningId += "External";
-			disposition = "external";
 		}
-
-		warningMessage += "<br />";
-		warningMessage += '<span class="ignoreWarning"><input id="ignoreAuthenticationWarning" type="checkbox" /><label for="ignoreAuthenticationWarning">Don\'t show this message again.</span>';
-
-		var divId = this.genericModalDialog(warningMessage, "Restricted Layer");
-
+		
+		jQuery(document).on("change", "#" + ignoreWarningId, function(){
+			that.ignoreAuthenticationWarning[disposition] = jQuery(this).is(":checked");
+		});
+		
+		var divId = OpenGeoportal.ogp.appState.get("controls").genericModalDialog(warningMessage, "Restricted Layer");
+		
 		var addToCartFunction = function() {
-			that.IgnoreAuthenticationWarning[disposition] = jQuery("#ignoreAuthenticationWarning").is(":checked");
+			//that.ignoreAuthenticationWarning[disposition] = jQuery("#ignoreAuthenticationWarning").is(":checked");
+			that.add(layerModel);
 			jQuery(this).dialog('close');
-			this.addToCart(checkboxObj, rowData);
+
 		};
 
 		var loginAndAddFunction = function(){
-			that.IgnoreAuthenticationWarning[disposition] = jQuery("#" + ignoreWarningId).is(":checked");
+			//that.IgnoreAuthenticationWarning[disposition] = jQuery("#" + ignoreWarningId).is(":checked");
 			//that.promptLogin();
-			that.login.loginDialog();
+			//that.login.loginDialog();
+			
+			var loginView = OpenGeoportal.ogp.appState.get("login");
+			loginView.promptLogin();
 
 			//pass some info to the loginDialog
 			jQuery(this).dialog('disable');
 			var dialogBox = jQuery('#' + divId);
-			jQuery(document).bind("loginSuccess.addToCart", function(){
-				that.addToCart(checkboxObj, rowData);
+			//listenTo (Once) user object;  test for hasAccess; then add layerModel to collection
+			
+			var deferredAdd = function(model){
+				if (model.hasAccess(layerModel)){
+					that.add(layerModel);
+				}
+				
 				dialogBox.dialog('close');
-				jQuery(document).unbind("loginSuccess.addToCart");
-			});
-			jQuery(document).bind("loginCancel", function(){
+
+			};
+			
+			loginView.listenToOnce(loginView.model, "change:authenticated", deferredAdd);
+
+			jQuery(document).on("loginCancel", function(){
 				dialogBox.dialog("enable");
+				loginView.stopListening(loginView.model, "change:authenticated", deferredAdd);
+
 			});
 		};
 
 		var cancelFunction = function(){
-			that.IgnoreAuthenticationWarning[disposition] = jQuery("#" + ignoreWarningId).is(":checked");
+			//that.IgnoreAuthenticationWarning[disposition] = jQuery("#" + ignoreWarningId).is(":checked");
 			jQuery(this).dialog('close');
-			//some code to deselect the layer check box;
-			jQuery(checkboxObj).attr("checked", false);
 		};
 
 		var buttons = {};
@@ -289,8 +271,5 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 					buttons: buttons
 				}
 		);
-
-
 	}
-	
 });

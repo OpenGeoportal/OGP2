@@ -8,6 +8,8 @@
 	type="text/css" />
 <link rel="stylesheet" type="text/css" media="print"
 	href="resources/css/print.css" />
+<link rel="stylesheet" href="resources/css/localize.css"
+	type="text/css" />
 <!--  <script type="text/javascript" src="resources/javascript/require.js"></script>-->
 <script
 	src="http://documentcloud.github.com/underscore/underscore-min.js"></script>

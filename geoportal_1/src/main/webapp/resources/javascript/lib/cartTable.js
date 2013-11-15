@@ -738,11 +738,10 @@ OpenGeoportal.CartTable = function CartTable(){
 			button$ = button$.closest(".button");
 		}
 		
-		var optionText$ = jQuery("#optionText");
 		var optionContainer$ = jQuery("#optionDetails");
-		optionText$.html(optionText);
+		optionContainer$.html('<div>' + optionText + '</div>');
 		
-		if (optionContainer$.css("display") == "none"){
+		if (optionContainer$.css("display") === "none"){
 			optionContainer$.show();
 			jQuery(".arrow_buttons").hide();
 		}
@@ -754,8 +753,10 @@ OpenGeoportal.CartTable = function CartTable(){
 	this.addCartHeaderButton = function(buttonId, buttonLabel, helpText, listLabel, clickHandler){
 		var that = this;
 		this.controls.addButton(jQuery("#cartHeader"), buttonId, buttonLabel, clickHandler)
-			.on("mouseover", function(event){that.displayOptionText(event, helpText, listLabel); 
-									that.getLayerList(listLabel);});
+			.on("mouseover", function(event){
+				that.displayOptionText(event, helpText, listLabel); 
+				that.getLayerList(listLabel);
+			});
 	};
 	
 	this.createCartButtons = function(){

@@ -847,13 +847,6 @@ div#goButton:hover {
 	vertical-align: text-bottom;
 }
 
-#footerLogos .institutionLogo {
-	background: url("../media/ogp-institutions.png") no-repeat scroll -9px
-		-59px transparent;
-	height: 30px;
-	width: 66px;
-}
-
 #footerInfo {
 	float: right;
 	line-height: 30px;
@@ -1055,7 +1048,6 @@ span.columnNote {
 	display: block;
 	left: 0;
 	padding: 14px;
-	position: absolute;
 }
 
 .genericModalDialog {
@@ -1137,11 +1129,11 @@ td.attributeName:hover {
 	top: 0;
 	width: 100%;
 	overflow: visible;
-}
-
-#optionText {
 	color: white;
 	font-size: 14px;
+}
+
+#optionDetails > div {
 	padding: 9px 5px 9px 20px;
 }
 
