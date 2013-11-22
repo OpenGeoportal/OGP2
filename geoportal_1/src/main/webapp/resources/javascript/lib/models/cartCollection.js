@@ -175,7 +175,6 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		if (typeof options != "undefined" && typeof options.ignoreWarning != "undefined"){
 			ignoreWarning = options.ignoreWarning;
 		}
-		//TODO: check IgnoreAuthenticationWarning (or whatever replaces it)
 		var canLogin = OpenGeoportal.ogp.appState.get("login").model.canLogin(layerModel);
 
 		var institution = layerModel.get("Institution");
@@ -214,16 +213,12 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 		var divId = OpenGeoportal.ogp.appState.get("controls").genericModalDialog(warningMessage, "Restricted Layer");
 		
 		var addToCartFunction = function() {
-			//that.ignoreAuthenticationWarning[disposition] = jQuery("#ignoreAuthenticationWarning").is(":checked");
 			that.add(layerModel);
 			jQuery(this).dialog('close');
 
 		};
 
 		var loginAndAddFunction = function(){
-			//that.IgnoreAuthenticationWarning[disposition] = jQuery("#" + ignoreWarningId).is(":checked");
-			//that.promptLogin();
-			//that.login.loginDialog();
 			
 			var loginView = OpenGeoportal.ogp.appState.get("login");
 			loginView.promptLogin();
@@ -266,10 +261,11 @@ OpenGeoportal.CartCollection = Backbone.Collection.extend({
 			buttons["Cancel"] = cancelFunction;
 		}
 
-		jQuery('#' + divId).dialog(	
+		var dialog$ = jQuery('#' + divId);
+		dialog$.dialog(	
 				{width: 535,
 					buttons: buttons
 				}
-		);
+		).siblings(".ui-dialog-buttonpane").find(".ui-dialog-buttonset > button").first().focus();
 	}
 });

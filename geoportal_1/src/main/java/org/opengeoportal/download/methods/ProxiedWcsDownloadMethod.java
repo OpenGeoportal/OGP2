@@ -1,12 +1,12 @@
 package org.opengeoportal.download.methods;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
-import org.opengeoportal.solr.SearchConfigRetriever;
+import org.opengeoportal.solr.SolrRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -14,7 +14,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 public class ProxiedWcsDownloadMethod extends Wcs1_1_1DownloadMethod
 		implements PerLayerDownloadMethod {
 	@Autowired
-	private SearchConfigRetriever searchConfigRetriever;
+	private ProxyConfigRetriever proxyConfigRetriever;
+
 	
 	@Override
 	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
@@ -25,14 +26,15 @@ public class ProxiedWcsDownloadMethod extends Wcs1_1_1DownloadMethod
 			url = getProxyTo(layer);
 			urls.add(url);
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			throw new MalformedURLException("Proxy url not found.");
 		}
 		return urls;
 	}
 	
-	public String getProxyTo(LayerRequest layer) throws IOException {
-		return searchConfigRetriever.getWcsProxyInternal(layer.getLayerInfo().getInstitution(), layer.getLayerInfo().getAccess());
+	public String getProxyTo(LayerRequest layer) throws Exception {
+		SolrRecord sr = layer.getLayerInfo();
+		return proxyConfigRetriever.getUrl("wcs", sr.getInstitution(), sr.getAccess(), sr.getLocation());
 	}
 }

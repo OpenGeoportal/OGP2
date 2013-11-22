@@ -256,8 +256,10 @@ OpenGeoportal.CartTable = function CartTable(){
 			var layerId = currentLayer.get("LayerId");
 			layerList.push({layerId: layerId, format: format});
 		}
+		
+		var downloadDialog$ = jQuery("#downloadDialog");
 		if (layerNumber == 0){
-			jQuery("#downloadDialog").dialog('close');
+			downloadDialog$.dialog('close');
 			return;
 		}
 		var requestObj = {};
@@ -285,8 +287,8 @@ OpenGeoportal.CartTable = function CartTable(){
 			downloadContinue += '<span class="notice">Do not close the GeoData website.</span></div>\n';
 		}
 		downloadContinue += addEmail;
-		jQuery("#downloadDialog").html(downloadContinue);
-		jQuery("#downloadDialog").dialog({title: "Download",
+		downloadDialog$.html(downloadContinue);
+		downloadDialog$.dialog({title: "Download",
 			width: 350,
 			show: "fade",
 			hide: "fade",
@@ -317,7 +319,12 @@ OpenGeoportal.CartTable = function CartTable(){
 				}
 
 			}});
-		jQuery("#emailAddress").focus();
+		var email$ = jQuery("#emailAddress");
+		if (email$.length > 0){
+			email$.focus();
+		} else {
+			downloadDialog$.siblings(".ui-dialog-buttonpane").find(".ui-dialog-buttonset > button").last().focus();
+		}
 	};
 
 	this.isClipped = function(){

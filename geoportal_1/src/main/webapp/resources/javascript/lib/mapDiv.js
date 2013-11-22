@@ -20,9 +20,7 @@ OpenGeoportal.MapController = function() {
 
 	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 	this.template = OpenGeoportal.ogp.appState.get("template");
-	
-	this.config = OpenGeoportal.InstitutionInfo;
-	
+		
 	var analytics = new OpenGeoportal.Analytics();
 		
 
@@ -1779,7 +1777,7 @@ Road - Roads without additional imagery.	*/
 
 
     	//check for a proxy here
-    	var proxy = OpenGeoportal.InstitutionInfo.getWMSProxy(layerModel.get("Institution"), layerModel.get("Access"));
+    	var proxy = OpenGeoportal.Config.getWMSProxy(layerModel.get("Institution"), layerModel.get("Access"));
     	if (proxy){
     		layerModel.set({wmsProxy: proxy});
     	}

@@ -29,7 +29,7 @@ OpenGeoportal.CommonControls = function CommonControls(){
 
 	//maps returned data type to appropriate image
 	this.renderTypeIcon = function (dataType){
-		var typeIcon = OpenGeoportal.InstitutionInfo.DataTypes;
+		var typeIcon = OpenGeoportal.Config.DataTypes;
 		var params = {};
 		params.controlClass = "typeIcon";
 
@@ -196,12 +196,12 @@ OpenGeoportal.CommonControls = function CommonControls(){
 		params.displayClass = "undefinedInstitution";
 		params.controlClass = "repositoryIcon";
 		params.text = "?";
-		var repositoryModel = OpenGeoportal.InstitutionInfo.Repositories.get(repository);
+		var repositoryModel = OpenGeoportal.Config.Repositories.get(repository);
 		if (typeof repositoryModel == 'undefined'){
 			//
 		} else {
 			params.tooltip = repositoryModel.get("fullName");
-			params.displayClass = repositoryModel.get("sourceIconClass");
+			params.displayClass = repositoryModel.get("iconClass");
 			params.text = "";			
 		}
 		return template.genericIcon(params);

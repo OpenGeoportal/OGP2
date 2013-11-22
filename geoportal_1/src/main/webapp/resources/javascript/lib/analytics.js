@@ -13,7 +13,7 @@ OpenGeoportal.Analytics = (function(){
 	window._gaq || (window._gaq = []);
 
 	function init() {
-		var googleAnalyticsId = OpenGeoportal.InstitutionInfo.getGoogleAnalyticsId();
+		var googleAnalyticsId = OpenGeoportal.Config.General.get("analyticsId");
 
 		if (googleAnalyticsId) {
 			// add google analytics to page, the site's google analytics id goes in ogpConfig.js
@@ -46,7 +46,7 @@ OpenGeoportal.Analytics = (function(){
 			args = args.concat(Array.prototype.slice.call(arguments, 0, 4));
 
 			window._gaq.push(args);
-		}
+		};
 	}
 
 	return Analytics;

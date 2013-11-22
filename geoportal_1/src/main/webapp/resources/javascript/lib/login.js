@@ -55,41 +55,69 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 		authorities: [],
 		message: ""
 	},
+	
 	initialize: function(){
-		var institution = OpenGeoportal.InstitutionInfo.getHomeInstitution();
+		//we need: login repositoryId,
+		//		   login type (form or iframe)
+		//		   login url (relative)
+		//         https: domain, port, etc
+		
+		var loginConfig = OpenGeoportal.Config.General.get("loginConfig");
+		var institution = loginConfig.repositoryId;
+		var labelPrefix = "";//institution;
+		if (loginConfig.secureDomain.length > 0){
+			console.log("setting secureDomain");
+			this.set({secureDomain: loginConfig.secureDomain});
+		}
 		this.set({repository: institution});
-		var type = OpenGeoportal.InstitutionInfo.getLoginType(institution);
-		var authUrl = this.getUrl() + OpenGeoportal.InstitutionInfo.getAuthenticationPage(institution);
-		var usernameLabel = institution + " Username:";
-		var passwordLabel = institution + " Password:";
+		var type = loginConfig.type; 
+		var authUrl = this.getUrl() + loginConfig.url;
+		
+		if (labelPrefix.length > 0){
+			labelPrefix += " ";
+		}
+		var usernameLabel = labelPrefix + "Username:";
+		var passwordLabel = labelPrefix + "Password:";
+		
 		this.set({type: type});
 		this.set({authUrl: authUrl});
 		this.set({userNameLabel: usernameLabel});
 		this.set({passwordLabel: passwordLabel});
+		
+		//this.listenTo(this, "change:authenticated", )
 	},
 	url: function(){return this.getUrl() + "loginStatus";},
 	getUrl: function(){
-		var hostname = window.location.hostname;
+		var secureDomain;
+
+		if (this.has("secureDomain")) {
+			//default to current hostname and port on https
+			secureDomain = this.get("secureDomain");
+			if (secureDomain.indexOf("/") !== -1){
+				//TODO: remove trailing slash if it exists
+			}
+		} else {
+			var hostname = window.location.hostname;
+			var port = window.location.port;
+			if ((port == "") || (port == null)){
+				port = "";
+			} else {
+				port = ":" + port;
+			}
+			var protocol = "https";
+			
+			secureDomain = protocol + "://" + hostname + port;
+		
+		} 
+		
 		var currentPathname = window.location.pathname;
 		var pathParts = currentPathname.split("/");
 		var extraPath = "";
-		if (pathParts.length > 2)
-		{
-			// a hack to handle localhost where there is another element in the pathname
+		if (pathParts.length > 2){
 			extraPath = pathParts[1] + "/";
 		}
-	        var port = window.location.port;
-		if ((port == "") || (port == null)){
-			port = "";
-		} else {
-			port = ":" + port;
-		}
-		var protocol = "https";
-		if (hostname === "localhost"){
-			//protocol = "http";
-			port = ":8443";
-		}
-		var url = protocol + "://" + hostname + port + "/" + extraPath;
+
+		var url = secureDomain + "/" + extraPath;
 		return url;
 	},
 	
@@ -117,14 +145,14 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 	},
 	canLoginLogic: function(repository){
 		//only supporting local login for now
-		//console.log("canLoginLogic");
-		//console.log(this);
+
 		if (repository.toLowerCase() === this.get("repository").toLowerCase()){
 			return true;
 		} else {
 			return false;
 		}
 	},
+	
 	hasAccess: function(layerModel){
 
 		var layerRep = layerModel.get("Institution");
@@ -151,11 +179,6 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 
 OpenGeoportal.Views.Login = Backbone.View.extend({
 	model: OpenGeoportal.Models.User,
-
-	events: {
-		"loginSucceeded" 	: "loginSuccess",
-		"loginFailed"		: "loginFailure"
-		}, 
 		
 		initialize: function() {
 			this.model.fetch();
@@ -192,34 +215,36 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 			}
 
 			var that = this;
-			if ( typeof jQuery('#loginDialog')[0] == 'undefined') {
-				var shareDiv = '<div id="loginDialog" class="dialog"> \n';
+			var dialogId = "loginDialog";
+			var dialog$ = jQuery("#" + dialogId);
+
+			if ( dialog$.length === 0 ) {
+				var shareDiv = '<div id="' + dialogId + '" class="dialog"> \n';
 				shareDiv += dialogContent;
 				shareDiv += '</div> \n';
 				jQuery('body').append(shareDiv);
+				dialog$ = jQuery("#" + dialogId);
 
 				var loginButtons;
-				if (type == "form") {
+				if (type === "form") {
 					loginButtons = {
 						Cancel : function() {
 							jQuery(this).dialog('close');
-							jQuery(document).trigger("loginCancel");
 						},
 						Login : function() {
 							that.processFormLogin(deferred);
 						}
 
 					};
-				} else if (type == "iframe") {
+				} else if (type === "iframe") {
 					loginButtons = {
 						Cancel : function() {
 							jQuery(this).dialog('close');
-							jQuery(document).trigger("loginCancel");
 						}
 					};
 				}
-
-				jQuery("#loginDialog").dialog({
+				
+				dialog$.dialog({
 					autoOpen : false,
 					width : 'auto',
 					title : dialogTitle,
@@ -231,20 +256,20 @@ OpenGeoportal.Views.Login = Backbone.View.extend({
 				});
 			} else {
 				//replace dialog text/controls & open the instance of 'dialog' that already exists
-				jQuery("#loginDialog").html(dialogContent);
+				dialog$.html(dialogContent);
 			}
 
-			if (type == "form") {
-				jQuery("#loginDialog").unbind("keypress");
-				jQuery('#loginDialog').bind("keypress", function(event) {
-					if (event.keyCode == '13') {
+			if (type === "form") {
+				dialog$.off("keypress");
+				dialog$.on("keypress", function(event) {
+					if (event.keyCode === 13) {
 						that.processFormLogin(deferred);
 					}
 				});
 			} 
 			
-			jQuery("#loginDialog").dialog('open');
-			
+			dialog$.dialog('open');
+			dialog$.find("input:text").first().focus();
 			return deferred.promise();
 		},
 		//return the login form to be presented to the user

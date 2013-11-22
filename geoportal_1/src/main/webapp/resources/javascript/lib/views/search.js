@@ -341,11 +341,11 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 
 		/**
 		 * uses styledSelect to create the menu in advanced search that allows a user to select which institutions to search; dynamically created
-		 * from info in OpenGeoportal.InstitutionInfo
+		 * from info in OpenGeoportal.Config
 		 */
 		createInstitutionsMenu: function() {
 			var iconRenderer = this.controls.renderRepositoryIcon;
-			var repositoryCollection = OpenGeoportal.InstitutionInfo.Repositories;
+			var repositoryCollection = OpenGeoportal.Config.Repositories;
 			var that = this;
 			var callback = function(){
 				var repositoryMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox({
@@ -378,7 +378,7 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		createDataTypesMenu: function() {
 			var iconRenderer = this.controls.renderTypeIcon;
 			var dataTypesMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox({
-				collection: OpenGeoportal.InstitutionInfo.DataTypes,
+				collection: OpenGeoportal.Config.DataTypes,
 				el: "div#dataTypeDropdown",
 				valueAttribute: "value",
 				displayAttribute: "displayName",
@@ -390,7 +390,7 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			this.dataTypes = dataTypesMenu;
 			this.model.set({dataType: this.dataTypes.getValueAsArray()});
 			var that = this;
-			this.dataTypes.$el.on("change", function(){that.model.set({dataType: that.dataTypes.getValueAsArray()})});
+			this.dataTypes.$el.on("change", function(){that.model.set({dataType: that.dataTypes.getValueAsArray()});});
 
 		},
 

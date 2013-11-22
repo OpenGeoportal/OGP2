@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.download.LayerDownloader;
 import org.opengeoportal.download.config.DownloadConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
@@ -15,7 +16,6 @@ import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.AugmentedSolrRecord;
 import org.opengeoportal.ogc.AugmentedSolrRecordRetriever;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SearchConfigRetriever;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.LocationFieldUtils;
@@ -41,20 +41,18 @@ import com.fasterxml.jackson.core.JsonParseException;
 public class DownloadHandlerImpl implements DownloadHandler {
 	private List<SolrRecord> layerInfo;
 	private Boolean locallyAuthenticated = false;
+	
 	@Autowired
 	protected LayerInfoRetriever layerInfoRetriever;
-	@Autowired
-	protected DownloadConfigRetriever downloadConfigRetriever;
-	@Autowired
-	protected SearchConfigRetriever searchConfigRetriever;
+
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
-	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
 	protected RequestStatusManager requestStatusManager;
 
 	@Autowired
 	AugmentedSolrRecordRetriever asrRetriever;
+	
 	@Autowired
 	@Qualifier("httpRequester.generic")
 	HttpRequester httpRequester;
@@ -62,6 +60,8 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	@Autowired
 	private LayerDownloaderProvider layerDownloaderProvider;
 	
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
 	
 	
 	/**
@@ -99,14 +99,22 @@ public class DownloadHandlerImpl implements DownloadHandler {
 		this.setLocallyAuthenticated(locallyAuthenticated);
 		UUID requestId = UUID.randomUUID();
 		dlRequest.setRequestId(requestId);
+
+		requestStatusManager.addDownloadRequest(dlRequest);
+
 		this.populateDownloadRequest(dlRequest);
 		this.submitDownloadRequest(dlRequest);
 		return requestId;
 	}
 
 
-	
+	//use Spring Security hasPermission expression instead
+	//probably use a filter to get a collection containing only layers the
+	//user is authorized to download.
 	private Boolean isAuthorizedToDownload(SolrRecord solrRecord){
+		//this should come from something in the security package
+		return true;
+		/*
 		if (solrRecord.getAccess().equalsIgnoreCase("public")){
 			return true;
 		} else {
@@ -125,7 +133,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 				logger.error(e.getMessage());
 				return false;
 			}
-		}
+		}*/
 	}
 	
 	private void populateDownloadRequest (DownloadRequest dlRequest) throws Exception {
@@ -183,15 +191,17 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	 */
 	@Async
 	public void submitDownloadRequest(DownloadRequest dlRequest) {
-		requestStatusManager.addDownloadRequest(dlRequest);
 		List<MethodLevelDownloadRequest> requestList = dlRequest.getRequestList();
 		for (MethodLevelDownloadRequest request: requestList){
 			try {
 				request.getLayerDownloader().downloadLayers(dlRequest.getRequestId(), request);
 			} catch (Exception e) {
-				logger.error("runDownloadRequest: " + e.getMessage());
+				logger.error("downloadLayers: " + e.getMessage());
 				//should put error info in the status manager for these layers
-				e.printStackTrace();
+				for (LayerRequest layer: request.getRequestList()){
+					layer.setStatus(Status.FAILED);
+				}
+				//e.printStackTrace();
 			}
 		}
 
@@ -225,10 +235,8 @@ public class DownloadHandlerImpl implements DownloadHandler {
 					InputStream is = null;
 					try {
 						serviceStart = LocationFieldUtils.getServiceStartUrl(location);
-						//requestObj.AddLayer = [layerModel.get("qualifiedName")];
-						//requestObj.ValidationKey = "OPENGEOPORTALROCKS";
 						String name = layer.getLayerInfo().getName();
-						//the HGL remote service starter does not use qualified names
+						//the HGL remote service starter does not use fully qualified names
 						name = name.substring(name.indexOf(".") + 1);
 						logger.info("Attempting to Start Service for ['" + layer.getId() + "']");
 						is = httpRequester.sendRequest(serviceStart, "AddLayer=" + name + "&ValidationKey=OPENGEOPORTALROCKS", "GET");

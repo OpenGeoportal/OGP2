@@ -21,9 +21,31 @@
 	<beans:bean id="proxy.simple" class="org.opengeoportal.proxy.GenericProxyImpl" />
 	<beans:bean id="userContext.ogp"
 		class="org.opengeoportal.security.OgpUserContextImpl" />
-	<beans:bean id="userDetailsMapper.custom"
-		class="org.opengeoportal.security.SimpleLdapUserDetailsMapper">
-		<beans:property name="admins" value="${admins}" />
+		
+
+	<!-- config -->
+	<beans:bean id="properties.generalOgp" class="org.opengeoportal.config.PropertiesFile">
+		<beans:property name="resource" value="WEB-INF/ogp.properties" />
+	</beans:bean>
+	
+	<beans:bean id="properties.repositories" class="org.opengeoportal.config.PropertiesFile">
+		<beans:property name="resource" value="WEB-INF/repositories.properties" />
+	</beans:bean>
+	
+	<beans:bean id="config.ogp" class="org.opengeoportal.config.ogp.OgpConfigRetrieverFromProperties" init-method="load" >
+		<beans:property name="propertiesFile" ref="properties.generalOgp" />
+	</beans:bean>
+	
+	<beans:bean id="config.proxy" class="org.opengeoportal.config.proxy.ProxyConfigRetrieverFromProperties" init-method="load" >
+		<beans:property name="propertiesFile" ref="properties.generalOgp" />
+	</beans:bean>
+	
+	<beans:bean id="config.repositories" class="org.opengeoportal.config.repositories.RepositoryConfigRetrieverFromProperties" init-method="load" >
+		<beans:property name="propertiesFile" ref="properties.repositories" />
+	</beans:bean>
+	
+	<beans:bean id="config.search" class="org.opengeoportal.config.search.SearchConfigRetrieverFromProperties" init-method="load" >
+		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
 	<!-- misc -->
@@ -73,11 +95,13 @@
 		class="org.opengeoportal.download.RequestStatusManagerImpl" />
 
 	<beans:bean id="cleanupDirectory.download"
-		class="org.opengeoportal.utilities.CleanupDirectoryImpl" />
+		class="org.opengeoportal.utilities.CleanupDirectoryImpl" >
+		<beans:property name="maxAge" value="${maxFileAge}" />
+	</beans:bean>
 
 	<beans:bean id="urlShortener.Google"
 		class="org.opengeoportal.utilities.UrlShortenerGoogle" scope="prototype">
-		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
+		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
 	<beans:bean id="layerInfoRetriever.solr"
@@ -90,17 +114,11 @@
 		<beans:property name="resource" value="resources/ogpDownloadConfig.json" />
 	</beans:bean>
 
-	<beans:bean id="configRetriever.search" class="org.opengeoportal.solr.OgpConfigRetriever">
-		<beans:property name="resource" value="resources/ogpConfig.json" />
-	</beans:bean>
-
 	<beans:bean id="quickDownload"
 		class="org.opengeoportal.utilities.QuickWfsDownload" scope="prototype" />
 
-	<beans:bean id="directoryRetriever.simple" class="org.opengeoportal.utilities.GetDirectory">
-		<beans:property name="resource" value="WEB-INF/ogp.properties" />
-	</beans:bean>
-
+	<beans:bean id="directoryRetriever.simple" class="org.opengeoportal.utilities.DirectoryRetrieverImpl" />
+	
 	<beans:bean id="downloadPackager"
 		class="org.opengeoportal.download.DownloadPackagerImpl" scope="prototype" />
 
@@ -135,7 +153,11 @@
 	</beans:bean>
 
 	<beans:bean id="httpClient.pooling"
-		class="org.opengeoportal.utilities.http.PoolingHttpClient" />
+		class="org.opengeoportal.utilities.http.PoolingHttpClient" >
+		<beans:property name="maxConnections" value="${connectionPool.maxTotal}" />
+		<beans:property name="maxConnectionsRt" value="${connectionPool.maxPerRoute}" />
+	</beans:bean>
+	
 	<beans:bean id="httpClient.pooling.allTrusting"
 		class="org.opengeoportal.utilities.http.AllTrustingCertPoolingHttpClient" />
 
@@ -161,7 +183,6 @@
 		class="org.opengeoportal.download.methods.ProxiedWfsDownloadMethod"
 		scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
-		<beans:property name="proxyTo" value="${ogp.proxyToWFS}" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.kmlReflector"
@@ -178,7 +199,6 @@
 		class="org.opengeoportal.download.methods.ProxiedWcsDownloadMethod"
 		scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
-		<beans:property name="proxyTo" value="${ogp.proxyToWCS}" />
 	</beans:bean>
 
 	<beans:bean id="downloadMethod.file"
@@ -248,7 +268,7 @@
 		scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wms" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
-		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
+		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
@@ -256,7 +276,7 @@
 		scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wfs" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
-		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
+		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
@@ -264,7 +284,7 @@
 		scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wcs_1_1_1" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
-		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
+		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
@@ -272,7 +292,7 @@
 		scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wcs_1_0_0" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
-		<beans:property name="searchConfigRetriever" ref="configRetriever.search" />
+		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
 		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
@@ -294,10 +314,10 @@
 
 	<task:annotation-driven executor="executor" />
 
-	<task:executor id="executor" pool-size="5" />
-	<task:scheduler id="scheduler" pool-size="1" />
+	<task:executor id="executor" pool-size="${threadPool.executor}" />
+	<task:scheduler id="scheduler" pool-size="${threadPool.scheduler}" />
 	<task:scheduled-tasks scheduler="scheduler">
 		<task:scheduled ref="cleanupDirectory.download" method="cleanupDownloadDirectory"
-			fixed-rate="300000" />
+			fixed-rate="${cleanupInterval}" />
 	</task:scheduled-tasks>
 </beans:beans>

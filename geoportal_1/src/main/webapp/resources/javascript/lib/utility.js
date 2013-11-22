@@ -107,7 +107,7 @@ OpenGeoportal.Utility.idEscape = function (domElementId) {
 	   return domElementId.replace(/(:|\.)/g,'\\$1');
 };
 
-OpenGeoportal.Utility.getMetadata = function (layerId){
+/*OpenGeoportal.Utility.getMetadata = function (layerId){
 	var params = {
 			url: "getMetadata.jsp?layer=" + layerId,
 			dataType: 'xml',
@@ -116,7 +116,7 @@ OpenGeoportal.Utility.getMetadata = function (layerId){
 			}
 		  };
 		jQuery.ajax(params);
-};
+};*/
 
 OpenGeoportal.Utility.escapeQuotes = function(stringOfInterest){
 	return stringOfInterest.replace("'", "\\'").replace('"', '\\"');

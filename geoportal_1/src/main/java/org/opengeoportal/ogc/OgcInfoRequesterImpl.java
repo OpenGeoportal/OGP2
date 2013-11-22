@@ -4,9 +4,9 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SearchConfigRetriever;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
@@ -17,8 +17,8 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	private HttpRequester httpRequester;
 	private OgcInfoRequest ogcInfoRequest;
 	private LayerInfoRetriever layerInfoRetriever;
-	private SearchConfigRetriever searchConfigRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
+	private ProxyConfigRetriever proxyConfigRetriever;
 
 	public HttpRequester getHttpRequester() {
 		return httpRequester;
@@ -44,14 +44,14 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 		this.layerInfoRetriever = layerInfoRetriever;
 	}
 
-	public SearchConfigRetriever getSearchConfigRetriever() {
-		return searchConfigRetriever;
+
+	public ProxyConfigRetriever getProxyConfigRetriever() {
+		return proxyConfigRetriever;
 	}
 
-	public void setSearchConfigRetriever(SearchConfigRetriever searchConfigRetriever) {
-		this.searchConfigRetriever = searchConfigRetriever;
+	public void setProxyConfigRetriever(ProxyConfigRetriever proxyConfigRetriever) {
+		this.proxyConfigRetriever = proxyConfigRetriever;
 	}
-
 
 	private OwsInfo handleResponse(String contentType, InputStream inputStream) throws Exception{
 		logger.info(contentType);
@@ -105,15 +105,8 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 
 			String request = ogcInfoRequest.createRequest(layerName);
 			String method = ogcInfoRequest.getMethod();
-			String protocol = ogcInfoRequest.getOgcProtocol();
-			String url = "";
-			if (protocol.equalsIgnoreCase("wms")){
-				url = searchConfigRetriever.getWmsUrl(solrRecord); 
-			} else if (protocol.equalsIgnoreCase("wfs")){
-				url = searchConfigRetriever.getWfsUrl(solrRecord);
-			} else if (protocol.equalsIgnoreCase("wcs")){
-				url = searchConfigRetriever.getWcsUrl(solrRecord);
-			}
+			String protocol = ogcInfoRequest.getOgcProtocol().toLowerCase();
+			String url = proxyConfigRetriever.getUrl(protocol, solrRecord.getInstitution(), solrRecord.getAccess(), solrRecord.getLocation());
 
 			is = httpRequester.sendRequest(url, request, method);
 

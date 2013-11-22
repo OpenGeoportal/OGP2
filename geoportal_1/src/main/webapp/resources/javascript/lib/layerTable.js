@@ -1165,6 +1165,13 @@ OpenGeoportal.LayerTable = function LayerTable(){
 			// Open this row 
 			var rowNode = control$.closest("tr")[0];
 			that.getTableObj().fnOpen(rowNode, "<div></div>", 'previewTools');
+			
+			console.log(that);
+			console.log(data);
+			console.log(data.LayerId);
+			console.log(that.backingData);
+			console.log(that.backingData.get(data.LayerId));
+			
 			var layerModel = that.previewed.getLayerModel(that.backingData.get(data.LayerId));//at this point, we need to have a model for the layer in "previewed", or we can't render the tools properly
 			var tools$ = jQuery(rowNode).next().find(".previewTools");
 			var view = new OpenGeoportal.Views.PreviewTools({model: layerModel, el: tools$});//render to the container created by fnOpen

@@ -26,7 +26,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class GenericProxyImpl implements GenericProxy {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private HttpEntity responseEntity;
-	@Autowired @Qualifier("httpClient.pooling")
+	
+	@Autowired 
+	@Qualifier("httpClient.pooling")
 	protected OgpHttpClient ogpHttpClient;
 	
 	public void proxyRequest(HttpServletRequest request,

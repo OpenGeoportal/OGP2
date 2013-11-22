@@ -28,6 +28,19 @@ public final class LocationFieldUtils {
 	final static Logger logger = LoggerFactory.getLogger(LocationFieldUtils.class.getName());
 
 	/**
+	 * Get the first value of type "type" from the Location field
+	 * 
+	 * @param type	The field key
+	 * @param locationField		The Solr record Location field as a String
+	 * @return	the url for the layer, if the record has been populated correctly
+	 * @throws JsonParseException
+	 */
+	public static String getUrl(String type, String locationField) throws JsonParseException{
+		return parseLocationFromKey(locationField, type).get(0);
+
+	}
+	
+	/**
 	 * Get the first value in the "wms" array from the Location field
 	 * 
 	 * @param locationField		The Solr record Location field as a String

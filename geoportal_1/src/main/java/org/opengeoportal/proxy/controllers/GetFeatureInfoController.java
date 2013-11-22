@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.solr.SearchConfigRetriever;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class GetFeatureInfoController {
 	@Autowired
 	private LayerInfoRetriever layerInfoRetriever;
 	@Autowired
-	private SearchConfigRetriever searchConfigRetriever;
+	private ProxyConfigRetriever proxyConfigRetriever;
 	
 	@RequestMapping(method=RequestMethod.GET)
 	public void getFeatureInfo(@RequestParam("OGPID") String layerId, @RequestParam("bbox") String bbox, 
@@ -53,7 +53,8 @@ public class GetFeatureInfoController {
 	    SolrRecord layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerIds).get(0);
 	    
 	    //remove any query string
-	    String previewUrl = searchConfigRetriever.getWmsUrl(layerInfo);
+	    String previewUrl = proxyConfigRetriever.getUrl("wms", layerInfo.getInstitution(), layerInfo.getAccess(), layerInfo.getLocation());
+
 	    
 	    /*
 	     * http://www.example.com/wfs?

@@ -15,10 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CleanupDirectoryImpl implements CleanupDirectory {
-	private static final int FILE_AGE_MINUTES = 240;
+	int maxAge;
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
 	final static Logger logger = LoggerFactory.getLogger(CleanupDirectoryImpl.class.getName());
+
+	public int getMaxAge() {
+		return maxAge;
+	}
+
+	public void setMaxAge(int maxAge) {
+		this.maxAge = maxAge;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.OpenGeoPortal.Utilities.CleanupDirectory#cleanupDownloadDirectory()
@@ -29,8 +37,11 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 		try {
 			//convert to milliseconds
 			int counter = 0;
-			long timeInterval = FILE_AGE_MINUTES * 60 * 1000;
+			long timeInterval = maxAge * 60 * 1000;
 			File[] downloadedFiles = directoryRetriever.getDownloadDirectory().listFiles();
+			/*for (File old: downloadedFiles){
+				logger.info(old.getAbsolutePath());
+			}*/
 			long currentTime = System.currentTimeMillis();
 
 			for (File downloadedFile : downloadedFiles) {
@@ -64,6 +75,7 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 				logger.debug("No items to delete.");
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error("Attempt to delete old files was unsuccessful.");
 		}
 		

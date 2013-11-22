@@ -3,7 +3,6 @@
 				"fullName": "Tufts University",
 				"login": {"loginType": "form", "authenticationPage": "login"}, 
 				"proxy": {"id": "proxy.Restricted.Tufts", "accessLevel": ["restricted"], "wms": "restricted/wms", "wfs": "restricted/wfs"}, 
-				"local": true,
 				"sourceIconClass":"tuftsIcon",
 				"selected": true
 				},

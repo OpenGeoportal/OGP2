@@ -32,12 +32,23 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 
 				var that = this;
 				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(){that.render.apply(that, arguments);});
-				this.login = OpenGeoportal.ogp.appState.get("login");
-				this.login.listenTo(this.login, "change:authentication", function(){that.render.apply(that, arguments);});
+				this.login = OpenGeoportal.ogp.appState.get("login").model;
+
+				this.login.listenTo(this.login, "change:authenticated", function(){
+					that.removeOnLogout(that, arguments);
+					that.render.apply(that, arguments);
+					});
 				this.listenTo(this.model, "change:preview", this.render);
 				this.listenTo(this.model, "change:showControls", this.toggleControls);
 
 			},
+			
+			removeOnLogout: function(loginView){
+				if (!this.login.hasAccess(this.model)){
+					this.model.set({preview: "off"});
+				}
+			},
+			
 			viewMetadata: function(){
 				console.log(arguments);
 				var layerId = this.model.get("LayerId");
@@ -168,7 +179,7 @@ OpenGeoportal.Views.PreviewedLayersTable = Backbone.View.extend({
 		}
 	},
 
-	renderedViews: {}, //keep a reference to rendered views
+	renderedViews: {}, //keep a reference to rendered views...necessary?
 	renderRow: function(model){
 		this.renderedViews[model.cid] = new OpenGeoportal.Views.PreviewedLayersRow({model: model});
 		this.$el.append(this.renderedViews[model.cid].render().el);

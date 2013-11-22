@@ -3,19 +3,18 @@ package org.opengeoportal.utilities;
 import java.io.File;
 import java.io.IOException;
 
-import org.springframework.core.io.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class GetDirectory implements DirectoryRetriever {
+public class DirectoryRetrieverImpl implements DirectoryRetriever {
 	private static final String DOWNLOAD_DIRECTORY = "download";
-	Resource resource;
 
+	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public void setResource(Resource resource){
-		this.resource = resource;
-	}
 	
 	/**
 	 * a method to create a directory to put downloaded files into, if it doesn't already exist
+	 * puts the directory in the temp directory
 	 * 
 	 * @param	directoryName	the name of the directory as a String
 	 * @throws IOException 
@@ -23,11 +22,10 @@ public class GetDirectory implements DirectoryRetriever {
 	 */
 	public File getDirectory(String directoryName) throws IOException{
 		//check permissions
-
-		String directoryString = this.resource.getFile().getParentFile().getParentFile().getAbsolutePath();
-		directoryString += "/" + directoryName;
-		//System.out.println(directoryString);
-		File theDirectory = new File(directoryString);
+		File tempFile = File.createTempFile("tmp", "tmp");
+		File tempDir = tempFile.getParentFile();
+		tempFile.delete();
+		File theDirectory = new File(tempDir, directoryName);
 				
 		if (!theDirectory.exists()){
 			theDirectory.mkdir();
@@ -43,17 +41,16 @@ public class GetDirectory implements DirectoryRetriever {
 
 	/** 
 	 * 
-	 * @return a File handle for the download directory specified in DOWNLOAD_DIRECTORY
+	 * @return a File handle for the temp directory, which we're using for downloads
 	 * @see org.OpenGeoPortal.Utilities.DirectoryRetriever#getDownloadDirectory()
 	 */
 	public File getDownloadDirectory() {
+		File theDirectory = null;
 		try {
-			File theDirectory = this.getDirectory(DOWNLOAD_DIRECTORY);
-			return theDirectory;
+			theDirectory = getDirectory(DOWNLOAD_DIRECTORY);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("The directory \"" + DOWNLOAD_DIRECTORY + "\" could not be retrieved.");
-			return null;
+			logger.error("Unable to retrieve directory ['" + DOWNLOAD_DIRECTORY + "'] in the temp directory.");
 		}
+		return theDirectory;
 	}
 }

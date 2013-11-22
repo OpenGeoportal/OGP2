@@ -15,21 +15,21 @@ if (typeof OpenGeoportal == 'undefined'){
 }
 
 OpenGeoportal.init = function(){
-	OpenGeoportal.InstitutionInfo.getInstitutionInfo();
+	//OpenGeoportal.Config.getInstitutionInfo();
 
 	//TODO: this should move to server side "include"
-	document.title = "GeoData@" + OpenGeoportal.InstitutionInfo.getHomeInstitution();
+	//document.title = "GeoData@" + OpenGeoportal.InstitutionInfo.getHomeInstitution();
 
 	//we do this here so that we can try to get the css before the document is ready (should we do this in the jsp instead?)
-	var url = OpenGeoportal.InstitutionInfo.getCustomCss();
+	//var url = OpenGeoportal.InstitutionInfo.getCustomCss();
 
-	if (document.createStyleSheet){
+	/*if (document.createStyleSheet){
 		document.createStyleSheet(url);
 	} else {
 		jQuery('<link rel="stylesheet" type="text/css" href="' + url + '" />').appendTo('head'); 
-	}
+	}*/
 };
-OpenGeoportal.init();
+//OpenGeoportal.init();
 
 jQuery(document).ready(function (){
 	if ( !Object.create ) {
@@ -41,10 +41,10 @@ jQuery(document).ready(function (){
 	}
 	
 	//TODO: this should move to server side "include"
-	var javaScriptFileName = OpenGeoportal.InstitutionInfo.getCustomJavaScript();
+	/*var javaScriptFileName = OpenGeoportal.InstitutionInfo.getCustomJavaScript();
 	if (javaScriptFileName.length > 0){
 		jQuery.getScript(javaScriptFileName);
-	}
+	}*/
 	
 	//ogp will hold instances
 	OpenGeoportal.ogp = {};
@@ -59,15 +59,16 @@ jQuery(document).ready(function (){
 	ogp.map = new OpenGeoportal.MapController();
 	ogp.map.createMap("map");	
 	
+	ogp.cartView = new OpenGeoportal.Views.Cart({collection: ogp.appState.get("cart"), el: $("#cart")});
+	ogp.cartView.cartTableObj.addSharedLayersToCart();	
+
 	//these loads could/should be deferred	
+	//needs to wait for ogpConfig fetch
 	ogp.results = new OpenGeoportal.ResultCollection();
 	ogp.resultsTableObj = new OpenGeoportal.SearchResultsTable();
 	
 	ogp.resultsTableObj.initTable("searchResults");
 	
-	ogp.cartView = new OpenGeoportal.Views.Cart({collection: ogp.appState.get("cart"), el: $("#cart")});
-	ogp.cartView.cartTableObj.addSharedLayersToCart();	
-
 	/*downtime notice */
 	//ogp.ui.showDowntimeNotice();
 });

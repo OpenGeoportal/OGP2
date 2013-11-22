@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 
-import org.opengeoportal.solr.SearchConfigRetriever;
+import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class AdminController {
 	public @ResponseBody Map<String,Object> setSearchUrl(@RequestParam("url") String url) throws Exception {
 		Boolean success = false;
 		try {
-			searchConfigRetriever.setSearchUrl(url);
+			//searchConfigRetriever.setSearchUrl(url);
 			success = true;
 		} catch (Exception e){
 			logger.error("Problem setting solr url: " + url);

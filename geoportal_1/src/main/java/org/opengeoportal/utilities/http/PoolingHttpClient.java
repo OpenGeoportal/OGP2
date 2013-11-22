@@ -24,7 +24,25 @@ public class PoolingHttpClient implements OgpHttpClient {
 	private PoolingHttpClientConnectionManager connectionManager;
 	private CloseableHttpClient client;
 	private Boolean initCalled = false;
+	int maxConnections;
+	int maxConnectionsRt;
 	
+	public int getMaxConnections() {
+		return maxConnections;
+	}
+
+	public void setMaxConnections(int maxConnections) {
+		this.maxConnections = maxConnections;
+	}
+
+	public int getMaxConnectionsRt() {
+		return maxConnectionsRt;
+	}
+
+	public void setMaxConnectionsRt(int maxConnectionsRt) {
+		this.maxConnectionsRt = maxConnectionsRt;
+	}
+
 	private void init(){
 		
 		ConnectionSocketFactory plainsf = PlainConnectionSocketFactory.getSocketFactory();
@@ -51,9 +69,9 @@ public class PoolingHttpClient implements OgpHttpClient {
 		
 		connectionManager = new PoolingHttpClientConnectionManager(r);
 		// Increase max total connection
-		connectionManager.setMaxTotal(100);
+		connectionManager.setMaxTotal(maxConnections);
 		// Increase default max connection per route 
-		connectionManager.setDefaultMaxPerRoute(10);
+		connectionManager.setDefaultMaxPerRoute(maxConnectionsRt);
 
 		
 		/*
@@ -176,7 +194,9 @@ import org.apache.http.util.EntityUtils;
 	
 	  @PreDestroy
 		public void cleanUp() throws Exception {
-		  connectionManager.shutdown();
+			if (initCalled){
+				  connectionManager.shutdown();
+			}
 		 }
 
 }

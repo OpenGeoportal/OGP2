@@ -38,7 +38,7 @@ OpenGeoportal.Solr = function() {
 	 * because it re-processes the shards every time it is called
 	 */
 	this.getServerName = function getServerName() {
-		var configInfo = OpenGeoportal.InstitutionInfo.getSearch().serviceAddress;
+		var configInfo = OpenGeoportal.Config.General.get("searchUrl");
 		var elements = configInfo.split(",");
 		var primaryServer = elements[0];
 		if (!(primaryServer.indexOf("http://") == 0 || primaryServer
@@ -64,7 +64,7 @@ OpenGeoportal.Solr = function() {
 	 * @return
 	 */
 	this.getShardServerNames = function getShardNames() {
-		var configInfo = OpenGeoportal.InstitutionInfo.getSearch().serviceAddress;
+		var configInfo = OpenGeoportal.Config.General.get("searchUrl");
 		var elements = configInfo.split(",");
 		var shards = "";
 		if (elements.length == 1) {

@@ -1,5 +1,6 @@
 package org.opengeoportal.metadata;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -11,7 +12,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
-import org.opengeoportal.solr.SearchConfigRetriever;
+import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.http.OgpHttpClient;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	private SolrServer solrServer = null;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	@Autowired
 	private SearchConfigRetriever searchConfigRetriever;
 
@@ -29,12 +31,16 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	@Qualifier("httpClient.pooling")
 	OgpHttpClient ogpHttpClient;
 	
-	private void init() throws Exception{
+	private void init() throws Exception {
 		HttpClient httpClient = ogpHttpClient.getHttpClient();
-		String url = searchConfigRetriever.getSearchUrl();
-		url = url.substring(0, url.indexOf("/select"));
-		//logger.info("creating Solr Server");
-		HttpSolrServer httpServer = new HttpSolrServer(url, httpClient);
+		URL url = searchConfigRetriever.getInternalSearchUrl();
+		String url$ = url.toString();
+		
+		if (url$.contains("select")){
+			url$ = url$.substring(0, url$.indexOf("/select"));
+		}
+		logger.debug("creating Solr Server at " + url$);
+		HttpSolrServer httpServer = new HttpSolrServer(url$, httpClient);
 		httpServer.setParser(new XMLResponseParser());
 		
 		this.solrServer = (SolrServer) httpServer;
@@ -46,7 +52,6 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 			try {
 				init();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				logger.error("problem creating solr server");
 			}
 		}
