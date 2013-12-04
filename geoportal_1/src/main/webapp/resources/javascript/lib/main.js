@@ -57,10 +57,9 @@ jQuery(document).ready(function (){
 	ogp.ui.init();
 	
 	ogp.map = new OpenGeoportal.MapController();
-	ogp.map.createMap("map");	
+	ogp.map.createMap("map");	//create map could return a promise that is fullfilled when the map is loaded
 	
-	ogp.cartView = new OpenGeoportal.Views.Cart({collection: ogp.appState.get("cart"), el: $("#cart")});
-	ogp.cartView.cartTableObj.addSharedLayersToCart();	
+	ogp.cartView = new OpenGeoportal.Views.Cart({collection: ogp.appState.get("cart"), el: $("#cart")});	
 
 	//these loads could/should be deferred	
 	//needs to wait for ogpConfig fetch
@@ -68,6 +67,11 @@ jQuery(document).ready(function (){
 	ogp.resultsTableObj = new OpenGeoportal.SearchResultsTable();
 	
 	ogp.resultsTableObj.initTable("searchResults");
+	
+	//wait to do this until the google map is ready
+	var hasSharedLayers = ogp.cartView.cartTableObj.addSharedLayersToCart();
+	
+	ogp.ui.introFlow(hasSharedLayers);
 	
 	/*downtime notice */
 	//ogp.ui.showDowntimeNotice();

@@ -1,8 +1,8 @@
 package org.opengeoportal.proxy;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
@@ -20,30 +20,37 @@ public class ImageDownloaderImpl implements ImageDownloader {
 
 	@Autowired @Qualifier("httpRequester.generic")
 	private HttpRequester httpRequester;
-	
+
 	@Override
 	@Async
-	public Future<File> getImage(String baseUrl, String queryString) throws IOException {
+	public Future<File> getImage(URL imageLocation) throws Exception {		
+		
 		InputStream is = null;
 		try {
 			File tempFile = File.createTempFile("img", ".png");
-			logger.info(baseUrl);
-			is = this.httpRequester.sendRequest(baseUrl, queryString, "GET");
+			String query = imageLocation.getQuery();
+			String base = imageLocation.toString().replace(query, "");
+			
+			is = this.httpRequester.sendRequest(base, query, "GET");
 			String contentType = this.httpRequester.getContentType();
+			logger.debug(contentType);
 			if (contentType.toLowerCase().contains("png")){
 				FileUtils.copyInputStreamToFile(is, tempFile);
+				return new AsyncResult<File>(tempFile);
+
 			} else {
-				if ((contentType.toLowerCase().contains("xml"))||(contentType.toLowerCase().contains("html"))||
-						(contentType.toLowerCase().contains("text"))){
-					logger.error("Response content: " + IOUtils.toString(is));
-				}
-				throw new IOException("Unexpected content-type: " + contentType);
+					if ((contentType.toLowerCase().contains("xml"))||(contentType.toLowerCase().contains("html"))||
+							(contentType.toLowerCase().contains("text"))){
+						logger.error("Response content: " + IOUtils.toString(is));
+					}
+				
+				throw new Exception("Image not found");
 			}
-			return new AsyncResult<File>(tempFile);
-			
+
 		} finally {
 			IOUtils.closeQuietly(is);
 		}
+
 	}
 
 }

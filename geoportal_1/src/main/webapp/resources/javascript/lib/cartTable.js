@@ -505,47 +505,33 @@ OpenGeoportal.CartTable = function CartTable(){
 				layerInfo[layerId].directDownloadUrl = directDownloadUrl;*/
 		return arrSelected;
 	};
-	
-//	based on Dave's code
-	this.getParamsFromUrl = function() {
-		//TODO: make this into a backbone router?
-		var params = {};
-		var layers = [], hash;
-		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-		for(var i = 0; i < hashes.length; i++) {
-			hash = hashes[i].split('=');
-			if ((hash[0] == "layer%5B%5D")||(hash[0] == "layer[]")){
-				layers.push(hash[1]);
-			} else {
-				params[hash[0]] = hash[1];
-			}
-		}
-		if (layers.length > 0){
-			params.layer = layers;
-		}
-		return params;
-	};
+
 
 	this.addSharedLayersToCart = function(){
-		var params = this.getParamsFromUrl();
-
-		if (typeof params.layer == 'undefined'){
-			return;
+		if (OpenGeoportal.Config.shareIds.length > 0){
+			var solr = new OpenGeoportal.Solr();
+			solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds, this.getLayerInfoJsonpSuccess, this.getLayerInfoJsonpError);
+			return true;
+		} else {
+			return false;
 		}
-		var solr = new OpenGeoportal.Solr();
-		var query = solr.getInfoFromLayerIdQuery(params.layer);
-		solr.sendToSolr(query, this.getLayerInfoJsonpSuccess, this.getLayerInfoJsonpError, this);
-		var sharedExtent = params.minX + ',' + params.minY + ',' + params.maxX + ',' + params.maxY;
-		OpenGeoportal.ogp.map.zoomToLayerExtent(sharedExtent);
-		jQuery("#tabs").tabs("option", "active", 2);
 	};
 
-	this.getLayerInfoJsonpSuccess = function(data, newContext){
-		//wrong context? not sure
-		newCartData = this.processData(data);
-		for(var i in newCartData){
-			newContext.addLayerToCart(newCartData[i]);
+	this.getLayerInfoJsonpSuccess = function(data){
+		console.log(this);
+		var docs = data.response.docs;
+		that.backingData.add(docs);
+		
+		//if we want to preview the layer call below
+		for (var i in docs){
+			that.addToPreviewed(docs[i].LayerId);
+			//add info about color and size here as well.
+			// layerid~1AAA	tilde is delimiter, first character is size, last three are color?
 		}
+
+		jQuery(document).trigger("map.zoomToLayerExtent", {bbox: OpenGeoportal.Config.shareBbox});
+		//jQuery("#tabs").tabs("option", "active", 1);
+
 	};
 
 	this.getLayerInfoJsonpError = function(){
@@ -553,7 +539,7 @@ OpenGeoportal.CartTable = function CartTable(){
 	};
 
 
-
+/*
 //	solr query against layerIds
 //	process data functions, pass to this function
 	this.addLayerToCart = function(layerData){
@@ -573,7 +559,7 @@ OpenGeoportal.CartTable = function CartTable(){
 		//var layerModel = this.previewed.getLayerModel({layerId: layerId, dataType: dataType});
 		//layerModel.set({inCart: true});
 	};
-	
+	*/
 	this.shortenLink = function(longLink){
 		var request = {"link": longLink};
 		var url = "shortenLink";

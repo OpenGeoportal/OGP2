@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.imageio.ImageIO;
 
@@ -23,70 +26,104 @@ public class ImageCompositorImpl implements ImageCompositor {
 	private static final String FORMAT_SUFFIX = "png";
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	private Graphics2D compositeImageGraphicsObj;
+	private Graphics2D compositeImageGraphicsObj = null;
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
-	@Autowired
-	private ImageDownloader imageDownloader;
+
+	private int width;
+	private int height;
+	private int maxSizeMB;
+	private BufferedImage compositeImage = null;
+
 
 
 	@Async
 	@Override
 	public void createComposite(ImageRequest imageRequest) {
-		downloadLayerImages(imageRequest);
-		logger.debug("Creating image composite...");
-		BufferedImage compositeImage = new BufferedImage(imageRequest.getWidth(), imageRequest.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
+				
+		logger.debug("Starting compositing...");
+		
 		try { 
-			compositeImageGraphicsObj = compositeImage.createGraphics();
-
+			
 			//at this point, we need to iterate over the zIndexes, construct appropriate urls, layer on top of image, then write to a file
 			//should sort based on zOrder
 			List<LayerImage> layerImageList = imageRequest.getLayers();
 			Collections.sort(layerImageList);
+			
+			//we need to do some data validation for width and height here.  if the image is too big, we will get an OutOfMemoryError
+			setDimensions(imageRequest.getHeight(), imageRequest.getWidth());
+			
 			for (LayerImage layerImage: layerImageList){			
+				
 				//now we have everything we need to create a request
 				//this needs to be done for each image received
+				File imgFile = null;
 				try {
-					processLayer(layerImage);
+					imgFile = layerImage.getImageFileFuture().get(4, TimeUnit.MINUTES);
+				} catch (TimeoutException e) {
+						//just skip it
+						logger.error("There was an error retrieving this layer image.  The process timed out. Skipping...");
+						layerImage.setImageStatus(ImageStatus.FAILED);
+						e.printStackTrace();
+						continue;
+				} catch (ExecutionException e){
+					logger.error("threw execution exception on 'get'.");
+					layerImage.setImageStatus(ImageStatus.FAILED);
+					e.printStackTrace();
+					continue;
+				}
+					
+					
+				try{	
+					logger.info("adding image to composite: " + layerImage.getLayerId());
+					addImageToComposite(imgFile, layerImage.getOpacity());
 					layerImage.setImageStatus(ImageStatus.SUCCESS);
-				} catch (Exception e) {
+				}  catch (Exception e){
 					//just skip it
 					logger.error("There was an error processing this layer image.  Skipping...");
 					layerImage.setImageStatus(ImageStatus.FAILED);
 					e.printStackTrace();
-				} 
+				}
+				
 			}
-			try {
-				imageRequest.setDownloadFile(writeImage(compositeImage));
 
-			} catch (IOException e) {
-				e.printStackTrace();
-			}//write this location + status to the manager object
+			if (compositeImage != null){
+				imageRequest.setDownloadFile(writeImage(compositeImage));
+			} else {
+				throw new Exception("Image is null!");
+			}
+
 		} catch (Exception e){
 			e.printStackTrace();
+			for (LayerImage layerImage: imageRequest.getLayers()){	
+				layerImage.setImageStatus(ImageStatus.FAILED);
+			}
 		} finally {   
-			compositeImageGraphicsObj.dispose();
+			if (compositeImageGraphicsObj != null){
+				compositeImageGraphicsObj.dispose();
+			}
 		}
 	}
 
-	private void downloadLayerImages(ImageRequest imageRequest) {
-		List<LayerImage> layerImageList = imageRequest.getLayers();
-		for (LayerImage layerImage: layerImageList){			
-			//now we have everything we need to create a request
-			//this needs to be done for each image received
-			try {
-				layerImage.setImageFileFuture(imageDownloader.getImage(layerImage.getBaseUrl(), layerImage.getQueryString()));
-			} catch (Exception e) {
-				//just skip it
-				layerImage.setImageStatus(ImageStatus.FAILED);
-				logger.error("There was a problem getting this image.  Skipping.");
-				e.printStackTrace();
-			} 
+
+	private void setDimensions(Integer height, Integer width) throws Exception {
+		//should I just throw an exception if there is a negative value?
+		height = Math.abs(height);
+		width = Math.abs(width);
+
+		Long estImgSize = height.longValue() * width.longValue() * 4;	//number of bytes
+		if (estImgSize >= getMaxSizeMB() * 1048576){
+			//megaBytes * 1048576 bytes/MB
+			throw new Exception("Image is too large! ['est. " + Long.toString(estImgSize/1048576) + " MB'] Not enough memory to process.");
 		}
+		this.height = height;
+		this.width = width;
+		
 	}
+
 
 	private File getDirectory() throws IOException{
+		//?
 		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
 		File newDir = File.createTempFile("OGP", "", downloadDirectory);
 		newDir.delete();
@@ -105,9 +142,10 @@ public class ImageCompositorImpl implements ImageCompositor {
 			ImageIO.write(compositeImage, FORMAT_SUFFIX, outputFile);
 		} catch (IOException e) {
 			//...
+			logger.warn("Exception writing image to disk.");
 		} 
 
-		logger.info("Image written");
+		logger.debug("Image written");
 		return outputFile;
 	}
 
@@ -120,36 +158,62 @@ public class ImageCompositorImpl implements ImageCompositor {
 		return outputFile;
 	}
 
-	private void processLayer(LayerImage layerImage) {
+	private Graphics2D createCompositeImage(int width, int height){
+		logger.debug("Creating image composite...");
+		//we need to do some data validation for width and height here.  if the image is too big, we will get an OutOfMemoryError
+		compositeImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		compositeImageGraphicsObj = compositeImage.createGraphics();
+		return compositeImageGraphicsObj;
+	}
+	
+	private Graphics2D getCompositeImage(){
+		if (compositeImageGraphicsObj == null){
+			compositeImageGraphicsObj = createCompositeImage(width, height);
+		}
+		return compositeImageGraphicsObj;
+	}
+	
+	private void addImageToComposite(File imgFile, int opacity) throws IOException  {
 		//now we have everything we need to create a request
-		logger.debug("processing layer");
-		BufferedImage currentImg = null;
-		File imgFile = null;
+		logger.debug("adding layer to composite");
+		if (imgFile == null){
+			throw new IOException("File is null.");
+		}
+		
 		try{
-			try {
-				imgFile = layerImage.getImageFileFuture().get();
-				currentImg = ImageIO.read(imgFile);
-			} catch (Exception e) {
-				logger.error("Error reading image.");
-			}
+			BufferedImage currentImg = ImageIO.read(imgFile);
 
 			logger.debug("image retrieved");
 			//this needs to be done for each image received
 
 			//this defines opacity
 			float[] scales = { 1f, 1f, 1f, 1f};
-			scales[3] = layerImage.getOpacity() / 100f;
+			scales[3] = opacity / 100f;
 			//System.out.println(scales[3]);
 			float[] offsets = new float[4];
 			RescaleOp rop = new RescaleOp(scales, offsets, null);
-			logger.info("drawing layer...");
-			compositeImageGraphicsObj.drawImage(currentImg, rop, 0, 0);
-
+			
+			Graphics2D composite = getCompositeImage();
+			
+			logger.debug("drawing layer...");
+			composite.drawImage(currentImg, rop, 0, 0);
+			
 		} finally {
 			//cleaning up temp file
 			if (imgFile.exists()){
 				imgFile.delete();
 			}
+			
 		}
+	}
+
+
+	public int getMaxSizeMB() {
+		return maxSizeMB;
+	}
+
+
+	public void setMaxSizeMB(int maxSizeMB) {
+		this.maxSizeMB = maxSizeMB;
 	}
 }

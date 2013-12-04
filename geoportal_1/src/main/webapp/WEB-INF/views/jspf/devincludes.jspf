@@ -40,15 +40,13 @@
 
 <!-- ogp javascript library files -->
 
-<script type="text/javascript"
-	src="resources/javascript/lib/errorObject.js"></script>
-<script type="text/javascript"
-	src="resources/javascript/lib/analytics.js"></script>
 <script type="text/javascript" src="resources/javascript/lib/utility.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/templates/template.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/institution.js"></script>
+	src="resources/javascript/lib/config.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/analytics.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/commonControls.js"></script>
 <script type="text/javascript"

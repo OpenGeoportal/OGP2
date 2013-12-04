@@ -1166,12 +1166,6 @@ OpenGeoportal.LayerTable = function LayerTable(){
 			var rowNode = control$.closest("tr")[0];
 			that.getTableObj().fnOpen(rowNode, "<div></div>", 'previewTools');
 			
-			console.log(that);
-			console.log(data);
-			console.log(data.LayerId);
-			console.log(that.backingData);
-			console.log(that.backingData.get(data.LayerId));
-			
 			var layerModel = that.previewed.getLayerModel(that.backingData.get(data.LayerId));//at this point, we need to have a model for the layer in "previewed", or we can't render the tools properly
 			var tools$ = jQuery(rowNode).next().find(".previewTools");
 			var view = new OpenGeoportal.Views.PreviewTools({model: layerModel, el: tools$});//render to the container created by fnOpen
@@ -1251,16 +1245,23 @@ OpenGeoportal.LayerTable = function LayerTable(){
 		var model = this.previewed.get(layerId);
 		if (typeof model == "undefined"){
 			//get the attributes for the layer retrieved from solr
-			var layerAttr = this.backingData.get(layerId).attributes;
+			var layerAttr;
+			try {
+				var layerModel = this.backingData.get(layerId);
+				layerAttr = layerModel.attributes;
+			} catch(e){
+				console.log(e);
+				console.log("We could make a call to solr to get these attributes if we can't find them.");
+			}
 			//add them to the previewed collection.  Add them as attributes since we 
 			//are using different models in the previewed collection, and we want
 			//"model" to be called
-			this.previewed.add(layerAttr);
+			this.previewed.add(_.clone(layerAttr));
 			model = this.previewed.get(layerId);
 			model.set({preview: "on"});
 
 		} else {			
-			if (model.get("preview") == "on"){
+			if (model.get("preview") === "on"){
 				model.set({preview: "off"});
 			} else {
 				model.set({preview: "on"});

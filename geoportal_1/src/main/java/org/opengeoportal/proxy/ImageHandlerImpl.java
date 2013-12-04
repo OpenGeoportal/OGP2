@@ -1,18 +1,20 @@
 package org.opengeoportal.proxy;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.proxy.controllers.ImageRequest;
+import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
 import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
 import org.opengeoportal.solr.SolrRecord;
-import org.opengeoportal.utilities.LocationFieldUtils;
-import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,20 +25,22 @@ public class ImageHandlerImpl implements ImageHandler {
 	private RequestStatusManager requestStatusManager;
 	@Autowired
 	private ImageCompositor imageCompositor;
-	
+	@Autowired
+	private ImageDownloaderFactory imageDownloaderFactory;
 	@Autowired
 	private LayerInfoRetriever layerInfoRetriever;
 	@Autowired
 	private ProxyConfigRetriever proxyConfigRetriever;
+	private String baseQuery;
 	
 	@Override
 	public UUID requestImage(String sessionId, ImageRequest imageRequest) throws Exception {
-		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(imageRequest.getLayerIds());
 
-		populateImageRequest(imageRequest, layerInfo);
 		UUID requestId = registerRequest(sessionId, imageRequest);
 		logger.debug("Image Request registered: " + requestId.toString());
+		downloadLayerImages(imageRequest);
 		imageCompositor.createComposite(imageRequest);
+		
 		return requestId;
 	}
 	
@@ -44,14 +48,41 @@ public class ImageHandlerImpl implements ImageHandler {
 		UUID requestId = UUID.randomUUID();
 		requestStatusManager.addImageRequest(requestId, sessionId, imageRequest);
 		return requestId;
+	}	
+
+	
+	private void downloadLayerImages(ImageRequest imageRequest) throws Exception {
+
+		setBaseQuery(imageRequest.getFormat(), imageRequest.getBbox(), imageRequest.getSrs(), 
+				imageRequest.getHeight(), imageRequest.getWidth());
+		//populateImageRequest depends on setBaseQuery running first
+		populateImageRequest(imageRequest);
+		
+		List<LayerImage> layerImageList = imageRequest.getLayers();
+
+		for (LayerImage layerImage: layerImageList){			
+			//now we have everything we need to create a request
+			//this needs to be done for each image received
+			try {
+				logger.info(layerImage.getUrl().toString());
+				ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
+				Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl());
+				layerImage.setImageFileFuture(imgFile);
+
+			} catch (Exception e) {
+				//just skip it
+				layerImage.setImageStatus(ImageStatus.FAILED);
+				logger.error("There was a problem getting this image.  Skipping.");
+				e.printStackTrace();
+			} 
+		}
+
 	}
 	
-	private void populateImageRequest(ImageRequest imageRequest, List<SolrRecord> layerInfo) {	
-			    
+	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
+		//only retrieve records the user has permission to access data for
+		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllowedRecords(imageRequest.getLayerIds());
 	    logger.info("Number of layers in image: " + Integer.toString(layerInfo.size()));
-	    
-		String baseQuery = generateBaseQuery(imageRequest.getFormat(), imageRequest.getBbox(), imageRequest.getSrs(),
-				imageRequest.getHeight(), imageRequest.getWidth());
 		
 		for (LayerImage layerImage: imageRequest.getLayers()){
 			
@@ -59,23 +90,16 @@ public class ImageHandlerImpl implements ImageHandler {
 			
 			for (SolrRecord solrRecord : layerInfo){
 				
-				if (false){
-					//should use a Spring Security filter for this
-					//skip layers the user doesn't have permission to retrieve
-					//the client should never send these layers, since the user shouldn't be able to preview them
-					continue;
-				}
-				
 				if (solrRecord.getLayerId().equalsIgnoreCase(currentId)){
 					layerImage.setSolrRecord(solrRecord);
-					populateLayerUrl(layerImage, baseQuery);				
+					populateLayerUrl(layerImage);				
 				}
 			}
 		}
 		
 	}
 	
-	private void populateLayerUrl(LayerImage layerImage, String baseQuery){
+	private void populateLayerUrl(LayerImage layerImage){
 		
 		SolrRecord solrRecord = layerImage.getSolrRecord();
 		
@@ -90,16 +114,11 @@ public class ImageHandlerImpl implements ImageHandler {
 			}
 	   	}
 
-	   	layerImage.setQueryString(baseQuery + layerQueryString);
 	   	String baseUrl = "";
-	   	try{
-	   		if (this.proxyConfigRetriever.hasProxy("wms", solrRecord.getInstitution(), solrRecord.getAccess())){ 
-	   			baseUrl = this.proxyConfigRetriever.getInternalProxy("wms", solrRecord.getInstitution(), solrRecord.getAccess());
-	   		}  else {
-	   			baseUrl = OgpUtils.filterQueryString(LocationFieldUtils.getWmsUrl(solrRecord.getLocation()));
 
-	   		}
-	   		layerImage.setBaseUrl(baseUrl);
+	   	try{
+	   		baseUrl = this.proxyConfigRetriever.getInternalUrl("wms", solrRecord.getInstitution(), solrRecord.getAccess(),solrRecord.getLocation());
+	   		layerImage.setUrl(new URL(baseUrl + "?" + baseQuery + layerQueryString));
 
 	   	} catch (Exception e1) {
 	   		e1.printStackTrace();
@@ -108,7 +127,7 @@ public class ImageHandlerImpl implements ImageHandler {
 	   	}
 	}
 	
-	private String generateBaseQuery(String format, String bbox, String srs, int height, int width){
+	private void setBaseQuery(String format, String bbox, String srs, int height, int width){
 		
         String genericQueryString;
     	genericQueryString = "SERVICE=WMS&version=1.1.1&REQUEST=GetMap&FORMAT=" + format + "&SRS=" + srs;
@@ -125,32 +144,8 @@ public class ImageHandlerImpl implements ImageHandler {
     	} 
     	genericQueryString += "&HEIGHT=" + height + "&WIDTH=" + width;
     	logger.debug(genericQueryString);
-    	return genericQueryString;
+    	baseQuery = genericQueryString;
 	}
 	
-	
-	//use Spring Security hasPermission expression instead
-	private Boolean hasPermission(SolrRecord currentLayer){
-		return true;
-		//this should come from something in the security package
-	   	/*if (!currentLayer.getAccess().equalsIgnoreCase("public")){
-	   		try {
-				if (currentLayer.getInstitution().equalsIgnoreCase(this.home)){
-					if (!this.isLocallyAuthenticated){
-						return false;
-					} else {
-						return true;
-					}
-				} else {
-					return false;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-	   		
-	   	} else {
-	   		return true;
-	   	}*/
-	}
+
 }

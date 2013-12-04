@@ -3,12 +3,11 @@ package org.opengeoportal.download;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
-import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.download.LayerDownloader;
-import org.opengeoportal.download.config.DownloadConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
 import org.opengeoportal.layer.BoundingBox;
@@ -39,8 +38,6 @@ import com.fasterxml.jackson.core.JsonParseException;
  */
 
 public class DownloadHandlerImpl implements DownloadHandler {
-	private List<SolrRecord> layerInfo;
-	private Boolean locallyAuthenticated = false;
 	
 	@Autowired
 	protected LayerInfoRetriever layerInfoRetriever;
@@ -56,34 +53,12 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	@Autowired
 	@Qualifier("httpRequester.generic")
 	HttpRequester httpRequester;
-	
+
 	@Autowired
 	private LayerDownloaderProvider layerDownloaderProvider;
 	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	
-	
-	/**
-	 * a method to set the locallyAuthenticated property.  
-	 * 
-	 * This is a way to pass information about the user's session into the java class.  If the user has 
-	 * authenticated locally, a session variable is set.  The calling code should set this value.
-	 * 
-	 * @param authenticated  true if the user has authenticated locally, otherwise false
-	 */
-	public void setLocallyAuthenticated(Boolean authenticated){
-		this.locallyAuthenticated = authenticated;
-	}
-	
-	/**
-	 * a method to get the locallyAuthenticated property.  
-	 * 
-	 * @return true if the user has authenticated locally, otherwise false
-	 */
-	public Boolean getLocallyAuthenticated(){
-		return this.locallyAuthenticated;
-	}
 	
 
 	/**
@@ -95,91 +70,80 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	 * @return boolean that indicates the success of the function
 	 * @throws Exception
 	 */
-	public UUID requestLayers(DownloadRequest dlRequest, Boolean locallyAuthenticated) throws Exception{
-		this.setLocallyAuthenticated(locallyAuthenticated);
+	public UUID requestLayers(DownloadRequest dlRequest) throws Exception{
 		UUID requestId = UUID.randomUUID();
 		dlRequest.setRequestId(requestId);
 
 		requestStatusManager.addDownloadRequest(dlRequest);
-
 		this.populateDownloadRequest(dlRequest);
 		this.submitDownloadRequest(dlRequest);
 		return requestId;
 	}
 
 
-	//use Spring Security hasPermission expression instead
-	//probably use a filter to get a collection containing only layers the
-	//user is authorized to download.
-	private Boolean isAuthorizedToDownload(SolrRecord solrRecord){
-		//this should come from something in the security package
-		return true;
-		/*
-		if (solrRecord.getAccess().equalsIgnoreCase("public")){
-			return true;
-		} else {
-			try {
-				if (solrRecord.getInstitution().equalsIgnoreCase(searchConfigRetriever.getHome())){
-					//check if the user is locally authenticated
-					if (this.getLocallyAuthenticated()){
-						return true;
-					} else {
-						return false;
-					}
-				} else {
-					return false;
-				}
-			} catch (Exception e) {
-				logger.error(e.getMessage());
-				return false;
+	
+	SolrRecord findRecord(String layerId, List<SolrRecord> recordList) throws Exception{
+		for (SolrRecord sr: recordList){
+			if (sr.getLayerId().equals(layerId)){
+				return sr;
 			}
-		}*/
+		}
+		
+		throw new Exception("Record not found.");
+	};
+	
+	void collateRequests(List<MethodLevelDownloadRequest> mlRequestList, LayerRequest layerRequest, String classKey){
+		
+		//here, we're collecting layers that use the same download method
+		Boolean match = false;
+		for (MethodLevelDownloadRequest mlRequest: mlRequestList){
+			if (mlRequest.getDownloadKey().equals(classKey)){
+				mlRequest.addLayerRequest(layerRequest);
+				match = true;
+			}
+		}
+		
+		if (!match){
+			LayerDownloader layerDownloader = this.layerDownloaderProvider.getLayerDownloader(classKey);
+			MethodLevelDownloadRequest mlRequest = new MethodLevelDownloadRequest(classKey, layerDownloader);
+			mlRequest.addLayerRequest(layerRequest);
+			mlRequestList.add(mlRequest);
+		}
 	}
 	
 	private void populateDownloadRequest (DownloadRequest dlRequest) throws Exception {
+		Set<String> layerIdSet = dlRequest.getRequestedLayerIds();
+		List<SolrRecord> layerInfo = layerInfoRetriever.fetchAllowedRecords(layerIdSet);
 		
-		this.layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(dlRequest.getRequestedLayerIds());
-
-		for (SolrRecord record: this.layerInfo){
-			logger.debug("Requested format: " + dlRequest.getRequestedFormatForLayerId(record.getLayerId()));
-			LayerRequest layerRequest = this.createLayerRequest(record, dlRequest.getRequestedFormatForLayerId(record.getLayerId()), dlRequest.getBounds(), dlRequest.getEmail());
-			if (!isAuthorizedToDownload(record)){
-				layerRequest.setStatus(Status.FAILED);
-				logger.info("User is not authorized to download: '" + record.getLayerId() +"'");
+		for (String layerId: layerIdSet){
+			
+			SolrRecord record = null;
+			try{
+				record = findRecord(layerId, layerInfo);
+			} catch (Exception e){
+				//do some stuff....
+				//create a dummy LayerRequest so we can set status failed?
+				//layerRequest.setStatus(Status.FAILED);
+				logger.info("User is not authorized to download: '" + layerId +"'");
 				continue;	
 			}
+			
+			LayerRequest layerRequest = this.createLayerRequest(record, dlRequest.getRequestedFormatForLayerId(record.getLayerId()), dlRequest.getBounds(), dlRequest.getEmail());
+			
 			String currentClassKey = null;
 			try {
 				currentClassKey = this.layerDownloaderProvider.getClassKey(layerRequest);
-				if (currentClassKey == null){
-					throw new Exception();
-				}
 				logger.info("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
-				e.printStackTrace();
 				layerRequest.setStatus(Status.FAILED);
 				logger.info("No download method found for: '" + record.getLayerId() +"'");
 				continue;
 			}
-			
-			//here, we're collecting layers that use the same download method
-			List<MethodLevelDownloadRequest> mlRequestList = dlRequest.getRequestList();
-			Boolean match = false;
-			for (MethodLevelDownloadRequest mlRequest: mlRequestList){
-				if (mlRequest.getDownloadKey().equals(currentClassKey)){
-					mlRequest.addLayerRequest(layerRequest);
-					match = true;
-				}
-			}
-			
-			if (!match){
-				LayerDownloader layerDownloader = this.layerDownloaderProvider.getLayerDownloader(currentClassKey);
-				MethodLevelDownloadRequest mlRequest = new MethodLevelDownloadRequest(currentClassKey, layerDownloader);
-				mlRequest.addLayerRequest(layerRequest);
-				dlRequest.getRequestList().add(mlRequest);
-			}
-			
+
+			collateRequests(dlRequest.getRequestList(), layerRequest, currentClassKey);
+
 		}
+
 		
 	}
 	
@@ -257,8 +221,6 @@ public class DownloadHandlerImpl implements DownloadHandler {
 			
 		}
 	}
-
-
 
 
 

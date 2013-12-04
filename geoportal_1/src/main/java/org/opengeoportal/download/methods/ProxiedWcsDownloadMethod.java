@@ -35,6 +35,6 @@ public class ProxiedWcsDownloadMethod extends Wcs1_1_1DownloadMethod
 	
 	public String getProxyTo(LayerRequest layer) throws Exception {
 		SolrRecord sr = layer.getLayerInfo();
-		return proxyConfigRetriever.getUrl("wcs", sr.getInstitution(), sr.getAccess(), sr.getLocation());
+		return proxyConfigRetriever.getInternalProxyUrl("wcs", sr.getInstitution(), sr.getAccess());
 	}
 }

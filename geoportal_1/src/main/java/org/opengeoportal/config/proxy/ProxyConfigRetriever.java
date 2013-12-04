@@ -5,13 +5,11 @@ import java.util.List;
 
 public interface ProxyConfigRetriever {
 	
-	String getExternalProxy(String type, String repository, String accessLevel) throws Exception;
+	String getExternalProxyUrl(String type, String repository, String accessLevel) throws Exception;
 
-	String getInternalProxy(String type, String repository, String accessLevel) throws Exception;
+	String getInternalProxyUrl(String type, String repository, String accessLevel) throws Exception;
 
 	boolean hasProxy(String type, String repository, String accessLevel);
-
-	String getUrl(String type, String repository, String accessLevel, String locationField) throws Exception;
 	
 	boolean hasCredentials(String type, String repository, String accessLevel);
 
@@ -20,5 +18,11 @@ public interface ProxyConfigRetriever {
 	List<ProxyConfig> getConfig();
 
 	List<ProxyConfig> getPublicConfig();
+
+	String getInternalUrl(String type, String repository, String accessLevel,
+			String locationField) throws Exception;
+
+	String getExternalUrl(String type, String repository, String accessLevel,
+			String locationField) throws Exception;
 
 }

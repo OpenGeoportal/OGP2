@@ -17,6 +17,15 @@
 		<security:logout logout-url="/logout" logout-success-url="/logoutResponse"/>
 	</security:http>
 
+  <security:global-method-security pre-post-annotations="enabled">
+    <security:expression-handler ref="expressionHandler"/>
+  </security:global-method-security> 
+
+  <beans:bean id="expressionHandler"
+      class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
+        <beans:property name="permissionEvaluator" ref="layerPermissionEvaluator"/>
+  </beans:bean>
+  <beans:bean id="layerPermissionEvaluator" class="org.opengeoportal.security.LayerPermissionEvaluator" />
 	<!--<security:ldap-server url="${ldap.url}" /> -->
 	<security:authentication-manager alias="authenticationManager">
 		<!--<security:ldap-authentication-provider user-search-filter="${ldap.userSearchFilter}" 

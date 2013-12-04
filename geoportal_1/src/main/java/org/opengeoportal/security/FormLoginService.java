@@ -26,9 +26,9 @@ public class FormLoginService implements LoginService {
 
     public LoginStatus getStatus() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        logger.info(auth.getName());
-        logger.info(auth.getAuthorities().iterator().next().toString());
-        logger.info(Boolean.toString(auth.isAuthenticated()));
+        logger.debug(auth.getName());
+        logger.debug(auth.getAuthorities().iterator().next().toString());
+        logger.debug(Boolean.toString(auth.isAuthenticated()));
         if (auth != null && !auth.getName().equals("anonymousUser") && auth.isAuthenticated()) {
             return new LoginStatus(true, auth.getName(), auth.getAuthorities());
         } else {
@@ -70,9 +70,7 @@ public class FormLoginService implements LoginService {
 
 	@Override
 	public LoginStatus logoutResponse() {     
-		logger.info("Logout succeeded!");
-        //SecurityContextHolder.getContext().getAuthentication().setAuthenticated(false);
-        //SecurityContextHolder.clearContext();
+		logger.debug("Logout succeeded!");
 
         List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         return new LoginStatus(false, null, authorities);

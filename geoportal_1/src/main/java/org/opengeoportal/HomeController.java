@@ -1,5 +1,8 @@
 package org.opengeoportal;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.opengeoportal.config.ogp.OgpConfig;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.slf4j.Logger;
@@ -11,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-
-
 @Controller
 public class HomeController {
 	@Autowired
@@ -21,11 +22,41 @@ public class HomeController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@RequestMapping(value="/index", method=RequestMethod.GET)
-	public ModelAndView getHomePage() throws Exception {
+	public ModelAndView getHomePage(@RequestParam(value="ogpids", defaultValue = "") Set<String> layerIds,
+			@RequestParam(value="bbox", defaultValue = "-180,-90,180,90") String bbox,
+			@RequestParam(value="layer[]", defaultValue = "") Set<String> layers,
+			@RequestParam(value="minX", defaultValue = "-180") String minx,
+			@RequestParam(value="maxX", defaultValue = "180") String maxx,
+			@RequestParam(value="minY", defaultValue = "-90") String miny,
+			@RequestParam(value="maxY", defaultValue = "90") String maxy,
+			@RequestParam(value="dev", defaultValue = "false") Boolean isDev) throws Exception {
 		//@RequestParam("ogpids") Set<String> layerIds, ..should be optional.  also a param to set dev vs. prod
 		//create the model to return
-		ModelAndView mav = new ModelAndView("ogp_home"); 
+		ModelAndView mav = null;
+		if (isDev){
+				mav = new ModelAndView("ogp_home_dev"); 
+		} else {
+			mav = new ModelAndView("ogp_home"); 
+		}
+		
 		//if ogpids exists, add them to the Model
+		
+		if (!layerIds.isEmpty()){
+
+			mav.addObject("shareIds", getQuotedSet(layerIds));
+			mav.addObject("shareBbox", bbox);
+		} else if (!layers.isEmpty()){
+			//support old style share just in case
+			mav.addObject("shareIds", getQuotedSet(layers));
+			mav.addObject("shareBbox", minx + "," + miny + "," + maxx + "," + maxy);
+		} else {
+			//default values
+			mav.addObject("shareIds", layerIds);
+			mav.addObject("shareBbox", bbox);	
+		}
+		
+		
+		
 		addConfig(mav);
 		
 		//Debugging
@@ -37,6 +68,21 @@ public class HomeController {
 		}*/
 		return mav;
 
+	}
+	
+	private Set<String> getQuotedSet(Set<String> uqSet){
+		Set<String> quotedSet = new HashSet<String>();
+		for (String item: uqSet){
+			quotedSet.add("\"" + item + "\""); 
+		}
+		
+		return quotedSet;
+	}
+	
+	//support the old url
+	@RequestMapping(value="/openGeoPortalHome.jsp", method=RequestMethod.GET)
+	public String redirectToHome(){
+		return "redirect:index";
 	}
 	
 	private void addConfig(ModelAndView mav){

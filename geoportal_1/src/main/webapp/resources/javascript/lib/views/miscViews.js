@@ -180,7 +180,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		 
 		 showPanel: function(){
 			 this.setAlsoMoves();
-			 var mode = this.model.get("mode")
+			 var mode = this.model.get("mode");
 			if (mode == "open"){
 				if (this.model.previous("mode") == "closed"){
 					this.showPanelMidRight();

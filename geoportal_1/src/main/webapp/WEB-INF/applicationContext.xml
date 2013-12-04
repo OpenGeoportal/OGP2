@@ -8,6 +8,8 @@
            	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
            	http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm.xsd">
 
+	<beans:import resource="security-app-context.xml"/>
+	<beans:import resource="classpath*:org/opengeoportal/**/applicationContext.xml" />
 	<context:annotation-config />
 	<context:property-placeholder
 		location="WEB-INF/ogp.properties,classpath*:org/opengeoportal/**/*.properties" />
@@ -70,14 +72,22 @@
 
 	<beans:bean id="jsonpCallbackFilter"
 		class="org.opengeoportal.utilities.JsonpCallbackFilter" />
+	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.proxy.ImageHandlerFactory" />
+	
+	<beans:bean id="imageHandler" class="org.opengeoportal.proxy.ImageHandlerImpl" scope="prototype" lazy-init="true" />
 
-	<beans:bean id="imageHandler" class="org.opengeoportal.proxy.ImageHandlerImpl"
-		scope="prototype" />
 	<beans:bean id="imageCompositor" class="org.opengeoportal.proxy.ImageCompositorImpl"
-		scope="prototype" />
-	<beans:bean id="imageDownloader" class="org.opengeoportal.proxy.ImageDownloaderImpl"
-		scope="prototype" />
+		scope="prototype" >
+		<beans:property name="maxSizeMB" value="${maxImageSize}" />
+	</beans:bean>
+	
+	<beans:bean id="imageDownloaderFactory" class="org.opengeoportal.proxy.ImageDownloaderFactory" />
 
+	<beans:bean id="imageDownloader" class="org.opengeoportal.proxy.ImageDownloaderImpl" scope="prototype" lazy-init="true" />
+
+	<beans:bean id="exportHandlerFactory.geocommons"
+		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerFactory" />
+		
 	<beans:bean id="exportHandler.geocommons"
 		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerImpl"
 		scope="prototype" />
@@ -122,22 +132,15 @@
 	<beans:bean id="downloadPackager"
 		class="org.opengeoportal.download.DownloadPackagerImpl" scope="prototype" />
 
-	<beans:bean id="downloadHandler"
-		class="org.opengeoportal.download.DownloadHandlerImpl" scope="prototype" />
 
-	<beans:bean id="downloadHandlerFactory"
-		class="org.opengeoportal.download.DownloadHandlerFactory">
-		<beans:lookup-method name="create" bean="downloadHandler" />
-	</beans:bean>
+	<beans:bean id="downloadHandlerFactory" class="org.opengeoportal.download.DownloadHandlerFactory" />
+	
+ 	<beans:bean id="downloadHandler" class="org.opengeoportal.download.DownloadHandlerImpl" scope="prototype" lazy-init="true" />
 
-	<beans:bean id="layerDownloaderProvider"
-		class="org.opengeoportal.download.LayerDownloaderProvider" scope="prototype" />
+ 
+	<beans:bean id="layerDownloaderProvider" class="org.opengeoportal.download.LayerDownloaderProvider" scope="prototype" />
 
-	<beans:bean id="layerDownloaderProviderFactory"
-		class="org.opengeoportal.download.LayerDownloaderProviderFactory">
-		<beans:lookup-method name="create"
-			bean="layerDownloaderProvider" />
-	</beans:bean>
+
 
 	<!-- http requesters -->
 	<beans:bean id="httpRequester.generic"
@@ -314,10 +317,15 @@
 
 	<task:annotation-driven executor="executor" />
 
-	<task:executor id="executor" pool-size="${threadPool.executor}" />
+	<task:executor id="executor" 
+		pool-size="${threadPool.executor}" 
+		queue-capacity="100"
+		rejection-policy="CALLER_RUNS"/>
+
 	<task:scheduler id="scheduler" pool-size="${threadPool.scheduler}" />
 	<task:scheduled-tasks scheduler="scheduler">
 		<task:scheduled ref="cleanupDirectory.download" method="cleanupDownloadDirectory"
 			fixed-rate="${cleanupInterval}" />
 	</task:scheduled-tasks>
+
 </beans:beans>

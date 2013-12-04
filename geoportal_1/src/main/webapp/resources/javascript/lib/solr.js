@@ -323,7 +323,7 @@ OpenGeoportal.Solr = function() {
 
 		var bf_array = [
 		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
-                        this.getIntersectionAreaRelevancyClause() + "^" + this.LayerAreaIntersection.boost,
+                        //this.getIntersectionAreaRelevancyClause() + "^" + this.LayerAreaIntersection.boost
                         this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost,
                         this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost,
 		                ];
@@ -342,16 +342,16 @@ OpenGeoportal.Solr = function() {
 	//term objects
 	this.LayerWithinMap = {
 		term : "LayerWithinMap",
-		boost : 9.0
+		boost : 20.0
 	};
 	
 	this.LayerMatchesScale = {
 		term : "LayerMatchesScale",
-		boost : 8.0
+		boost : 5.0
 	};
 	this.LayerMatchesCenter = {
 		term : "LayerMatchesCenter",
-		boost : 1.0
+		boost : 2.0
 	};
 
 	this.LayerAreaIntersection = {
@@ -376,10 +376,28 @@ OpenGeoportal.Solr = function() {
 	 * @return {string} Query string to calculate intersection
 	 */
 	this.getIntersectionFunction = function(bounds) {
-		var intersection = "product(max(0,sub(min(" + bounds.maxX + ",MaxX),max("
-				+ bounds.minX + ",MinX))),";
-		intersection += "max(0,sub(min(" + bounds.maxY + ",MaxY),max(" + bounds.minY
-				+ ",MinY))))";
+		//TODO: this needs work.  have to account for dateline crossing properly
+		var getRangeClause = function(minVal, minTerm, maxVal, maxTerm){
+
+			var rangeClause = "max(0,sub(min(" + maxVal  + "," + maxTerm  + "),max("
+				+ minVal + "," + minTerm + ")))";
+			return rangeClause;
+		};
+
+		var xRange;
+		if (bounds.minX > bounds.maxX){
+			//crosses the dateline
+			var xRange1 = getRangeClause(bounds.minX, "MinX", 180, "MaxX");
+			var xRange2 = getRangeClause(-180, "MinX", bounds.maxX, "MaxX");
+			xRange = "sum(" + xRange1 + "," + xRange2 + ")";		
+		} else {
+			xRange = getRangeClause(bounds.minX, "MinX", bounds.maxX, "MaxX");
+		}
+		
+		var yRange = getRangeClause(bounds.minY, "MinY", bounds.maxY, "MaxY");
+		
+		var intersection = "product(" + xRange + "," + yRange + ")";
+
 		return intersection;
 
 	};
@@ -1274,6 +1292,15 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 		}
 		jQuery.ajax(ajaxParams);
 	};
+	
+	this.getLayerInfoFromSolr = function(layerIds, successFunction, errorFunction) {
+		var url = this.getServerName();
+
+		var query = jQuery.param(this.getInfoFromLayerIdParams(layerIds), true);
+
+		this.sendToSolr(url + "?" + query, successFunction, errorFunction);
+	};
+
 
 	
 	this.termQuery = function termQuery(field, term, successFunction, errorFunction) {

@@ -35,6 +35,6 @@ public class ProxiedWfsDownloadMethod extends
 	
 	public String getProxyTo(LayerRequest layer) throws Exception {
 		SolrRecord sr = layer.getLayerInfo();
-		return proxyConfigRetriever.getUrl("wfs", sr.getInstitution(), sr.getAccess(), sr.getLocation());
+		return proxyConfigRetriever.getInternalProxyUrl("wfs", sr.getInstitution(), sr.getAccess());
 	}
 }

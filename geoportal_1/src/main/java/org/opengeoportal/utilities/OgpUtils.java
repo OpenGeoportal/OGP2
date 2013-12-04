@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,6 +84,14 @@ public class OgpUtils {
 		  return lcSet;
 	  }
 	
+	public static Boolean containsIgnoreCase(Collection<String> stringCollection, String testString){
+		for (String curr: stringCollection){
+			if (curr.equalsIgnoreCase(testString)){
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * a convenience method to get the fully qualified name for a layer (workspace name plus layer name)

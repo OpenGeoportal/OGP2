@@ -18,6 +18,9 @@ OpenGeoportal.Config.loginRepository="${loginRepository}";
 OpenGeoportal.Config.loginType="${loginType}";
 OpenGeoportal.Config.loginUrl="${loginUrl}";
 OpenGeoportal.Config.sd="${secureDomain}";
+OpenGeoportal.Config.shareIds=${shareIds};
+OpenGeoportal.Config.shareBbox="${shareBbox}";
+
 
 </script>
 <%@include file="jspf/devincludes.jspf"%>

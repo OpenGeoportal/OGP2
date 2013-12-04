@@ -3,9 +3,9 @@ package org.opengeoportal.proxy.controllers;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.proxy.GenericProxy;
-import org.opengeoportal.security.OgpUserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,16 +24,20 @@ public class RestrictedWMSController {
 	private ProxyConfigRetriever proxyConfigRetriever;
 
 	@Autowired
-	private OgpUserContext ogpUserContext;
+	OgpConfigRetriever ogpConfigRetriever;
+	
 	@Autowired @Qualifier("proxy.simple")
 	private GenericProxy genericProxy;
 	
 	@RequestMapping(value="/{repositoryId}/wms", method=RequestMethod.GET)
 	public void forwardWMSRequest(@PathVariable String repositoryId, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		// check authentication
-		if (ogpUserContext.isAuthenticatedLocally()){
+		//If the request went through to the controller, we know that the user has authenticated
+		//We're also checking that the repositoryId is equal to the one set in config for login capability and that there is a proxy defined
+		//for the repositoryId
+		//probably a better place to centralize/abstract this
+		if (ogpConfigRetriever.getConfig().getLoginConfig().getRepositoryId().equalsIgnoreCase(repositoryId)  && proxyConfigRetriever.hasProxy("wms", repositoryId, "restricted")){
 			// forward the request to the protected GeoServer instance
-
+			
 			String remoteUrl = this.getProxyTo(repositoryId) + "?"
 					+ request.getQueryString();
 			logger.info("executing WMS request to protected GeoServer: "
@@ -46,7 +50,7 @@ public class RestrictedWMSController {
 	
 	public String getProxyTo(String repositoryId) throws Exception {
 		
-		return proxyConfigRetriever.getInternalProxy("wms", repositoryId, "restricted");
+		return proxyConfigRetriever.getInternalProxyUrl("wms", repositoryId, "restricted");
 	}
 
 

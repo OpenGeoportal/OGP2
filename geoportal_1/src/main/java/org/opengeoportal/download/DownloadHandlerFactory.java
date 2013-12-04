@@ -1,14 +1,33 @@
 package org.opengeoportal.download;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class DownloadHandlerFactory {
-	final static Logger logger = LoggerFactory.getLogger(DownloadHandlerFactory.class.getName());
+public class DownloadHandlerFactory implements ApplicationContextAware {
+    private ApplicationContext applicationContext;
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public static DownloadHandler create(){
-		logger.info("creating downloadHandler");
-		return new DownloadHandlerImpl();
+	public DownloadHandler getObject() throws Exception {
+		logger.info("Creating DownloadHandler bean");
+		return applicationContext.getBean(DownloadHandler.class);
 	}
+
+	public Class<DownloadHandler> getObjectType() {
+		return DownloadHandler.class;
+	}
+
+	public boolean isSingleton() {
+		return false;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext appContext)
+			throws BeansException {
+		applicationContext = appContext;
+		
+	}
+
 }

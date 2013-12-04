@@ -1,12 +1,10 @@
 package org.opengeoportal.export.geocommons;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,12 +28,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ExportRequestController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
-	private GeoCommonsExportHandler geoCommonsExportHandler;
+	private GeoCommonsExportHandlerFactory geoCommonsExportHandlerFactory;
 	
 
 	@RequestMapping(method=RequestMethod.POST, produces="application/json")
 	public @ResponseBody Map<String,String> handleExportRequest(HttpServletRequest request)
-			throws ServletException, IOException {
+			throws Exception {
 		//given a list of ogpids, export them to geocommons
 		//read the POST'ed JSON object
 		ServletInputStream inputStream = null;
@@ -93,9 +91,10 @@ public class ExportRequestController {
 			exportRequest.setTitle(title);
 			exportRequest.setDescription(description);
 			exportRequest.setBbox(bbox);
-			exportRequest.setLayerIds(layers);
+			exportRequest.setLayerIds(layers); 
 
-			UUID requestId = geoCommonsExportHandler.requestExport(exportRequest);
+			GeoCommonsExportHandler gcHandler = geoCommonsExportHandlerFactory.getObject();
+			UUID requestId = gcHandler.requestExport(exportRequest);
 			Map<String,String> map = new HashMap<String,String>();
 			map.put("requestId", requestId.toString());
 			return map;

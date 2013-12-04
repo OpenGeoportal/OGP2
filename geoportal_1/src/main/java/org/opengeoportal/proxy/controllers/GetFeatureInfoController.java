@@ -1,9 +1,12 @@
 package org.opengeoportal.proxy.controllers;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.utilities.OgpUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,55 +49,41 @@ public class GetFeatureInfoController {
 			@RequestParam("x") String xCoord,@RequestParam("y") String yCoord,
 			@RequestParam("width") String width,@RequestParam("height") String height,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
+	    
+	    SolrRecord layerInfo = getSolrRecord(layerId);
+	    String wmsEndpoint = proxyConfigRetriever.getExternalUrl("wms", layerInfo.getInstitution(), layerInfo.getAccess(), layerInfo.getLocation());
+	    
+	    //filter any query terms
+	    wmsEndpoint = OgpUtils.filterQueryString(wmsEndpoint);
 
+	    String layerName = 	OgpUtils.getLayerNameNS(layerInfo.getWorkspaceName(), layerInfo.getName());
+	    String query = createWmsGetFeatureInfoQuery(layerName, xCoord, yCoord, bbox, height, width);
+	    
+		logger.info("executing WMS getFeatureRequest: " + wmsEndpoint + "?" + query);
 
-	    
-	    Set<String> layerIds = new HashSet<String>();
-	    layerIds.add(layerId);
-	    SolrRecord layerInfo = this.layerInfoRetriever.fetchAllLayerInfo(layerIds).get(0);
-	    
-	    //remove any query string
-	    String previewUrl = proxyConfigRetriever.getUrl("wms", layerInfo.getInstitution(), layerInfo.getAccess(), layerInfo.getLocation());
+		sendGetRequest(wmsEndpoint, query, request, response);
 
-	    
-	    /*
-	     * http://www.example.com/wfs?
-   service=wfs&
-   version=1.1.0&
-   request=GetFeature&
-   typeName=layerName&
-   maxFeatures=NUMBER_OF_FEATURES&srsName=EPSG:900913
-   bbox=a1,b1,a2,b2
-   bbox should be determined by the client.  the size of a pixel?
-	     */
-	    
-	    String workspaceName = layerInfo.getWorkspaceName();
-	    if (!workspaceName.trim().isEmpty()){
-	    	workspaceName = workspaceName + ":";
-	    }
-	    String layerName = workspaceName + layerInfo.getName();
-	    
+	}
+	
+	String createWmsGetFeatureInfoQuery(String layerName, String xCoord, String yCoord, String bbox, String height, String width){
 	    //in caps to support ogc services through arcgis server 9.x
 	    String query = "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&INFO_FORMAT=" + RESPONSE_FORMAT  
 				+ "&SRS=EPSG:900913&FEATURE_COUNT=" + NUMBER_OF_FEATURES + "&STYLES=&HEIGHT=" + height + "&WIDTH=" + width +"&BBOX=" + bbox 
 				+ "&X=" + xCoord + "&Y=" + yCoord +"&QUERY_LAYERS=" + layerName + "&LAYERS=" + layerName + "&EXCEPTIONS=" + EXCEPTION_FORMAT;
-	   
-	    String method = "GET";
-
-	    if (previewUrl.contains("?")){
-	    	previewUrl = previewUrl.substring(0, previewUrl.indexOf("?"));
-	    }
-		logger.info("executing WMS getFeatureRequest: " + previewUrl + "?" + query);
-
-		
-		if (!previewUrl.contains("http")){
+	    
+	    return query;
+	}
+	
+	void sendGetRequest(String wmsEndpoint, String wmsQuery, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+		if (!wmsEndpoint.contains("http")){
 			//this is a relative path
-			request.getRequestDispatcher(previewUrl + "?" + query).forward(request, response);
+			request.getRequestDispatcher(wmsEndpoint + "?" + wmsQuery).forward(request, response);
 
 		} else {
 			InputStream input = null;
-			try{
-				input = httpRequester.sendRequest(previewUrl, query, method);
+			try{ 
+			    String method = "GET";
+				input = httpRequester.sendRequest(wmsEndpoint, wmsQuery, method);
 				logger.debug(httpRequester.getContentType());
 				response.setContentType(httpRequester.getContentType());
 				IOUtils.copy(input, response.getOutputStream());
@@ -101,6 +91,20 @@ public class GetFeatureInfoController {
 				IOUtils.closeQuietly(input);
 			}
 		}
+	}
 	
+	
+	SolrRecord getSolrRecord(String layerId) throws Exception{
+	    Set<String> layerIds = new HashSet<String>();
+	    layerIds.add(layerId);
+	    
+	    List<SolrRecord> allLayerInfo = this.layerInfoRetriever.fetchAllowedRecords(layerIds);
+	    
+	    if (allLayerInfo.isEmpty()){
+	    	throw new Exception("No allowed records returned for Layer Id: ['" + layerId + "'");
+	    }
+	    
+	    SolrRecord layerInfo = allLayerInfo.get(0);
+	    return layerInfo;
 	}
 }

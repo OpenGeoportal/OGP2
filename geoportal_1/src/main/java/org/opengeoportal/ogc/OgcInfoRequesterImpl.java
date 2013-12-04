@@ -106,7 +106,7 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 			String request = ogcInfoRequest.createRequest(layerName);
 			String method = ogcInfoRequest.getMethod();
 			String protocol = ogcInfoRequest.getOgcProtocol().toLowerCase();
-			String url = proxyConfigRetriever.getUrl(protocol, solrRecord.getInstitution(), solrRecord.getAccess(), solrRecord.getLocation());
+			String url = proxyConfigRetriever.getInternalUrl(protocol, solrRecord.getInstitution(), solrRecord.getAccess(), solrRecord.getLocation());
 
 			is = httpRequester.sendRequest(url, request, method);
 

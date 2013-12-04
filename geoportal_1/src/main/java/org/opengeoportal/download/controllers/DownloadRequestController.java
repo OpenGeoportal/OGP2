@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.opengeoportal.download.DownloadHandler;
+import org.opengeoportal.download.DownloadHandlerFactory;
 import org.opengeoportal.download.DownloadRequest;
-import org.opengeoportal.security.OgpUserContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DownloadRequestController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired
-	private DownloadHandler downloadHandler;
-	@Autowired
-	private OgpUserContext ogpUserContext;
+	private DownloadHandlerFactory downloadHandlerFactory;
+
 	
 	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", produces="application/json")
 	public @ResponseBody Map<String,String> processDownload(@RequestBody String downloadRequest) throws Exception {
@@ -35,9 +34,7 @@ public class DownloadRequestController {
 		/**
 		 * This servlet should receive a POST request with an object containing 
 		 * all the info needed for each layer to be downloaded.  The servlet calls a class 
-		 * that handles all of the download logic.  Additionally, it checks the session
-		 * variable "username" to see if the user has authenticated.  A boolean is passed
-		 * to the download code.  If one has been provided, an email address is passed to the 
+		 * that handles all of the download logic. If one has been provided, an email address is passed to the 
 		 * download code to accomodate systems that email a link to the user for their layers
 		 *
 		 * @author Chris Barnett
@@ -47,15 +44,11 @@ public class DownloadRequestController {
 
 		DownloadRequest	submittedRequest = mapper.readValue(URLDecoder.decode(downloadRequest, "UTF-8"), DownloadRequest.class);
 		
-		Boolean authenticated = false;
-		if (ogpUserContext.isAuthenticatedLocally()){
-			authenticated = true;
-		}
-		
 		String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
 		submittedRequest.setSessionId(sessionId);
 		
-		UUID requestId = downloadHandler.requestLayers(submittedRequest, authenticated);
+		DownloadHandler downloadHandler = downloadHandlerFactory.getObject();
+		UUID requestId = downloadHandler.requestLayers(submittedRequest);
 		
 		Map<String,String> map = new HashMap<String,String>();
 		map.put("requestId", requestId.toString());

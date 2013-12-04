@@ -1,6 +1,7 @@
 package org.opengeoportal.proxy.controllers;
 
 import java.io.File;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -151,10 +152,6 @@ public class ImageRequest {
 		String layerId;
 		String sld;
 		@JsonIgnore
-		String baseUrl;
-		@JsonIgnore
-		String queryString;
-		@JsonIgnore
 		SolrRecord solrRecord;
 		@JsonIgnore
 		File imageFile;
@@ -162,6 +159,7 @@ public class ImageRequest {
 		Future<File> imageFileFuture;
 		@JsonIgnore
 		ImageStatus imageStatus = ImageStatus.PROCESSING;
+		private URL url;
 
 		public String getName() {
 			return name;
@@ -195,18 +193,6 @@ public class ImageRequest {
 			this.zIndex = zIndex;
 		}
 
-		public String getBaseUrl() {
-			return baseUrl;
-		}
-		public void setBaseUrl(String baseUrl) {
-			this.baseUrl = baseUrl;
-		}
-		public String getQueryString() {
-			return queryString;
-		}
-		public void setQueryString(String queryString) {
-			this.queryString = queryString;
-		}
 		public SolrRecord getSolrRecord() {
 			return solrRecord;
 		}
@@ -252,6 +238,12 @@ public class ImageRequest {
 	        LayerImage n = (LayerImage) o;
 	        return n.layerId.equals(layerId);
 	    }
+		public void setUrl(URL url) {
+			this.url = url;
+		}
+		public URL getUrl(){
+			return url;
+		}
 	}
 	
 	private StatusSummary getRawStatusSummary(){

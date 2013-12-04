@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PostFilter;
 
 public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	private SolrServer solrServer = null;
@@ -58,6 +59,17 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 
 
 		return solrServer;
+	}
+	
+	//use Spring Security hasPermission expression instead
+	//probably use a filter to get a collection containing only layers the
+	//user is authorized to download.
+	//don't know what this filter should look like yet.
+	@Override
+	@PostFilter("hasPermission(filterObject, 'download')")
+	public List<SolrRecord> fetchAllowedRecords(Set<String> layerIdSet) throws Exception{
+		List<SolrRecord> allRecords = fetchAllLayerInfo(layerIdSet);
+		return allRecords;
 	}
 	
 	public List<SolrRecord> fetchAllLayerInfo(Set<String> layerIds) throws SolrServerException {

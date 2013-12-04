@@ -46,17 +46,6 @@ OpenGeoportal.UserInterface = function(){
 		
 		jQuery("body").fadeTo('fast', 1);
 		
-		this.showInfoBubble();
-		
-		var that = this;
-		jQuery(".searchBox").on("click", ".searchButton", function(event){
-			jQuery("#welcomeBubble").hide("drop");
-			that.panelView.model.set({mode: "open"});
-			//TODO: either delay or make this a callback
-			that.showDirectionsBubble();
-			jQuery(this).off( event );
-		});
-				
 		//dialogs
 		this.aboutHandler();
 		this.contactHandler();
@@ -65,9 +54,33 @@ OpenGeoportal.UserInterface = function(){
 		jQuery("#top_menu > a").on("click", function() {
 			analytics.track("Interface", "Reset Page");
 		});
+		
 
 	};
 
+	this.introFlow = function(hasSharedLayers){
+		if (!hasSharedLayers){
+			this.showInfoBubble();
+		
+			var that = this;
+			jQuery(".searchBox").on("click", ".searchButton", function(event){
+				jQuery("#welcomeBubble").hide("drop");
+				that.panelView.model.set({mode: "open"});
+				//TODO: either delay or make this a callback
+				that.showDirectionsBubble();
+				jQuery(this).off( event );
+			});
+
+		} else {
+			//if there are shared layers, don't show the infobubble intro
+			//open the left column panel
+			this.panelView.model.set({mode: "open"});
+			//set tab to the "cart" tab
+			jQuery("#tabs").tabs({active: 1});
+
+		}
+	};
+	
 	this.initializeTabs = function(){
 		var that = this;
 		jQuery("#tabs").tabs({

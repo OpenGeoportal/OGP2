@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.opengeoportal.proxy.ImageHandler;
-import org.opengeoportal.security.OgpUserContext;
+import org.opengeoportal.proxy.ImageHandlerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,22 +37,19 @@ public class ImageController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
-	private ImageHandler imageHandler;
-	
-	@Autowired
-	private OgpUserContext ogpUserContext;
-	private ImageRequest imageRequest;
+	private ImageHandlerFactory imageHandlerFactory;
 
 	@RequestMapping(method=RequestMethod.POST, headers = "content-type=application/x-www-form-urlencoded", produces="application/json")
 	public @ResponseBody Map<String,String> processImageRequest(@RequestBody String imageRequest) throws Exception {
 
 
 		ObjectMapper mapper = new ObjectMapper();
-		this.imageRequest = mapper.readValue(URLDecoder.decode(imageRequest, "UTF-8"), ImageRequest.class);
+		ImageRequest imageRequestObj = mapper.readValue(URLDecoder.decode(imageRequest, "UTF-8"), ImageRequest.class);
 
 		Map<String, String> map = new HashMap<String, String>();
-				
-		UUID requestId = imageHandler.requestImage(RequestContextHolder.currentRequestAttributes().getSessionId(), this.imageRequest);
+		
+		ImageHandler imageHandler = imageHandlerFactory.getObject();
+		UUID requestId = imageHandler.requestImage(RequestContextHolder.currentRequestAttributes().getSessionId(), imageRequestObj);
 		logger.debug("Image requested.");
 		
 		map.put("requestId", requestId.toString());

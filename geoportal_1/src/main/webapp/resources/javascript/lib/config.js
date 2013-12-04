@@ -34,7 +34,7 @@ OpenGeoportal.Config.General.set({
 	loginConfig: {
 		repositoryId: OpenGeoportal.Config.loginRepository,
 		type: OpenGeoportal.Config.loginType,
-		url: OpenGeoportal.Config.loginType,
+		url: OpenGeoportal.Config.loginUrl,
 		secureDomain: OpenGeoportal.Config.sd
 	}
 });
@@ -49,9 +49,9 @@ OpenGeoportal.Config.Proxies = new OpenGeoportal.Config.ProxyCollection();
 OpenGeoportal.Config.Proxies.fetch();
 
 OpenGeoportal.Config.getWMSProxy = function(institution, accessLevel) {
-	var proxyConfig = OpenGeoportal.Config.Proxies.get(institution);
+	var proxyConfig = OpenGeoportal.Config.Proxies.findWhere({repositoryId: institution.toLowerCase()});
 	if (typeof proxyConfig !== "undefined"){
-		
+
 		if (jQuery.inArray(accessLevel.toLowerCase(), proxyConfig.get("accessLevels")) > -1){
 			var serverMapping = proxyConfig.get("serverMapping");
 			for (var i in serverMapping){
@@ -80,6 +80,7 @@ OpenGeoportal.Config.DataTypeCollection = Backbone.Collection.extend({
 });
 
 //"value" should be the value in solr; uiClass determines what icon shows via css
+//should get this from the server as well?
 OpenGeoportal.Config.DataTypes = new OpenGeoportal.Config.DataTypeCollection(
 		[
 		 {

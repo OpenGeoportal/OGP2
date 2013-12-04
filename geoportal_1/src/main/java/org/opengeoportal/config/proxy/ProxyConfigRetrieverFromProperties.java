@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.opengeoportal.config.PropertiesFile;
 import org.opengeoportal.utilities.LocationFieldUtils;
+import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +98,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 						} else if (keyList.contains("external")){
 							
 							if (appendServiceEndpoint){
-								val = val + "/" + type;
+								val = val + "/" + repositoryId + "/" + type;
 							}
 							
 							sm.setExternalUrl(val);
@@ -152,16 +153,31 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	}
 
 	@Override
-	public String getUrl(String type, String repository, String accessLevel, String locationField) throws Exception{
+	public String getInternalUrl(String type, String repository, String accessLevel, String locationField) throws Exception {
+		String url = null;
 		if (hasProxy(type, repository, accessLevel)){
-			return getInternalProxy(type, repository, accessLevel);
+			url =  getInternalProxyUrl(type, repository, accessLevel);
 		} else {
-			return LocationFieldUtils.getUrl(type, locationField);
+			url = LocationFieldUtils.getUrl(type, locationField);
 		}
+
+		return url;
 	}
 	
 	@Override
-	public String getExternalProxy(String type, String repository, String accessLevel)
+	public String getExternalUrl(String type, String repository, String accessLevel, String locationField) throws Exception{
+	    String url = null;
+	    Boolean hasProxy = hasProxy(type, repository, accessLevel);
+	    if (hasProxy){
+		    url = getExternalProxyUrl(type, repository, accessLevel);
+	    } else {
+		    url = LocationFieldUtils.getUrl(type, locationField);
+
+	    }
+	    return url;
+	}
+	@Override
+	public String getExternalProxyUrl(String type, String repository, String accessLevel)
 			throws Exception {
 		ServerMapping sm = getMatchingServerMapping(type, repository, accessLevel);
 		return sm.getExternalUrl();
@@ -173,9 +189,9 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	public boolean hasProxy(String type, String repository, String accessLevel){
 		for (ProxyConfig pc: proxyConfig){
 			if (pc.getRepositoryId().equalsIgnoreCase(repository)){
-				if (pc.getAccessLevels().contains(accessLevel)){
+				if (OgpUtils.containsIgnoreCase(pc.getAccessLevels(), accessLevel)){
 					for (ServerMapping sm: pc.getServerMapping()){
-						if (sm.getType().equalsIgnoreCase("type")){
+						if (sm.getType().equalsIgnoreCase(type)){
 							return true;
 						}
 					}
@@ -189,9 +205,9 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	private ServerMapping getMatchingServerMapping(String type, String repository, String accessLevel) throws Exception{
 		for (ProxyConfig pc: proxyConfig){
 			if (pc.getRepositoryId().equalsIgnoreCase(repository)){
-				if (pc.getAccessLevels().contains(accessLevel)){
+				if (OgpUtils.containsIgnoreCase(pc.getAccessLevels(), accessLevel)){
 					for (ServerMapping sm: pc.getServerMapping()){
-						if (sm.getType().equalsIgnoreCase("type")){
+						if (sm.getType().equalsIgnoreCase(type)){
 							return sm;
 						}
 					}
@@ -204,7 +220,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 		
 	
 	@Override
-	public String getInternalProxy(String type, String repository, String accessLevel) throws Exception {
+	public String getInternalProxyUrl(String type, String repository, String accessLevel) throws Exception {
 		InternalServerMapping sm = (InternalServerMapping) getMatchingServerMapping(type, repository, accessLevel);
 		return sm.getInternalUrl();
 	}

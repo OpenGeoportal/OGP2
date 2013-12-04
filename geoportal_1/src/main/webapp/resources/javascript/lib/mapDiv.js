@@ -422,21 +422,26 @@ OpenGeoportal.MapController = function() {
 			layerObj.layerId = layerModel.get("LayerId");
 			requestObj.layers.push(layerObj);
 		}
-		console.log(this);
-		var bbox = this.getVisibleExtent().toBBOX();
+
+		var extent = this.getVisibleExtent();
+		var bbox = extent.toBBOX();
 		
 		requestObj.format = format;
 		requestObj.bbox = bbox;
 		requestObj.srs = 'EPSG:900913';
 		var offset = this.getMapOffset();
-		requestObj.width = jQuery('#' + this.mapDiv).width() - offset.x;
-		requestObj.height = jQuery('#' + this.mapDiv).height() - offset.y;
+		var ar = this.getAspectRatio(extent);
+		//this doesn't really work... should get appropriate width and height based on bbox
+		var currSize = this.getCurrentSize();
+		requestObj.width =  currSize.w - offset.x;
+		requestObj.height = parseInt(requestObj.width / ar); 
 		//add the request to the queue
 		OpenGeoportal.ogp.appState.get("requestQueue").createRequest(requestObj);
 	};
 	
-
-	
+	this.getAspectRatio = function(extent){
+		return (extent.getWidth()/extent.getHeight());
+	};
 	/**
 	 * sets the background map to the value in the background map dropdown menu.  called by change for the basemap radio button set
 	 */
@@ -1716,10 +1721,9 @@ Road - Roads without additional imagery.	*/
 		}
 	};
 
-	this.getPreviewUrlArray = function (location, useTilecache) {
+	this.getPreviewUrlArray = function (layerModel, useTilecache) {
 		//is layer public or private? is this a request that can be handled by a tilecache?
 		//is this a wms request? something to think about.  for now, we only support wms previews
-
 		var urlArraySize = 3; //this seems to be a good size for OpenLayers performance
 		var urlArray = [];
 		var populateUrlArray = function(addressArray){
@@ -1732,16 +1736,22 @@ Road - Roads without additional imagery.	*/
 			}
 
 		};
-
-		if ((typeof location.wmsProxy != "undefined")||(location.wmsProxy != null)){
-			populateUrlArray([location.wmsProxy]);
-		} else if (((typeof location.tilecache == "undefined")||(location.tilecache == null))||(!useTilecache)){
-			populateUrlArray(location.wms);
+		
+		//check for a proxy here
+    	var proxy = OpenGeoportal.Config.getWMSProxy(layerModel.get("Institution"), layerModel.get("Access"));
+    	if (proxy){
+    		layerModel.set({wmsProxy: proxy});
+    	}
+    	
+		if (layerModel.has("wmsProxy")){
+			populateUrlArray([layerModel.get("wmsProxy")]);
+		} else if ((typeof layerModel.get("parsedLocation").tilecache !== "undefined") && useTilecache){
+			populateUrlArray(layerModel.get("parsedLocation").tilecache);
 		} else {
-			populateUrlArray(location.tilecache);
+			populateUrlArray(layerModel.get("parsedLocation").wms);
 		}
 
-
+		console.log(urlArray);
 		return urlArray;
 	};
 
@@ -1774,16 +1784,9 @@ Road - Roads without additional imagery.	*/
         }
         
 		//use a tilecache if we are aware of it
-
-
-    	//check for a proxy here
-    	var proxy = OpenGeoportal.Config.getWMSProxy(layerModel.get("Institution"), layerModel.get("Access"));
-    	if (proxy){
-    		layerModel.set({wmsProxy: proxy});
-    	}
     	
 
-		var wmsArray = this.getPreviewUrlArray(layerModel.get("parsedLocation"), true);
+		var wmsArray = this.getPreviewUrlArray(layerModel, true);
 		//add the namespace if it's not already in the name
 		var wmsNamespace = layerModel.get("WorkspaceName");
 		var layerName = layerModel.get("Name");
@@ -1916,9 +1919,8 @@ Road - Roads without additional imagery.	*/
 		var userSLD = {};
 		//we need this for now, since the tilecache name and geoserver name for layers is different for Harvard layers
 		var wmsName = layerModel.get("qualifiedName");
-		var location = layerModel.get("parsedLocation");
 		//don't use a tilecache
-		layer.url = this.getPreviewUrlArray(location, false);
+		layer.url = this.getPreviewUrlArray(layerModel, false);
 		var userColor = layerModel.get("color");
 		var userWidth = layerModel.get("graphicWidth");
 		switch (dataType){
@@ -2043,8 +2045,13 @@ Road - Roads without additional imagery.	*/
 		var fullExtent = this.getExtent();
 		fullExtent.left = topLeft.lon;
 		fullExtent.top = topLeft.lat;
+		if (fullExtent.getWidth >= 40075015.68){
+			fullExtent.left = -20037508.34;
+			fullExtent.right = 20037508.34;
+		}
 		return fullExtent;
 	};
+	
 	
 	this.getGeodeticExtent = function(){
 		var mercatorExtent = this.getVisibleExtent();
@@ -2105,6 +2112,7 @@ Road - Roads without additional imagery.	*/
 	this.zoomToLayerExtentHandler = function(){
 		var that = this;
 		jQuery(document).on("map.zoomToLayerExtent", function(event, data){
+			console.log(data);
 			that.zoomToLayerExtent(data.bbox);
 		});
 	};

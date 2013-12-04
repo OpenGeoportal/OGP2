@@ -8,7 +8,10 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
 
+	<beans:import resource="security-app-context.xml"/>
 	<context:property-placeholder location="WEB-INF/ogp.properties" />
+
+  
 	<!-- DispatcherServlet Context: defines this servlet's request-processing 
 		infrastructure -->
 	<!-- Scans within the base package of the application for @Components to 
