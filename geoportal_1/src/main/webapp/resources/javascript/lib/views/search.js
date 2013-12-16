@@ -105,10 +105,13 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			//map field to model attribute
 		},
 		
-		zoomToWhere: function(){
-			var bbox = jQuery("#whereField").data().geocode.bbox;
-			if (typeof bbox !== "undefined"){
-				jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});		
+		zoomToWhere: function(){		
+			var geocode = jQuery("#whereField").data().geocode;
+			if (typeof geocode !== "undefined"){
+				var bbox = geocode.bbox;
+				if (typeof bbox !== "undefined"){
+					jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});		
+				}
 			}
 
 		},

@@ -54,7 +54,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 			 this.setAlsoMoves();
 			 var mode = this.model.get("mode");
 			if (mode == "open"){
-				if (this.model.previous("mode") == "closed"){
+				if (this.model.previous("mode") === "closed"){
 					this.showPanelMidRight();
 				} else {
 					this.showPanelMidLeft();
@@ -81,11 +81,16 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 
 			this.$el.show().width(panelWidth).css({"margin-left": -1 * panelOffset, visibility: "visible"});
 			var that = this;
+			console.log("Pre animation");
 			this.$el.add(".slideHorizontal").animate({'margin-left':'+=' + panelOffset}, { queue: false, duration: 500, complete: function(){
+				
+				console.log(jQuery(".display").width());
 				jQuery(this).trigger("adjustContents");
+				console.log(jQuery(".display").width());
 				that.resizablePanel();
 				jQuery(document).trigger("panelOpen");
 			} });
+			console.log("Post animation");
 
 	},
 	

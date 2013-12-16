@@ -108,12 +108,14 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	            	"url": that.searcher.getSearchRequest(),//this should just be the solr url
 	            	"data": that.getAdditionalQueryData(aoData),//this should contain all the query params
 	            	"success": function(data){
+	        
 	            		var response = {};
 	            		var solrdocs = data.response.docs;
 	            		var totalRecords = parseInt(data.response.numFound);
 	            		jQuery(document).trigger("searchResults.totalFound", totalRecords);
 	            		response.iTotalRecords = totalRecords;
 	            		response.iTotalDisplayRecords = totalRecords;
+	            		
 	            		response.sEcho = that.processAoData(aoData).echo;
 	            		response.aaData = that.processSearchResponse(data);
 	            		fnCallback(response);
@@ -137,24 +139,24 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 		var data = {};
 		//console.log(aoData);
 		for (var i in aoData){
-    		if (aoData[i].name == "sEcho"){
-            	console.log("echo:" + aoData[i].value);
-            	data["echo"] = aoData[i].value;
+			if (typeof aoData[i].name !== "undefined"){
+    			if (aoData[i].name === "sEcho"){
+            		console.log("echo:" + aoData[i].value);
+            		data.echo = aoData[i].value;
+				} else if (aoData[i].name === "iDisplayStart"){
+        			data.start = aoData[i].value;
+				} else if (aoData[i].name == "iDisplayLength"){
+        			data.rows = aoData[i].value;
+				}
 			}
-			if (aoData[i].name == "iDisplayStart"){
-        		data["start"] = aoData[i].value;
-			}
-			if (aoData[i].name == "iDisplayLength"){
-        		data["rows"] = aoData[i].value;
-			}
-			if (aoData[i].name == "iSortCol_0"){
+			/*if (aoData[i].name == "iSortCol_0"){
         		console.log("sort col:" + aoData[i].value);
         		//var sortColumn = this.tableHeadingsObj.getHeadingFromTargetIndex(aoData[i].value);
         		//console.log("sort col name:" + sortColumn);
 			}
 			if (aoData[i].name == "sSortDir_0"){
         		console.log("sort dir:" + aoData[i].value);
-			}
+			}*/
 		}
 		return data;
 	};
@@ -235,10 +237,10 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 				tableHeadings.each(function(currentModel){
 					//columns w/ solr == true should be populated with the returned solr data
 					var headingName = currentModel.get("columnName");
-					if (currentModel.get("solr")) {
+					if (currentModel.has("solr") && currentModel.get("solr")) {
 						
 						//if the tableheading can't be found in the solr object put in an empty string as a placeholder
-						if (typeof solrLayers[j][headingName] == 'undefined'){
+						if (typeof solrLayers[j][headingName] === 'undefined'){
 							rowObj[headingName] = "";
 						} else {
 							if (solrLayers[j][headingName].constructor !== Array){

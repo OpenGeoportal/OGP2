@@ -73,10 +73,8 @@ OpenGeoportal.UserInterface = function(){
 			jQuery(document).one("fireSearch", function(event){
 				jQuery("#welcomeBubble").hide("drop");
 				that.panelView.model.set({mode: "open"});
-				//TODO: either delay or make this a callback
 				jQuery(document).one("panelOpen", function(){that.showDirectionsBubble();});
 				
-				//jQuery(this).off( event );
 			});
 
 		} else {

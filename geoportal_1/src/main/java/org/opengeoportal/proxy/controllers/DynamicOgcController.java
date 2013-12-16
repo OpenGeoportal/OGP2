@@ -453,7 +453,9 @@ public static String removeParamFromQuery(String query, String param){
 			newQuery += arrQuery[i] + "&";
 		}
 	}
-	newQuery = newQuery.substring(0, newQuery.length() - 1);
+	if (newQuery.length() > 0){
+		newQuery = newQuery.substring(0, newQuery.length() - 1);
+	}
 	return newQuery;
 }
 

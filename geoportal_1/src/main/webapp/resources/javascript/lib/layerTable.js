@@ -377,6 +377,9 @@ OpenGeoportal.LayerTable = function LayerTable(){
 			if (model.has("dtRender")){
 				config.mRender = model.get("dtRender");
 			}
+			
+			config.fnCreatedCell = function(nTd){$(nTd).wrapInner('<div class="cellWrapper"></div>');},
+
 			columnDefinitions.push(config);
 		});
 		return columnDefinitions;
@@ -395,10 +398,11 @@ OpenGeoportal.LayerTable = function LayerTable(){
 			"aoColumnDefs": that.getColumnDefinitions(),
 			"fnDrawCallback": that.runTableDrawCallbacks,
 			"bAutoWidth": false,
-			"sDom": 'rt',
-			"oLanguage": {
+			"sDom": 'rt'//,
+			/*"oLanguage": {
 				"sEmptyTable": that.getEmptyTableMessage()//initialize the empty table message
-			}
+			},*/
+        	
 		};
 		
 		for (var param in params){
@@ -456,7 +460,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	
 	this.tableDrawCallbacks = {
 			callbacks: {
-				wrapCells: function(){this.wrapCells();}, 
+				//wrapCells: function(){this.wrapCells();}, 
 				tooltips: function(){this.createTooltips();},
 				expandRows: function(){this.callbackExpand();},
 				colResize: function(){this.resizeColumnsCallback();},
@@ -471,11 +475,14 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	
 	this.runTableDrawCallbacks = function(){
 		console.log("table draw callbacks");
+		console.log(jQuery(".display").width());
 		var callbacks = that.tableDrawCallbacks.callbacks;
 		for (var i in callbacks){
 			if (callbacks.hasOwnProperty(i)){
 				callbacks[i].call(that);
 			}
+					console.log(jQuery(".display").width());
+
 		}
 		console.log("finished table draw callbacks");
 	};
@@ -612,6 +619,12 @@ OpenGeoportal.LayerTable = function LayerTable(){
 				tableCell.wrapInner('<div class="cellWrapper" />');
 			}
 		});
+	};
+	
+		//wrap the content of each table cell in a div so we can control the size
+	this.wrapCell = function(tdEl){
+		console.log("wrap cell");
+		jQuery(tdEl).wrapInner('<div class="cellWrapper" />');
 	};
 	
 
@@ -1429,7 +1442,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	//callback to keep 'expanded' state on table reloads
 	//this can't be done with a draw table callback, because the open row function redraws
 	this.callbackExpand = function(){
-		console.log("calling calbackExpand");
+		console.log("calling callbackExpand");
 		var that = this;
 		var targetTableId = this.getTableId();
 		jQuery('#' + targetTableId + ' .expandControl').each(function(){
