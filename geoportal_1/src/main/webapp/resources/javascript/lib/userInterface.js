@@ -46,6 +46,7 @@ OpenGeoportal.UserInterface = function(){
 		
 		jQuery("body").fadeTo('fast', 1);
 		
+		this.resetHandler();
 		//dialogs
 		this.aboutHandler();
 		this.contactHandler();
@@ -57,18 +58,25 @@ OpenGeoportal.UserInterface = function(){
 		
 
 	};
+	
+	this.resetHandler = function(){
+		jQuery(".reset").on("click", function(){
+			window.location = window.location;
+		});
+	};
 
 	this.introFlow = function(hasSharedLayers){
 		if (!hasSharedLayers){
 			this.showInfoBubble();
 		
 			var that = this;
-			jQuery(".searchBox").on("click", ".searchButton", function(event){
+			jQuery(document).one("fireSearch", function(event){
 				jQuery("#welcomeBubble").hide("drop");
 				that.panelView.model.set({mode: "open"});
 				//TODO: either delay or make this a callback
-				that.showDirectionsBubble();
-				jQuery(this).off( event );
+				jQuery(document).one("panelOpen", function(){that.showDirectionsBubble();});
+				
+				//jQuery(this).off( event );
 			});
 
 		} else {
@@ -85,8 +93,11 @@ OpenGeoportal.UserInterface = function(){
 		var that = this;
 		jQuery("#tabs").tabs({
 			active: 0,
+
 			activate: function( event, ui ) {
-				that.appState.set({"currentTab": ui.newTab});
+				
+				that.appState.set({"currentTab": ui.newTab}); //is there anything using "currentTab?"
+				jQuery("#left_col").trigger("adjustContents");
 				var label,
 				idx = ui.index;
 
@@ -322,7 +333,7 @@ OpenGeoportal.UserInterface = function(){
 		var thisId = jQuery(thisObj).attr('id');
 		var hght = jQuery(".searchFormRow").height();
 		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #roll_right > .arrow_right").addClass("slideVertical");
-		if (thisId == 'moreSearchOptions'){
+		if (thisId === 'moreSearchOptions'){
 			jQuery(document).trigger("search.setAdvanced");
 
 			jQuery("#searchForm .basicSearch").hide();
@@ -341,6 +352,7 @@ OpenGeoportal.UserInterface = function(){
 											{height: "+=" + hght},
 											{queue: false, duration: 100, easing: "linear", complete: function(){
 												jQuery("#searchForm .advancedSearch.searchRow4").show();
+												jQuery("#lessSearchOptions").focus();
 											}
 											});
 								}});
@@ -349,7 +361,7 @@ OpenGeoportal.UserInterface = function(){
 			jQuery(".slideVertical").animate({"margin-top": "+=" + hght * 3, duration: 300, easing: "linear"});
 
 
-		} else if (thisId == 'lessSearchOptions'){
+		} else if (thisId === 'lessSearchOptions'){
 			jQuery(document).trigger("search.setBasic");
 			jQuery(".slideVertical").animate({"margin-top": "-=" + hght * 3, queue: false, duration: 300, easing: "linear"});
 
@@ -370,6 +382,8 @@ OpenGeoportal.UserInterface = function(){
 												jQuery("#geosearchDiv").removeClass("advancedSearch").addClass("basicSearch");
 												jQuery("#searchForm .advancedSearch.searchRow1").hide();
 												jQuery("#searchForm .basicSearch").show();		
+												jQuery("#moreSearchOptions").focus();
+
 											}
 											});
 								}});

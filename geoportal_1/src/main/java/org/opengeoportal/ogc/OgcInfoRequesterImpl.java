@@ -3,9 +3,7 @@ package org.opengeoportal.ogc;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.OgpUtils;
@@ -16,7 +14,6 @@ import org.slf4j.LoggerFactory;
 public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	private HttpRequester httpRequester;
 	private OgcInfoRequest ogcInfoRequest;
-	private LayerInfoRetriever layerInfoRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private ProxyConfigRetriever proxyConfigRetriever;
 
@@ -35,15 +32,6 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	public void setOgcInfoRequest(OgcInfoRequest ogcInfoRequest) {
 		this.ogcInfoRequest = ogcInfoRequest;
 	}
-
-	public LayerInfoRetriever getLayerInfoRetriever() {
-		return layerInfoRetriever;
-	}
-
-	public void setLayerInfoRetriever(LayerInfoRetriever layerInfoRetriever) {
-		this.layerInfoRetriever = layerInfoRetriever;
-	}
-
 
 	public ProxyConfigRetriever getProxyConfigRetriever() {
 		return proxyConfigRetriever;
@@ -120,28 +108,6 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 		} finally {
 			IOUtils.closeQuietly(is);
 		}
-	}
-	
-
-	public OwsInfo getResponseMap(String layerId) throws SolrServerException, Exception {
-		SolrRecord solrRecord = layerInfoRetriever.getAllLayerInfo(layerId);
-		logger.info(solrRecord.toString());
-
-		return getOwsInfo(solrRecord);
-		
-	}
-
-	@Override
-	public AugmentedSolrRecord getOgcAugment(String layerId) throws SolrServerException, Exception {
-			SolrRecord solrRecord = layerInfoRetriever.getAllLayerInfo(layerId);
-			return getOgcAugment(solrRecord);
-	}
-
-	@Override
-	public AugmentedSolrRecord getOgcAugment(String layerId, String owsUrl) throws SolrServerException, Exception {
-		SolrRecord solrRecord = layerInfoRetriever.getAllLayerInfo(layerId);
-		logger.info(solrRecord.toString());
-		return getOgcAugment(solrRecord, owsUrl);
 	}
 	
 	@Override

@@ -83,7 +83,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			"bAutoWidth": false,
 			"sDom": 'rtS',
 			"oLanguage": {
-				"sEmptyTable": that.getEmptyTableMessage()//initialize the empty table message
+				"sEmptyTable": "No matching layers."//function(){that.getEmptyTableMessage();}()//initialize the empty table message
 			},
 			"bProcessing": true,
 			"bServerSide": true,
@@ -105,7 +105,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 	    	        "crossDomain": true,
 	            	"jsonp": 'json.wrf',
 	            	"type": "GET",
-	            	"url": that.searcher.getSearchRequest(),//this should just be the solr url; rework with query terms model/view
+	            	"url": that.searcher.getSearchRequest(),//this should just be the solr url
 	            	"data": that.getAdditionalQueryData(aoData),//this should contain all the query params
 	            	"success": function(data){
 	            		var response = {};
@@ -194,18 +194,11 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			controlClass: "columnCheck"
 			});
 
-		this.adjustColumnsHandler();
 		this.previewedLayers = new OpenGeoportal.Views.PreviewedLayersTable({collection: OpenGeoportal.ogp.appState.get("previewed"), el: jQuery(".dataTables_scrollHead table")});
 
 	};
 
-	this.adjustColumnsHandler = function(){
-		var that = this;
-		jQuery("#left_col").on("adjustColumns", function(){
-			that.getTableObj().fnAdjustColumnSizing(false);
-			that.resizeColumnsCallback(); //other callbacks needed?
-		});
-	};
+
 	//processData needs to be aware of the table headings object for the results table;  at least the columns
 	//processData needs to be aware of previewed layers
 	//converts solr response object to dataTables array
@@ -401,7 +394,9 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 
 
 	this.getEmptyTableMessage = function getEmptyTableMessage(){
-			return "";
+			var resultsMessage = "No results were found for the terms specified.";
+			return resultsMessage;
+;
 	};
 
 	/**
@@ -424,11 +419,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 
 
 	this.fireSearch = function(){
-		var that = this;
 		//redrawing the table causes the search to be performed
-		//if (jQuery("#left_col").css("display") !== "none"){
-			that.getTableObj().fnDraw();
-		//}
+		this.getTableObj().fnDraw();
 	};
 
 
@@ -480,44 +472,6 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 			previewedLayer$.removeClass('previewSeparator');
 			previewedLayer$.last().addClass('previewSeparator');
 	};
-	
-	/*this.addToPreviewedLayers = function(tableRow){
-		var tableObj = this.getTableObj();
-		var rowData = tableObj.fnGetData(tableRow);
-		//this.previewed.addLayer(rowData);
-		function callback() {
-			//if (that.getTableId() == "searchResults"){
-				tableObj.fnDeleteRow(tableRow, false);
-				var tableData = tableObj.fnGetData();
-				tableObj.fnClearTable();
-				tableData.unshift(rowData);
-				tableObj.fnAddData(tableData);
-				var rowOne = tableObj.fnGetNodes(0);
-				var num_previewed = this.previewed.length;
-				if (num_previewed == 0){
-					jQuery(rowOne).find('.expandControl').first().trigger('click');
-				} else {
-					//that.callbackExpand();
-				}
-				jQuery(".previewedLayer").removeClass('previewSeparator');
-				jQuery(".previewedLayer").last().addClass('previewSeparator');
-				tableObj.fnDraw();
-			//} //else if (that.getTableId() == "savedLayers"){
-				//this is a little kludgey boo
-				//TODO: fix this
-				//OpenGeoportal.ogp.ui.previousExtent = "";
-			//}
-		};
-		var rowOne = tableObj.fnGetNodes(0);
-		var	options = { to: rowOne, 
-				className: "ui-effects-transfer"};
-		jQuery(tableRow).effect( "transfer", options, 250, callback);
-
-	};
-
-	this.removeFromPreviewedLayers = function(matchValue, matchIndex){
-		this.previewedLayers.removeLayer(matchValue, matchIndex);
-	};*/
 	
 
 	this.updateSortMenu = function(){

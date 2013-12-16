@@ -53,7 +53,8 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		jQuery("#whatField").attr("placeholder", this.whatText);
 
 		this.controls = OpenGeoportal.ogp.appState.get("controls");
-		this.controls.addButton(jQuery(".basicSearchButtons"), "basicSearchSubmit", "Search", this.fireSearch).addClass("searchButton");		
+		var that = this;
+		this.controls.prependButton(jQuery(".basicSearchButtons"), "basicSearchSubmit", "Search", function(){that.fireSearchWithZoom();}).addClass("searchButton");		
 		
 		this.controls.solrAutocomplete(jQuery("#advancedOriginatorField"), "OriginatorSort");
 		this.createInstitutionsMenu();
@@ -63,15 +64,16 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		this.mapInputsToModel();
 		
 		var advSearchButtons$ = jQuery(".advancedSearchButtons").first();
-		this.controls.addButton(advSearchButtons$, "advancedSearchClear", "Clear", this.clearForm);	
-		this.controls.addButton(advSearchButtons$, "advancedSearchSubmit", "Search", this.fireSearch).addClass("searchButton");		
-		this.listenTo(this.model, "change:mapExtent", this.fireSearch);
+		this.controls.prependButton(advSearchButtons$, "advancedSearchSubmit", "Search", function(){that.fireSearchWithZoom();}).addClass("searchButton");		
+		this.controls.prependButton(advSearchButtons$, "advancedSearchClear", "Clear", this.clearForm);	
+
+		this.listenTo(this.model, "change:mapExtent", this.extentChanged);
 		
 
 		this.mapFilterHandler();
 		this.searchTypeHandler();
 		this.showRestrictedHandler();
-		var that = this;
+		this.searchBoxKeypressHandler();
 		
 		jQuery(document).on("map.extentChanged", function(){that.setMapExtent.apply(that, arguments);});
 	},
@@ -101,6 +103,38 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			this.model.set(attr, val);
 
 			//map field to model attribute
+		},
+		
+		zoomToWhere: function(){
+			var bbox = jQuery("#whereField").data().geocode.bbox;
+			if (typeof bbox !== "undefined"){
+				jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});		
+			}
+
+		},
+
+		clearWhere: function(){
+			jQuery("#whereField").val("").data().geocode = {};
+			
+		},
+		fireSearchWithZoom: function(){
+			if (this.model.get("searchType") === "advanced"){
+				var ignoreSpatial = this.model.get("ignoreSpatial");
+				if (!ignoreSpatial){
+					this.zoomToWhere();
+				}
+			} else {
+				this.zoomToWhere();
+			}
+			this.fireSearch();
+		},
+		
+		extentChanged: function(){
+			console.log("*******************************************************extent changed");
+			this.fireSearch();	
+			//on the next extent change, clear the where field
+			//this.listenToOnce(this.model, "change:mapExtent", this.clearWhere);
+
 		},
 		
 		fireSearch: function(){
@@ -287,57 +321,21 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			);	
 		},
 		searchBoxKeypressHandler: function(){
+			var that = this;
 			jQuery('.searchBox').keypress(function(event){
 				var type, search, keyword;
 
 				if (event.keyCode == '13') {
 					event.preventDefault();
-					that.searchSubmit();
-					type = OpenGeoportal.Utility.whichSearch().type;
-					if (type == "basicSearch") {
-						search = "Basic";
-						keyword = jQuery("#basicSearchTextField").val();
-					} else if (type == "advancedSearch") {
-						search = "Advanced";
-						keyword = jQuery("#advancedKeywordText").val();
-					}
-					analytics.track("Search", search, keyword);
+					jQuery(event.target).blur();
+					that.fireSearchWithZoom();
+					jQuery(event.target).focus();
+
 				} 
 			});
 		},
 
-		whereHandler: function(){
-			jQuery("#geosearch").keypress(function(event){
-				if (event.keyCode == '13') {
-					var location = jQuery("#geosearch").val();
-					//that.geocodeLocation();
-					analytics.track("Go To Box", location);
-				} else if (jQuery(this).val().trim() == that.geocodeText){
-					that.clearInput('geosearchDiv');
-				}
-			});
 
-			//needs to check if the input has focus 
-			jQuery("input#geosearch").val(this.geocodeText);
-			/*jQuery("input#geosearch").hover(function(){
-			    				jQuery(this).css("opacity", "1"); 
-			    				jQuery(this).data("mouseOverInput", true); 
-			    			}, 
-			    			function(){
-			    				jQuery(this).data("mouseOverInput", false); 
-			    				if(!jQuery(this).is(":focus")){
-			    					jQuery(this).css("opacity", ".7");
-			    				} 
-			    			});
-			    jQuery("input#geosearch").focusin(function(){
-			    	jQuery(this).css("opacity", "1");});
-			    jQuery("input#geosearch").focusout(function(){
-			    	if(jQuery(this).data("mouseOverInput") !== true){
-			    		jQuery(this).css("opacity", ".5");
-			    	}});*/
-			jQuery("input#geosearch").click(function(){that.clearInput("geosearchDiv");});
-
-		},
 
 		/**
 		 * uses styledSelect to create the menu in advanced search that allows a user to select which institutions to search; dynamically created

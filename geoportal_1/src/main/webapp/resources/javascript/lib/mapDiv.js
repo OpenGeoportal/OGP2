@@ -320,40 +320,48 @@ OpenGeoportal.MapController = function() {
     UNKNOWN_ERROR indicates that the request could not be processed due to a server error. The request may succeed if you try again.
 
 					 */
-					if (status !== "OK"){
-						return;
-					}
-					//reset the response object
-					geocodeResponse = {};
 					var labelArr = [];
-					for (var i in results){
-						var viewPort = results[i].geometry.viewport;
-						var extent = [];
-						extent.push(viewPort.getSouthWest().lng());
-						extent.push(viewPort.getSouthWest().lat());
-						extent.push(viewPort.getNorthEast().lng());
-						extent.push(viewPort.getNorthEast().lat());
 
-						var bbox = extent.join();
-						var currentAddress = results[i].formatted_address;
-						geocodeResponse[currentAddress] = bbox;
-						labelArr.push(currentAddress);
+					if (status === "OK"){
+						
+						//reset the response object
+						geocodeResponse = [];
+						for (var i in results){
+							var viewPort = results[i].geometry.viewport;
+							var extent = [];
+							extent.push(viewPort.getSouthWest().lng());
+							extent.push(viewPort.getSouthWest().lat());
+							extent.push(viewPort.getNorthEast().lng());
+							extent.push(viewPort.getNorthEast().lat());
 
+							var bbox = extent.join();
+							var currentAddress = results[i].formatted_address;
+							var currentResponse = {};
+							currentResponse.name = currentAddress;
+							currentResponse.bbox = bbox;
+							currentResponse.fullResponse = results[i];
+							geocodeResponse.push(currentResponse);
+							labelArr.push(currentAddress);
+						}
+						response(labelArr);
+					} else if (status === "ZERO_RESULTS"){
+						labelArr.push("No results found.");
+					} else {
+						labelArr.push("Error retrieving results.");
 					}
+					
 					response(labelArr);
 				});
 			},
-			minLength: 4,
-			delay: 1000,
+			minLength: 3,
+			delay: 200,
 			select: function( event, ui ) {
-
-				jQuery(document).trigger("map.zoomToLayerExtent", {"bbox": geocodeResponse[ui.item.value]});
-
-				var currentFontSize = geocodeField$.css("font-size");
-				var currentOpacity = geocodeField$.css("opacity");
-				//geocodeField$.animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500);
-					//.delay(1500)
-					//.animate({ "font-size": 0 }, 300, function(){geocodeField$.val(that.geocodeText).css({"font-size": currentFontSize, "opacity": currentOpacity});});
+				for (var i in geocodeResponse){
+					if (geocodeResponse[i].name == ui.item.value){
+						geocodeField$.data({"geocode": geocodeResponse[i]});
+						return;
+					}
+				}
 			},
 
 			open: function() {
@@ -1181,7 +1189,7 @@ Road - Roads without additional imagery.	*/
 
 			var attrModel = layerAttrs.findWhere({attributeName: jQuery(this).text().trim()});
 
-			if (attrModel.has("description")){
+			if (typeof attrModel !== "undefined" && attrModel.has("description")){
 				jQuery(this).attr('title', attrModel.get("description"));
 				//short circuit if attributes have already been looked up
 			} else {
@@ -1200,7 +1208,7 @@ Road - Roads without additional imagery.	*/
 
 			//generate the query string
 			var layerId = this.ogpLayerId;
-			var searchString = "OGPID=" + layerId;
+			var searchString = "ogpid=" + layerId;
 			
 			var mapExtent = mapObject.getExtent();
 			searchString += "&bbox=" + mapExtent.toBBOX();			
@@ -1676,7 +1684,7 @@ Road - Roads without additional imagery.	*/
 	
 	this.setWmsLayerInfo = function(model){
 		var that = this; 
-		var queryData = {OGPID: model.get("LayerId")};
+		var queryData = {ogpid: model.get("LayerId")};
     	var ajaxParams = {
     		type: "GET",
             url: 'info/wmsInfo',
@@ -1713,7 +1721,7 @@ Road - Roads without additional imagery.	*/
 		//by design, OpenLayers requires an error of type 'image' from the wms server
 		//(OpenLayers is merely dynamically setting the src attribute of img tags)
 		//console.log(mapObj);
-		if (layerModel.get("parsedLocation").wms != "undefined"){
+		if (layerModel.get("parsedLocation").wms !== "undefined"){
 			this.setWmsLayerInfo(layerModel);
 		} else {
 			//assume it exists
@@ -1794,14 +1802,15 @@ Road - Roads without additional imagery.	*/
 				layerName = wmsNamespace + ":" + layerName;
 		}
 			
+		layerModel.set({qualifiedName: layerName});
 			
 		//tilecache and GeoServer names are different for Harvard layers
-		if (layerModel.get("Institution") == "Harvard"){
+		if (layerModel.get("Institution") === "Harvard"){
 			layerName = layerName.substr(layerName.indexOf(".") + 1);
 			layerName = layerName.substr(layerName.indexOf(":") + 1);
 		}		
 		
-		layerModel.set({qualifiedName: layerName});
+		
 
 		//won't actually do anything, since noMagic is true and transparent is true
 		var format;
@@ -1817,7 +1826,7 @@ Road - Roads without additional imagery.	*/
 				layerModel.get("LayerDisplayName"),
 				wmsArray,
 				{
-					layers: layerModel.get("qualifiedName"),
+					layers: layerName,
 					format: format, 
 					tiled: true,
 					exceptions: "application/vnd.ogc.se_xml",
@@ -1840,7 +1849,7 @@ Road - Roads without additional imagery.	*/
 
 	};
 
-//	thanks to Allen Lin, MN
+//	thanks to Allen Lin, U of MN
 	this.addArcGISRestLayer = function (layerModel) {
 		//won't actually do anything, since noMagic is true and transparent is true
 		var format;

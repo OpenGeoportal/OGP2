@@ -40,15 +40,15 @@
 			</div>
 			<div class="advancedSearch searchFormRow searchRow4">
 				<span class="formCheckbox searchFormInput"> <input
-					type="checkbox" name="restrictedCheck" id="restrictedCheck" /> <label
-					for="restrictedCheck">Include Restricted Data</label>
+					type="checkbox" name="restrictedCheck" id="restrictedCheck" /> 
+					<label for="restrictedCheck">Include Restricted Data</label>
 				</span>
 			</div>
 		</div>
 		<div id="searchCol3" class="searchCol">
 			<div class="basicSearch basicSearchButtons searchFormRow">
-				<span id="moreSearchOptions" class="searchToggle button offsetColor">Advanced
-					Search</span>
+				<button id="moreSearchOptions" class="searchToggle button offsetColor" tabindex="0" >Advanced
+					Search</button>
 			</div>
 			<div class="advancedSearch searchFormRow searchRow1">
 				<label for="advancedOriginatorText">Originator:</label> <input
@@ -63,10 +63,9 @@
 					size="4" />
 				</span>
 			</div>
-			<div
-				class="advancedSearch searchFormRow advancedSearchButtons searchRow4">
-				<span id="lessSearchOptions" class="searchToggle button offsetColor">Basic
-					Search</span>
+			<div class="advancedSearch searchFormRow advancedSearchButtons searchRow4">
+				<button id="lessSearchOptions" class="searchToggle button offsetColor" tabindex="0" >Basic
+					Search</button>
 			</div>
 		</div>
 	</form>

@@ -1,13 +1,17 @@
 package org.opengeoportal.ogc;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.commons.io.IOUtils;
+import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
+import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,12 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	@Autowired
 	@Qualifier("ogcInfoRequester.wcs_1_0_0")
 	private OgcInfoRequester wcsRequester;
+	
+	@Autowired
+	@Qualifier("httpRequester.generic")
+	private HttpRequester httpRequester;
+	@Autowired
+	private LayerInfoRetriever layerInfoRetriever;
 	 
 	@Override
 	public OwsInfo getWmsInfo(String layerId) throws Exception{
@@ -131,36 +141,15 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, String layerId) throws Exception{
-		AugmentedSolrRecord asr = null;
+		SolrRecord solrRecord = layerInfoRetriever.getAllLayerInfo(layerId);
+		return getInfoAttempt(requester, numAttempts, solrRecord);
 
-		for (int i = 0; i < numAttempts; i++ ){
-			logger.info("Attempt " + (i + 1));
-
-			try{
-				asr = requester.getOgcAugment(layerId);
-				if (asr == null){
-					continue;
-				} else {
-					return asr;
-				}
-			} catch (SolrServerException e){
-				throw new Exception(e.getMessage());
-			} catch (Exception e){
-				//just continue
-				logger.warn("Error requesting ogc info: " + e.getMessage());
-			}
-			Thread.sleep(PAUSE * (i + 1));
-		}
-
-		if (asr == null){
-			throw new Exception("Error reaching the OGC server.");
-		} else {
-			return asr;
-		}
 	}
+	
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, SolrRecord solrRecord) throws Exception{
 		AugmentedSolrRecord asr = null;
+		sendServiceStart(solrRecord);
 		for (int i = 0; i < numAttempts; i++ ){
 			logger.info("Attempt " + (i + 1));
 			try{
@@ -185,6 +174,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, SolrRecord solrRecord, String url) throws Exception{
 		AugmentedSolrRecord asr = null;
+		sendServiceStart(solrRecord);
 		for (int i = 0; i < numAttempts; i++ ){
 			logger.info("Attempt " + (i + 1));
 
@@ -205,6 +195,30 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 			throw new Exception("Error reaching the OGC server.");
 		} else {
 			return asr;
+		}
+	}
+
+	@Override
+	public void sendServiceStart(SolrRecord solrRecord) {
+		String location = solrRecord.getLocation();
+
+		if (LocationFieldUtils.hasServiceStart(location)){
+			String serviceStart = "";
+			InputStream is = null;
+			try {
+				serviceStart = LocationFieldUtils.getServiceStartUrl(location);
+				String name = solrRecord.getName();
+				//the HGL remote service starter does not use fully qualified names
+				name = name.substring(name.indexOf(".") + 1);
+				logger.info("Attempting to Start Service for ['" + solrRecord.getLayerId() + "']");
+				is = httpRequester.sendRequest(serviceStart, "AddLayer=" + name + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
+			} catch (JsonParseException e) {
+				logger.error("Problem parsing ServiceStart parameter from ['" + location + "']");
+			} catch (IOException e) {
+				logger.error("Problem sending ServiceStart request to : ['" + serviceStart + "']");
+			} finally {
+				IOUtils.closeQuietly(is);
+			}
 		}
 	}
 }

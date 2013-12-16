@@ -28,23 +28,23 @@ public class GetOgcInfoController {
 	LayerInfoRetriever layerInfoRetriever;
 	
 	@RequestMapping(method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody AugmentedSolrRecord getLayerInfo(@RequestParam("OGPID") String layerId) throws Exception {
+	public @ResponseBody AugmentedSolrRecord getLayerInfo(@RequestParam("ogpid") String layerId) throws Exception {
 		return augmentedSolrRecordRetriever.getOgcAugmentedSolrRecord(layerId);
 
 	}
 	
 	@RequestMapping(value="wmsInfo", method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody OwsInfo wmsInfo(@RequestParam("OGPID") String layerId) throws Exception {
+	public @ResponseBody OwsInfo wmsInfo(@RequestParam("ogpid") String layerId) throws Exception {
 		return augmentedSolrRecordRetriever.getWmsInfo(layerId);
 	}
 	
 	@RequestMapping(value="ogcData", method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody OwsInfo ogcDataInfo(@RequestParam("OGPID") String layerId) throws Exception {
+	public @ResponseBody OwsInfo ogcDataInfo(@RequestParam("ogpid") String layerId) throws Exception {
 		return augmentedSolrRecordRetriever.getOgcDataInfo(layerId);
 	}
 	
 	@RequestMapping(value="ogp", method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody SolrRecord ogcSolrInfo(@RequestParam("OGPID") String layerId, @RequestParam(value="full", defaultValue="false") Boolean includeMetadata) throws Exception {
+	public @ResponseBody SolrRecord ogcSolrInfo(@RequestParam("ogpid") String layerId, @RequestParam(value="full", defaultValue="false") Boolean includeMetadata) throws Exception {
 		SolrRecord record = layerInfoRetriever.getAllLayerInfo(layerId);
 		if (includeMetadata){
 			return record;

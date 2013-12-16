@@ -15,7 +15,7 @@ OpenGeoportal.Template = function() {
 	
 	this.map = _.template(mapToolBarHtml + '<div id="<%= mapId %>OLMap"></div>');
 			
-	this.mapButton = _.template('<span class="mapStyledButton <%= displayClass %>" title="<%= title %>" ><%= buttonText %></span>');
+	this.mapButton = _.template('<button class="mapStyledButton <%= displayClass %>" title="<%= title %>" ><%= buttonText %></button>');
 	this.basemapMenu = _.template('<div id="basemapMenu"></div>');
 
 	 var selectHtml =  '<div class="styledSelect">' +
@@ -35,10 +35,10 @@ OpenGeoportal.Template = function() {
 	controlMenuHtml += '<input type="hidden" value="<%= value %>" /></li>';
     this.controlMenuItem = _.template(controlMenuHtml);
 
-    var genericButtonHtml = '<div id="<%= buttonId %>" class="button"><%= buttonLabel %></div>';
+    var genericButtonHtml = '<button id="<%= buttonId %>" class="button"><%= buttonLabel %></button>';
     this.genericButton = _.template(genericButtonHtml);
     
-    var dialogHeaderButtonHtml = '<div id="<%= buttonId %>" class="<%= displayClass %> button"><%= buttonLabel %></span>';
+    var dialogHeaderButtonHtml = '<button id="<%= buttonId %>" class="<%= displayClass %> button"><%= buttonLabel %></button>';
     this.dialogHeaderButton = _.template(dialogHeaderButtonHtml);
 
  	/***************

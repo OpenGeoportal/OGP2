@@ -2,6 +2,7 @@ package org.opengeoportal.proxy;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
@@ -192,13 +193,24 @@ public class ImageCompositorImpl implements ImageCompositor {
 			//System.out.println(scales[3]);
 			float[] offsets = new float[4];
 			RescaleOp rop = new RescaleOp(scales, offsets, null);
-			
+
 			Graphics2D composite = getCompositeImage();
-			
+
 			logger.debug("drawing layer...");
-			composite.drawImage(currentImg, rop, 0, 0);
+			try{
+				composite.drawImage(currentImg, rop, 0, 0);
+				
+			} catch(IllegalArgumentException e){
+				if (e.getMessage().contains("indexed")){
+					logger.debug("trying to add indexed image.");
+					composite.drawImage(rescaleAlpha(currentImg, scales[3]), 0, 0, null);
+				} else {
+					throw e;
+				}
+
+			}
 			
-		} finally {
+		}finally {
 			//cleaning up temp file
 			if (imgFile.exists()){
 				imgFile.delete();
@@ -216,4 +228,84 @@ public class ImageCompositorImpl implements ImageCompositor {
 	public void setMaxSizeMB(int maxSizeMB) {
 		this.maxSizeMB = maxSizeMB;
 	}
+	
+
+
+	/**
+	 * https://forums.oracle.com/thread/1269537
+	 * @param icm
+	 * @param alphaScaleFactor
+	 * @return
+	 */
+
+	public static IndexColorModel rescaleAlpha(IndexColorModel icm, float alphaScaleFactor) {
+
+		int size = icm.getMapSize();
+
+		byte[] reds=new byte[size], greens=new byte[size], blues=new byte[size], alphas=new byte[size];
+
+		icm.getReds(reds);
+
+		icm.getGreens(greens);
+
+		icm.getBlues(blues);
+
+		icm.getAlphas(alphas);
+
+		rescale(alphas, alphaScaleFactor);
+
+		return new IndexColorModel(8, size, reds, greens, blues, alphas);
+
+	}
+
+	/**
+	 * https://forums.oracle.com/thread/1269537
+	 * 
+	 * @param comps
+	 * @param scaleFactor
+	 */
+
+
+	public static void rescale(byte[] comps, float scaleFactor) {
+
+		for(int i=0; i<comps.length; ++i) {
+
+			int comp = 0xff & comps[i];
+
+			int newComp = Math.round(comp*scaleFactor);
+
+			if (newComp < 0){
+				newComp = 0;
+			} else if (newComp > 255){
+				newComp = 255;
+			}
+
+			comps[i] = (byte) newComp;
+
+		}
+
+	}
+
+
+	/**
+	 * https://forums.oracle.com/thread/1269537
+	 * @param indexed
+	 * @param alphaFactor
+	 * @return
+	 */
+
+	public static BufferedImage rescaleAlpha(BufferedImage indexed, float alphaFactor) {
+
+		IndexColorModel icm = (IndexColorModel) indexed.getColorModel();
+
+		return new BufferedImage(rescaleAlpha(icm, alphaFactor), indexed.getRaster(), false, null);
+
+	}
+
+
+
+
+
+
+
 }

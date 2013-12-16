@@ -10,134 +10,6 @@ if (typeof OpenGeoportal.Views == 'undefined'){
     throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-OpenGeoportal.Views.Cart = Backbone.View.extend({	
-	assign : function (view, selector) {
-	    view.setElement(this.$(selector)).render();
-	},
-	initialize: function() {
-
-		this.listenTo(this.collection, "add", this.addedToCart);
-		this.listenTo(this.collection, "remove", this.removedFromCart);
-		
-		this.initRender();
-		console.log("finished initializing cart view");
-	},		   
-	addedToCart:function(model){
-		    	var layerId = model.get("LayerId");
-		    	model.set({isChecked: true});
-		    	//update search results table
-		    	jQuery(document).trigger("view.showInCart", {layerId: layerId});
-		    	//add data to cart table
-		    	var data = this.processTableRow(model);
-		    	console.log(data);
-				var savedTable = this.cartTableObj.getTableObj();
-				var currentData = savedTable.fnGetData();
-				currentData.unshift(data);
-				savedTable.fnClearTable();
-				savedTable.fnAddData(currentData);
-				this.updateSavedLayersNumber();
-		    },
-	removedFromCart:function(model){
-		    	var layerId = model.get("LayerId");
-		    	//update search results table
-		    	jQuery(document).trigger("view.showNotInCart", {layerId: layerId});
-		    	//remove data from cart table
-				var savedTable = this.cartTableObj.getTableObj();
-				var currentData = savedTable.fnGetData();
-				for (var i in currentData){
-
-					if (currentData[i].LayerId == layerId){
-						savedTable.fnDeleteRow(i);
-					}
-				}
-				this.updateSavedLayersNumber();
-		    },
-	updateSavedLayersNumber: function(){
-		var number$ = jQuery('.savedLayersNumber');
-		
-		number$.text('(' + this.collection.length + ')');
-		var numColor = number$.css("color");
-		number$.parent()
-			.animate({color: "#0755AC"},125)
-		    .animate({color: numColor},125)
-		    .animate({color: "#0755AC"},125)
-		    .animate({color: numColor},125);
-			},
-	processTableRow: function(model){
-		var tableHeadings = this.cartTableObj.tableHeadingsObj;
-				var rowObj = {};
-				tableHeadings.each(function(currentModel){
-					var headingName = currentModel.get("columnName");
-					if (currentModel.get("solr")) {
-						//if the tableheading can't be found in the solr object put in an empty string as a placeholder
-						if (typeof model.attributes[headingName] == 'undefined'){
-							rowObj[headingName] = "";
-						} else {
-							if (model.attributes[headingName].constructor !== Array){
-								rowObj[headingName] = model.attributes[headingName];
-							} else {
-								rowObj[headingName] = model.attributes[headingName].join();//in case the value is an array
-							}
-						}
-					} else {
-						//columns w/ ajax == false are placeholders and are populated by javascript
-						rowObj[headingName] = "";
-					}
-				});
-
-			return rowObj;
-	},
-	initRender: function(){
-		this.cartTableObj = new OpenGeoportal.CartTable();
-		this.cartTableObj.backingData = this.collection;
-		this.cartTableObj.initTable("cart");
-		return this;
-	}
-});
-
-/*
-this.expandHandler = function(){
-	jQuery("#" + that.getTableId() + " tbody").on("click.expand", "div.expandControl", function(event){
-		//console.log("layer saved");
-		that.expandRow(this);
-	});
-};
-
-this.expandViewHandler = function(){
-	var that = this;
-	jQuery("#" + that.getTableId()).on("view.expandRow", function(event, data){
-		var control$ = that.findExpandControl(data.layerId);
-		that.openPreviewTools(control$);
-	});
-	jQuery("#" + that.getTableId()).on("view.closeRow", function(event, data){
-		var control$ = that.findExpandControl(data.layerId);
-		that.closePreviewTools(control$);
-	});
-};*/
-
-OpenGeoportal.Views.TableRowSettings = Backbone.View.extend({
-
-	initialize: function(){
-		//if the value is equal to the default value, maybe we should just remove the model from the collection
-	    this.listenTo(this.collection, "add", this.openRow);
-	    this.listenTo(this.collection, "remove", this.closeRow);
-	    this.listenTo(this.collection, "syncUI.openRow", this.syncRow);
-
-	},
-	closeRow: function( model, val, options){
-		this.$el.trigger("view.closeRow", {LayerId: model.id});
-		},
-	openRow: function( model, val, options){
-		this.$el.trigger("view.openRow", {LayerId: model.id});//tie in to the preview tools model below
-
-		},
-	syncRow: function(data){
-		//TODO: review this
-		this.$el.trigger("view.openRow", {LayerId: data.LayerId});
-	}
-	
-});
-
 OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 	initialize: function(){		
 		var that = this;
@@ -193,6 +65,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 				this.showPanelFullScreen();
 			}
 		 },
+		 
 		 showPanelMidRight: function(){
 			 console.log("showPanelMid");
 				if (jQuery(".slideHorizontal").is(":hidden")){
@@ -209,11 +82,13 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 			this.$el.show().width(panelWidth).css({"margin-left": -1 * panelOffset, visibility: "visible"});
 			var that = this;
 			this.$el.add(".slideHorizontal").animate({'margin-left':'+=' + panelOffset}, { queue: false, duration: 500, complete: function(){
-				jQuery(this).trigger("adjustColumns");
+				jQuery(this).trigger("adjustContents");
 				that.resizablePanel();
+				jQuery(document).trigger("panelOpen");
 			} });
 
 	},
+	
 	 showPanelMidLeft: function(){
 
 			if (jQuery("#roll_right").is(":visible")){
@@ -224,13 +99,11 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		var that = this;
 		this.$el.show().animate({width: panelWidth},{ queue: false, duration: 500, complete: function(){
 			jQuery(".slideHorizontal").hide().css({'margin-left': panelWidth}).fadeIn();
-			jQuery(this).trigger("adjustColumns");
+			jQuery(this).trigger("adjustContents");
 			that.resizablePanel();
 		}});
 		
-
-		
-	 },
+		},
 
 	showPanelClosed: function(){
 		//display full width map
@@ -255,7 +128,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		jQuery(".slideHorizontal").fadeOut();
 		
 		this.$el.animate({'width': jQuery('#container').width() -2}, { queue: false, duration: 500, complete: function(){
-			jQuery(this).trigger("adjustColumns");
+			jQuery(this).trigger("adjustContents");
 		}});  
 	},
 	
@@ -264,7 +137,6 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		var that = this;
 		this.$el.resizable({
 			handles: 'se', //for some reason "e" handle doesn't work correctly
-			//ghost: true,
 			start: function(event, ui){
 				var margin = parseInt(jQuery(".slideHorizontal").css("margin-left")); 
 				that.model.set({alsoMovesMargin: margin});
@@ -284,19 +156,9 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 				console.log("resize stop");
 				var newWidth = ui.size.width;
 				that.model.set({openWidth: newWidth});
-				jQuery(this).trigger("adjustColumns");
+				jQuery(this).trigger("adjustContents");
 			}
 		});
 	}
 
 });
-
-
-
-
-
-
-
-
-
-

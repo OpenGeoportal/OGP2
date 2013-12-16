@@ -58,17 +58,17 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 				secondary: "ui-icon-triangle-1-s"
 			}
 		})
-		.click(function(event) {
+		.on("click", function(event) {
 			event.preventDefault;
-			var menu = $( this ).parent().next().toggle().position({
+			var menu$ = $( this ).parent().next().toggle().position({
 				my: "left top",
 				at: "left bottom",
 				of: this
-			});
-			that.$el.one( "mouseleave", function() {
+			}).focus().one("blur", function(event){
 				event.preventDefault;
-				menu.hide();        
+				jQuery(this).hide();
 			});
+			
 			return false;
 		})
 		.parent()

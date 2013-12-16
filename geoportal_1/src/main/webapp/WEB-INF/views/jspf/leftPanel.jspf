@@ -1,8 +1,8 @@
 
 <div class="arrow_buttons slideVertical">
-	<div class="arrow_left button" title="collapse left"></div>
+	<button class="arrow_left button" title="collapse left"></button>
 	<div class="arrow_separator"></div>
-	<div class="arrow_right button" title="expand right"></div>
+	<button class="arrow_right button" title="expand right"></button>
 </div>
 <div id="tabs" class="slideVertical">
 	<ul>

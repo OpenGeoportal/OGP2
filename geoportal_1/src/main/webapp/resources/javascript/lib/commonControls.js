@@ -556,10 +556,21 @@ OpenGeoportal.CommonControls = function CommonControls(){
 		});
 	};
 	
-	this.addButton = function(parent$, buttonId, buttonLabel, clickHandler){
+	this.appendButton = function(parent$, buttonId, buttonLabel, clickHandler){
 		var that = this;
 		var html = template.genericButton({buttonId: buttonId, buttonLabel: buttonLabel});
 		jQuery(html).appendTo(parent$).hide();
+		var button$ = jQuery("#" + buttonId);
+		button$.button({
+			create: function( event, ui ) {jQuery(this).show();}
+		}).on("click", clickHandler);
+		return button$;
+	};
+	
+	this.prependButton = function(parent$, buttonId, buttonLabel, clickHandler){
+		var that = this;
+		var html = template.genericButton({buttonId: buttonId, buttonLabel: buttonLabel});
+		jQuery(html).prependTo(parent$).hide();
 		var button$ = jQuery("#" + buttonId);
 		button$.button({
 			create: function( event, ui ) {jQuery(this).show();}
@@ -675,7 +686,7 @@ OpenGeoportal.CommonControls = function CommonControls(){
 		} else if (optionsObj.arrow == "left"){
 			arrowDirection = "left-arrow";
 		}
-		var closeBubble = '<div class="closeBubble button"></div>';
+		var closeBubble = '<button class="closeBubble button"></button>';
 		var doNotShow = '<label><input type="checkbox"/>Do not show this screen again</label>';
 		var infoBubble = '<div class="infoBubbleText triangle-isosceles ' + arrowDirection + '">' + closeBubble + infoHtml + doNotShow + '</div>';
 		var infoBubbleMain = '<div id="' + bubbleId + '" class="infoBubbleBackground triangle-isoscelesBackground ' + arrowDirection + 'Background">' + infoBubble + '</div>';
@@ -684,7 +695,7 @@ OpenGeoportal.CommonControls = function CommonControls(){
 		jQuery("#" + bubbleId).height(optionsObj.height + 4).width(optionsObj.width + 4).css("top", optionsObj.top - 2).css("left", optionsObj.left -2);
 		jQuery("#" + bubbleId + " > .infoBubbleText").height(optionsObj.height).width(optionsObj.width);
 		var infoBubble$ = jQuery("#" + bubbleId);
-		infoBubble$.on("click", ".closeBubble", function(){infoBubble$.fadeOut();}).fadeIn();
+		infoBubble$.on("click", ".closeBubble", function(){infoBubble$.fadeOut("slow");}).fadeIn("slow");
 
 		return infoBubble$;
 	};

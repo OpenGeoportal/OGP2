@@ -182,45 +182,19 @@ public class DownloadHandlerImpl implements DownloadHandler {
 		return layer;
 	}
 	
-	private void setOwsInfo(LayerRequest layer) throws Exception{
-		AugmentedSolrRecord asr = asrRetriever.getOgcAugmentedSolrRecord(layer.getLayerInfo());
-		List<OwsInfo> info = asr.getOwsInfo();
-		if (!info.isEmpty()){
-			layer.setOwsInfo(info);
-		}
-	}
-	
-	private void addOwsInfo(LayerRequest layer) {
-		String location = layer.getLayerInfo().getLocation();
-		if (LocationFieldUtils.hasWmsUrl(location)){
-			//if there is a serviceStart url for the layer, try that first
-			if (LocationFieldUtils.hasServiceStart(location)){
-					String serviceStart = "";
-					InputStream is = null;
-					try {
-						serviceStart = LocationFieldUtils.getServiceStartUrl(location);
-						String name = layer.getLayerInfo().getName();
-						//the HGL remote service starter does not use fully qualified names
-						name = name.substring(name.indexOf(".") + 1);
-						logger.info("Attempting to Start Service for ['" + layer.getId() + "']");
-						is = httpRequester.sendRequest(serviceStart, "AddLayer=" + name + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
-					} catch (JsonParseException e) {
-						logger.error("Problem parsing ServiceStart parameter from ['" + location + "']");
-					} catch (IOException e) {
-						logger.error("Problem sending ServiceStart request to : ['" + serviceStart + "']");
-					} finally {
-						IOUtils.closeQuietly(is);
-					}
+	private void addOwsInfo(LayerRequest layer){
+		
+		try {
+			AugmentedSolrRecord asr = asrRetriever.getOgcAugmentedSolrRecord(layer.getLayerInfo());
+			List<OwsInfo> info = asr.getOwsInfo();
+			if (!info.isEmpty()){
+				layer.setOwsInfo(info);
 			}
-				
-			try {
-				setOwsInfo(layer);
-			} catch (Exception e) {
-				logger.error("Problem setting info from OWS service for layer: ['" + layer.getId() + "']");
-			}	
-			
-		}
+		} catch (Exception e) {
+			logger.error("Problem setting info from OWS service for layer: ['" + layer.getId() + "']");
+		}	
 	}
+
 
 
 

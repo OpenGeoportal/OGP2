@@ -176,12 +176,14 @@ h4 {
 	color: #0755AC;
 }
 
-.infoLinks {
-	cursor: pointer;
+.headerButton {
 	color: #000;
+	background: none;
+	border: none;
+	padding: 0;
 }
 
-.infoLinks:hover {
+.headerButton:hover {
 	color: #0755AC;
 }
 
@@ -347,8 +349,7 @@ h4 {
 	float: left;
 	cursor: default;
 	display: none;
-	z-index: 1000;
-	rol
+	z-index: 1001;
 }
 
 #left_tabs {
@@ -359,7 +360,7 @@ h4 {
 
 #tabs {
 	border-right: #999 solid 1px;
-	container z-index: 1001;
+	z-index: 1001;
 	min-height: 100%;
 }
 
@@ -421,6 +422,9 @@ h4 {
 	width: 30px;
 	height: 26px;
 	display: inline-block;
+	margin-top: 1px;
+    vertical-align: top;
+    border: none;
 }
 
 .arrow_separator {
@@ -437,6 +441,9 @@ h4 {
 	width: 27px;
 	height: 26px;
 	display: inline-block;
+	margin-top: 1px;
+    vertical-align: top;
+    border: none;
 }
 
 .tabImage {
@@ -675,15 +682,6 @@ div#goButton:hover {
 	min-width: 190px;
 }
 
-#moreSearchOptions {
-	margin-right: 145px;
-}
-
-#lessSearchOptions {
-	float: right;
-	margin-right: 25px;
-}
-
 #searchForm {
 	display: inline-block;
 }
@@ -707,11 +705,12 @@ div#goButton:hover {
 }
 
 .searchToggle {
+	background: none;
+    border: none;
 	text-decoration: underline;
 	white-space: nowrap;
 	font-size: 11px;
 	display: inline-block;
-	float: right;
 }
 
 .searchToggle span:hover {
@@ -1333,6 +1332,10 @@ Info Bubble
 	width: 20px;
 	height: 20px;
 	float: right;
+}
+
+button.closeBubble {
+	border: none;
 }
 
 .infoBubbleText {

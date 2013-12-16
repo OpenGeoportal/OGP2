@@ -45,7 +45,7 @@ public class GetFeatureInfoController {
 	private ProxyConfigRetriever proxyConfigRetriever;
 	
 	@RequestMapping(method=RequestMethod.GET)
-	public void getFeatureInfo(@RequestParam("OGPID") String layerId, @RequestParam("bbox") String bbox, 
+	public void getFeatureInfo(@RequestParam("ogpid") String layerId, @RequestParam("bbox") String bbox, 
 			@RequestParam("x") String xCoord,@RequestParam("y") String yCoord,
 			@RequestParam("width") String width,@RequestParam("height") String height,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {

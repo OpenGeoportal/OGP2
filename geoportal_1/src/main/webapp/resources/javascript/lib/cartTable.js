@@ -593,14 +593,14 @@ OpenGeoportal.CartTable = function CartTable(){
 		var layers = this.getLayerIdsFromModelArray(arrModels);
 
 		var dialogContent = "";
-		if (layers.length == 0){
+		if (layers.length === 0){
 			dialogContent = 'No layers have been selected.';
 			//this should probably call a dialog instance for error messages/notifications
 		} else {
 			var path = top.location.href.substring(0, top.location.href.lastIndexOf("/"));
-			var shareLink = path + "/openGeoPortalHome.jsp";
-			var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
-			var queryString = '?' + jQuery.param({ layer: layers, minX: geodeticBbox.left, minY: geodeticBbox.bottom, maxX: geodeticBbox.right, maxY: geodeticBbox.top });
+			var shareLink = path + "/";
+			var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent().toBBOX();
+			var queryString = '?' + jQuery.param({ogpids: layers.join(), bbox: geodeticBbox});
 			shareLink += queryString;
 
 			dialogContent = '<textarea id="shareText" class="linkText" ></textarea> \n';
@@ -745,7 +745,7 @@ OpenGeoportal.CartTable = function CartTable(){
 	
 	this.addCartHeaderButton = function(buttonId, buttonLabel, helpText, listLabel, clickHandler){
 		var that = this;
-		this.controls.addButton(jQuery("#cartHeader"), buttonId, buttonLabel, clickHandler)
+		this.controls.appendButton(jQuery("#cartHeader"), buttonId, buttonLabel, clickHandler)
 			.on("mouseover", function(event){
 				that.displayOptionText(event, helpText, listLabel); 
 				that.getLayerList(listLabel);

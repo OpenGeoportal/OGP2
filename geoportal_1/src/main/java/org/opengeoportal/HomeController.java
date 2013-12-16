@@ -80,8 +80,9 @@ public class HomeController {
 	}
 	
 	//support the old url
-	@RequestMapping(value="/openGeoPortalHome.jsp", method=RequestMethod.GET)
+	@RequestMapping(value="/openGeoPortalHome*", method=RequestMethod.GET)
 	public String redirectToHome(){
+		logger.info("trying to redirect");
 		return "redirect:index";
 	}
 	

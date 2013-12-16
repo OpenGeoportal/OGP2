@@ -272,7 +272,6 @@
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wms" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
-		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
 	<beans:bean id="ogcInfoRequester.wfs" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
@@ -280,7 +279,6 @@
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wfs" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
-		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
 	<beans:bean id="ogcInfoRequester.wcs_1_1_1" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
@@ -288,7 +286,6 @@
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wcs_1_1_1" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
-		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
 	<beans:bean id="ogcInfoRequester.wcs_1_0_0" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
@@ -296,7 +293,6 @@
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wcs_1_0_0" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 		<beans:property name="proxyConfigRetriever" ref="config.proxy" />
-		<beans:property name="layerInfoRetriever" ref="layerInfoRetriever.solr" />
 	</beans:bean>
 
 	<beans:bean id="ogcInfoRequest.wms" class="org.opengeoportal.ogc.wms.WmsDescribeLayer"
