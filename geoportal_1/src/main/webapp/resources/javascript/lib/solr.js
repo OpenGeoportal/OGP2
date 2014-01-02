@@ -154,7 +154,7 @@ OpenGeoportal.Solr = function() {
 
 	this.LayerDisplayNameTerm = {
 		term : "LayerDisplayNameSynonyms",
-		boost : 5.0,
+		boost : 3.0,
 		cap : 0.5
 	};
 	this.ThemeKeywordsTerm = {
@@ -176,7 +176,7 @@ OpenGeoportal.Solr = function() {
 	};
 	this.IsoTopicTerm = {
 		term : "ThemeKeywordsSynonymsIso",
-		boost : 4.0
+		boost : 3.0
 	};
 
 	this.GenericPhraseBoost = 9.0;
@@ -320,10 +320,13 @@ OpenGeoportal.Solr = function() {
 	this.getOgpSpatialQueryParams = function(bounds) {
 		var centerLon = this.getCenter(bounds.minX, bounds.maxX);
 		var centerLat = this.getCenter(bounds.minY, bounds.maxY);
-
+		console.log(centerLon);
+		console.log(centerLat);
+		//bf clauses are additive
+		var area = this.getBoundsArea(bounds);
 		var bf_array = [
 		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
-                        //this.getIntersectionAreaRelevancyClause() + "^" + this.LayerAreaIntersection.boost
+                        this.getIntersectionAreaRelevancyClause(area) + "^" + this.LayerAreaIntersection.boost,
                         this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost,
                         this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost,
 		                ];
@@ -331,7 +334,7 @@ OpenGeoportal.Solr = function() {
                         bf: bf_array,
                         fq: [this.getIntersectionFilter()],
                         intx: this.getIntersectionFunction(bounds),
-                        union: this.getBoundsArea(bounds),
+                        union: area,
                         
                     };
 
@@ -342,12 +345,12 @@ OpenGeoportal.Solr = function() {
 	//term objects
 	this.LayerWithinMap = {
 		term : "LayerWithinMap",
-		boost : 20.0
+		boost : 9.0
 	};
 	
 	this.LayerMatchesScale = {
 		term : "LayerMatchesScale",
-		boost : 5.0
+		boost : 3.0
 	};
 	this.LayerMatchesCenter = {
 		term : "LayerMatchesCenter",
@@ -356,7 +359,7 @@ OpenGeoportal.Solr = function() {
 
 	this.LayerAreaIntersection = {
 		term : "LayerAreaIntersection",
-		boost : 3.0
+		boost : 5.0
 	};
 	
 	/**
@@ -510,11 +513,15 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 	 * 
 	 * @return {string} query string to calculate score for area comparison
 	 */
-	this.getIntersectionAreaRelevancyClause = function() {
+	this.getIntersectionAreaRelevancyClause = function(area) {
 		//$intx is the area of intersection of the layer bounds and the search extent
 		//$union is the area of the search extent
 		//var areaClause = "scale(div($intx,$union),0,1)";
-		var areaClause = "if($intx,recip(abs(sub($intx,$union)),1,1000,1000),0)";
+		//if $intx - $union = 0, then the layer likely fully overlaps
+		//var areaClause = "if($intx,recip(abs(sub($intx,$union)),1,1000,1000),0)";
+		//
+		area = area - 1;
+		var areaClause = "if(map(Area,0," + area + ",1,0),div($intx,Area),0)";
 		return areaClause;
 
 	};
@@ -593,8 +600,8 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 		//take "not" to yield a boolean true (= 1)
 		//if there is a differential, "not" will yield a boolean false (= 0)
 		//var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
-		var within = "1";
-		var notwithin = "0";
+		//var within = "1";
+		//var notwithin = "0";
 		var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
 
 		return areaClause;
@@ -721,7 +728,7 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
     	//perhaps this can/should be abstracted to a higher level
     	
         var qf_array = [ 
-            "LayerDisplayName^5",
+            "LayerDisplayName^3",
             "LayerDisplayNameSynonyms^2",
             "ThemeKeywordsSynonymsLcsh^1",
             "Originator^1",

@@ -474,17 +474,14 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	};
 	
 	this.runTableDrawCallbacks = function(){
-		console.log("table draw callbacks");
-		console.log(jQuery(".display").width());
 		var callbacks = that.tableDrawCallbacks.callbacks;
 		for (var i in callbacks){
 			if (callbacks.hasOwnProperty(i)){
 				callbacks[i].call(that);
 			}
-					console.log(jQuery(".display").width());
 
 		}
-		console.log("finished table draw callbacks");
+		//console.log("finished table draw callbacks");
 	};
 
 	/************
@@ -623,8 +620,7 @@ OpenGeoportal.LayerTable = function LayerTable(){
 	
 		//wrap the content of each table cell in a div so we can control the size
 	this.wrapCell = function(tdEl){
-		console.log("wrap cell");
-		jQuery(tdEl).wrapInner('<div class="cellWrapper" />');
+		jQuery(tdEl).wrapInner('<div class="cellWrapper"></div>');
 	};
 	
 

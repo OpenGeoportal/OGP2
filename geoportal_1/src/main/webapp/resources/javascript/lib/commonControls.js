@@ -14,7 +14,6 @@ if (typeof OpenGeoportal == 'undefined'){
  * CommonControls constructor
  * this object determines how to render controls common across the application
  * 
- * @param object OpenGeoportal.OgpSettings
  */
 OpenGeoportal.CommonControls = function CommonControls(){
 	//dependencies;  revamp with require.js
