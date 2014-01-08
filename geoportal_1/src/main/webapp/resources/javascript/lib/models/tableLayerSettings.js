@@ -25,7 +25,7 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 OpenGeoportal.Models.RowSetting = Backbone.Model.extend({
     idAttribute: "LayerId",
 	defaults: {
-		expanded: false,
+		expanded: false
 	},
 		validate: function(model){
 			if (!model.changed.has("LayerId") || !model.changed.has("expanded")){

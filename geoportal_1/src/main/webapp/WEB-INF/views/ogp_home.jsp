@@ -1,15 +1,14 @@
 <!DOCTYPE HTML>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
-	<%@ taglib prefix="c" 
-           uri="http://java.sun.com/jsp/jstl/core" %>
-           <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>${pageTitle}</title>
-<!-- add analyticsId, searchUrl, login info here -->
-<script>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>${pageTitle}</title>
+	<!-- add analyticsId, searchUrl, login info here -->
+	<script>
+	
 OpenGeoportal = {};
 OpenGeoportal.Config = {};
 OpenGeoportal.Config.analyticsId="${analyticsId}";
@@ -21,9 +20,9 @@ OpenGeoportal.Config.sd="${secureDomain}";
 OpenGeoportal.Config.shareIds=${shareIds};
 OpenGeoportal.Config.shareBbox="${shareBbox}";
 
-
-</script>
-<%@include file="jspf/devincludes.jspf"%>
+	</script>
+	
+<%@include file="jspf/includes.jspf"%>
 <!-- if there is a value for extraCss and extraJs add them here -->
 <c:set var="cssLen" value="${fn:length(extraCss)}"/>
 <c:if test="${cssLen > 0}" >
@@ -35,6 +34,7 @@ OpenGeoportal.Config.shareBbox="${shareBbox}";
 <script type="text/javascript" src="${extraJs}"></script>
 </c:if>
 </head>
+
 <body>
 
 	<%@include file="jspf/header.jspf"%>

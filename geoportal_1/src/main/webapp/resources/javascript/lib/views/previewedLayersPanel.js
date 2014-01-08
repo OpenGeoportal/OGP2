@@ -71,7 +71,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			},
 			
 			toggleExpand: function(){
-				console.log("toggleExpand");
+				//console.log("toggleExpand");
 				var controls = this.model.get("showControls");
 				this.model.set({showControls: !controls});
 			},
@@ -108,7 +108,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 					fullRow$.add(this.$el.next());
 				}
 				
-				if (model.get("preview") == "off"){
+				if (model.get("preview") === "off"){
 					model.set({showControls: false});
 					fullRow$.hide();
 				} else {
@@ -117,6 +117,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 				
 				this.$el.html(html);
 				
+				jQuery(document).trigger("render.previewPanel");
 				return this;
 				
 			},
@@ -140,6 +141,9 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 						this.$el.next().parent(".controls").remove();
 					}
 				}
+				
+				jQuery(document).trigger("render.previewPanel");
+
 		
 		},
 		showBounds: function(){
@@ -150,7 +154,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			bbox.west = currModel.get("MinX");
 			bbox.east = currModel.get("MaxX");
 			jQuery(document).trigger("map.showBBox", bbox);
-			console.log("triggered map.showBBox");
+			//console.log("triggered map.showBBox");
 			
 		},
 		hideBounds: function(){

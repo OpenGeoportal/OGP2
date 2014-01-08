@@ -345,13 +345,13 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> <groupId>ro.isdc.wro4j</groupId> <artifactId>wro4j-maven-plugin</artifactId> 
+			<plugin> <groupId>ro.isdc.wro4j</groupId> <artifactId>wro4j-maven-plugin</artifactId> 
 				<version>${wro4j.version}</version> <executions> <execution> <phase>compile</phase> 
 				<goals> <goal>run</goal> </goals> </execution> </executions> <configuration> 
 				<targetGroups>ogp,ogpLib</targetGroups> <minimize>true</minimize> <cssDestinationFolder>${basedir}/target/${warFile.name}/resources/css/</cssDestinationFolder> 
 				<jsDestinationFolder>${basedir}/target/${warFile.name}/resources/javascript/</jsDestinationFolder> 
 				<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory> 
-				</configuration> </plugin> -->
+				</configuration> </plugin> 
 		</plugins>
 	</build>
 </project>

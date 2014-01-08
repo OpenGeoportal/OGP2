@@ -135,6 +135,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable(){
 		return this.dataTableParams;
 	};
 	
+	
 	this.processAoData = function(aoData){
 		var data = {};
 		//console.log(aoData);

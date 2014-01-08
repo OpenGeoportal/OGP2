@@ -32,12 +32,9 @@ public class HomeController {
 			@RequestParam(value="dev", defaultValue = "false") Boolean isDev) throws Exception {
 		//@RequestParam("ogpids") Set<String> layerIds, ..should be optional.  also a param to set dev vs. prod
 		//create the model to return
-		ModelAndView mav = null;
-		if (isDev){
-				mav = new ModelAndView("ogp_home_dev"); 
-		} else {
-			mav = new ModelAndView("ogp_home"); 
-		}
+		ModelAndView mav = new ModelAndView("ogp_home"); 
+
+		mav.addObject("dev", isDev);
 		
 		//if ogpids exists, add them to the Model
 		

@@ -22,7 +22,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 	},
 	  events: {
 		    "click .arrow_right"   : "goRight",
-		    "click .arrow_left"	   : "goLeft",
+		    "click .arrow_left"	   : "goLeft"
 		 },
 		 //these are really controllers
 		 goRight: function(){

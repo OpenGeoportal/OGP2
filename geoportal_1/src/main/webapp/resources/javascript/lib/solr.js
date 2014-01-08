@@ -328,14 +328,13 @@ OpenGeoportal.Solr = function() {
 		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
                         this.getIntersectionAreaRelevancyClause(area) + "^" + this.LayerAreaIntersection.boost,
                         this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost,
-                        this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost,
+                        this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost
 		                ];
         var params = {
                         bf: bf_array,
                         fq: [this.getIntersectionFilter()],
                         intx: this.getIntersectionFunction(bounds),
-                        union: area,
-                        
+                        union: area
                     };
 
 		return params;
