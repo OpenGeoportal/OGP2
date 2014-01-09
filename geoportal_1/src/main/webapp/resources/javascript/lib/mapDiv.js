@@ -1405,6 +1405,20 @@ Road - Roads without additional imagery.	*/
 
 //	methods to add layers
 
+	this.hasMultipleWorlds = function(){
+		var exp = this.getZoom() + 8;
+		var globalWidth = Math.pow(2, exp);
+		
+		var viewPortWidth = this.getSize().w - this.getMapOffset().x;
+		
+	 	if (viewPortWidth > globalWidth){
+	 		console.log("has multiple worlds");
+	 		return true;
+	 	} else {
+	 		return false;
+	 	}
+	};
+	
 	this.bboxHandler = function(){
 		var that = this;
 		jQuery(document).on("map.showBBox", function(event, bbox){
@@ -1420,20 +1434,11 @@ Road - Roads without additional imagery.	*/
 			var featureLayer = this.getLayersByName("layerBBox")[0];
 			featureLayer.removeAllFeatures();
 		}
-		if (this.getLayersByName("layerBBoxOutsideExtent").length > 0){
-			var featureLayer = this.getLayersByName("layerBBoxOutsideExtent")[0];
-			featureLayer.removeAllFeatures();
-		}
+		jQuery(".corner").hide();
 	};
 
-	this.showLayerBBox = function (mapObj) {
-		//add or modify a layer with a vector representing the selected feature
-		var featureLayer;
-		if (this.getLayersByName("layerBBox").length > 0){
-			featureLayer = this.getLayersByName("layerBBox")[0];
-			featureLayer.removeAllFeatures();
-		} else {
-			var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
+	this.createBBoxLayer = function(){
+				var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
 			/*
 			 * 4px border,
 				border color: #1D6EEF, background color: #DAEDFF, box opacity: 25%
@@ -1446,9 +1451,19 @@ Road - Roads without additional imagery.	*/
 			style_blue.strokeLinecap = "butt";
 			style_blue.zIndex = 999;
 
-			featureLayer = new OpenLayers.Layer.Vector("layerBBox", {
+			return new OpenLayers.Layer.Vector("layerBBox", {
 				style: style_blue
 			});
+	};
+	
+	this.showLayerBBox = function (mapObj) {
+		//add or modify a layer with a vector representing the selected feature
+		var featureLayer = this.getLayersByName("layerBBox");
+		if (featureLayer.length > 0){
+			featureLayer = featureLayer[0];
+			this.hideLayerBBox();
+		} else {
+			featureLayer = this.createBBoxLayer();
 			this.addLayer(featureLayer);
 		}
 		var bottomLeft = this.WGS84ToMercator(mapObj.west, mapObj.south);
@@ -1491,131 +1506,77 @@ Road - Roads without additional imagery.	*/
 		var layerLeft = bottomLeft.lon;
 		var layerRight = topRight.lon;
 		
+		var showEWArrows = true;
+		//don't show arrows for east and west offscreen if multiple "worlds" are on screen
+		if (this.hasMultipleWorlds()){
+			showEWArrows = false;
+			mapLeft = -20037510;
+			mapRight = 20037510;
+			extent.left = mapLeft;
+			extent.Right = mapRight;
+		}
 		
 		if (layerLeft < mapLeft || layerRight > mapRight || layerTop > mapTop || layerBottom < mapBottom) {
 			//console.log("should show arrow");
-			var extentFeatureLayer;
-			if (this.getLayersByName("layerBBoxOutsideExtent").length > 0) {
-				extentFeatureLayer = this.getLayersByName("layerBBoxOutsideExtent")[0];
-				extentFeatureLayer.removeAllFeatures();
-			} else {
-				var style_blue = OpenLayers.Util.extend({}, OpenLayers.Feature.Vector.style['default']);
-				style_blue.strokeColor = "#1D6EEF";
-				//'#003366';
-				style_blue.fillColor = "#1D6EEF";
-				//'#003366';
-				style_blue.fillOpacity = 1;
-				style_blue.pointRadius = 1;
-				style_blue.strokeWidth = 1;
-				style_blue.strokeLinecap = "butt";
-				style_blue.zIndex = 999;
-
-				extentFeatureLayer = new OpenLayers.Layer.Vector("layerBBoxOutsideExtent", {
-					style : style_blue
-				});
-				this.addLayer(extentFeatureLayer);
-			}
-			var mapSize = this.getCurrentSize();
-			//h=512
-			var size = (Math.abs(extent.top - extent.bottom)) / mapSize.h * 25;
-
-			var polygonFeatures = [];
 
 			if (layerTop < mapTop && layerBottom > mapBottom) {
-				if (layerRight > mapRight) {
-					//console.log("ne + se");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "ne", size));
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "se", size));
-				}
+				if (showEWArrows){
+					if (layerRight > mapRight) {
+						//console.log("ne + se");
+						this.showCorners(["ne", "se"]);
+					}
 
-				if (layerLeft < mapLeft) {
-					//console.log("sw + nw");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "sw", size));
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "nw", size));
+					if (layerLeft < mapLeft) {
+						//console.log("sw + nw");
+						this.showCorners(["sw", "nw"]);
+					}
 				}
 			} else if (layerRight < mapRight && layerLeft > mapLeft) {
 				if (layerTop > mapTop) {
 					//console.log("ne + nw");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "ne", size));
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "nw", size));
+					this.showCorners(["ne", "nw"]);
 				}
 
 				if (layerBottom < mapBottom) {
-					//console.log("se + sw");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "se", size));
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "sw", size));
+					this.showCorners(["se", "sw"]);
 				}
 
 			} else {
 				//corners only
 				if (layerTop > mapTop && layerRight > mapRight) {
-					//console.log("ne");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "ne", size));
+					this.showCorners(["ne"]);
 				}
 
 				if (layerBottom < mapBottom && layerRight > mapRight) {
-					//console.log("se");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "se", size));
+					this.showCorners(["se"]);
 				}
 
 				if (layerTop > mapTop && layerLeft < mapLeft) {
-					//console.log("nw");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "nw", size));
+					this.showCorners(["nw"]);
 				}
 
 				if (layerBottom < mapBottom && layerLeft < mapLeft) {
-					//console.log("sw");
-					polygonFeatures.push(this.getOutsideExtentGraphic(extent, "sw", size));
+					this.showCorners(["sw"]);
 				}
 
 			}
 
-			extentFeatureLayer.addFeatures(polygonFeatures);
-			this.setLayerIndex(extentFeatureLayer, (this.layers.length - 1));
 		}
 
 		};
 
 
-	this.getOutsideExtentGraphic = function(mapExtent, direction, graphicSize){
-		//direction = "ne", "nw", "sw", "se";
-			var offset = graphicSize / 2;
-			var yNorth = mapExtent.top - offset;
-			var ySouth = mapExtent.bottom + offset;
-			var xEast = mapExtent.right - offset;
-			var xWest = mapExtent.left + offset;
-			if (direction === "ne"){
-				return this.createRightTriangle(xEast, yNorth, direction, graphicSize);
-			} else if (direction === "nw"){
-				return this.createRightTriangle(xWest, yNorth, direction, graphicSize);
-			} else if (direction === "se"){
-				return this.createRightTriangle(xEast, ySouth, direction, graphicSize);
-			} else if (direction === "sw"){
-				return this.createRightTriangle(xWest, ySouth, direction, graphicSize);
-			}
-			
-	};
-	
-	this.createRightTriangle = function(xcoord, ycoord, direction, size){
-		
-		var pt1 = new OpenLayers.Geometry.Point(xcoord, ycoord);
-		
-		var directions = {
-			ne: [new OpenLayers.Geometry.Point(xcoord - size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord - size)],
-			nw: [new OpenLayers.Geometry.Point(xcoord + size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord - size)],
-			se: [new OpenLayers.Geometry.Point(xcoord - size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord + size)],
-			sw: [new OpenLayers.Geometry.Point(xcoord + size, ycoord), new OpenLayers.Geometry.Point(xcoord, ycoord + size)]
+	this.showCorners = function(corners){
+		var cornerIds = {
+			ne: "neCorner",
+			nw: "nwCorner",
+			sw: "swCorner",
+			se: "seCorner"
 		};
-
 		
-		var pointList = directions[direction];
-		pointList.unshift(pt1);
-		pointList.push(pt1);
-		var linearRing = new OpenLayers.Geometry.LinearRing(pointList);
-		var polygonFeature = new OpenLayers.Feature.Vector(
-					new OpenLayers.Geometry.Polygon([linearRing]));
-				
-		return polygonFeature;
+		for (var i in corners){
+			jQuery("#" + cornerIds[corners[i]]).show();
+		}
 	};
 	
 	this.addMapBBox = function (mapObj) {

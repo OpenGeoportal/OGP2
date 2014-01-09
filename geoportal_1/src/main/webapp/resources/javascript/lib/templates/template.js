@@ -13,7 +13,15 @@ OpenGeoportal.Template = function() {
 		+ '</div>'
 		+ '</div>';
 	
-	this.map = _.template(mapToolBarHtml + '<div id="<%= mapId %>OLMap"></div>');
+	var genericDivHtml = '<div id="<%= elId %>" class="<%= elClass %>" ></div>';
+	this.genericDiv = _.template(genericDivHtml);
+	var mapHtml = '<div id="<%= mapId %>OLMap">' +
+		 this.genericDiv({elId: "nwCorner", elClass: "corner slideHorizontal"}) + 
+		 this.genericDiv({elId: "neCorner", elClass: "corner"}) + 
+		 this.genericDiv({elId: "swCorner", elClass: "corner slideHorizontal"}) + 
+		 this.genericDiv({elId: "seCorner", elClass: "corner"}) + 
+		 '</div>';
+	this.map = _.template(mapToolBarHtml + mapHtml);
 			
 	this.mapButton = _.template('<button class="mapStyledButton <%= displayClass %>" title="<%= title %>" ><%= buttonText %></button>');
 	this.basemapMenu = _.template('<div id="basemapMenu"></div>');

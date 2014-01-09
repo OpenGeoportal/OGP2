@@ -667,7 +667,7 @@ OpenGeoportal.CartTable = function CartTable(){
 				dialogContent += '<span class="sub_headerTitle">' + serviceTypes[i].title + '</span><a href="#">?</a>';
 				dialogContent += '<br/><span>' + serviceTypes[i].caption + '</span>';
 				dialogContent += '<div class="owsServicesLinkContainer">';
-				var dynamicCapabilitiesRequest = path + "/" + serviceTypes[i].url + "?ogpids=" + queryString.join();
+				var dynamicCapabilitiesRequest = path + "/" + serviceTypes[i].url + "?ogpids=" + queryString.join() + "&request=GetCapabilities";
 				dialogContent += '<textarea class="shareServicesText linkText" >' + dynamicCapabilitiesRequest + '</textarea> <br />\n';
 				dialogContent += '</div><br/>';
 			}

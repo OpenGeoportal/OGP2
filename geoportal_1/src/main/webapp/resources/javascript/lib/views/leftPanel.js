@@ -48,6 +48,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 			 if (!jQuery(".olControlPanel,.olControlScaleLine,.olControlModPanZoomBar").hasClass("slideHorizontal")){
 				 jQuery(".olControlPanel,.olControlScaleLine,.olControlModPanZoomBar").addClass("slideHorizontal");
 			 }
+			 //beyond extent arrows "#nwCorner" and "#swCorner" also have class "slideHorizontal"			
 		 },
 		 
 		 showPanel: function(){
@@ -68,7 +69,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		 
 		 showPanelMidRight: function(){
 				if (jQuery(".slideHorizontal").is(":hidden")){
-					jQuery(".slideHorizontal").show();
+					//extent arrows need to move, but shouldn't be made visible when the the panel opens
+					jQuery(".slideHorizontal").not(".corner").show();
 				}
 
 				if (jQuery("#roll_right").is(":visible")){
@@ -108,7 +110,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 	showPanelClosed: function(){
 		//display full width map
 		if (jQuery(".slideHorizontal").is(":hidden")){
-			jQuery(".slideHorizontal").show();
+			jQuery(".slideHorizontal").not(".corner").show();
 		}
 		var that = this;
 		var panelOffset = this.model.get("openWidth") - jQuery("#roll_right").width();
@@ -125,7 +127,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		if (this.$el.is(":hidden")){
 			this.$el.show();
 		}
-		jQuery(".slideHorizontal").fadeOut();
+		jQuery(".slideHorizontal").not(".corner").fadeOut();
 		
 		this.$el.animate({'width': jQuery('#container').width() -2}, { queue: false, duration: 500, complete: function(){
 			jQuery(this).trigger("adjustContents");

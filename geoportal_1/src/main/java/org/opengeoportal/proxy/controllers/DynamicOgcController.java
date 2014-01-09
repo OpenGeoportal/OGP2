@@ -153,11 +153,17 @@ public class DynamicOgcController {
   
   @RequestMapping(value="/wfs", method=RequestMethod.GET, params="request=GetCapabilities")
 	public ModelAndView doWfsGetCapabilitiesCase(@RequestParam("ogpids") Set<String> layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
-	  return doWfsGetCapabilities(layerIds, servletRequest, servletResponse);
+	  return handleGetCapabilities(layerIds, servletRequest, servletResponse);
   }
 
   @RequestMapping(value="/wfs", method=RequestMethod.GET, params="REQUEST=GetCapabilities")
   public ModelAndView doWfsGetCapabilities(@RequestParam("ogpids") Set<String> layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception {
+	  
+	  return handleGetCapabilities(layerIds, servletRequest, servletResponse);
+
+  }
+
+  private ModelAndView handleGetCapabilities(Set<String> layerIds, HttpServletRequest servletRequest, HttpServletResponse servletResponse) throws Exception{
 	  logger.info("wfs get capabilities requested");
 
 	  Map<String,UrlToNameContainer> recordMap  = getRecordMapFromLayerIds(layerIds);
@@ -215,9 +221,7 @@ public class DynamicOgcController {
 
 	  servletResponse.setHeader("Content-Disposition", "inline;filename=GetCapabilities.xml");
 	  return mav;
-
   }
-
   
  private String extractWfsFeatureTypeNodes(Document xmlDocument, Set<String> nameList) throws Exception{
 	 	String featureTypeInfo = "";
@@ -290,7 +294,11 @@ public class DynamicOgcController {
 		remoteUrl += "?" + newQuery;
 		logger.info("remote url:" + remoteUrl);
 		doProxy(remoteUrl, servletRequest, servletResponse);
-	} 
+	} else if ( ogcRequest.equalsIgnoreCase("getcapabilities")){
+		//forward to handleGetCapabilities
+	} else {
+		throw new Exception("Unrecognized request type.");
+	}
 	
 
   }
