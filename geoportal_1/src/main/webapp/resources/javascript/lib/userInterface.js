@@ -245,11 +245,18 @@ OpenGeoportal.UserInterface = function(){
 			jQuery("#map").width(jQuery("#container").width() - rollRightWidth);//if left_col is visible.  else other siblings width
 			//update map size...
 			var newContainerHeight = Math.max(jQuery(window).height() - fixedHeights, minHeight);
+			console.log(newContainerHeight);
 			jQuery("#container").height(newContainerHeight);
+			that.resizeMap(newContainerHeight);
 			that.resizeResultsTable();
 		};
 		resizeElements();
 		jQuery(window).resize(resizeElements);
+	};
+	
+	this.resizeMap = function(height){
+		jQuery(".olMap").height(height);
+		
 	};
 	
 	this.resizeResultsTable = function(){

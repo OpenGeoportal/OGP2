@@ -26,14 +26,14 @@
 
 #neCorner {
     border-color: rgba(0, 0, 0, 0) #1D6EEF rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);
-    border-width: 0 40px 40px 0;
+    border-width: 0 30px 30px 0;
 	right: 0px;
 }
 
 
 #seCorner {
     border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #1D6EEF rgba(0, 0, 0, 0);
-    border-width: 0 0 40px 40px;
+    border-width: 0 0 30px 30px;
     bottom: 0;
     right: 0;
 }
@@ -41,19 +41,19 @@
 
 #nwCorner {
     border-color: #1D6EEF rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);
-    border-width: 40px 40px 0 0;
+    border-width: 30px 30px 0 0;
 }
 
 #swCorner {
     border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #1D6EEF;
-    border-width: 40px 0 0 40px;
+    border-width: 30px 0 0 30px;
     bottom: 0;
 }
 
 .corner {
     border-style: solid;
     height: 0;
-    margin: 5px;
+    margin: 10px;
     position: absolute;
     width: 0;
     z-index: 1;

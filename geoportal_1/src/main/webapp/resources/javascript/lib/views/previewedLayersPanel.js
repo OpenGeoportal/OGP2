@@ -118,10 +118,26 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 				this.$el.html(html);
 				
 				jQuery(document).trigger("render.previewPanel");
+				
+				this.addBottomBorder();
 				return this;
 				
 			},
-			
+
+			addBottomBorder: function() {
+				var pane$ = jQuery("div.dataTables_scrollHead");
+				if (this.model.collection.where({preview: "on"}).length > 0) {
+					console.log("adding previewPane class");
+					if (!pane$.hasClass("previewPane")) {
+						pane$.addClass("previewPane");
+					}
+				} else {
+					if (pane$.hasClass("previewPane")) {
+						pane$.removeClass("previewPane");
+					}
+				}
+			},
+
 			toggleControls: function(){
 				this.render();
 				var colspan = this.$el.find("td").length;
@@ -163,7 +179,6 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 });
 
 OpenGeoportal.Views.PreviewedLayersTable = Backbone.View.extend({
-	//should be sub-views for each control?
 
 	initialize: function(){
 		this.listenTo(this.collection, "add", this.renderRow);
@@ -188,11 +203,13 @@ OpenGeoportal.Views.PreviewedLayersTable = Backbone.View.extend({
 		this.renderedViews[model.cid] = new OpenGeoportal.Views.PreviewedLayersRow({model: model});
 		this.$el.append(this.renderedViews[model.cid].render().el);
 	},
+
 	render: function(){
 		var that = this;
 		this.collection.each(function(model){
 			that.renderRow(model);
 		});
+
 				
 		return this;
 		

@@ -91,9 +91,9 @@ h4 {
 }
 
 .searchButton {
-	background: none repeat scroll 0 0 #307DB9;
-	border: 1px solid #307DB9;
-	color: #FFFFFF;
+    background: linear-gradient(#6B91D5, #577CBE) repeat scroll 0 0 rgba(0, 0, 0, 0);
+    border: 1px solid #6B91D5;
+    color: #FFFFFF;
 }
 
 #mapClearButton {
@@ -154,7 +154,7 @@ h4 {
 }
 
 .offsetColor {
-	color: #307DB9;
+	color: #587CBC;
 }
 
 #top_menu {
@@ -254,84 +254,6 @@ h4 {
 	display: inline-block;
 }
 
-/*
-.styledSelect > span {
-	width: 100% !important;
-}
-
-.styledSelectText {
-  display: inline-block;
-    min-width: 55px;
-    overflow: hidden;
-    white-space: nowrap;
-}*/
-/*
-.styledSelectArrow {
-	float: right;
-	background: url("../media/ogp-sprite.png") no-repeat scroll -66px -83px transparent;
-  	width: 11px;
- 	height: 12px;
- 	margin-right: 5px;
-    margin-top: -2px;
- 	display: inline-block;
-}
-
-.styledSelectMenu {
-	display: none;
-	position: absolute;
-	background-color: #ffffff;
-	border: #999999 solid 1px;
-	margin-top: -5px;
-	z-index: 99999;
-	max-height: 225px;
-	overflow: auto;
-	width: 227px;
-	line-height: 23px;
-}
-
-.styledSelectMenu label {
-	background-image: none !important;	
-	border: none !important;*/
-/*-moz-border-radius: 0px;
-	border-radius: 0px;*/
-/*	background-color: #ffffff !important;
-	width: 97%;
-	padding-left: 5px;
-	display: inline-block;
-}
-
-.styledSelectMenu label.ui-state-active {
-	color:#417DC1;
-}
-
-.styledSelectMenu label > span {
-	width: 100% !important;
-	text-align: left;
-	line-height: 19px;
-}
-
-.styledSelectMenu label > span > img {
-	padding-right: 10px;
-	float: left;	
-}
-
-.styledSelectMenu input {
-	left: 192px;
-	z-index: 99;
-	margin-top: 6px;
-}
-
-.styledSelectMenu label:hover {
-	background-color:#EDF4FA !important;
-}
-
-#dataTypeDropdownMenu {
-	overflow: hidden;
-}
-
-#sourceDropdownMenu {
-	overflow: hidden;
-}*/
 
 /* Container */
 #container {
@@ -398,6 +320,10 @@ h4 {
 
 .tableHeader .button {
 	margin-right: 5px;
+}
+
+.previewPane {
+    border-bottom: 1px solid #CCCCCC !important;
 }
 
 .arrow_buttons {
