@@ -103,7 +103,13 @@
 }
 
 div.olControlMousePosition {
-	bottom: 13px !important;
+	background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.05));
+    background: -moz-linear-gradient(left center , rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.05)) repeat scroll 0 0 rgba(255, 255, 255, 0);
+    height: 19px;
+    line-height: 19px;
+    padding-left: 15px;
+    padding-right: 53px;
+    right: auto !important;
 }
 
 #geoportalMap {
@@ -113,6 +119,9 @@ div.olControlMousePosition {
 }
 
 .olControlScaleLine {
+	left: auto !important;
+	right: 10px;
+	bottom: 31px !important;
 	margin-left: 60px;
 	padding: 1px;
 	opacity: 0.65;

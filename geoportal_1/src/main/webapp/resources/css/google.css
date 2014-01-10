@@ -1,19 +1,11 @@
 .olLayerGoogleCopyright {
-	right: 3px;
-	bottom: 2px;
-	left: auto;
+	 display: none;
 }
 
 .olLayerGooglePoweredBy {
 	display: none !important;
-	left: 2px;
-	bottom: 2px;
 }
 
-.olLayerGoogleCopyright>img {
-	display: none;
-}
-
-.olLayerGoogleCopyright>div {
-	display: none;
+.googleLogo {
+    margin-bottom: 19px !important;
 }

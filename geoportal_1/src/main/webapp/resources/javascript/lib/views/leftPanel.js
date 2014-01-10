@@ -45,8 +45,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		 },
 	
 		 setAlsoMoves: function(){
-			 if (!jQuery(".olControlPanel,.olControlScaleLine,.olControlModPanZoomBar").hasClass("slideHorizontal")){
-				 jQuery(".olControlPanel,.olControlScaleLine,.olControlModPanZoomBar").addClass("slideHorizontal");
+			 if (!jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo").hasClass("slideHorizontal")){
+				 jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo").addClass("slideHorizontal");
 			 }
 			 //beyond extent arrows "#nwCorner" and "#swCorner" also have class "slideHorizontal"			
 		 },
@@ -100,7 +100,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		var panelWidth = this.model.get("openWidth");
 		var that = this;
 		this.$el.show().animate({width: panelWidth},{ queue: false, duration: 500, complete: function(){
-			jQuery(".slideHorizontal").hide().css({'margin-left': panelWidth}).fadeIn();
+			jQuery(".slideHorizontal").hide().css({'margin-left': panelWidth}).not(".corner").fadeIn();
 			jQuery(this).trigger("adjustContents");
 			that.resizablePanel();
 		}});
@@ -127,7 +127,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View.extend({
 		if (this.$el.is(":hidden")){
 			this.$el.show();
 		}
-		jQuery(".slideHorizontal").not(".corner").fadeOut();
+		jQuery(".slideHorizontal").fadeOut();
 		
 		this.$el.animate({'width': jQuery('#container').width() -2}, { queue: false, duration: 500, complete: function(){
 			jQuery(this).trigger("adjustContents");

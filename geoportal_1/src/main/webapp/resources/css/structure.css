@@ -349,7 +349,7 @@ h4 {
 	float: left;
 	cursor: default;
 	display: none;
-	z-index: 1001;
+	z-index: 1006;
 }
 
 #left_tabs {
@@ -493,9 +493,10 @@ h4 {
 	border-right: 1px solid #999999;
 	background-color: #eeeeee;
 	vertical-align: top;
-	float: left;
+	position: absolute;
 	padding: 0px;
 	height: 100%;
+	z-index: 1006;
 }
 
 .sub_headerButtons {
@@ -518,15 +519,19 @@ h4 {
 
 /* search area */
 
-/*form input[type=text] {
-	border: 1px solid #CCCCCC;
+form input[type=text] {
+	border: 1px solid #999999;
 	height: 15px;
     padding: 2px;
+    -moz-box-shadow: 0 2px 3px 0 #878888 inset;
+	-webkit-box-shadow: 0 2px 3px 0 #878888 inset;
+	box-shadow: 0 2px 3px 0 #878888 inset;
 }
 
 form input[type=text]:focus {
 	border: 1px solid #417DC1;
-}*/
+}
+
 form input[type=password] {
 	border: 1px solid #CCCCCC;
 }
@@ -588,68 +593,24 @@ textarea:focus {
 	display: none;
 }
 
-#geosearchDiv {
-	/*position: absolute;
-	top: 5px;
-	right: 4px;
-	width: 253px;
-	z-index: 1001;*/
-	display: inline-block;
+.whereBox.basicSearch > label {
+    width: 55px;
 }
 
-#geosearchDiv input {
-	/*background: none repeat scroll 0 0 transparent;
-	border: 1px solid #AAAAAA;
-	color: #FFFFFF;
-	height: 17px;
-	opacity: .7;
-	filter:Alpha(Opacity=70);
-	padding-left: 3px;
-	padding-right: 3px;*/
-	
+.basicSearch.whatBox.searchFormRow > label {
+    width: 51px;
 }
 
-/*#geosearchDiv > span {
-	color: white;
-	font-size: 10px;
-	visibility: hidden;
+.basicSearch.whatBox.searchFormRow {
+    margin-left: -46px;
 }
 
-#goButton {
-	float: right;
-	height: 19px;
-	width: 19px;
-	background: #cccccc url(../media/bg_grayfade.png)  repeat-x;
-	color: #666666;
-	border:1px solid #AEAEAE;
-	font-family:tahoma;
-	font-size:12px;
-	/*margin-top:4px;
-	padding:0 4px;*/
-/*	-moz-border-radius: 0px 4px 4px 0px;
-	border-radius: 0px 4px 4px 0px;
-	position: absolute;
-	right: 0px;
-	top: 0px;
-	box-shadow: -1px -1px 2px -1px #AEAEAE inset;
+.basicSearch.basicSearchButtons.searchFormRow {
+    margin-left: -105px;
 }
 
-div#goButton:hover {
-	color:#417dc1; 
-}*/
 #basicSearchBox {
 	display: block;
-}
-
-#basicSearchTextField {
-	/* width: 264px;*/
-	
-}
-
-#basicSearchSubmit {
-	/*font-size: 11px;
-    line-height: 19px;*/
-	
 }
 
 #basicSearchMapFilterContainer {
@@ -663,11 +624,11 @@ div#goButton:hover {
 	line-height: 27px;
 }
 
-.searchFormRow>label {
+.searchFormRow > label {
 	display: inline-block;
 	width: 76px;
-	font-family: verdana;
-	font-size: 12px;
+    font-family: arial;
+    font-size: 14px;
 }
 
 .searchFormRow.advancedSearch>label {

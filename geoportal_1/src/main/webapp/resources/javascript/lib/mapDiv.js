@@ -118,7 +118,7 @@ OpenGeoportal.MapController = function() {
 				units: "m",
 				zoom: initialZoom,
 				controls: [new OpenLayers.Control.ModPanZoomBar(),
-				           new OpenLayers.Control.ScaleLine(),
+				           new OpenLayers.Control.ScaleLine({geodesic: true}),
 				           displayCoords,
 				           nav,
 				           this.createDefaultOLPanel(nav)]
@@ -508,6 +508,7 @@ OpenGeoportal.MapController = function() {
 					layer.setVisibility(true);
 				}
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");	
+
 			},
 			hideOperations: function(model){
 				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
@@ -522,7 +523,10 @@ OpenGeoportal.MapController = function() {
 					mapController.render(mapController.mapDiv);
 					jQuery(document).trigger("mapReady");
 					//really should only fire the first time (or should only listen the first time)
-					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");					
+					jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+					//find the google logo and add class ".googleLogo", so we can make sure it always shows
+					jQuery("[id$=GMapContainer]").find('[title*="Click to see this area"]').parent().addClass("googleLogo");
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 
 				});
@@ -562,6 +566,7 @@ OpenGeoportal.MapController = function() {
 					layer.setVisibility(true);
 				}
 				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+
 			},
 			hideOperations: function(model){
 				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
@@ -576,6 +581,9 @@ OpenGeoportal.MapController = function() {
 					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+					//find the google logo and add class ".googleLogo", so we can make sure it always shows
+					jQuery("[id$=GMapContainer]").find('[title*="Click to see this area"]').parent().addClass("googleLogo");
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 
 				});
@@ -613,8 +621,9 @@ OpenGeoportal.MapController = function() {
 					layer.mapObject.setMapTypeId(model.get("subType"));
 					layer.type = model.get("subType");
 					layer.setVisibility(true);
+					jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
 				}
-				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+
 			},
 			hideOperations: function(model){
 				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
@@ -630,6 +639,9 @@ OpenGeoportal.MapController = function() {
 					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+					//find the google logo and add class ".googleLogo", so we can make sure it always shows
+					jQuery("[id$=GMapContainer]").find('[title*="Click to see this area"]').parent().addClass("googleLogo");
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 
 				});
@@ -683,6 +695,9 @@ OpenGeoportal.MapController = function() {
 					jQuery(document).trigger("mapReady");
 					//really should only fire the first time
 					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
+					jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+					//find the google logo and add class ".googleLogo", so we can make sure it always shows
+					jQuery("[id$=GMapContainer]").find('[title*="Click to see this area"]').parent().addClass("googleLogo");
 					jQuery("#geoportalMap").fadeTo("slow", 1);
 
 				});
