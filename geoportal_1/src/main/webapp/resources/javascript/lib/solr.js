@@ -313,8 +313,49 @@ OpenGeoportal.Solr = function() {
 	/***************************************************************************
 	 * Spatial query components
 	 **************************************************************************/
+
 	
 
+	
+	//all we need is "bounds", which in the application is the map extent
+	this.getNewOgpSpatialQueryParams = function(bounds) {
+		var centerLon = this.getCenter(bounds.minX, bounds.maxX);
+		var centerLat = this.getCenter(bounds.minY, bounds.maxY);
+		console.log(centerLon);
+		console.log(centerLat);
+		//bf clauses are additive
+		var area = this.getBoundsArea(bounds);
+		var bf_array = [
+		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
+                        //this.getIntersectionAreaRelevancyClause(area) + "^" + this.LayerAreaIntersection.boost,
+                        this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost//,
+                        //this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost	
+		                ];
+        var params = {
+                        bf: bf_array,
+                        boost: this.getLayerWithinMapClause(),
+                        fq: [this.getIntersectionFilter()],
+                        intx: this.getIntersectionFunction(bounds),
+                        union: area,
+                        debug: true
+                    };
+
+		return params;
+	};
+
+	
+		
+	this.getClassicSpatialQuery = function() {
+	
+		var spatialQuery = "sum(" + this.classicLayerWithinMap(this.MinX, this.MaxX, this.MinY, this.MaxY) + 
+				"," + this.layerMatchesArea(this.MinX, this.MaxX, this.MinY, this.MaxY) + 
+				"," + this.layerNearCenterLongitude(this.MinX, this.MaxX) + 
+				"," + this.layerAreaIntersectionScore(this.MinX, this.MaxX, this.MinY, this.MaxY) +
+				"," + this.layerNearCenterLatitude(this.MinY, this.MaxY) + 
+				")";
+
+		return spatialQuery;
+	};
 	
 	//all we need is "bounds", which in the application is the map extent
 	this.getOgpSpatialQueryParams = function(bounds) {
@@ -325,40 +366,39 @@ OpenGeoportal.Solr = function() {
 		//bf clauses are additive
 		var area = this.getBoundsArea(bounds);
 		var bf_array = [
-		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
-                        this.getIntersectionAreaRelevancyClause(area) + "^" + this.LayerAreaIntersection.boost,
-                        this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost,
-                        this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost
+		                this.classicLayerMatchesArea(bounds) + "^" + this.LayerMatchesScale.boost,	//yes
+                        this.classicLayerAreaIntersectionScore(bounds) + "^" + this.LayerAreaIntersection.boost,
+                        this.classicCenterRelevancyClause(bounds) + "^" + this.LayerMatchesCenter.boost,
+                        this.classicLayerWithinMap(bounds) + "^" + this.LayerWithinMap.boost	//yes
 		                ];
         var params = {
                         bf: bf_array,
                         fq: [this.getIntersectionFilter()],
-                        intx: this.getIntersectionFunction(bounds),
-                        union: area
+                        intx: this.getIntersectionFunction(bounds)//,
+                       // union: area
                     };
 
 		return params;
 	};
 
-
 	//term objects
 	this.LayerWithinMap = {
 		term : "LayerWithinMap",
-		boost : 9.0
+		boost : 80.0
 	};
 	
 	this.LayerMatchesScale = {
 		term : "LayerMatchesScale",
-		boost : 3.0
+		boost : 70.0
 	};
 	this.LayerMatchesCenter = {
 		term : "LayerMatchesCenter",
-		boost : 2.0
+		boost : 15.0
 	};
 
 	this.LayerAreaIntersection = {
 		term : "LayerAreaIntersection",
-		boost : 5.0
+		boost : 30.0
 	};
 	
 	/**
@@ -404,6 +444,24 @@ OpenGeoportal.Solr = function() {
 
 	};
 
+
+
+/**
+ * score layer based on how close map center latitude is to the layer's center latitude
+ */
+this.layerNearCenterClause = function(mapMin, mapMax){
+	var center = (mapMax + mapMin)/2.;
+    var layerMatchesCenter = "recip(abs(sub(product(sum(MaxY,MinY),.5)," + center + ")),1,1000,1000)";
+    return layerMatchesCenter;	
+};
+
+this.classicCenterRelevancyClause = function(bounds){
+	console.log(bounds);
+	var clause = "sum(" + this.layerNearCenterClause(bounds.minX, bounds.maxX) + ",";
+	clause += this.layerNearCenterClause(bounds.minY, bounds.maxY) + ")";
+	return clause;
+};
+
 	/**
 	 * Calculates the reciprocal of the distance of the layer
 	 * center from the bounding box center.
@@ -428,6 +486,22 @@ OpenGeoportal.Solr = function() {
 	
 
  	
+ 	
+/** 
+ * return a search element to boost the scores of layers whose scale matches the displayed map scale
+ * specifically, it compares their area
+ */
+this.classicLayerMatchesArea = function(bounds){
+	var mapDeltaX = Math.abs(bounds.maxX - bounds.minX);
+	var mapDeltaY = Math.abs(bounds.maxY - bounds.minY);
+	var mapArea = (mapDeltaX * mapDeltaY);
+	//var layerMatchesArea = "product(" + this.LayerMatchesScale.boost + ","
+	//			+ "recip(sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000))";
+	var layerMatchesArea = "recip(sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000)";
+	return layerMatchesArea;
+};
+
+
 	/**
 	 * Compares the area of the layer to the area of the map extent; "scale"
 	 * 
@@ -440,7 +514,7 @@ OpenGeoportal.Solr = function() {
 		return areaClause;
 	};
 	
-	/**
+/**
  * return a search clause whose score reflects how much of the map this layers covers
  * 9 points in a 3x3 grid are used. we compute how many of those 9 points are within the 
  *  the layer's bounding box.  This count is then normalized and multiplied by the boost
@@ -448,10 +522,13 @@ OpenGeoportal.Solr = function() {
  *  for example, for a 3x3 grid we use 9 points spaced at 1/4, 1/2 and 3/4 x and y
  *  each point in the grid is weighted evenly 
  */
-/*org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionStepSize = 3;
-org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX, mapMaxX, mapMinY, mapMaxY)
-{	
-	var stepCount = this.layerAreaIntersectionStepSize;  // use 3x3 grid
+this.classicLayerAreaIntersectionScore = function (bounds) {
+	var mapMaxX = bounds.maxX;
+	var mapMinX = bounds.minX;
+	var mapMinY = bounds.minY;
+	var mapMaxY = bounds.maxY;	
+	
+	var stepCount = 3;  // use 3x3 grid
 	var mapDeltaX = Math.abs(mapMaxX - mapMinX);
 	var mapXStepSize = mapDeltaX / (stepCount + 1.);
 
@@ -495,11 +572,11 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 	// normalize to between 0 and 1, then multiple by boost
 
 	clause = "product(" + clause + "," + (1.0 / (stepCount * stepCount)) + ")";
-	clause = "product(" + clause + "," + this.LayerAreaIntersection.boost + ")";
+	//clause = "product(" + clause + "," + this.LayerAreaIntersection.boost + ")";
 	//tempClause = clause;  // set global for debugging
 	//console.log(clause);
 	return clause;
-};*/
+};
 
 
 	/**
@@ -520,7 +597,8 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 		//var areaClause = "if($intx,recip(abs(sub($intx,$union)),1,1000,1000),0)";
 		//
 		area = area - 1;
-		var areaClause = "if(map(Area,0," + area + ",1,0),div($intx,Area),0)";
+		var areaClause = "if(not(sub($union,$intx)),div($intx,$union),0)";
+		//var areaClause = "if(map(Area,0," + area + ",1,0),div($intx,$union),0)";
 		return areaClause;
 
 	};
@@ -546,23 +624,27 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 	 * if(exists(MaxY),map(MaxY,0,1,1,0),0) )
 	 */
 	
-	/*
-	 * 
-	 * function withinMap(layerWithinMap(mapMinX, mapMaxX, mapMinY, mapMaxY) {
-	 * 
-	 * var layerWithinMap =
-	 * "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY),"
-	 * layerWithinMap += "product(" + this.LayerWithinMapBoost + ",map(sum(";
-	 * layerWithinMap += "map(MinX," + mapMinX + "," + mapMaxX + ",1,0),";
-	 * layerWithinMap += "map(MaxX," + mapMinX + "," + mapMaxX + ",1,0),";
-	 * layerWithinMap += "map(MinY," + mapMinY + "," + mapMaxY + ",1,0),";
-	 * layerWithinMap += "map(MaxY," + mapMinY + "," + mapMaxY + ",1,0))";
-	 * layerWithinMap += ",4,4,1,0))),0)";
-	 * 
-	 * return layerWithinMap;
-	 * 
-	 * 
-	 */
+
+	 this.classicLayerWithinMap = function(bounds) {
+		var mapMinX = bounds.minX;
+		var mapMaxX = bounds.maxX;
+		var mapMinY = bounds.minY;
+		var mapMaxY = bounds.maxY;
+		
+	 	var layerWithinMap = "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY)),";
+	  	//layerWithinMap += "product(" + this.LayerWithinMapBoost + ",map(sum(";
+	  	layerWithinMap += "map(sum(";
+		layerWithinMap += "map(MinX," + mapMinX + "," + mapMaxX + ",1,0),";
+	  	layerWithinMap += "map(MaxX," + mapMinX + "," + mapMaxX + ",1,0),";
+	  	layerWithinMap += "map(MinY," + mapMinY + "," + mapMaxY + ",1,0),";
+	 	layerWithinMap += "map(MaxY," + mapMinY + "," + mapMaxY + ",1,0))";
+	 	//layerWithinMap += ",4,4,1,0))),0)";
+	 	layerWithinMap += ",4,4,1,0),0)";
+
+	  
+		return layerWithinMap;
+	};
+
 	this.getLayerWithinMapClause = function() {
 		/*
 		var getMapClause = function(solrCoordField, minCoord, maxCoord){
@@ -601,8 +683,9 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 		//var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
 		//var within = "1";
 		//var notwithin = "0";
-		var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
-
+		//var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
+		//var areaClause = "{!frange u=1 incu=false cache=false} if(exists(Area),if(not(sub(Area,$intx)),div($intx,$union),0),0)";
+		var areaClause = "{!frange u=15 l=0 incu=false incl=false cache=false} product(15,div($intx,$union))";
 		return areaClause;
 	};
 	
@@ -616,7 +699,7 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
 				maxY: Math.min(bounds.maxY, 90)
 				};
 	};
-//?
+
 	this.clearBoundingBox = function clearBoundingBox() {
 		this.bounds = {};
 	};
@@ -727,11 +810,11 @@ org.OpenGeoPortal.Solr.prototype.layerAreaIntersectionScore = function (mapMinX,
     	//perhaps this can/should be abstracted to a higher level
     	
         var qf_array = [ 
-            "LayerDisplayName^3",
-            "LayerDisplayNameSynonyms^2",
-            "ThemeKeywordsSynonymsLcsh^1",
-            "Originator^1",
-            "Publisher^1"
+            "LayerDisplayNameSynonyms^.2",
+            "ThemeKeywordsSynonymsLcsh^.1",
+            "PlaceKeywordsSynonyms^.1",
+            "Originator^.1",
+            "Publisher^.1"
         ];
 
         var params = {

@@ -73,14 +73,15 @@ OpenGeoportal.UserInterface = function(){
 		
 			var that = this;
 			jQuery(document).one("fireSearch", function(event){
-				jQuery("#welcomeBubble").hide("drop");
-				that.panelView.model.set({mode: "open"});
-				jQuery(document).one("panelOpen", function(){
-					that.showDirectionsBubble();
-					jQuery(document).one("click focus", function(){
-						jQuery("#directionsBubble").hide("drop");
+				jQuery("#welcomeBubble").hide({effect:"drop", duration: 250, queue: false, complete: function(){
+					that.panelView.model.set({mode: "open"});
+					jQuery(document).one("panelOpen", function(){
+						that.showDirectionsBubble();
+						jQuery(document).one("click focus", function(){
+							jQuery("#directionsBubble").hide("drop");
+						});
 					});
-					});
+				}});
 				
 			});
 

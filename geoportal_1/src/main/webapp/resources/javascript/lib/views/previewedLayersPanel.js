@@ -127,7 +127,6 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			addBottomBorder: function() {
 				var pane$ = jQuery("div.dataTables_scrollHead");
 				if (this.model.collection.where({preview: "on"}).length > 0) {
-					console.log("adding previewPane class");
 					if (!pane$.hasClass("previewPane")) {
 						pane$.addClass("previewPane");
 					}
