@@ -201,7 +201,7 @@ OpenGeoportal.MapController = function() {
 				that.updateSize();
 			}
 			if (zoomLevel == 0){
-				that.setCenter(that.WGS84ToMercator(that.getCenter().lon, 0));
+				that.setCenter(that.WGS84ToMercator(that.getSearchCenter().lon, 0));
 			} 
 			//console.log('zoomend');
 			jQuery(document).trigger('eventZoomEnd');
@@ -210,9 +210,10 @@ OpenGeoportal.MapController = function() {
 		this.events.register('moveend', this, function(){
 			console.log("moveend");
 			var newExtent = that.getSearchExtent();
+			var newCenter = that.getSearchCenter();
 			//TODO: move this to the map object, register the map object in app state
 			//that.appState.set({mapExtent: newExtent});
-			jQuery(document).trigger('map.extentChanged', {mapExtent: newExtent});
+			jQuery(document).trigger('map.extentChanged', {mapExtent: newExtent, mapCenter: newCenter});
 		});
 
 		this.bboxHandler();
@@ -221,7 +222,6 @@ OpenGeoportal.MapController = function() {
 		this.zoomToLayerExtentHandler();
 		this.previewLayerHandler();
 		this.getFeatureInfoHandler();
-		this.geocodeLocation();
 		this.clearLayersHandler();
 		this.attributeDescriptionHandler();
 		this.mouseCursorHandler();
@@ -297,85 +297,7 @@ OpenGeoportal.MapController = function() {
 		jQuery("." + displayParams.displayClass).button().on("click", function(){callbackHandler.call(that);});
 	};
 	
-	/**
-	 * geocodes the value typed into the geocoder text input using the Google maps geocoder,
-	 * then zooms to the returned extent.  also animates the response
-	 */
-	this.geocodeLocation = function(){
-		var geocodeField$ = jQuery("#whereField");
 
-		var geocoder = new google.maps.Geocoder();
-		var that = this;
-		var geocodeResponse = {};
-		geocodeField$.autocomplete({
-			source: function( request, response ) {
-				geocoder.geocode( { 'address': request.term}, function(results, status) {
-					/*
-					 * 
-    "OK" indicates that no errors occurred; the address was successfully parsed and at least one geocode was returned.
-    "ZERO_RESULTS" indicates that the geocode was successful but returned no results. This may occur if the geocode was passed a non-existent address or a latlng in a remote location.
-    "OVER_QUERY_LIMIT" indicates that you are over your quota.
-    "REQUEST_DENIED" indicates that your request was denied, generally because of lack of a sensor parameter.
-    "INVALID_REQUEST" generally indicates that the query (address or latlng) is missing.
-    UNKNOWN_ERROR indicates that the request could not be processed due to a server error. The request may succeed if you try again.
-
-					 */
-					var labelArr = [];
-
-					if (status === "OK"){
-						
-						//reset the response object
-						geocodeResponse = [];
-						for (var i in results){
-							var viewPort = results[i].geometry.viewport;
-							var extent = [];
-							extent.push(viewPort.getSouthWest().lng());
-							extent.push(viewPort.getSouthWest().lat());
-							extent.push(viewPort.getNorthEast().lng());
-							extent.push(viewPort.getNorthEast().lat());
-
-							var bbox = extent.join();
-							var currentAddress = results[i].formatted_address;
-							var currentResponse = {};
-							currentResponse.name = currentAddress;
-							currentResponse.bbox = bbox;
-							currentResponse.fullResponse = results[i];
-							geocodeResponse.push(currentResponse);
-							labelArr.push(currentAddress);
-						}
-						response(labelArr);
-					} else if (status === "ZERO_RESULTS"){
-						labelArr.push("No results found.");
-					} else {
-						labelArr.push("Error retrieving results.");
-					}
-					
-					response(labelArr);
-				});
-			},
-			minLength: 3,
-			delay: 200,
-			select: function( event, ui ) {
-				for (var i in geocodeResponse){
-					if (geocodeResponse[i].name == ui.item.value){
-						geocodeField$.data({"geocode": geocodeResponse[i]});
-						return;
-					}
-				}
-			},
-
-			open: function() {
-				jQuery( this ).removeClass( "ui-corner-all" ).addClass( "ui-corner-top" );
-			},
-			close: function() {
-				jQuery( this ).removeClass( "ui-corner-top" ).addClass( "ui-corner-all" );
-			}
-		}
-		);
-	};
-
-
-	
 	this.saveImage = function(imageFormat, resolution){
 		//TODO: add html5 canvas stuff...may have to wait for OL3?
 		imageFormat = 'png';
@@ -959,147 +881,6 @@ Road - Roads without additional imagery.	*/
 		return collection;
 		
 	};
-	/*this.backgroundMaps = function(mapType){
-		if (typeof google != "undefined"){
-			var bgMaps = {
-					googleHybrid: {mapClass: "Google", zoomLevels: 22, name: "Google Hybrid", params: {type: google.maps.MapTypeId.HYBRID}},
-					googleSatellite: {mapClass: "Google", zoomLevels: 22, name: "Google Satellite", params: {type: google.maps.MapTypeId.SATELLITE}},
-					googleStreets: {mapClass: "Google", zoomLevels: 20, name: "Google Streets", params: {type: google.maps.MapTypeId.ROADMAP}}, 
-					googlePhysical: {mapClass: "Google", zoomLevels: 15, name: "Google Physical", params: {type: google.maps.MapTypeId.TERRAIN}},
-					osm: {mapClass: "TMS", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png', getURL: this.getOsmTileUrl,
-						displayOutsideMaxExtent: true}, url: "http://tile.openstreetmap.org/"}
-			};
-			if (mapType == "all"){
-				return bgMaps;
-			} else {
-				return bgMaps[mapType];
-			}
-		} else{
-			bgMaps = {osm: {mapClass: "TMS", zoomLevels: 17, name: "OpenStreetMap", params: {type: 'png', getURL: this.getOsmTileUrl,
-				displayOutsideMaxExtent: true}, url: "http://tile.openstreetmap.org/"}};
-			if (mapType == "all"){
-				return bgMaps;
-			} else {
-				return bgMaps["osm"];
-			}
-		}
-	};
-
-	this.getCurrentBackgroundMap = function(){
-		if (typeof google != "undefined"){
-			return this.currentBackgroundMap;
-		} else{
-			return "osm";
-		}
-	};
-
-	this.currentBackgroundMap = "googlePhysical"; //default background map
-
-	this.setCurrentBackgroundMap = function(bgType){
-		try {
-			this.backgroundMaps(bgType);
-			this.currentBackgroundMap = bgType;
-		} catch (e) {
-			throw new Error("This background type does not exist: "+ bgType);
-		}
-	};
-
-	this.setBackgroundMap = function(bgType) {
-		//default 
-		bgType = bgType || this.getCurrentBackgroundMap();
-		this.setCurrentBackgroundMap(bgType);
-		var zoomLevel = this.getZoom();
-		if (zoomLevel >= (this.backgroundMaps(bgType).zoomLevels - 1)){
-			this.changeBackgroundMap("googleHybrid");
-		} else {
-			this.changeBackgroundMap(bgType);
-		}
-	};
-*/	
-
-		/*this.setBasemap = function(model){
-			console.log("setBasemap");
-			//see if there is a basemap layer of the specified type
-			if (this.getLayersBy("type", model.get("type")).length === 0){
-				//add the appropriate basemap layer
-				this.addLayer(model.get("getLayerDefinition").call(model));
-			}
-		
-			model.set({selected: true});
-		};
-	*/
-	
-
-
-	
-
-	/*this.changeBackgroundMap = function(bgType){
-		//minimize the number of Google layers by changing map types in the Google Maps API
-		var that = this;
-		var backgroundMaps = this.backgroundMaps(bgType);
-		if (backgroundMaps.mapClass == "Google"){
-			if (this.getLayersByClass('OpenLayers.Layer.Google').length > 0){
-				var googleLayer = this.getLayersByClass('OpenLayers.Layer.Google')[0];
-				googleLayer.mapObject.setMapTypeId(backgroundMaps["params"]["type"]);
-				googleLayer.type = backgroundMaps["params"]["type"];
-				googleLayer.setVisibility(true);
-				jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
-
-			} else {
-				//backgroundMaps.params.sphericalMercator = true;
-				//backgroundMaps.params.maxExtent = new OpenLayers.Bounds(-20037508.34,-20037508.34,20037508.34,20037508.34);
-				backgroundMaps.params.basemapType = model.get("type");
-				var bgMap = new OpenLayers.Layer.Google(backgroundMaps.name,
-						backgroundMaps.params);
-				bgMap.animationEnabled = true;
-				this.addLayer(bgMap);
-				google.maps.event.addListener(bgMap.mapObject, "tilesloaded", function() {
-					//console.log("Tiles loaded");
-					that.render(that.mapDiv);
-					//jQuery(".mapClearButtonItemInactive").text("clear previews");
-					that.userMapAction = true;
-					jQuery(document).trigger("mapReady");
-					//really should only fire the first time
-					google.maps.event.clearListeners(bgMap.mapObject, "tilesloaded");
-					jQuery("#geoportalMap").fadeTo("slow", 1);
-
-				});
-
-			}
-			if (this.getLayersByName('OpenStreetMap').length > 0){
-				this.getLayersByName('OpenStreetMap')[0].setVisibility(false);
-			}
-		} else if (backgroundMaps.mapClass == "TMS"){
-			if (this.getLayersByName('OpenStreetMap').length > 0){
-				var osmLayer = this.getLayersByName('OpenStreetMap')[0];
-				osmLayer.setVisibility(true);
-			} else {
-				var bgMap = new OpenLayers.Layer.TMS(
-						backgroundMaps.name,
-						backgroundMaps.url,
-						backgroundMaps.params
-				);
-				this.addLayer(bgMap);
-				this.setLayerIndex(this.getLayersByName('OpenStreetMap')[0], 1);
-				bgMap.events.register(bgMap.mapObject, "loadend", function() {
-					//console.log("Tiles loaded");
-					that.render(that.mapDiv);
-					//jQuery(".mapClearButtonItemInactive").text("clear previews");
-					that.userMapAction = true;
-					//really should only fire the first time
-					bgMap.events.unregister(bgMap.mapObject, "loadend");
-					jQuery("#geoportalMap").fadeTo("slow", 1);
-				});
-			}
-			if (this.getLayersByClass('OpenLayers.Layer.Google').length > 0){
-				var googleLayer = this.getLayersByClass('OpenLayers.Layer.Google')[0];
-				googleLayer.mapObject.setMapTypeId(this.backgroundMaps("googleHybrid")["params"]["type"]);
-				googleLayer.type = this.backgroundMaps("googleHybrid")["params"]["type"];
-				googleLayer.setVisibility(false);
-				jQuery("div.olLayerGooglePoweredBy").children().css("display", "none");
-			}
-		}
-	};*/
 
 //	utility functions
 	this.WGS84ToMercator = function (lon, lat){
@@ -1467,7 +1248,8 @@ Road - Roads without additional imagery.	*/
 			style_blue.zIndex = 999;
 
 			return new OpenLayers.Layer.Vector("layerBBox", {
-				style: style_blue
+				style: style_blue,
+				displayOutsideMaxExtent: true
 			});
 	};
 	
@@ -2028,11 +1810,12 @@ Road - Roads without additional imagery.	*/
 	this.getVisibleExtent = function(){
 		var topLeft =  this.getLonLatFromViewPortPx(this.getMapOffset());
 		var fullExtent = this.getExtent();
-		fullExtent.left = topLeft.lon;
 		fullExtent.top = topLeft.lat;
-		if (fullExtent.getWidth >= 40075015.68){
+		if (fullExtent.getWidth() >= 40075015.68){
 			fullExtent.left = -20037508.34;
 			fullExtent.right = 20037508.34;
+		} else {
+			fullExtent.left = topLeft.lon;
 		}
 		return fullExtent;
 	};
@@ -2048,10 +1831,21 @@ Road - Roads without additional imagery.	*/
 	this.getSearchExtent = function(){
 		this.updateSize();
 		var rawExtent = this.getGeodeticExtent();
-		//return this.clipToWorld(rawExtent);
 		return rawExtent;
 	};
 
+	this.getSearchCenter = function(){
+		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
+		var geodetic = new OpenLayers.Projection('EPSG:4326');
+		var topLeft = this.getMapOffset(); 
+		var width = jQuery(".olMap").width();
+		var height = jQuery(".olMap").height();
+		topLeft.x = topLeft.x + width/2;
+		topLeft.y = topLeft.y - height/2;
+		var center = this.getLonLatFromViewPortPx(topLeft);
+		return center.transform(sphericalMercator, geodetic);
+	};
+	
 	this.clipToWorld = function(bounds){
 		return this.clipExtent(bounds, new OpenLayers.Bounds(-180, -90, 180, 90));
 	};

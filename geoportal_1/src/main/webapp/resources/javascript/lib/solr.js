@@ -120,9 +120,10 @@ OpenGeoportal.Solr = function() {
 	this.getTermParams = function(termField, requestTerm) {
 		var termParams = {
 				"terms.fl": termField,
-				"terms.regex": requestTerm,
+				"terms.regex": ".*" + requestTerm + ".*",
 				"terms.regex.flag": "case_insensitive",
 				"terms.limit":	-1,
+				omitHeader: true,
 				wt: "json"
 		};
 		return termParams;
@@ -359,16 +360,16 @@ OpenGeoportal.Solr = function() {
 	
 	//all we need is "bounds", which in the application is the map extent
 	this.getOgpSpatialQueryParams = function(bounds) {
-		var centerLon = this.getCenter(bounds.minX, bounds.maxX);
+		/*var centerLon = this.getCenter(bounds.minX, bounds.maxX);
 		var centerLat = this.getCenter(bounds.minY, bounds.maxY);
 		console.log(centerLon);
-		console.log(centerLat);
+		console.log(centerLat);*/
 		//bf clauses are additive
-		var area = this.getBoundsArea(bounds);
+		//var area = this.getBoundsArea(bounds);
 		var bf_array = [
 		                this.classicLayerMatchesArea(bounds) + "^" + this.LayerMatchesScale.boost,	//yes
                         this.classicLayerAreaIntersectionScore(bounds) + "^" + this.LayerAreaIntersection.boost,
-                        this.classicCenterRelevancyClause(bounds) + "^" + this.LayerMatchesCenter.boost,
+                        this.classicCenterRelevancyClause() + "^" + this.LayerMatchesCenter.boost,
                         this.classicLayerWithinMap(bounds) + "^" + this.LayerWithinMap.boost	//yes
 		                ];
         var params = {
@@ -449,16 +450,15 @@ OpenGeoportal.Solr = function() {
 /**
  * score layer based on how close map center latitude is to the layer's center latitude
  */
-this.layerNearCenterClause = function(mapMin, mapMax){
-	var center = (mapMax + mapMin)/2.;
-    var layerMatchesCenter = "recip(abs(sub(product(sum(MaxY,MinY),.5)," + center + ")),1,1000,1000)";
+this.layerNearCenterClause = function(center, minTerm, maxTerm){
+    var layerMatchesCenter = "recip(abs(sub(product(sum(" + minTerm + "," + maxTerm + "),.5)," + center + ")),1,1000,1000)";
     return layerMatchesCenter;	
 };
 
-this.classicCenterRelevancyClause = function(bounds){
-	console.log(bounds);
-	var clause = "sum(" + this.layerNearCenterClause(bounds.minX, bounds.maxX) + ",";
-	clause += this.layerNearCenterClause(bounds.minY, bounds.maxY) + ")";
+this.classicCenterRelevancyClause = function(){
+	var center = this.getCenter();
+	var clause = "sum(" + this.layerNearCenterClause(center.centerX, "MinX", "MaxX") + ",";
+	clause += this.layerNearCenterClause(center.centerY, "MinY", "MaxY") + ")";
 	return clause;
 };
 
@@ -700,17 +700,25 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 				};
 	};
 
+	
 	this.clearBoundingBox = function clearBoundingBox() {
 		this.bounds = {};
 	};
 	
-	this.getCenter = function(min, max){
-		if (min >= max){
+	this.center = {};
+	
+	this.setCenter = function(center){
+		this.center = center;
+	};
+	
+	this.getCenter = function(){
+		return this.center;
+		/*if (min >= max){
 			var tempMin = min;
 			min = max;
 			max = tempMin;
 		}
-		return Math.abs((max - min)/2) + min;
+		return Math.abs((max - min)/2) + min;*/
  	};
 		
  	this.getBoundsArea = function(bounds){

@@ -131,7 +131,7 @@ OpenGeoportal.UserInterface = function(){
 	this.aboutHandler = function(){
 		jQuery('#about').dialog({
 			zIndex: 2999,
-			title: "ABOUT",
+			title: "About",
 			resizable: false,
 			minHeight: 382,
 			minWidth: 473,
@@ -146,7 +146,7 @@ OpenGeoportal.UserInterface = function(){
 	this.contactHandler = function(){
 		jQuery('#contact').dialog({
 			zIndex: 2999,
-			title: "CONTACT INFORMATION",
+			title: "Contact Information",
 			resizable: false,
 			minHeight: 222,
 			minWidth: 405,
@@ -160,7 +160,7 @@ OpenGeoportal.UserInterface = function(){
 	this.userHelpHandler = function(){
 		jQuery('#userGuide').dialog({
 			zIndex: 2999,
-			title: "USER GUIDE",
+			title: "User Guide",
 			resizable: true,
 			height: 425,
 			width: 745,
@@ -271,82 +271,8 @@ OpenGeoportal.UserInterface = function(){
 	this.resizeResultsTableHandler = function(){
 		var that = this;
 		jQuery(document).on("render.previewPanel", that.resizeResultsTable);			
-		jQuery(document).on("search.setAdvanced", that.resizeResultsTable);
-		jQuery(document).on("search.setBasic", that.resizeResultsTable);
+		jQuery(document).on("search.heightAnimationComplete", that.resizeResultsTable);
 	};
-	
-	/*this.oldResizeWindowHandler = function(){
-		var containerHeight = jQuery(window).height() - jQuery("#header").height() - jQuery("#footer").height() - 2;
-		containerHeight = Math.max(containerHeight, 680);
-		var containerWidth = jQuery(window).width();//Math.max((Math.floor(jQuery(window).width() * .9)), 1002);
-		jQuery('#main').width(containerWidth);
-		jQuery('#container').height(containerHeight);
-		jQuery('#left_tabs').height(containerHeight);
-		jQuery("#left_col").outerWidth(this.getSearchPanelWidth());
-		jQuery('#map').width(jQuery("#container").width() - this.getSearchPanelWidth());
-
-		jQuery('#container').resize(function() {
-			//OpenGeoportal.map.events.triggerEvent('zoomend');
-			jQuery(document).trigger("containerResize");
-			//that.mapObject.events.triggerEvent('zoomend');
-		});
-
-		jQuery(window).resize(function(){
-			var containerHeight = Math.max((jQuery(window).height() - jQuery("#header").outerHeight() - jQuery("#footer").outerHeight()), 680);
-			jQuery('#container').height(containerHeight);
-			jQuery('#left_tabs').height(containerHeight);
-			var containerWidth = jQuery(window).width();
-			jQuery('#main').width(containerWidth);
-			if (jQuery("#left_col").css("display") == "none"){
-				jQuery('#map').outerWidth(jQuery("#container").width() - jQuery("#roll_right").outerWidth());
-			} else if (jQuery("#map").css("display") != "none"){
-				//jQuery("#left_col").width(OpenGeoportal.ui.searchPanelWidth);
-				var mapWidth = jQuery("#container").width() - jQuery("#left_col").outerWidth();
-				//var mapZoom = that.mapObject.getZoom();
-				var minMapWidth;
-				//if (mapZoom == 0){
-					minMapWidth = 512;
-				//} else {
-				//	minMapWidth = 1024;
-				//}
-				var containerWidth = jQuery("#container").width();
-				//console.log("spw: " + that.getSearchPanelWidth());
-				var searchPanelWidth = that.getSearchPanelWidth() || (containerWidth - minMapWidth);
-				if ((containerWidth - searchPanelWidth) < minMapWidth){
-					searchPanelWidth = containerWidth - minMapWidth;
-				}
-
-				jQuery("#left_col").outerWidth(searchPanelWidth);
-				jQuery('#map').width(containerWidth - searchPanelWidth);
-				that.setSearchPanelWidth(searchPanelWidth);
-
-
-			} else {
-				jQuery("#left_col").outerWidth(jQuery("#container").width());
-			}
-
-		});
-	};*/
-
-
-
-
-	
-
-	
-
-	/*OpenGeoportal.UserInterface.prototype.checkUserInput = function(){
-	var that = this;
-	var setUserInputFlag = function(){that.mapObject.userMapAction = true;alert("userInputflag set");};
-	//jQuery("#map").one("dblclick", setUserInputFlag);
-	//jQuery(document).mousedown(setUserInputFlag);
-
-	jQuery("#map").one("mousedown", setUserInputFlag);
-
-};*/
-
-
-
 
 	this.searchToggleHandler = function(){
 		var that = this;
@@ -354,6 +280,7 @@ OpenGeoportal.UserInterface = function(){
 	};
 
 	this.toggleSearch = function(thisObj){
+		var stepTime = 50;
 		var thisId = jQuery(thisObj).attr('id');
 		var hght = jQuery(".searchFormRow").height();
 		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #roll_right > .arrow_right").addClass("slideVertical");
@@ -365,15 +292,15 @@ OpenGeoportal.UserInterface = function(){
 
 			jQuery('#searchBox').animate(
 					{height: "+=" + hght},
-					{queue: false, duration: 100, easing: "linear", complete: function(){
+					{queue: false, duration: stepTime, easing: "linear", complete: function(){
 						jQuery("#searchForm .advancedSearch.searchRow2").show();
 						jQuery('#searchBox').animate(
 								{height: "+=" + hght},
-								{queue: false, duration: 100, easing: "linear", complete: function(){
+								{queue: false, duration: stepTime, easing: "linear", complete: function(){
 									jQuery("#searchForm .advancedSearch.searchRow3").show();
 									jQuery('#searchBox').animate(
 											{height: "+=" + hght},
-											{queue: false, duration: 100, easing: "linear", complete: function(){
+											{queue: false, duration: stepTime, easing: "linear", complete: function(){
 												jQuery("#searchForm .advancedSearch.searchRow4").show();
 												jQuery("#lessSearchOptions").focus();
 												jQuery(document).trigger("search.setAdvanced");
@@ -383,25 +310,30 @@ OpenGeoportal.UserInterface = function(){
 								}});
 					}});
 
-			jQuery(".slideVertical").animate({"margin-top": "+=" + hght * 3, duration: 300, easing: "linear"});
+			jQuery(".slideVertical").animate({"margin-top": "+=" + hght * 3, duration: stepTime * 3, easing: "linear", complete: function(){
+												jQuery(document).trigger("search.heightAnimationComplete");
+											}
+			});
 
 
 		} else if (thisId === 'lessSearchOptions'){
-			jQuery(".slideVertical").animate({"margin-top": "-=" + hght * 3, queue: false, duration: 300, easing: "linear"});
+			jQuery(".slideVertical").animate({"margin-top": "-=" + hght * 3, queue: false, duration: stepTime * 3, easing: "linear", complete: function(){
+												jQuery(document).trigger("search.heightAnimationComplete");
+											}});
 
 			jQuery("#searchForm .advancedSearch.searchRow4").hide();
 			jQuery('#searchBox').animate(
 					{height: "-=" + hght},
-					{queue: false, duration: 100, easing: "linear", complete: function(){
+					{queue: false, duration: stepTime, easing: "linear", complete: function(){
 						//jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
 						jQuery("#searchForm .advancedSearch.searchRow3").hide();
 						jQuery('#searchBox').animate(
 								{height: "-=" + hght},
-								{queue: false, duration: 100, easing: "linear", complete: function(){
+								{queue: false, duration: stepTime, easing: "linear", complete: function(){
 									jQuery("#searchForm .advancedSearch.searchRow2").hide();
 									jQuery('#searchBox').animate(
 											{height: "-=" + hght},
-											{queue: false, duration: 100, easing: "linear", complete: function(){
+											{queue: false, duration: stepTime, easing: "linear", complete: function(){
 												//jQuery(".slideVertical").animate({"margin-top": "-=" + hght, queue: false, duration: 100, easing: "linear"});
 												jQuery("#geosearchDiv").removeClass("advancedSearch").addClass("basicSearch");
 												jQuery("#searchForm .advancedSearch.searchRow1").hide();

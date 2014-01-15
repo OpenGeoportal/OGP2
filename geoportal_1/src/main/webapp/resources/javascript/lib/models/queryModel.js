@@ -13,6 +13,7 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	defaults: {
 		mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
+		mapCenter: {centerX: 0, centerY: 0},
 		ignoreSpatial: false,
 		displayRestricted: ["Tufts"],
 		sortBy: "score",

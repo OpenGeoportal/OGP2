@@ -55,8 +55,8 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		this.controls = OpenGeoportal.ogp.appState.get("controls");
 		var that = this;
 		this.controls.prependButton(jQuery(".basicSearchButtons"), "basicSearchSubmit", "Search", function(){that.fireSearchWithZoom();}).addClass("searchButton");		
-		
-		this.controls.solrAutocomplete(jQuery("#advancedOriginatorField"), "OriginatorSort");
+		this.controls.geocodeAutocomplete(jQuery("#whereField"));
+		this.controls.solrAutocomplete(jQuery("#advancedOriginatorText"), "OriginatorSort");
 		this.createInstitutionsMenu();
 		this.createDataTypesMenu();
 		this.createTopicsMenu();
@@ -67,7 +67,7 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		this.controls.prependButton(advSearchButtons$, "advancedSearchSubmit", "Search", function(){that.fireSearchWithZoom();}).addClass("searchButton");		
 		this.controls.prependButton(advSearchButtons$, "advancedSearchClear", "Clear", this.clearForm);	
 
-		this.listenTo(this.model, "change:mapExtent", this.extentChanged);
+		this.listenTo(this.model, "change:mapExtent change:mapCenter", this.extentChanged);
 		
 
 		this.mapFilterHandler();
@@ -75,7 +75,9 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		this.showRestrictedHandler();
 		this.searchBoxKeypressHandler();
 		
-		jQuery(document).on("map.extentChanged", function(){that.setMapExtent.apply(that, arguments);});
+		jQuery(document).on("map.extentChanged", function(){
+			that.setMapExtent.apply(that, arguments);
+		});
 	},
 	  events: {
 		  "blur input": "setTextValue"
@@ -106,41 +108,94 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 		},
 		
 		zoomToWhere: function(){		
-			var geocode = jQuery("#whereField").data().geocode;
-			if (typeof geocode !== "undefined"){
+			var where$ = jQuery("#whereField");
+			var geocode = where$.data().geocode;
+			if (typeof geocode !== "undefined" && _.size(geocode) > 0){
+				console.log("geocode value");
+				console.log(geocode);
+				
 				var bbox = geocode.bbox;
 				if (typeof bbox !== "undefined"){
+					//no need to fire search since it will be triggered by extent change
+					this.listenToOnce(this.model, "change:mapExtent", this.clearWhere);	
 					jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});		
+
+				} else {
+					this.fireSearch();
 				}
+			} else if (where$.val().trim().length > 0){
+				console.log("trying to geocode value");
+				//try to geocode the value in the where field if it doesn't come from the geocoder
+				var promise = this.controls.getGeocodePromise(where$.val().trim());
+				var that = this;
+				jQuery.when(promise).done(
+					function(message){
+						console.log("message");
+						console.log(message);
+						if (message.values.length > 0){
+							var geocode = where$.data.geocode;
+							geocode = message.values[0];
+							var bbox = geocode.bbox;
+							if (typeof bbox !== "undefined"){
+								where$.val(geocode.name);
+								//on the next extent change, clear the where field
+								that.listenToOnce(that.model, "change:mapExtent", that.clearWhere);
+								jQuery(document).trigger("map.zoomToLayerExtent", {bbox: bbox});	
+							}
+							
+							that.fireSearch();
+							
+						} else {
+							that.fireSearch();
+						}
+						
+					});
+			} else {
+				this.fireSearch();
 			}
 
 		},
 
 		clearWhere: function(){
-			jQuery("#whereField").val("").data().geocode = {};
+			var where$ = jQuery("#whereField");
+			where$.data().geocode = {};
+			if (where$.val().trim().length > 0){
+				var currColor = where$.css("color");
+				where$
+					.animate({color: "#0755AC"},125)
+		    		.animate({color: currColor},125)
+		    		.animate({color: "#0755AC"},125)
+		    		.animate({color: currColor},125)
+		    		.delay(1500)
+		    		.animate({ color: "#FFFFFF" }, 300, function(){where$.val("").css({color: currColor});} );
+				
+			/*	var currentFontSize = where$.css("font-size");
+				var currentOpacity = where$.css("opacity");
+				where$.animate({"opacity": 1, "font-size": parseInt(currentFontSize) + 2}, 500).delay(1500)
+					.animate({ "font-size": 0 }, 300, function(){where$.val("").css({"font-size": currentFontSize, "opacity": currentOpacity});} );*/
+			}
 			
 		},
 		fireSearchWithZoom: function(){
 			if (this.model.get("searchType") === "advanced"){
 				var ignoreSpatial = this.model.get("ignoreSpatial");
-				if (!ignoreSpatial){
-					this.zoomToWhere();
+				if (ignoreSpatial){
+					this.fireSearch();
+					this.clearWhere();
+					return;
 				}
-			} else {
-				this.zoomToWhere();
 			}
-			this.fireSearch();
+			
+			this.zoomToWhere();
 		},
 		
 		extentChanged: function(){
-			console.log("*******************************************************extent changed");
+			//console.log("*******************************************************extent changed");
 			this.fireSearch();	
-			//on the next extent change, clear the where field
-			//this.listenToOnce(this.model, "change:mapExtent", this.clearWhere);
-
 		},
 		
 		fireSearch: function(){
+
 			jQuery(document).trigger("fireSearch");
 		},
 
@@ -213,7 +268,19 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 						maxY = 90;
 					}
 					var mapExtent = {minX: minX, maxX: maxX, minY: minY, maxY: maxY};
-					this.model.set({mapExtent: mapExtent});
+					
+					var center = data.mapCenter;
+					var mapCenter = {centerX: center.lon, centerY: center.lat};
+					// for debug
+					/*console.log("--------------setmapExtent");
+					console.log(mapExtent);
+						//<!-- for debugging the returned extent -->
+					if (jQuery("#seeExtent").length === 0){
+						jQuery("#header").append('<span id="seeExtent"></span>');
+					}
+					jQuery("#seeExtent").text(mapExtent.minX + "," + mapExtent.maxX + "," + mapExtent.minY + ","  + mapExtent.maxY );
+					*/
+					this.model.set({mapExtent: mapExtent, mapCenter: mapCenter});
 			
 		},
 		
@@ -228,6 +295,7 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			solr.setSort(sort.column, sort.direction);
 
 			solr.setBoundingBox(this.model.get("mapExtent"));
+			solr.setCenter(this.model.get("mapCenter"));
 
 			
 			if ((whatField != null) && (whatField != "")){
@@ -261,6 +329,7 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			solr.setIgnoreSpatial(ignoreSpatial);
 			if (!ignoreSpatial){
 				solr.setBoundingBox(this.model.get("mapExtent"));
+				solr.setCenter(this.model.get("mapCenter"));
 			}
 
 			

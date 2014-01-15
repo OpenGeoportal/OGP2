@@ -93,14 +93,17 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 					var contents = "";
 					if (currCol.has("modelRender")) {
 						contents = currCol.get("modelRender")(model);
+						html += this.template.tableCell({
+							colClass : visibleColumns[i].get("columnClass"),
+							contents : contents
+						});
 					} else {
 						contents = model.get(currCol.get("columnName"));
+						html += this.template.textTableCell({
+							colClass : visibleColumns[i].get("columnClass"),
+							contents : contents
+						});
 					}
-			 
-					html += this.template.tableCell({
-						colClass : visibleColumns[i].get("columnClass"),
-						contents : contents
-					});
 				}
 
 				var fullRow$ = this.$el;
