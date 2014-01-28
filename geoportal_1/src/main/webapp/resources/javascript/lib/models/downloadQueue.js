@@ -234,7 +234,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 			},
 
 			updateRequestQueue : function(requestStatus) {
-				console.log("updateRequestQueue");
+				// console.log("updateRequestQueue");
 				var i = null;
 				for (i in requestStatus) {
 					var rId = requestStatus[i].requestId;

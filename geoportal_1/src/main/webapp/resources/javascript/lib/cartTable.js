@@ -244,16 +244,16 @@ OpenGeoportal.CartTable = function CartTable() {
 			// if not, it should be excluded & user warned
 
 			bounds = OpenGeoportal.ogp.map.getGeodeticExtent().toArray();
-			console.log(bounds);
+			// console.log(bounds);
 			// arrLayers = this.getLayerList("download");
 			var intxLayers = [];
 			var i = null;
 			for (i in arrLayers) {
 				if (this.backingData.intersectsBounds(arrLayers[i], bounds)) {
-					console.log("intersects");
+					// console.log("intersects");
 					intxLayers.push(arrLayers[i]);
 				} else {
-					console.log("doesnt intersect");
+					// console.log("doesnt intersect");
 					nonIntxLayers.push(arrLayers[i]);
 				}
 			}
@@ -535,7 +535,7 @@ OpenGeoportal.CartTable = function CartTable() {
 	};
 
 	this.getLayerInfoJsonpSuccess = function(data) {
-		console.log(this);
+		// console.log(this);
 		var docs = data.response.docs;
 		that.backingData.add(docs);
 

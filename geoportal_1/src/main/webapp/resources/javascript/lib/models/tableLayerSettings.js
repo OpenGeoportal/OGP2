@@ -50,7 +50,6 @@ OpenGeoportal.TableRowSettings = Backbone.Collection.extend({
 
 		if (typeof layerModel === "undefined") {
 			if (state) {
-				console.log("adding model");
 				this.add({
 					LayerId : currentLayerId,
 					expanded : true
@@ -62,7 +61,6 @@ OpenGeoportal.TableRowSettings = Backbone.Collection.extend({
 					"expanded" : true
 				});
 			} else {
-				console.log("removing model");
 				this.remove(layerModel);
 			}
 		}

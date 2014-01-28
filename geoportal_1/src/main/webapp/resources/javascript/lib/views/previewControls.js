@@ -34,7 +34,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 
 	setGetFeatureTitle : function(model) {
 		if (model.get("getFeature")) {
-			console.log(model.get("LayerDisplayName"));
+			// console.log(model.get("LayerDisplayName"));
 			this.getFeatureTitle = model.get("LayerDisplayName");
 		}
 	},
@@ -192,8 +192,8 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 
 	},
 	openSlider : function(event) {
-		console.log("openSlider");
-		console.log(event);
+		// console.log("openSlider");
+		// console.log(event);
 		var control = jQuery(event.target).siblings(".controlContainer");
 		control.css("display", "block");
 	},

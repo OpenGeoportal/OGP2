@@ -169,7 +169,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 			},
 
 			toggleCartState : function(itemModel) {
-				console.log("toggleCartState");
+				// console.log("toggleCartState");
 				var layerId = itemModel.get("LayerId");
 				var layerModel = this.findWhere({
 					LayerId : layerId

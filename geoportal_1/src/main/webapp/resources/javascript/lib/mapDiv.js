@@ -246,7 +246,7 @@ OpenGeoportal.MapController = function() {
 		});
 
 		this.events.register('moveend', this, function() {
-			console.log("moveend");
+			// console.log("moveend");
 			var newExtent = that.getSearchExtent();
 			var newCenter = that.getSearchCenter();
 			// TODO: move this to the map object, register the map object in app
@@ -515,7 +515,7 @@ OpenGeoportal.MapController = function() {
 			initialRenderCallback : function(mapController) {
 				var bgMap = mapController.getLayersBy("basemapType", this
 						.get("type"))[0];
-				console.log(bgMap);
+				// console.log(bgMap);
 				google.maps.event.addListener(bgMap.mapObject, "tilesloaded",
 						function() {
 							// console.log("Tiles loaded");
@@ -774,12 +774,12 @@ OpenGeoportal.MapController = function() {
 			},
 			hideOperations : function(model) {
 				var layer = that.getLayersBy("basemapType", model.get("type"))[0];
-				console.log("hide operations");
-				console.log(layer);
+				// console.log("hide operations");
+				// console.log(layer);
 				layer.setVisibility(false);
 			},
 			initialRenderCallback : function(mapController) {
-				console.log("osm initial render callback");
+				// console.log("osm initial render callback");
 				var bgMap = mapController.getLayersBy("basemapType", this
 						.get("type"))[0];
 				bgMap.events.register(bgMap.mapObject, "loadend", function() {
@@ -1387,7 +1387,7 @@ OpenGeoportal.MapController = function() {
 		var viewPortWidth = this.getSize().w - this.getMapOffset().x;
 
 		if (viewPortWidth > globalWidth) {
-			console.log("has multiple worlds");
+			// console.log("has multiple worlds");
 			return true;
 		} else {
 			return false;
@@ -1724,7 +1724,7 @@ OpenGeoportal.MapController = function() {
 			populateUrlArray(layerModel.get("parsedLocation").wms);
 		}
 
-		console.log(urlArray);
+		// console.log(urlArray);
 		return urlArray;
 	};
 
@@ -1866,7 +1866,7 @@ OpenGeoportal.MapController = function() {
 				.on(
 						"map.opacityChange",
 						function(event, data) {
-							console.log(data);
+							// console.log(data);
 							for ( var i in that.getLayersBy("ogpLayerId",
 									data.LayerId)) {
 								that.getLayersBy("ogpLayerId", data.LayerId)[0]
@@ -1904,11 +1904,11 @@ OpenGeoportal.MapController = function() {
 		var layerModel = this.previewed.findWhere({
 			LayerId : layerId
 		});
-		if (typeof layerModel == "undefined") {
+		if (typeof layerModel === "undefined") {
 			throw new Error(
 					"This layer can't be found in the PreviewedLayers collection.");
 		}
-		console.log(layerModel);
+		// console.log(layerModel);
 		var dataType = layerModel.get("DataType").toLowerCase();
 		var userSLD = {};
 		// we need this for now, since the tilecache name and geoserver name for
@@ -2019,8 +2019,8 @@ OpenGeoportal.MapController = function() {
 
 	this.hideLayer = function(layerId) {
 		var layers = this.getLayersBy("ogpLayerId", layerId);
-		console.log("hiding layer");
-		console.log(layers);
+		// console.log("hiding layer");
+		// console.log(layers);
 
 		for ( var i in layers) {
 			layers[i].setVisibility(false);
@@ -2110,9 +2110,9 @@ OpenGeoportal.MapController = function() {
 				.on(
 						"map.getFeatureInfoOn",
 						function(event, data) {
-							console.log("map.getFeatureInfoOn");
+							// console.log("map.getFeatureInfoOn");
 							var layerId = data.LayerId;
-							console.log(layerId);
+							// console.log(layerId);
 							var layers = that
 									.getLayersBy("ogpLayerId", layerId);
 							if (layers.length == 0) {
@@ -2141,7 +2141,7 @@ OpenGeoportal.MapController = function() {
 	this.zoomToLayerExtentHandler = function() {
 		var that = this;
 		jQuery(document).on("map.zoomToLayerExtent", function(event, data) {
-			console.log(data);
+			// console.log(data);
 			that.zoomToLayerExtent(data.bbox);
 		});
 	};
@@ -2180,8 +2180,8 @@ OpenGeoportal.MapController = function() {
 
 		adjustedExtent.extend(new OpenLayers.LonLat(newWLon, newSLat));
 		adjustedExtent.extend(new OpenLayers.LonLat(newELon, newNLat));
-		console.log(newExtent);
-		console.log(adjustedExtent);
+		// console.log(newExtent);
+		// console.log(adjustedExtent);
 		this.zoomToExtent(adjustedExtent);
 
 	};
@@ -2222,7 +2222,7 @@ OpenGeoportal.MapController = function() {
 		// this code should be in mapDiv.js, since it has access to the
 		// openlayers object
 		var extentArr = [];
-		var maxExtentForLayers;
+		var maxExtentForLayers = null;
 		if (extentType === "maxForLayers") {
 			for ( var indx in layerObj) {
 
@@ -2241,11 +2241,10 @@ OpenGeoportal.MapController = function() {
 			"maxForLayers" : maxExtentForLayers
 		};
 
-		if (extentMap[extentType] != "undefined") {
+		if (typeof extentMap[extentType] !== "undefined") {
 			return extentMap[extentType];
 		} else {
-			throw new Exception('Extent type "' + extentType
-					+ '" is undefined.');
+			throw new Error('Extent type "' + extentType + '" is undefined.');
 		}
 	};
 
@@ -2356,7 +2355,7 @@ OpenGeoportal.MapController = function() {
 		var currModel = this.previewed.findWhere({
 			LayerId : layerId
 		});
-		if (typeof currModel == "undefined") {
+		if (typeof currModel === "undefined") {
 			throw new Error("Layer['" + layerId
 					+ "'] not found in PreviewedLayers collection.");
 		}

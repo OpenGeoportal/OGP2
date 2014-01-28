@@ -424,7 +424,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 	};
 
 	this.createTable = function(div, params) {
-		console.log("creating table in div..<" + div + ">");
+		// console.log("creating table in div..<" + div + ">");
 		var table$ = null;
 		try {
 			table$ = this.createTableHtml(div);
@@ -606,10 +606,10 @@ OpenGeoportal.LayerTable = function LayerTable() {
 				return; // this just exits the each function
 			}
 		});
-		if (control$.length === 0) {
-			console.log("table control not found for ['" + this.getTableId()
-					+ "']!");
-		}
+		// if (control$.length === 0) {
+		// console.log("table control not found for ['" + this.getTableId()
+		// + "']!");
+		// }
 		return control$;
 	};
 
@@ -895,8 +895,8 @@ OpenGeoportal.LayerTable = function LayerTable() {
 				fixedWidth += currentModel.get("width") + 7;
 			}
 		}
-		console.log("fixed width");
-		console.log(fixedWidth);
+		// console.log("fixed width");
+		// console.log(fixedWidth);
 		return fixedWidth;
 
 	};
@@ -949,7 +949,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		var colClass = model.get("columnClass");
 		// ".dataTables_scrollBody th." + model.get("columnClass")
 		var sel$ = jQuery("#" + this.getWrapperDiv() + " th." + colClass);
-		console.log("setting width: " + width);
+		// console.log("setting width: " + width);
 		sel$.width(width);
 	};
 	// dynamically size the table depending on visible columns & the width of
@@ -1360,7 +1360,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 	this.adjustColumnsHandler = function() {
 		var that = this;
 		jQuery("#left_col").on("adjustContents", function() {
-			console.log("adjustColumns triggered");
+			// console.log("adjustColumns triggered");
 			that.adjustColumnSizes();
 			that.resizeColumnsCallback(); // other callbacks needed?
 		});
@@ -1425,7 +1425,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 
 		jQuery("#" + that.getTableId()).on("view.closeRow",
 				function(event, data) {
-					console.log("received view.closeRow");
+					// console.log("received view.closeRow");
 					var control$ = that.findExpandControl(data.LayerId);
 					control$.removeClass("expanded").addClass("notExpanded");
 					var rowNode = control$.closest("tr")[0];
@@ -1448,7 +1448,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 						"#" + tableDiv + " td .loginButton",
 						function() {
 							var layerId = that.getLayerIdFromTableCell(this);
-							console.log(layerId);
+							// console.log(layerId);
 
 							var loginPromise = that.appState.get("login")
 									.promptLogin();
@@ -1576,14 +1576,14 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		// change this to a backbone view
 		var that = this;
 		jQuery(document).on("view.previewOn", function(event, data) {
-			console.log("view.previewOn fired by: " + that.getTableId());
+			// console.log("view.previewOn fired by: " + that.getTableId());
 			var control$ = that.findPreviewControl(data.LayerId);
 			if (control$.length > 0) {
 				that.previewControlShowOn(control$);
 			}
 		});
 		jQuery(document).on("view.previewOff", function(event, data) {
-			console.log("view.previewOff fired by:" + that.getTableId());
+			// console.log("view.previewOff fired by:" + that.getTableId());
 			var control$ = that.findPreviewControl(data.LayerId);
 			if (control$.length > 0) {
 				that.previewControlShowOff(control$);

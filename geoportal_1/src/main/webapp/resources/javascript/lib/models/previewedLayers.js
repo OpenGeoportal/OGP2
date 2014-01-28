@@ -231,9 +231,9 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 
 	clearGetFeature : function(turnOnModel) {
-		console.log("clearGetFeature");
+		// console.log("clearGetFeature");
 		var layerId = "dummy";
-		if (typeof turnOnModel != "undefined") {
+		if (typeof turnOnModel !== "undefined") {
 			layerId = turnOnModel.get("LayerId");
 		}
 		this.each(function(model) {

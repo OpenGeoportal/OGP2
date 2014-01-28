@@ -54,7 +54,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 	},
 
 	viewMetadata : function() {
-		console.log(arguments);
+		// console.log(arguments);
 		var layerId = this.model.get("LayerId");
 		this.controls.viewMetadata(layerId);
 	},

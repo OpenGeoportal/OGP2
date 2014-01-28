@@ -266,18 +266,12 @@ OpenGeoportal.UserInterface = function() {
 			var headerHeight = jQuery("#header").height();
 			var footerHeight = jQuery("#footer").height();
 			var fixedHeights = headerHeight + footerHeight + 4;
-			jQuery("#map").width(jQuery("#container").width() - rollRightWidth);// if
-																				// left_col
-																				// is
-																				// visible.
-																				// else
-																				// other
-																				// siblings
-																				// width
-			// update map size...
+			jQuery("#map").width(jQuery("#container").width() - rollRightWidth);
+			// if left_col is visible. else other siblings width update map
+			// size...
 			var newContainerHeight = Math.max(jQuery(window).height()
 					- fixedHeights, minHeight);
-			console.log(newContainerHeight);
+			// console.log(newContainerHeight);
 			jQuery("#container").height(newContainerHeight);
 			that.resizeMap(newContainerHeight);
 			that.resizeResultsTable();
@@ -293,7 +287,7 @@ OpenGeoportal.UserInterface = function() {
 
 	this.resizeResultsTable = function() {
 		if (jQuery(".dataTables_scrollBody").length > 0) {
-			console.log("setting datatables height");
+			// console.log("setting datatables height");
 			var newHeight = jQuery(document).height()
 					- jQuery("#footer").height()
 					- jQuery(".dataTables_scrollBody").offset().top;
