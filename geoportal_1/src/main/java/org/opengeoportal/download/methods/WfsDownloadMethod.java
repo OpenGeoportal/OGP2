@@ -70,8 +70,8 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		//really, we should check the get caps doc to see if this is a viable option...probably this should be done before/at the download prompt
 		String outputFormat = "shape-zip";
 		
-		return WfsGetFeature.createWfsGetFeatureRequest(layerName, workSpace, nameSpace, outputFormat, bboxFilter);
-
+		String request =  WfsGetFeature.createWfsGetFeatureRequest(layerName, workSpace, nameSpace, outputFormat, bboxFilter);
+		return request;
 	}
 	 
 	@Override

@@ -178,7 +178,9 @@ public class DownloadHandlerImpl implements DownloadHandler {
 		layer.setRequestedBounds(bounds);
 		layer.setEmailAddress(emailAddress);
 		layer.setTargetDirectory(this.directoryRetriever.getDownloadDirectory());
-		addOwsInfo(layer);
+		if (LocationFieldUtils.hasWmsUrl(solrRecord.getLocation())){
+			addOwsInfo(layer);
+		}
 		return layer;
 	}
 	

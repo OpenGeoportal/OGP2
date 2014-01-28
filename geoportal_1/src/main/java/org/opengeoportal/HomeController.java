@@ -86,7 +86,8 @@ public class HomeController {
 	private void addConfig(ModelAndView mav){
 		OgpConfig conf = ogpConfigRetriever.getConfig();
 		
-		mav.addObject("pageTitle", conf.getPageTitle());
+		mav.addObject("titlePrimary", conf.getPageTitlePrimary());
+		mav.addObject("titleOffset", conf.getPageTitleOffset());
 		
 		mav.addObject("extraJs", conf.getJsLocalized());	//<script type="text/javascript" src="resources/javascript/dataTables.scroller.min.js"></script>
 		mav.addObject("extraCss", conf.getCssLocalized());  //<link rel="stylesheet" href="resources/css/google.css" type="text/css" />

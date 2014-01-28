@@ -10,6 +10,8 @@
 	href="resources/css/print.css" />
 <link rel="stylesheet" href="resources/css/localize.css"
 	type="text/css" />
+<link rel="stylesheet" href="resources/css/nanoscroller.css"
+	type="text/css" />
 <!--  <script type="text/javascript" src="resources/javascript/require.js"></script>-->
 <script
 	src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
@@ -28,7 +30,7 @@
 <script type="text/javascript"
 	src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 
-<!--  <script type="text/javascript" src="resources/javascript/jquery.ba-resize.js"></script>-->
+<script type="text/javascript" src="resources/javascript/jquery.nanoscroller.min.js"></script>
 <script type="text/javascript" src="resources/javascript/jquery.ba-postmessage.min.js"></script>
 
 <script type="text/javascript"
@@ -69,7 +71,8 @@
 	src="resources/javascript/lib/models/appSettings.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/queryModel.js"></script>
-
+<script type="text/javascript"
+	src="resources/javascript/lib/models/leftPanelModel.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/selectBoxes.js"></script>
 <script type="text/javascript"

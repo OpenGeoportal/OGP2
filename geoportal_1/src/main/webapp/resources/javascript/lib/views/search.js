@@ -124,14 +124,14 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 					this.fireSearch();
 				}
 			} else if (where$.val().trim().length > 0){
-				console.log("trying to geocode value");
+				//console.log("trying to geocode value");
 				//try to geocode the value in the where field if it doesn't come from the geocoder
 				var promise = this.controls.getGeocodePromise(where$.val().trim());
 				var that = this;
 				jQuery.when(promise).done(
 					function(message){
-						console.log("message");
-						console.log(message);
+						//console.log("message");
+						//console.log(message);
 						if (message.values.length > 0){
 							var geocode = where$.data.geocode;
 							geocode = message.values[0];
@@ -220,7 +220,7 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			}
 
 			this.addToHistory(solr);
-			console.log(solr.getURL());
+			//console.log(solr.getURL());
 			return solr.getURL();
 		},
 		
@@ -297,14 +297,14 @@ OpenGeoportal.Views.Query = Backbone.View.extend({
 			solr.setBoundingBox(this.model.get("mapExtent"));
 			solr.setCenter(this.model.get("mapCenter"));
 
-			
-			if ((whatField != null) && (whatField != "")){
-				solr.setWhat(this.model.get("what"));
+			var what = this.model.get("what");
+			if ((what != null) && (what != "")){
+				solr.setWhat(what);
 			}
 			
-			if ((whereField != null) && (whereField != "")){
+			/*if ((whereField != null) && (whereField != "")){
 				solr.setWhere(whereField);
-			}
+			}*/
 			
 			solr.addFilter(solr.createAccessFilter(this.model.get("displayRestricted")));
 

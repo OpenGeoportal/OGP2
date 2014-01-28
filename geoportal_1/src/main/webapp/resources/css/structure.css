@@ -445,9 +445,23 @@ h4 {
 
 /* search area */
 
+form input[type=search] {
+	border: 1px solid #999999;
+	line-height: 15px;
+    padding: 2px;
+    -moz-box-shadow: 0 2px 3px 0 #878888 inset;
+	-webkit-box-shadow: 0 2px 3px 0 #878888 inset;
+	box-shadow: 0 2px 3px 0 #878888 inset;
+	-webkit-appearance: textfield;
+}
+
+form input[type=search]:focus {
+	border: 1px solid #417DC1;
+}
+
 form input[type=text] {
 	border: 1px solid #999999;
-	height: 15px;
+	line-height: 15px;
     padding: 2px;
     -moz-box-shadow: 0 2px 3px 0 #878888 inset;
 	-webkit-box-shadow: 0 2px 3px 0 #878888 inset;
@@ -488,6 +502,20 @@ textarea:focus {
 	z-index: 1500;
 }
 
+.scrollFiller {
+	position: absolute;
+	background-color: white;
+	width: 14px;
+	height: 49px;
+	z-index: 9999999;
+	border-left: 1px solid lightgray;
+	right: 0;
+}
+
+.previewPane .colPreview, .previewPane .previewTools {
+	border-right: 1px solid #cccccc !important;
+}
+
 #leftColSpacer {
 	background-color: #FFFFFF;
 	position: relative;
@@ -511,8 +539,9 @@ textarea:focus {
 	padding-right: 5px;
 }
 
-.basicSearch input[type="text"] {
+.basicSearch input[type="search"] {
 	width: 220px;
+	-webkit-appearance: textfield;
 }
 
 .advancedSearch {
@@ -561,8 +590,9 @@ textarea:focus {
 	width: 77px;
 }
 
-.searchFormRow.advancedSearch>input[type="text"] {
+.searchFormRow.advancedSearch>input[type="search"] {
 	width: 192px;
+	-webkit-appearance: textfield;
 }
 
 .searchFormRow .styledSelectText {

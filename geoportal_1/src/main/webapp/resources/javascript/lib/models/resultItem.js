@@ -12,8 +12,8 @@ if (typeof OpenGeoportal.Models == 'undefined'){
 
 
 OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
-
-    idAttribute: "LayerId"
+	//there are some cases where the LayerId doesn't make a good id for a Backbone model
+    //idAttribute: "LayerId"
 
 });
 

@@ -344,6 +344,7 @@ table.display tr.row_selected_bottom td {
 
 table.display tr.cartSelected td {
 	background-color: #CDE4FA;
+	border-color: #CDE4FA;
 }
 
 table.display tr.cartUnavailable td {

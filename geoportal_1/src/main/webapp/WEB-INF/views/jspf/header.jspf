@@ -1,7 +1,7 @@
 <div id="header">
 
 	<div id="logo" onclick="location.href=location.href">
-		<div id="logoGraphic"></div><div class="logoText">Open</div> <div class="logoText offsetColor">Geoportal</div>
+		<div id="logoGraphic"></div><div class="logoText">${titlePrimary}</div> <div class="logoText offsetColor">${titleOffset}</div>
 	</div>
 	<div id="top_menu">
 		<button class="reset button headerButton">Reset</button> 

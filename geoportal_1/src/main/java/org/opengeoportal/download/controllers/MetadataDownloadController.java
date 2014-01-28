@@ -52,10 +52,10 @@ public class MetadataDownloadController {
 		String contentType;
 		if (download){
 			disposition = "attachment";
-			contentType = "application/octet-stream";
+			contentType = "application/xml;charset=UTF-8";
 		} else {
 			disposition = "inline";
-			contentType = "application/xml";
+			contentType = "application/xml;charset=UTF-8";
 		}
 		
 		String metadataString = null;

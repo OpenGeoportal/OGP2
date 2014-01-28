@@ -5,7 +5,7 @@
 			<div id="geosearchDiv"
 				class="basicSearch whereBox searchFormRow searchRow1">
 				<label for="whereField"><span class="labelText">Where:</span></label>
-				<input id="whereField" type="text" />
+				<input id="whereField" type="search" />
 			</div>
 			<div class="advancedSearch searchFormRow searchRow2">
 				<span class="formCheckbox searchFormInput"> <input
@@ -22,11 +22,11 @@
 		<div id="searchCol2" class="searchCol">
 			<div class="basicSearch whatBox searchFormRow">
 				<label for="whatField"> <span class="labelText">What:</span>
-				</label> <input id="whatField" type="text" />
+				</label> <input id="whatField" type="search" />
 			</div>
 			<div class="advancedSearch searchFormRow searchRow1">
 				<label for="advancedKeywordText">Keyword:</label> <input
-					name="advancedKeywordText" type="text" class="searchFormInput"
+					name="advancedKeywordText" type="search" class="searchFormInput"
 					id="advancedKeywordText" />
 			</div>
 			<div class="advancedSearch searchFormRow searchRow2">
@@ -52,14 +52,14 @@
 			</div>
 			<div class="advancedSearch searchFormRow searchRow1">
 				<label for="advancedOriginatorText">Originator:</label> <input
-					name="advancedOriginatorText" type="text" class="searchFormInput"
+					name="advancedOriginatorText" type="search" class="searchFormInput"
 					id="advancedOriginatorText" />
 			</div>
 			<div class="advancedSearch searchFormRow searchRow2">
 				<label for="advancedDateFromText">Year(s):</label> <span
 					class="searchFormInput"> <input name="advancedDateFromText"
-					type="text" id="advancedDateFromText" size="4" /> to <input
-					name="advancedDateToText" type="text" id="advancedDateToText"
+					type="search" id="advancedDateFromText" size="4" /> to <input
+					name="advancedDateToText" type="search" id="advancedDateToText"
 					size="4" />
 				</span>
 			</div>

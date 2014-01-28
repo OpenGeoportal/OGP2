@@ -9,19 +9,28 @@ public class OgpConfig {
  * 
  */
 
-	String pageTitle;
+	String pageTitlePrimary;
+	String pageTitleOffset;
 	String jsLocalized;
 	String cssLocalized;
 	URL searchUrl;
 	String analyticsId;
 	LoginConfig loginConfig = new LoginConfig();
 	
-	public String getPageTitle() {
-		return pageTitle;
+	public String getPageTitlePrimary() {
+		return pageTitlePrimary;
 	}
 
-	public void setPageTitle(String pageTitle) {
-		this.pageTitle = pageTitle;
+	public void setPageTitlePrimary(String pageTitle) {
+		this.pageTitlePrimary = pageTitle;
+	}
+	
+	public String getPageTitleOffset() {
+		return pageTitleOffset;
+	}
+
+	public void setPageTitleOffset(String pageTitleOffset) {
+		this.pageTitleOffset = pageTitleOffset;
 	}
 
 	public String getJsLocalized() {

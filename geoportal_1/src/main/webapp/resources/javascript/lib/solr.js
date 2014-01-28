@@ -16,9 +16,9 @@
 // This code uses ogpConfig.json values via OpenGeoportal.InstitutionInfo.getSearch()
 
 // Repeat the creation and type-checking code for the next level
-if (typeof OpenGeoportal == 'undefined') {
+if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
-} else if (typeof OpenGeoportal != "object") {
+} else if (typeof OpenGeoportal !== "object") {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
@@ -27,7 +27,7 @@ OpenGeoportal.Solr = function() {
 	this.Institutions = [];
 	this.DataTypes = [];
 
-	this.ServerName = "";//includes any path elements & port number
+	this.ServerName = "";// includes any path elements & port number
 
 	/**
 	 * config element from ogpConfig.json can contain either a single server or
@@ -99,7 +99,6 @@ OpenGeoportal.Solr = function() {
 		return shards;
 	};
 
-
 	/*
 	 * Other queries
 	 */
@@ -108,36 +107,38 @@ OpenGeoportal.Solr = function() {
 	// Solr server
 	this.getMetadataParams = function(layerId) {
 		var metadataParams = {
-				q: this.createFilter("LayerId", layerId),
-				fl: this.getReturnedColumns(this.MetadataRequest),
-				wt: "json"
+			q : this.createFilter("LayerId", layerId),
+			fl : this.getReturnedColumns(this.MetadataRequest),
+			wt : "json"
 		};
 
 		return metadataParams;
 	};
 
-	// returns the solr query to obtain terms directly from the index for a field
+	// returns the solr query to obtain terms directly from the index for a
+	// field
 	this.getTermParams = function(termField, requestTerm) {
 		var termParams = {
-				"terms.fl": termField,
-				"terms.regex": ".*" + requestTerm + ".*",
-				"terms.regex.flag": "case_insensitive",
-				"terms.limit":	-1,
-				omitHeader: true,
-				wt: "json"
+			"terms.fl" : termField,
+			"terms.regex" : ".*" + requestTerm + ".*",
+			"terms.regex.flag" : "case_insensitive",
+			"terms.limit" : -1,
+			omitHeader : true,
+			wt : "json"
 		};
 		return termParams;
 	};
 
-	// returns the solr query params to obtain a layer info from the Solr server given
+	// returns the solr query params to obtain a layer info from the Solr server
+	// given
 	// a layerId or array of layerId's
 	this.getInfoFromLayerIdParams = function getInfoFromLayerIdQuery(layerId) {
 
 		var infoParams = {
-				q: this.createFilter("LayerId", layerId),
-				wt: "json",
-				fl: this.getReturnedColumns(this.SearchRequest),
-				rows: 10000
+			q : this.createFilter("LayerId", layerId),
+			wt : "json",
+			fl : this.getReturnedColumns(this.SearchRequest),
+			rows : 10000
 		};
 		return infoParams;
 	};
@@ -148,7 +149,6 @@ OpenGeoportal.Solr = function() {
 
 	this.SortAscending = "asc";
 	this.SortDescending = "desc";
-
 
 	/* defaults */
 	this.BasicKeywordString = null;
@@ -266,14 +266,15 @@ OpenGeoportal.Solr = function() {
 
 	this.filters = [];
 	// a private function used to create filters
-	this.createFilter = function createFilter(columnName, values, prefix, joiner) {
-		if (typeof values == "undefined" || values.length ===  0) {
+	this.createFilter = function createFilter(columnName, values, prefix,
+			joiner) {
+		if (typeof values == "undefined" || values.length === 0) {
 			return ""; // on empty input, no filter returned
 		}
-		if (!jQuery.isArray(values)){
-			values = [values];
+		if (!jQuery.isArray(values)) {
+			values = [ values ];
 		}
-		if (typeof prefix == "undefined"){
+		if (typeof prefix == "undefined") {
 			prefix = "";
 		}
 		var i;
@@ -282,30 +283,31 @@ OpenGeoportal.Solr = function() {
 			var value = values[i];
 			temp.push(columnName + ":" + value);
 		}
-		if (typeof joiner == "undefined"){
+		if (typeof joiner == "undefined") {
 			joiner = "OR";
 		} else {
-			if ((joiner != "OR")&&(joiner != "AND")){
+			if ((joiner != "OR") && (joiner != "AND")) {
 				throw new Error("clause must be joined with 'AND' or 'OR'.");
 			}
 
 		}
-		var filter = temp.join(" " + joiner  + " ");
+		var filter = temp.join(" " + joiner + " ");
 
 		return filter;
 	};
-	
-	this.addFilter = function(filter){
 
-		if (filter.length > 0){
+	this.addFilter = function(filter) {
+
+		if (filter.length > 0) {
 			this.filters.push(filter);
 		}
 	};
 
-	this.createAccessFilter = function(arrDisplayRestricted){
+	this.createAccessFilter = function(arrDisplayRestricted) {
 
-		var accessFilter = this.createFilter("Institution", arrDisplayRestricted);
-		if (accessFilter.length > 0){
+		var accessFilter = this.createFilter("Institution",
+				arrDisplayRestricted);
+		if (accessFilter.length > 0) {
 			accessFilter += " OR Access:Public";
 		}
 		return accessFilter;
@@ -315,79 +317,89 @@ OpenGeoportal.Solr = function() {
 	 * Spatial query components
 	 **************************************************************************/
 
-	
-
-	
-	//all we need is "bounds", which in the application is the map extent
+	// all we need is "bounds", which in the application is the map extent
 	this.getNewOgpSpatialQueryParams = function(bounds) {
 		var centerLon = this.getCenter(bounds.minX, bounds.maxX);
 		var centerLat = this.getCenter(bounds.minY, bounds.maxY);
 		console.log(centerLon);
 		console.log(centerLat);
-		//bf clauses are additive
+		// bf clauses are additive
 		var area = this.getBoundsArea(bounds);
 		var bf_array = [
-		                this.getBoundsAreaRelevancyClause() + "^" + this.LayerMatchesScale.boost,
-                        //this.getIntersectionAreaRelevancyClause(area) + "^" + this.LayerAreaIntersection.boost,
-                        this.getCenterRelevancyClause(centerLat, centerLon) + "^" + this.LayerMatchesCenter.boost//,
-                        //this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost	
-		                ];
-        var params = {
-                        bf: bf_array,
-                        boost: this.getLayerWithinMapClause(),
-                        fq: [this.getIntersectionFilter()],
-                        intx: this.getIntersectionFunction(bounds),
-                        union: area,
-                        debug: true
-                    };
+				this.getBoundsAreaRelevancyClause() + "^"
+						+ this.LayerMatchesScale.boost,
+				// this.getIntersectionAreaRelevancyClause(area) + "^" +
+				// this.LayerAreaIntersection.boost,
+				this.getCenterRelevancyClause(centerLat, centerLon) + "^"
+						+ this.LayerMatchesCenter.boost// ,
+		// this.getLayerWithinMapClause() + "^" + this.LayerWithinMap.boost
+		];
+		var params = {
+			bf : bf_array,
+			boost : this.getLayerWithinMapClause(),
+			fq : [ this.getIntersectionFilter() ],
+			intx : this.getIntersectionFunction(bounds),
+			union : area,
+			debug : true
+		};
 
 		return params;
 	};
 
-	
-		
 	this.getClassicSpatialQuery = function() {
-	
-		var spatialQuery = "sum(" + this.classicLayerWithinMap(this.MinX, this.MaxX, this.MinY, this.MaxY) + 
-				"," + this.layerMatchesArea(this.MinX, this.MaxX, this.MinY, this.MaxY) + 
-				"," + this.layerNearCenterLongitude(this.MinX, this.MaxX) + 
-				"," + this.layerAreaIntersectionScore(this.MinX, this.MaxX, this.MinY, this.MaxY) +
-				"," + this.layerNearCenterLatitude(this.MinY, this.MaxY) + 
-				")";
+
+		var spatialQuery = "sum("
+				+ this.classicLayerWithinMap(this.MinX, this.MaxX, this.MinY,
+						this.MaxY)
+				+ ","
+				+ this.layerMatchesArea(this.MinX, this.MaxX, this.MinY,
+						this.MaxY)
+				+ ","
+				+ this.layerNearCenterLongitude(this.MinX, this.MaxX)
+				+ ","
+				+ this.layerAreaIntersectionScore(this.MinX, this.MaxX,
+						this.MinY, this.MaxY) + ","
+				+ this.layerNearCenterLatitude(this.MinY, this.MaxY) + ")";
 
 		return spatialQuery;
 	};
-	
-	//all we need is "bounds", which in the application is the map extent
+
+	// all we need is "bounds", which in the application is the map extent
 	this.getOgpSpatialQueryParams = function(bounds) {
-		/*var centerLon = this.getCenter(bounds.minX, bounds.maxX);
-		var centerLat = this.getCenter(bounds.minY, bounds.maxY);
-		console.log(centerLon);
-		console.log(centerLat);*/
-		//bf clauses are additive
-		//var area = this.getBoundsArea(bounds);
+		/*
+		 * var centerLon = this.getCenter(bounds.minX, bounds.maxX); var
+		 * centerLat = this.getCenter(bounds.minY, bounds.maxY);
+		 * console.log(centerLon); console.log(centerLat);
+		 */
+		// bf clauses are additive
+		// var area = this.getBoundsArea(bounds);
 		var bf_array = [
-		                this.classicLayerMatchesArea(bounds) + "^" + this.LayerMatchesScale.boost,	//yes
-                        this.classicLayerAreaIntersectionScore(bounds) + "^" + this.LayerAreaIntersection.boost,
-                        this.classicCenterRelevancyClause() + "^" + this.LayerMatchesCenter.boost,
-                        this.classicLayerWithinMap(bounds) + "^" + this.LayerWithinMap.boost	//yes
-		                ];
-        var params = {
-                        bf: bf_array,
-                        fq: [this.getIntersectionFilter()],
-                        intx: this.getIntersectionFunction(bounds)//,
-                       // union: area
-                    };
+				this.classicLayerMatchesArea(bounds) + "^"
+						+ this.LayerMatchesScale.boost, // yes
+				this.classicLayerAreaIntersectionScore(bounds) + "^"
+						+ this.LayerAreaIntersection.boost,
+				this.classicCenterRelevancyClause() + "^"
+						+ this.LayerMatchesCenter.boost,
+				this.classicLayerWithinMap(bounds) + "^"
+						+ this.LayerWithinMap.boost // yes
+		];
+		var params = {
+			bf : bf_array,
+			fq : [ this.getIntersectionFilter() ],
+			intx : this.getIntersectionFunction(bounds)
+		// ,
+		// union: area
+		};
 
 		return params;
 	};
 
-	//term objects
+	// term objects
 	this.LayerWithinMap = {
 		term : "LayerWithinMap",
 		boost : 80.0
 	};
-	
+
 	this.LayerMatchesScale = {
 		term : "LayerMatchesScale",
 		boost : 70.0
@@ -401,14 +413,15 @@ OpenGeoportal.Solr = function() {
 		term : "LayerAreaIntersection",
 		boost : 30.0
 	};
-	
+
 	/**
 	 * Query component to filter out non-intersecting layers.
 	 * 
 	 * @return {string} Query string filter
 	 */
 	this.getIntersectionFilter = function() {
-		//this filter should not be cached, since it will be different each time
+		// this filter should not be cached, since it will be different each
+		// time
 		return "{!frange l=0 incl=false cache=false}$intx";
 
 	};
@@ -419,88 +432,90 @@ OpenGeoportal.Solr = function() {
 	 * @return {string} Query string to calculate intersection
 	 */
 	this.getIntersectionFunction = function(bounds) {
-		//TODO: this needs work.  have to account for dateline crossing properly
-		var getRangeClause = function(minVal, minTerm, maxVal, maxTerm){
+		// TODO: this needs work. have to account for dateline crossing properly
+		var getRangeClause = function(minVal, minTerm, maxVal, maxTerm) {
 
-			var rangeClause = "max(0,sub(min(" + maxVal  + "," + maxTerm  + "),max("
-				+ minVal + "," + minTerm + ")))";
+			var rangeClause = "max(0,sub(min(" + maxVal + "," + maxTerm
+					+ "),max(" + minVal + "," + minTerm + ")))";
 			return rangeClause;
 		};
 
 		var xRange;
-		if (bounds.minX > bounds.maxX){
-			//crosses the dateline
+		if (bounds.minX > bounds.maxX) {
+			// crosses the dateline
 			var xRange1 = getRangeClause(bounds.minX, "MinX", 180, "MaxX");
 			var xRange2 = getRangeClause(-180, "MinX", bounds.maxX, "MaxX");
-			xRange = "sum(" + xRange1 + "," + xRange2 + ")";		
+			xRange = "sum(" + xRange1 + "," + xRange2 + ")";
 		} else {
 			xRange = getRangeClause(bounds.minX, "MinX", bounds.maxX, "MaxX");
 		}
-		
+
 		var yRange = getRangeClause(bounds.minY, "MinY", bounds.maxY, "MaxY");
-		
+
 		var intersection = "product(" + xRange + "," + yRange + ")";
 
 		return intersection;
 
 	};
 
+	/**
+	 * score layer based on how close map center latitude is to the layer's
+	 * center latitude
+	 */
+	this.layerNearCenterClause = function(center, minTerm, maxTerm) {
+		var layerMatchesCenter = "recip(abs(sub(product(sum(" + minTerm + ","
+				+ maxTerm + "),.5)," + center + ")),1,1000,1000)";
+		return layerMatchesCenter;
+	};
 
-
-/**
- * score layer based on how close map center latitude is to the layer's center latitude
- */
-this.layerNearCenterClause = function(center, minTerm, maxTerm){
-    var layerMatchesCenter = "recip(abs(sub(product(sum(" + minTerm + "," + maxTerm + "),.5)," + center + ")),1,1000,1000)";
-    return layerMatchesCenter;	
-};
-
-this.classicCenterRelevancyClause = function(){
-	var center = this.getCenter();
-	var clause = "sum(" + this.layerNearCenterClause(center.centerX, "MinX", "MaxX") + ",";
-	clause += this.layerNearCenterClause(center.centerY, "MinY", "MaxY") + ")";
-	return clause;
-};
+	this.classicCenterRelevancyClause = function() {
+		var center = this.getCenter();
+		var clause = "sum("
+				+ this.layerNearCenterClause(center.centerX, "MinX", "MaxX")
+				+ ",";
+		clause += this.layerNearCenterClause(center.centerY, "MinY", "MaxY")
+				+ ")";
+		return clause;
+	};
 
 	/**
-	 * Calculates the reciprocal of the distance of the layer
-	 * center from the bounding box center.
+	 * Calculates the reciprocal of the distance of the layer center from the
+	 * bounding box center.
 	 * 
-	 * note that, while the squared Euclidean distance is perfectly adequate to calculate relative
-	 * distances, it affects the score/ranking in a non-linear way; we may decide that is ok
+	 * note that, while the squared Euclidean distance is perfectly adequate to
+	 * calculate relative distances, it affects the score/ranking in a
+	 * non-linear way; we may decide that is ok
 	 * 
 	 * @return {string} query string to calculate score for center distance
 	 */
 	this.getCenterRelevancyClause = function(centerLat, centerLon) {
-		//dist(2, x, y, 0, 0) 
+		// dist(2, x, y, 0, 0)
 		var smoothingFactor = 1000;
 		var score = "if(and(exists(CenterX),exists(CenterY)),";
-		//score += "recip(sqedist(CenterX,CenterY," + centerLon + ","
+		// score += "recip(sqedist(CenterX,CenterY," + centerLon + ","
 
-		score += "recip(dist(2,CenterX,CenterY," + centerLon + ","
-				+ centerLat + "),1," + smoothingFactor + "," + smoothingFactor + "),0)";
+		score += "recip(dist(2,CenterX,CenterY," + centerLon + "," + centerLat
+				+ "),1," + smoothingFactor + "," + smoothingFactor + "),0)";
 
 		return score;
 
 	};
-	
 
- 	
- 	
-/** 
- * return a search element to boost the scores of layers whose scale matches the displayed map scale
- * specifically, it compares their area
- */
-this.classicLayerMatchesArea = function(bounds){
-	var mapDeltaX = Math.abs(bounds.maxX - bounds.minX);
-	var mapDeltaY = Math.abs(bounds.maxY - bounds.minY);
-	var mapArea = (mapDeltaX * mapDeltaY);
-	//var layerMatchesArea = "product(" + this.LayerMatchesScale.boost + ","
-	//			+ "recip(sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000))";
-	var layerMatchesArea = "recip(sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000)";
-	return layerMatchesArea;
-};
-
+	/**
+	 * return a search element to boost the scores of layers whose scale matches
+	 * the displayed map scale specifically, it compares their area
+	 */
+	this.classicLayerMatchesArea = function(bounds) {
+		var mapDeltaX = Math.abs(bounds.maxX - bounds.minX);
+		var mapDeltaY = Math.abs(bounds.maxY - bounds.minY);
+		var mapArea = (mapDeltaX * mapDeltaY);
+		// var layerMatchesArea = "product(" + this.LayerMatchesScale.boost +
+		// ","
+		// + "recip(sum(abs(sub(Area," + mapArea + ")),.01),1,1000,1000))";
+		var layerMatchesArea = "recip(sum(abs(sub(Area," + mapArea
+				+ ")),.01),1,1000,1000)";
+		return layerMatchesArea;
+	};
 
 	/**
 	 * Compares the area of the layer to the area of the map extent; "scale"
@@ -508,102 +523,114 @@ this.classicLayerMatchesArea = function(bounds){
 	 * @return {string} query string to calculate score for area comparison
 	 */
 	this.getBoundsAreaRelevancyClause = function() {
-		//smoothing factor really should be examined;  is the curve shape appropriate?
+		// smoothing factor really should be examined; is the curve shape
+		// appropriate?
 		var smoothingFactor = 1000;
-		var areaClause = "if(exists(Area),recip(abs(sub(Area,$union)),1," + smoothingFactor + "," + smoothingFactor + "),0)";
+		var areaClause = "if(exists(Area),recip(abs(sub(Area,$union)),1,"
+				+ smoothingFactor + "," + smoothingFactor + "),0)";
 		return areaClause;
 	};
-	
-/**
- * return a search clause whose score reflects how much of the map this layers covers
- * 9 points in a 3x3 grid are used. we compute how many of those 9 points are within the 
- *  the layer's bounding box.  This count is then normalized and multiplied by the boost
- * the grid is evenly space and does not include points on the edge of the map. 
- *  for example, for a 3x3 grid we use 9 points spaced at 1/4, 1/2 and 3/4 x and y
- *  each point in the grid is weighted evenly 
- */
-this.classicLayerAreaIntersectionScore = function (bounds) {
-	var mapMaxX = bounds.maxX;
-	var mapMinX = bounds.minX;
-	var mapMinY = bounds.minY;
-	var mapMaxY = bounds.maxY;	
-	
-	var stepCount = 3;  // use 3x3 grid
-	var mapDeltaX = Math.abs(mapMaxX - mapMinX);
-	var mapXStepSize = mapDeltaX / (stepCount + 1.);
 
-	var mapDeltaY = Math.abs(mapMaxY - mapMinY);
-	var mapYStepSize = mapDeltaY / (stepCount + 1.);
+	/**
+	 * return a search clause whose score reflects how much of the map this
+	 * layers covers 9 points in a 3x3 grid are used. we compute how many of
+	 * those 9 points are within the the layer's bounding box. This count is
+	 * then normalized and multiplied by the boost the grid is evenly space and
+	 * does not include points on the edge of the map. for example, for a 3x3
+	 * grid we use 9 points spaced at 1/4, 1/2 and 3/4 x and y each point in the
+	 * grid is weighted evenly
+	 */
+	this.classicLayerAreaIntersectionScore = function(bounds) {
+		var mapMaxX = bounds.maxX;
+		var mapMinX = bounds.minX;
+		var mapMinY = bounds.minY;
+		var mapMaxY = bounds.maxY;
 
-	var clause = "sum(";  // add up all the map points within the layer
-	for (var i = 0 ; i < stepCount  ; i++) {
+		var stepCount = 3; // use 3x3 grid
+		var mapDeltaX = Math.abs(mapMaxX - mapMinX);
+		var mapXStepSize = mapDeltaX / (stepCount + 1.);
 
-		for (var j = 0 ; j < stepCount ; j++){
+		var mapDeltaY = Math.abs(mapMaxY - mapMinY);
+		var mapYStepSize = mapDeltaY / (stepCount + 1.);
 
-			var currentMapX = mapMinX + ((i + 1) * mapXStepSize);
-			var currentMapY = mapMinY + ((j + 1) * mapYStepSize);
+		var clause = "sum("; // add up all the map points within the layer
+		for ( var i = 0; i < stepCount; i++) {
 
-			//console.log([currentMapX, currentMapY]);
-			// is the current map point in the layer
-			// that is, is currentMapX between MinX and MaxX and is currentMapY betweeen MinY and MaxY
+			for ( var j = 0; j < stepCount; j++) {
 
-			//why 400?
-			var thisPointWithin = "map(sum(map(sub(" + currentMapX + ",MinX),0,400,1,0),";
-			thisPointWithin += "map(sub("+ currentMapX + ",MaxX),-400,0,1,0),";
-			thisPointWithin += "map(sub(" + currentMapY + ",MinY),0,400,1,0),";
-			thisPointWithin += "map(sub(" + currentMapY + ",MaxY),-400,0,1,0)),";
-			thisPointWithin += "4,4,1,0)";  // final map values
-			
+				var currentMapX = mapMinX + ((i + 1) * mapXStepSize);
+				var currentMapY = mapMinY + ((j + 1) * mapYStepSize);
 
-			// note that map(" + currentMapX + ",MinX,MaxX,1,0) doesn't work 
-			//  because the min,max,target in map must be constants, not field values
-			//  so we do many sub based comparisons
+				// console.log([currentMapX, currentMapY]);
+				// is the current map point in the layer
+				// that is, is currentMapX between MinX and MaxX and is
+				// currentMapY betweeen MinY and MaxY
 
-			if ((i > 0) || (j > 0)){
-				clause += ",";  // comma separate point checks
+				// why 400?
+				var thisPointWithin = "map(sum(map(sub(" + currentMapX
+						+ ",MinX),0,400,1,0),";
+				thisPointWithin += "map(sub(" + currentMapX
+						+ ",MaxX),-400,0,1,0),";
+				thisPointWithin += "map(sub(" + currentMapY
+						+ ",MinY),0,400,1,0),";
+				thisPointWithin += "map(sub(" + currentMapY
+						+ ",MaxY),-400,0,1,0)),";
+				thisPointWithin += "4,4,1,0)"; // final map values
+
+				// note that map(" + currentMapX + ",MinX,MaxX,1,0) doesn't work
+				// because the min,max,target in map must be constants, not
+				// field values
+				// so we do many sub based comparisons
+
+				if ((i > 0) || (j > 0)) {
+					clause += ","; // comma separate point checks
+				}
+
+				clause += thisPointWithin;
 			}
-
-			clause += thisPointWithin;
 		}
-	}
-	clause += ")";
+		clause += ")";
 
-	// clause has the sum of 9 point checks, this could be 9,6,4,3,2,1 or 0
-	// normalize to between 0 and 1, then multiple by boost
+		// clause has the sum of 9 point checks, this could be 9,6,4,3,2,1 or 0
+		// normalize to between 0 and 1, then multiple by boost
 
-	clause = "product(" + clause + "," + (1.0 / (stepCount * stepCount)) + ")";
-	//clause = "product(" + clause + "," + this.LayerAreaIntersection.boost + ")";
-	//tempClause = clause;  // set global for debugging
-	//console.log(clause);
-	return clause;
-};
-
+		clause = "product(" + clause + "," + (1.0 / (stepCount * stepCount))
+				+ ")";
+		// clause = "product(" + clause + "," + this.LayerAreaIntersection.boost
+		// + ")";
+		// tempClause = clause; // set global for debugging
+		// console.log(clause);
+		return clause;
+	};
 
 	/**
 	 * 
 	 * 
-	 *
-	 * Compares the area of the layer's intersection with the map extent to the area of the map extent
-	 * $intx depends on the intersection function defined in "getIntersectionFunction", while $union
-	 * depends on the value of union being populated with the area of the map extent 
+	 * 
+	 * Compares the area of the layer's intersection with the map extent to the
+	 * area of the map extent $intx depends on the intersection function defined
+	 * in "getIntersectionFunction", while $union depends on the value of union
+	 * being populated with the area of the map extent
 	 * 
 	 * @return {string} query string to calculate score for area comparison
 	 */
 	this.getIntersectionAreaRelevancyClause = function(area) {
-		//$intx is the area of intersection of the layer bounds and the search extent
-		//$union is the area of the search extent
-		//var areaClause = "scale(div($intx,$union),0,1)";
-		//if $intx - $union = 0, then the layer likely fully overlaps
-		//var areaClause = "if($intx,recip(abs(sub($intx,$union)),1,1000,1000),0)";
+		// $intx is the area of intersection of the layer bounds and the search
+		// extent
+		// $union is the area of the search extent
+		// var areaClause = "scale(div($intx,$union),0,1)";
+		// if $intx - $union = 0, then the layer likely fully overlaps
+		// var areaClause =
+		// "if($intx,recip(abs(sub($intx,$union)),1,1000,1000),0)";
 		//
 		area = area - 1;
 		var areaClause = "if(not(sub($union,$intx)),div($intx,$union),0)";
-		//var areaClause = "if(map(Area,0," + area + ",1,0),div($intx,$union),0)";
+		// var areaClause = "if(map(Area,0," + area +
+		// ",1,0),div($intx,$union),0)";
 		return areaClause;
 
 	};
-	
-	
+
 	/**
 	 * compute a score for layers within the current map the layer's MinX and
 	 * MaxX must be within the map extent in X and the layer's MinY and MaxY
@@ -623,112 +650,113 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 	 * if(exists(MinY),map(MinY,0,1,1,0),0),
 	 * if(exists(MaxY),map(MaxY,0,1,1,0),0) )
 	 */
-	
 
-	 this.classicLayerWithinMap = function(bounds) {
+	this.classicLayerWithinMap = function(bounds) {
 		var mapMinX = bounds.minX;
 		var mapMaxX = bounds.maxX;
 		var mapMinY = bounds.minY;
 		var mapMaxY = bounds.maxY;
-		
-	 	var layerWithinMap = "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY)),";
-	  	//layerWithinMap += "product(" + this.LayerWithinMapBoost + ",map(sum(";
-	  	layerWithinMap += "map(sum(";
-		layerWithinMap += "map(MinX," + mapMinX + "," + mapMaxX + ",1,0),";
-	  	layerWithinMap += "map(MaxX," + mapMinX + "," + mapMaxX + ",1,0),";
-	  	layerWithinMap += "map(MinY," + mapMinY + "," + mapMaxY + ",1,0),";
-	 	layerWithinMap += "map(MaxY," + mapMinY + "," + mapMaxY + ",1,0))";
-	 	//layerWithinMap += ",4,4,1,0))),0)";
-	 	layerWithinMap += ",4,4,1,0),0)";
 
-	  
+		var layerWithinMap = "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY)),";
+		// layerWithinMap += "product(" + this.LayerWithinMapBoost +
+		// ",map(sum(";
+		layerWithinMap += "map(sum(";
+		layerWithinMap += "map(MinX," + mapMinX + "," + mapMaxX + ",1,0),";
+		layerWithinMap += "map(MaxX," + mapMinX + "," + mapMaxX + ",1,0),";
+		layerWithinMap += "map(MinY," + mapMinY + "," + mapMaxY + ",1,0),";
+		layerWithinMap += "map(MaxY," + mapMinY + "," + mapMaxY + ",1,0))";
+		// layerWithinMap += ",4,4,1,0))),0)";
+		layerWithinMap += ",4,4,1,0),0)";
+
 		return layerWithinMap;
 	};
 
 	this.getLayerWithinMapClause = function() {
 		/*
-		var getMapClause = function(solrCoordField, minCoord, maxCoord){
-			var mapClause = "if(exists(" + solrCoordField + "), map(" + solrCoordField + "," + minCoord + "," + maxCoord + ",1,0)";
-			return mapClause;
-		};
-		
-		var solrBoundsFields = ["MinX", "MaxX", "MinY", "MaxY"];
-
-		var arrClause = [];
-		for (var i in solrBoundsFields){
-			arrClause.push(getMapClause(solrBoundsFields[i], bounds.minX, bounds.maxX)); 
-		}
-		//I'm betting that this "and" function is faster than "product"
-		var layerWithinMap = "if(and(" + arrClause.join() + "))";
-		
-		return layerWithinMap;
-		*/
-		//$intx is the area of intersection
-		//Area is the stored area of the layer extent
-		//var areaClause = "div($intx,Area)";
-		//be careful with these reciprocal clauses the way they are weighted should generally be dynamic
-		//var areaClause = "if(exists(Area),recip(abs(sub($intx,Area)),1,Area,Area),0)";
+		 * var getMapClause = function(solrCoordField, minCoord, maxCoord){ var
+		 * mapClause = "if(exists(" + solrCoordField + "), map(" +
+		 * solrCoordField + "," + minCoord + "," + maxCoord + ",1,0)"; return
+		 * mapClause; };
+		 * 
+		 * var solrBoundsFields = ["MinX", "MaxX", "MinY", "MaxY"];
+		 * 
+		 * var arrClause = []; for (var i in solrBoundsFields){
+		 * arrClause.push(getMapClause(solrBoundsFields[i], bounds.minX,
+		 * bounds.maxX)); } //I'm betting that this "and" function is faster
+		 * than "product" var layerWithinMap = "if(and(" + arrClause.join() +
+		 * "))";
+		 * 
+		 * return layerWithinMap;
+		 */
+		// $intx is the area of intersection
+		// Area is the stored area of the layer extent
+		// var areaClause = "div($intx,Area)";
+		// be careful with these reciprocal clauses the way they are weighted
+		// should generally be dynamic
+		// var areaClause =
+		// "if(exists(Area),recip(abs(sub($intx,Area)),1,Area,Area),0)";
 		// map(x,min,max,target,value)
-		//to give the boost if a certain percentage of the area is in the search extent
-		//map($intx,product(.95,Area),Area,0,1);
-		
-		//This clause is true to Steve's original conception of giving a straight-across
-		//boost to any layer fully contained by the search extent, translated into a more
-		//compact expression, as allowed by newer solr query syntax.
-		
-		//if the Area value exists, subtract the area of intersection from the total layer area.
-		//this will yield 0 if they are the same, which equates to a boolean false
-		//take "not" to yield a boolean true (= 1)
-		//if there is a differential, "not" will yield a boolean false (= 0)
-		//var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
-		//var within = "1";
-		//var notwithin = "0";
-		//var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
-		//var areaClause = "{!frange u=1 incu=false cache=false} if(exists(Area),if(not(sub(Area,$intx)),div($intx,$union),0),0)";
+		// to give the boost if a certain percentage of the area is in the
+		// search extent
+		// map($intx,product(.95,Area),Area,0,1);
+		// This clause is true to Steve's original conception of giving a
+		// straight-across
+		// boost to any layer fully contained by the search extent, translated
+		// into a more
+		// compact expression, as allowed by newer solr query syntax.
+		// if the Area value exists, subtract the area of intersection from the
+		// total layer area.
+		// this will yield 0 if they are the same, which equates to a boolean
+		// false
+		// take "not" to yield a boolean true (= 1)
+		// if there is a differential, "not" will yield a boolean false (= 0)
+		// var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
+		// var within = "1";
+		// var notwithin = "0";
+		// var areaClause = "if(exists(Area),not(sub(Area,$intx)),0)";
+		// var areaClause = "{!frange u=1 incu=false cache=false}
+		// if(exists(Area),if(not(sub(Area,$intx)),div($intx,$union),0),0)";
 		var areaClause = "{!frange u=15 l=0 incu=false incl=false cache=false} product(15,div($intx,$union))";
 		return areaClause;
 	};
-	
-	//Helpers
-	
+
+	// Helpers
+
 	this.setBoundingBox = function setBoundingBox(bounds) {
 		this.bounds = {
-				minX: Math.max(bounds.minX, -180),
-				minY: Math.max(bounds.minY, -90),
-				maxX: Math.min(bounds.maxX, 180),
-				maxY: Math.min(bounds.maxY, 90)
-				};
+			minX : Math.max(bounds.minX, -180),
+			minY : Math.max(bounds.minY, -90),
+			maxX : Math.min(bounds.maxX, 180),
+			maxY : Math.min(bounds.maxY, 90)
+		};
 	};
 
-	
 	this.clearBoundingBox = function clearBoundingBox() {
 		this.bounds = {};
 	};
-	
+
 	this.center = {};
-	
-	this.setCenter = function(center){
+
+	this.setCenter = function(center) {
 		this.center = center;
 	};
-	
-	this.getCenter = function(){
+
+	this.getCenter = function() {
 		return this.center;
-		/*if (min >= max){
-			var tempMin = min;
-			min = max;
-			max = tempMin;
-		}
-		return Math.abs((max - min)/2) + min;*/
- 	};
-		
- 	this.getBoundsArea = function(bounds){
+		/*
+		 * if (min >= max){ var tempMin = min; min = max; max = tempMin; }
+		 * return Math.abs((max - min)/2) + min;
+		 */
+	};
+
+	this.getBoundsArea = function(bounds) {
 		var w = Math.abs(bounds.maxX - bounds.minX);
 		var l = Math.abs(bounds.maxY - bounds.minY);
 
 		return l * w;
- 	};
+	};
 
-//does the text below still apply?
+	// does the text below still apply?
 
 	/**
 	 * a private function that returns a search element to detect intersecting
@@ -754,119 +782,115 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 	 * Keyword/text components
 	 **************************************************************************/
 
-		
- 	this.ignoreSpatial = false;
- 	this.setIgnoreSpatial = function(bool){
- 		this.ignoreSpatial = bool;
- 	};
- 	
-   this.getSearchParams = function(){
-	   //TODO: this is not the greatest.  It might be better if the solr object was a model/collection?
-	   	this.textParams = this.getOgpTextSearchParams();
-	   	this.spatialParams = {};
-	   	if (!this.ignoreSpatial){
-	   		this.spatialParams = this.getOgpSpatialQueryParams(this.bounds);
-	   	}
-	   	
-        this.baseParams = {
-            wt: "json",
-            /*facet: true,
-            "facet.field": [
-                "{!ex=dt,insf}InstitutionSort",
-                "{!ex=dt,insf}DataTypeSort",
-                "{!ex=dt,insf}PlaceKeywordsSort"
-            ],
-            "f.PlaceKeywordsSort.facet.mincount": 1,
-            "f.PlaceKeywordsSort.facet.limit": 10,*/
-            defType: "edismax",
-            fl: this.getReturnedColumns(this.SearchRequest),
-            sort: this.getSortClause()//,
-            //debug: true
-        };
+	this.ignoreSpatial = false;
+	this.setIgnoreSpatial = function(bool) {
+		this.ignoreSpatial = bool;
+	};
 
-        var params = this.combineParams(this.baseParams, this.spatialParams, this.textParams);
-        return params;
-   };
-   
-   this.combineParams = function(){
-	   var newParams = {};
-	   for (var i in arguments){
-		   var currentObj = arguments[i];
-		   
-		   for (var j in currentObj){
-			   if (typeof newParams[j] == "undefined" || newParams[j].length === 0) {
-				   newParams[j] = currentObj[j];
-			   } else if (jQuery.isArray(newParams[j])){
-				   if (jQuery.isArray(currentObj[j])){
-					   for (var k in currentObj[j]){
-						   newParams[j].push(currentObj[j][k]);
-					   }
-				   } else {
-					   newParams[j].push(currentObj[j]);
-				   }
-			   } else {
-				   newParams[j] = currentObj[j];
-			   }
-		   }
-	   }
-	   
-	   return newParams;
-   };
-   
-    this.getOgpTextSearchParams = function() {
-    	//I would like to auto sense whether this is a basic or advanced search based on which ui fields are populated;
-    	//perhaps this can/should be abstracted to a higher level
-    	
-        var qf_array = [ 
-            "LayerDisplayNameSynonyms^.2",
-            "ThemeKeywordsSynonymsLcsh^.1",
-            "PlaceKeywordsSynonyms^.1",
-            "Originator^.1",
-            "Publisher^.1"
-        ];
+	this.getSearchParams = function() {
+		// TODO: this is not the greatest. It might be better if the solr object
+		// was a model/collection?
+		this.textParams = this.getOgpTextSearchParams();
+		this.spatialParams = {};
+		if (!this.ignoreSpatial) {
+			this.spatialParams = this.getOgpSpatialQueryParams(this.bounds);
+		}
 
-        var params = {
-            qf: qf_array.join(" "),
-            q: this.what || "*",
-            fq: this.filters
-        };
+		this.baseParams = {
+			wt : "json",
+			/*
+			 * facet: true, "facet.field": [ "{!ex=dt,insf}InstitutionSort",
+			 * "{!ex=dt,insf}DataTypeSort", "{!ex=dt,insf}PlaceKeywordsSort" ],
+			 * "f.PlaceKeywordsSort.facet.mincount": 1,
+			 * "f.PlaceKeywordsSort.facet.limit": 10,
+			 */
+			defType : "edismax",
+			fl : this.getReturnedColumns(this.SearchRequest),
+			sort : this.getSortClause()
+		// ,
+		// debug: true
+		};
 
-        return params;
-    };
-  
-    this.setWhat = function(what){
-    	this.what = what;
-    };
-    
-    this.setWhere = function(where){
-    	this.where = where;
-    };
-    /**
-     * Return parameters for textual search in a basic search
-     *
-     * @private
-     * @return {object} solr parameters
-     */
-    this.getOgpBasicTextSearchParams = function(){
-    	var userTerms = "";//the what field and the where field;  do we need the granularity to parse each separately?
-        var qf_array = [
-                        "LayerDisplayName^"+Config.solr.LayerDisplayName,
-                        "Publisher^"+Config.solr.Publisher,
-                        "Originator^"+Config.solr.Originator,
-                        "Abstract^"+Config.solr.Abstract,
-                        "PlaceKeywords^"+Config.solr.PlaceKeywords
-                    ];
+		var params = this.combineParams(this.baseParams, this.spatialParams,
+				this.textParams);
+		return params;
+	};
 
-                    var params = {
-                        qf: qf_array.join(" "),
-                        q: userTerms || "*",
-                        fq: this.getFilters()
-                    };
+	this.combineParams = function() {
+		var newParams = {};
+		for ( var i in arguments) {
+			var currentObj = arguments[i];
 
-                    return params;
-    };
-	
-	
+			for ( var j in currentObj) {
+				if (typeof newParams[j] == "undefined"
+						|| newParams[j].length === 0) {
+					newParams[j] = currentObj[j];
+				} else if (jQuery.isArray(newParams[j])) {
+					if (jQuery.isArray(currentObj[j])) {
+						for ( var k in currentObj[j]) {
+							newParams[j].push(currentObj[j][k]);
+						}
+					} else {
+						newParams[j].push(currentObj[j]);
+					}
+				} else {
+					newParams[j] = currentObj[j];
+				}
+			}
+		}
+
+		return newParams;
+	};
+
+	this.getOgpTextSearchParams = function() {
+		// I would like to auto sense whether this is a basic or advanced search
+		// based on which ui fields are populated;
+		// perhaps this can/should be abstracted to a higher level
+
+		var qf_array = [ "LayerDisplayNameSynonyms^.2",
+				"ThemeKeywordsSynonymsLcsh^.1", "PlaceKeywordsSynonyms^.1",
+				"Originator^.1", "Publisher^.1" ];
+
+		var params = {
+			qf : qf_array.join(" "),
+			q : this.what || "*",
+			fq : this.filters
+		};
+
+		return params;
+	};
+
+	this.setWhat = function(what) {
+		this.what = what;
+	};
+
+	this.setWhere = function(where) {
+		this.where = where;
+	};
+	/**
+	 * Return parameters for textual search in a basic search
+	 * 
+	 * @private
+	 * @return {object} solr parameters
+	 */
+	this.getOgpBasicTextSearchParams = function() {
+		var userTerms = "";// the what field and the where field; do we need
+							// the granularity to parse each separately?
+		var qf_array = [ "LayerDisplayName^" + Config.solr.LayerDisplayName,
+				"Publisher^" + Config.solr.Publisher,
+				"Originator^" + Config.solr.Originator,
+				"Abstract^" + Config.solr.Abstract,
+				"PlaceKeywords^" + Config.solr.PlaceKeywords ];
+
+		var params = {
+			qf : qf_array.join(" "),
+			q : userTerms || "*",
+			fq : this.getFilters()
+		};
+
+		return params;
+	};
+
 	this.setBasicKeywords = function setBasicKeywords(keywords) {
 		this.BasicKeywordString = keywords;
 	};
@@ -928,8 +952,8 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 		for (i = 0; i < keywords.length; i++) {
 
 			var currentKeyword = this.escapeSolrValue(keywords[i].trim());// .replace(/["]/g,
-																			// '\\"').replace(/[']/g,
-																			// '\\"');
+			// '\\"').replace(/[']/g,
+			// '\\"');
 
 			if (currentKeyword.length > 0) {
 
@@ -1115,14 +1139,11 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 				keywordFilter = "&pf=" + keywordFilter + boost;
 			} else {
 				keywordFilter = ""; // doesn't make sense to do phrase matching
-									// for single terms
+				// for single terms
 			}
 		}
 		return keywordFilter;
 	};
-
-
-
 
 	this.setAccessDisplay = function setAccessDisplay(accessValue) {
 		this.AccessDisplay = accessValue;
@@ -1133,7 +1154,6 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 			return "";
 		return this.getFilter("Access", [ this.AccessDisplay ]);
 	};
-
 
 	// a topic can be a set of words, we basically treat each word like a
 	// keyword //TODO: does this help?
@@ -1189,39 +1209,36 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 	// this function must be passed years, either the from date or the to date
 	// can be null
 	// e.g., getDateFilter(1940, null); // get layers since 1940
-	this.createDateRangeFilter = function createDateRangeFilter(dateField, fromDate, toDate) {
+	this.createDateRangeFilter = function createDateRangeFilter(dateField,
+			fromDate, toDate) {
 		var dateSuffix = "-01-01T01:01:01Z"; // per an ISO standard solr
-												// expects
+		// expects
 		fromDate = this.filterDateValue(fromDate);
 		toDate = this.filterDateValue(toDate);
-		
+
 		if (((fromDate == null) || (fromDate == ""))
-				&& ((toDate == null) || (toDate == ""))){
+				&& ((toDate == null) || (toDate == ""))) {
 			return ""; // no date search data specified so no search filter
 		}
-		
-		fromDate =  fromDate || "0001";
+
+		fromDate = fromDate || "0001";
 		toDate = toDate || "2100";
 
 		fromDate += dateSuffix;
 		toDate += dateSuffix;
-		
+
 		return this.createRangeFilter(dateField, fromDate, toDate);
 
 	};
-	
-	this.createRangeFilter = function(field, from, to, prefix){
-		if (typeof prefix == "undefined"){
+
+	this.createRangeFilter = function(field, from, to, prefix) {
+		if (typeof prefix == "undefined") {
 			prefix = "";
 		}
-		var searchClause = field + ":[" + from + " TO "	+ to + "]";
+		var searchClause = field + ":[" + from + " TO " + to + "]";
 		return prefix + searchClause;
 	};
 
-	
-	
-	
-	
 	this.setTopic = function setTopic(topic) {
 		this.TopicString = topic;
 	};
@@ -1249,83 +1266,49 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 	};
 
 	/*
-	// this function returns a new string that is some combination of the passed
-	// strings
-	// if the originalString is not empty, it returns originalString + separator
-	// + concatElement
-	// if this originalString is empty, it returns concatElement
-	// if concatElement is empty, originalString is returned
-	this.concatWith = function concatWith(originalString, concatElement,
-			separator) {
-		if (((originalString == null) || (originalString == ""))
-				&& ((concatElement == null) || (concatElement == ""))) {
-			return "";
-		}
-		var returnValue = "";
-
-		if ((originalString == null) || (originalString == "")) {
-			returnValue = concatElement;
-
-		} else if ((concatElement == null) || (concatElement == "")) {
-			returnValue = originalString;
-		} else {
-			returnValue = originalString + separator + concatElement;
-		}
-		return returnValue;
-	};
-	
-	this.getAndFilter = function(term, values) {
-		if ((values == null) || (values == "")) {
-			return "";
-		}
-
-		var arrValues = this.tokenize(values);
-		;
-		var filter = "";
-		for ( var i = 0; i < arrValues.length; i++) {
-
-			var currentSource = this.escapeSolrValue(arrValues[i]);
-			if (currentSource.length > 0) {
-				if (i == 0) {
-					filter = "fq=";
-				}
-				if (i > 0) {
-					filter += "+AND+";
-				}
-				filter += term + ":" + currentSource;
-			}
-		}
-		filter += "&pf=" + term + ":" + arrValues.join(" ");
-		return filter;
-	};
-
-	this.getPublisherFilter = function getPublisherFilter() {
-		return this.getAndFilter("Publisher", this.Publisher);
-
-	};
-
-	this.getOriginatorFilter = function getOriginatorFilter() {
-		return this.getAndFilter("Originator", this.Originator);
-
-	};
-	
-		// return a URL parameter formatted string containing all the Solr filters
-	// and
-	// clauses in the passed elements array
-	// this function iterates over all of the elements and builds a string with
-	// & before each
-	// note the returned string begins with a & character.
-	this.combineFiltersAndClauses = function combineFiltersAndClauses(elements) {
-		var combined = "";
-		var i;
-		for (i = 0; i < elements.length; i++) {
-			var element = elements[i];
-			if ((element != null) && (element != ""))
-				combined = combined + "&" + element;
-		}
-		return combined;
-	};
-*/
+	 * // this function returns a new string that is some combination of the
+	 * passed // strings // if the originalString is not empty, it returns
+	 * originalString + separator // + concatElement // if this originalString
+	 * is empty, it returns concatElement // if concatElement is empty,
+	 * originalString is returned this.concatWith = function
+	 * concatWith(originalString, concatElement, separator) { if
+	 * (((originalString == null) || (originalString == "")) && ((concatElement ==
+	 * null) || (concatElement == ""))) { return ""; } var returnValue = "";
+	 * 
+	 * if ((originalString == null) || (originalString == "")) { returnValue =
+	 * concatElement;
+	 *  } else if ((concatElement == null) || (concatElement == "")) {
+	 * returnValue = originalString; } else { returnValue = originalString +
+	 * separator + concatElement; } return returnValue; };
+	 * 
+	 * this.getAndFilter = function(term, values) { if ((values == null) ||
+	 * (values == "")) { return ""; }
+	 * 
+	 * var arrValues = this.tokenize(values); ; var filter = ""; for ( var i =
+	 * 0; i < arrValues.length; i++) {
+	 * 
+	 * var currentSource = this.escapeSolrValue(arrValues[i]); if
+	 * (currentSource.length > 0) { if (i == 0) { filter = "fq="; } if (i > 0) {
+	 * filter += "+AND+"; } filter += term + ":" + currentSource; } } filter +=
+	 * "&pf=" + term + ":" + arrValues.join(" "); return filter; };
+	 * 
+	 * this.getPublisherFilter = function getPublisherFilter() { return
+	 * this.getAndFilter("Publisher", this.Publisher);
+	 *  };
+	 * 
+	 * this.getOriginatorFilter = function getOriginatorFilter() { return
+	 * this.getAndFilter("Originator", this.Originator);
+	 *  };
+	 *  // return a URL parameter formatted string containing all the Solr
+	 * filters // and // clauses in the passed elements array // this function
+	 * iterates over all of the elements and builds a string with // & before
+	 * each // note the returned string begins with a & character.
+	 * this.combineFiltersAndClauses = function
+	 * combineFiltersAndClauses(elements) { var combined = ""; var i; for (i =
+	 * 0; i < elements.length; i++) { var element = elements[i]; if ((element !=
+	 * null) && (element != "")) combined = combined + "&" + element; } return
+	 * combined; };
+	 */
 	/*
 	 * should search results include restricted data from remote institutions if
 	 * so, call this function
@@ -1354,9 +1337,6 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 			return this.restrictedFilter;
 		}
 	};
-	
-
-	
 
 	/**
 	 * execute the passed query asynchronously and call the success or error
@@ -1369,7 +1349,7 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 			url : url,
 			dataType : 'jsonp',
 			jsonp : 'json.wrf',
-			timeout: 5000,
+			timeout : 5000,
 			crossDomain : true,
 			success : function(data) {
 				successFunction(data);
@@ -1389,8 +1369,9 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 		}
 		jQuery.ajax(ajaxParams);
 	};
-	
-	this.getLayerInfoFromSolr = function(layerIds, successFunction, errorFunction) {
+
+	this.getLayerInfoFromSolr = function(layerIds, successFunction,
+			errorFunction) {
 		var url = this.getServerName();
 
 		var query = jQuery.param(this.getInfoFromLayerIdParams(layerIds), true);
@@ -1398,9 +1379,8 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 		this.sendToSolr(url + "?" + query, successFunction, errorFunction);
 	};
 
-
-	
-	this.termQuery = function termQuery(field, term, successFunction, errorFunction) {
+	this.termQuery = function termQuery(field, term, successFunction,
+			errorFunction) {
 		var url = this.getServerName().substring(0,
 				this.getServerName().indexOf("select"))
 				+ "terms";
@@ -1409,7 +1389,6 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 
 		this.sendToSolr(url + "?" + query, successFunction, errorFunction);
 	};
-
 
 	// this function must be passed the name of the column to sort on and the
 	// direction to sort
@@ -1484,9 +1463,6 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 			return "rows=" + this.RowCount;
 		}
 	};
-
-
-
 
 	/*
 	 * 
@@ -1571,12 +1547,12 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
 				topicFilter ]);
 
 		var query = "q=" + queryClause + "&debugQuery=false&" + extras; // spatialFilter
-																		// + "&"
-																		// +
-																		// returnType
-																		// + "&"
-																		// +
-																		// returnedColumns;
+		// + "&"
+		// +
+		// returnType
+		// + "&"
+		// +
+		// returnedColumns;
 		// foo = query;
 		return query;
 	};
@@ -1785,6 +1761,5 @@ this.classicLayerAreaIntersectionScore = function (bounds) {
  * "/solr/select?q=*:*&wt=json&json.wrf=?"; var ajaxParams = { type: "GET", url:
  * url, dataType: 'jsonp', jsonp: 'json.wrf', success: function(data) { foo =
  * data; alert("testDirect succes"); }, error: function(arg) { alert("testDirect
- * fail"); } }; jQuery.ajax(ajaxParams); return "called";
- *  }
+ * fail"); } }; jQuery.ajax(ajaxParams); return "called"; }
  */
