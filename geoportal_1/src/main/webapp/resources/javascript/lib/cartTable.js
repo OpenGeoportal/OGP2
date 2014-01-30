@@ -480,8 +480,8 @@ OpenGeoportal.CartTable = function CartTable() {
 		for (i in arrModel) {
 			var layerId = arrModel[i].get("LayerId");
 			var row$ = this.findTableRow(layerId);
-			if (row$.next().hasClass("previewTools")) {
-				row$.add(row$.next());
+			if (row$.next().find(".previewTools").length > 0) {
+				row$ = row$.add(row$.next());
 			}
 
 			row$.addClass(markClass);

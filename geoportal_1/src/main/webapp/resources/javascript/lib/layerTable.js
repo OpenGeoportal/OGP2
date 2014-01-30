@@ -562,13 +562,20 @@ OpenGeoportal.LayerTable = function LayerTable() {
 
 	};
 
-	this.getLayerIdFromTableRow = function(tr) {
-		var tr$ = jQuery(tr);
-
-		if (tr$.children().first().hasClass("previewTools")) {
+	// we want the row with the data, not the previewTools row
+	this.getDataRow = function(tr$) {
+		if (tr$.find(".previewTools").length > 0) {
 			// this is a preview tools row, not a data row
 			tr$ = tr$.prev();
 		}
+
+		return tr$;
+	};
+
+	this.getLayerIdFromTableRow = function(tr) {
+		var tr$ = jQuery(tr);
+
+		tr$ = this.getDataRow(tr$);
 		var rowData = this.getRowData(tr$[0]).data;
 
 		var layerId = rowData.LayerId;
@@ -581,8 +588,8 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		jQuery("#" + this.getTableId() + " tr").each(function() {
 			if (jQuery(this).children("th").length === 0) {// skip header rows
 				var currentLayerId = that.getLayerIdFromTableRow(this);
-				if (currentLayerId == layerId) {
-					row$ = jQuery(this);
+				if (currentLayerId === layerId) {
+					row$ = that.getDataRow(jQuery(this));
 					return; // this exits the each loop
 				}
 			}
@@ -1313,10 +1320,14 @@ OpenGeoportal.LayerTable = function LayerTable() {
 						return;
 					}
 					var bbox = {};
+					// console.log(that.backingData);
+					// console.log(aData.LayerId);
+
 					var currModel = that.backingData.findWhere({
 						LayerId : aData.LayerId
 					});
 
+					// console.log(currModel);
 					if (typeof currModel !== "undefined") {
 						bbox.south = currModel.get("MinY");
 						bbox.north = currModel.get("MaxY");

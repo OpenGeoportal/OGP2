@@ -1155,7 +1155,7 @@ OpenGeoportal.MapController = function() {
 
 	this.getFeatureAttributes = function(e) {
 		// console.log("getFeatureAttributes");
-		if (typeof this.map != "undefined") {
+		if (typeof this.map !== "undefined") {
 			var mapObject = this.map;// since this is an event handler, the
 			// context isn't the MapController
 			// Object, it's the map layer. Should it
@@ -1199,8 +1199,7 @@ OpenGeoportal.MapController = function() {
 					jQuery(document).trigger("showLoadIndicator");
 				},
 				success : function(data, textStatus, XMLHttpRequest) {
-					// create a new dialog instance, or just open the dialog if
-					// it already exists
+
 					mapObject.getFeatureAttributesSuccessCallback(layerId,
 							dialogTitle, data);
 				},
@@ -1213,8 +1212,7 @@ OpenGeoportal.MapController = function() {
 				complete : function(jqXHR) {
 					for ( var i in mapObject.currentAttributeRequests) {
 						if (mapObject.currentAttributeRequests[i] === jqXHR) {
-							var spliced = mapObject.currentAttributeRequests
-									.splice(i, 1);
+							mapObject.currentAttributeRequests.splice(i, 1);
 
 						}
 					}

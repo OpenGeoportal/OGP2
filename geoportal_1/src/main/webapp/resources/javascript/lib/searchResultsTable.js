@@ -105,6 +105,9 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 		});
 
 	};
+
+	this.lastResponse = {};
+
 	// override
 	/*
 	 * In the new search paradigm, we need to have dataTable's sSource point to
@@ -129,6 +132,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 			var columnDefs = this.getColumnDefinitions();
 
 			var scrollY = Math.floor(jQuery("#tabs").height() - 60) + "px";
+			this.searchQ = [];
 			var params = {
 				"aoColumnDefs" : columnDefs,
 				"fnDrawCallback" : that.runTableDrawCallbacks,
@@ -162,36 +166,95 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 								"crossDomain" : true,
 								"jsonp" : 'json.wrf',
 								"type" : "GET",
-								"url" : that.searcher.getSearchRequest(),// this
-								// should
-								// just
-								// be
-								// the
-								// solr
-								// url
-								"data" : that.getAdditionalQueryData(aoData),// this
-								// should
-								// contain
-								// all
-								// the
-								// query
-								// params
-								"success" : function(data) {
+								// this should just be the solr url
+								"url" : that.searcher.getSearchRequest(),
+								// this should contain all the query params
+								"data" : that.getAdditionalQueryData(aoData),
+								"beforeSend" : function(jqXHR, settings) {
+									// console.log(that.searchQ);
+									// if the request is identical to the
+									// previous one, then cancel call to server
+									// otherwise abort previous searchs and
+									// remove
+									// from queue
+									var paramsArr = [ "_=", "json.wrf=" ];
+									var continueSend = true;
 
-									var response = {};
-									var solrdocs = data.response.docs;
-									var totalRecords = parseInt(data.response.numFound);
+									for ( var i in that.searchQ) {
+										if (OpenGeoportal.Utility.compareUrls(
+												settings.url,
+												that.searchQ[i].settings.url,
+												paramsArr)) {
+
+											// console.log("identical search; no
+											// new search should be fired. using
+											// cached results");
+
+											// make sure that the lastResponse
+											// is populated
+											if (that.lastResponse
+													.hasOwnProperty("aaData")) {
+												that.lastResponse.sEcho = that
+														.processAoData(aoData).echo;
+												fnCallback(that.lastResponse);
+												continueSend = false;
+											}
+										}
+										that.searchQ[i].request.abort();
+									}
+
+									that.searchQ = [];
+
+									if (continueSend) {
+										var time = Date.now();
+										that.searchQ.push({
+											time : time,
+											request : jqXHR,
+											settings : settings
+										});
+									}
+									// console.log(continueSend);
+									return continueSend;
+								},
+								"success" : function(returnedData, textStatus,
+										jqXHR) {
+
+									// console.log(jqXHR);
+
+									var dtData = {};
+									var totalRecords = parseInt(returnedData.response.numFound);
+
+									dtData.iTotalRecords = totalRecords;
+									dtData.iTotalDisplayRecords = totalRecords;
+
+									dtData.sEcho = that.processAoData(aoData).echo;
+									dtData.aaData = that
+											.processSearchResponse(returnedData);
+									// console.log(dtData.aaData);
+									fnCallback(dtData);
+
+									that.lastResponse = dtData;
 									jQuery(document).trigger(
 											"searchResults.totalFound",
 											totalRecords);
-									response.iTotalRecords = totalRecords;
-									response.iTotalDisplayRecords = totalRecords;
 
-									response.sEcho = that.processAoData(aoData).echo;
-									response.aaData = that
-											.processSearchResponse(data);
-									fnCallback(response);
+								},
+
+								"error" : function(xhr, error, thrown) {
+									var log = oSettings.oApi._fnLog;
+
+									if (error == "parsererror") {
+										log(oSettings, 0,
+												'Invalid JSON response', 1);
+									} else if (error == "abort") {
+										// log(oSettings, 0, 'response aborted',
+										// 1);
+										console.log("request aborted");
+									} else {
+										log(oSettings, 0, 'Ajax error', 7);
+									}
 								}
+
 							});
 				}
 			};
@@ -217,24 +280,17 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 		var data = {};
 		// console.log(aoData);
 		for ( var i in aoData) {
-			if (typeof aoData[i].name !== "undefined") {
+			if (aoData[i].hasOwnProperty("name")
+					&& aoData[i].hasOwnProperty("value")) {
 				if (aoData[i].name === "sEcho") {
 					// console.log("echo:" + aoData[i].value);
 					data.echo = aoData[i].value;
 				} else if (aoData[i].name === "iDisplayStart") {
 					data.start = aoData[i].value;
-				} else if (aoData[i].name == "iDisplayLength") {
+				} else if (aoData[i].name === "iDisplayLength") {
 					data.rows = aoData[i].value;
 				}
 			}
-			/*
-			 * if (aoData[i].name == "iSortCol_0"){ console.log("sort col:" +
-			 * aoData[i].value); //var sortColumn =
-			 * this.tableHeadingsObj.getHeadingFromTargetIndex(aoData[i].value);
-			 * //console.log("sort col name:" + sortColumn); } if
-			 * (aoData[i].name == "sSortDir_0"){ console.log("sort dir:" +
-			 * aoData[i].value); }
-			 */
 		}
 		return data;
 	};
@@ -303,12 +359,10 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 	this.processSearchResponse = function(dataObj) {
 		// dataObj is a Javascript object (usually) returned by Solr
 
-		var solrResponse = dataObj.response;
-		var totalResults = solrResponse.numFound;
-		var startIndex = solrResponse.start;
-		var solrLayers = solrResponse.docs;
-
-		this.backingData.reset(solrLayers);
+		// var solrResponse = dataObj.response;
+		// var totalResults = solrResponse.numFound;
+		// var startIndex = solrResponse.start;
+		var solrLayers = dataObj.response.docs;
 
 		// solr docs holds an array of hashtables, each hashtable contains a
 		// layer
@@ -318,19 +372,24 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 		// loop over all the returned layers
 		var tableHeadings = this.tableHeadingsObj;
 		var previewed = this.previewed;
+		// console.log(this.previewed);
 		var plength = previewed.length;
-		rowloop: for ( var j in solrLayers) {
-			j = parseInt(j);
+		for ( var j in solrLayers) {
+			if (!solrLayers.hasOwnProperty(j)) {
+				continue;
+			}
 			// skip over layers that are currently previewed, so that they don't
 			// appear multiple times
+
 			if (plength > 0) {
 				var isPreviewed = previewed
 						.isPreviewed(solrLayers[j]["LayerId"]);
 				if (isPreviewed) {
 					plength--;
-					continue rowloop;
+					continue;
 				}
 			}
+
 			var rowObj = {};
 			tableHeadings.each(function(currentModel) {
 				// columns w/ solr == true should be populated with the returned
@@ -359,6 +418,9 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 			arrData.push(rowObj);
 		}
 		// console.log(arrData[0]);
+		// reset the data in the backbone collection
+		this.backingData.reset(solrLayers);
+
 		return arrData;
 
 	};
@@ -549,6 +611,9 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 
 	this.fireSearch = function() {
 		// redrawing the table causes the search to be performed
+		// console
+		// .log("*********************fire search***************************"
+		// + Date.now());
 		this.getTableObj().fnDraw();
 	};
 
@@ -624,7 +689,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 
 	this.fireSearchHandler = function() {
 		var that = this;
-		jQuery(document).on("fireSearch", function() {
+		jQuery(document).on("fireSearch", function(event) {
+			// console.log(event);
 			that.fireSearch.apply(that, arguments);
 		});
 	};

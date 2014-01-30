@@ -134,6 +134,7 @@ OpenGeoportal.Views.Query = Backbone.View
 						});
 
 					} else {
+						// console.log("zoomToWhere");
 						this.fireSearch();
 					}
 				} else if (where$.val().trim().length > 0) {
@@ -163,15 +164,17 @@ OpenGeoportal.Views.Query = Backbone.View
 													bbox : bbox
 												});
 									}
-
-									that.fireSearch();
+									// console.log("geocode with messages");
+									// that.fireSearch();
 
 								} else {
+									// console.log("geocode without messages");
 									that.fireSearch();
 								}
 
 							});
 				} else {
+					// console.log("where box empty");
 					this.fireSearch();
 				}
 
@@ -214,6 +217,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				if (this.model.get("searchType") === "advanced") {
 					var ignoreSpatial = this.model.get("ignoreSpatial");
 					if (ignoreSpatial) {
+						// console.log("firesearchWithZoom ignore spatial");
 						this.fireSearch();
 						this.clearWhere();
 						return;
@@ -222,11 +226,19 @@ OpenGeoportal.Views.Query = Backbone.View
 
 				this.zoomToWhere();
 			},
-
+			extentChangeQueue : [],
 			extentChanged : function() {
-				// console.log("*******************************************************extent
+				// should be a delay before fireSearch is called, so we don't
+				// have a bunch of fireSearch events at once
+				var id = setTimeout(this.fireSearch, 100);
+				for ( var i in this.extentChangeQueue) {
+					clearTimeout(this.extentChangeQueue[i]);
+				}
+				this.extentChangeQueue.push(id);
+
+				// console
+				// .log("*******************************************************extent
 				// changed");
-				this.fireSearch();
 			},
 
 			fireSearch : function() {
@@ -247,9 +259,9 @@ OpenGeoportal.Views.Query = Backbone.View
 
 				var searchType = this.model.get("searchType");
 
-				if (searchType == 'basic') {
+				if (searchType === 'basic') {
 					solr = this.getBasicSearchQuery();
-				} else if (searchType == 'advanced') {
+				} else if (searchType === 'advanced') {
 					solr = this.getAdvancedSearchQuery();
 				} else {
 					// fall through
@@ -261,30 +273,9 @@ OpenGeoportal.Views.Query = Backbone.View
 				return solr.getURL();
 			},
 
-			// perhaps this should be in the tableOrganize object
 			getSortInfo : function() {
-				// TODO: fix this
-				var sortObj = OpenGeoportal.ogp.resultsTableObj.tableOrganize;
+				return OpenGeoportal.ogp.resultsTableObj.tableOrganize;
 
-				// should this logic be in the solr object?
-				var sortColumn = sortObj.get("column");
-				if ((sortColumn == null) || (sortColumn == "score"))
-					sortColumn = "score";
-				else if ((sortColumn == "ContentDate")
-						|| (sortColumn == "Access"))
-					sortColumn == sortColumn; // nothing to do, sortColumn
-				// doesn't need adjustment
-				else
-					sortColumn = sortColumn + "Sort"; // use solr sort column
-				// that hasn't been
-				// tokenized
-
-				var sort = {
-					column : sortColumn,
-					direction : sortObj.get("direction")
-				};
-
-				return sort;
 			},
 
 			/*
@@ -340,9 +331,9 @@ OpenGeoportal.Views.Query = Backbone.View
 			 */
 			getBasicSearchQuery : function() {
 				var solr = new OpenGeoportal.Solr();
-
+				solr.setSearchType(this.model.get("searchType"));
 				var sort = this.getSortInfo();
-				solr.setSort(sort.column, sort.direction);
+				solr.setSort(sort.get("column"), sort.get("direction"));
 
 				solr.setBoundingBox(this.model.get("mapExtent"));
 				solr.setCenter(this.model.get("mapCenter"));
@@ -372,9 +363,10 @@ OpenGeoportal.Views.Query = Backbone.View
 
 			getAdvancedSearchQuery : function() {
 				var solr = new OpenGeoportal.Solr();
+				solr.setSearchType(this.model.get("searchType"));
 
 				var sort = this.getSortInfo();
-				solr.setSort(sort.column, sort.direction);
+				solr.setSort(sort.get("column"), sort.get("direction"));
 
 				// check if "ignore map extent" is checked
 				var ignoreSpatial = this.model.get("ignoreSpatial");
@@ -384,8 +376,8 @@ OpenGeoportal.Views.Query = Backbone.View
 					solr.setCenter(this.model.get("mapCenter"));
 				}
 
-				var keywords = this.getTextInputValue('advancedKeywordText');
-				if ((keywords != null) && (keywords != "")) {
+				var keywords = this.model.get("keyword");
+				if ((keywords !== null) && (keywords !== "")) {
 					solr.setAdvancedKeywords(keywords);
 				}
 
@@ -457,8 +449,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			searchBoxKeypressHandler : function() {
 				var that = this;
 				jQuery('.searchBox').keypress(function(event) {
-					var type, search, keyword;
-
+					// var type, search, keyword;
 					if (event.keyCode == '13') {
 						event.preventDefault();
 						jQuery(event.target).blur();
@@ -662,9 +653,6 @@ OpenGeoportal.Views.Query = Backbone.View
 				if (currentValue.indexOf("Search") == 0)
 					searchTextElement.value = "";
 			},
-
-			// default text for the search input box
-			searchText : "(Example: Buildings)",
 
 			/*******************************************************************
 			 * Callbacks

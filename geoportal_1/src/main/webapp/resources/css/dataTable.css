@@ -241,8 +241,12 @@ table.display>tbody>tr>td.previewTools {
 	overflow: visible;
 }
 
-.dataTables_scrollHead tbody {
+.dataTables_scrollHead table.display > tbody {
 	background-color: #F8F8E4;
+}
+
+.dataTables_scrollHead table.display > tbody > tr > td {
+		border-color: #F8F8E4;
 }
 
 .dataTables_scrollBody {

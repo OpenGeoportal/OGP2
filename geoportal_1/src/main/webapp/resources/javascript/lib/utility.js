@@ -276,3 +276,29 @@ OpenGeoportal.Utility.requiresScrollbarAdjustment = function() {
 
 	return true;
 };
+
+OpenGeoportal.Utility.removeParams = function(url, paramArray) {
+	var urlArray = url.split("?");
+	var query = urlArray[1];
+	var queryArr = query.split("&");
+	for ( var i in queryArr) {
+		for ( var j in paramArray) {
+
+			if (queryArr[i].indexOf(paramArray[j]) === 0) {
+				queryArr[i] = "";
+			}
+		}
+	}
+
+	return urlArray[0] + "?" + queryArr.join("&");
+};
+
+OpenGeoportal.Utility.compareUrls = function(url1, url2, ignoreParams) {
+	var compareurl1 = OpenGeoportal.Utility.removeParams(url1, ignoreParams);
+
+	var compareurl2 = OpenGeoportal.Utility.removeParams(url2, ignoreParams);
+	if (compareurl1 === compareurl2) {
+		return true;
+	}
+	return false;
+};
