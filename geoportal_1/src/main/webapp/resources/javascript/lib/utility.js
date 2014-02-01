@@ -302,3 +302,34 @@ OpenGeoportal.Utility.compareUrls = function(url1, url2, ignoreParams) {
 	}
 	return false;
 };
+
+OpenGeoportal.Utility.hasOneOf = function(object, keyArr) {
+	var exists = false;
+	for ( var i in keyArr) {
+		if (_.has(keyArr, i)) {
+			exists = exists || _.has(object, keyArr[i]);
+		}
+	}
+	return exists;
+};
+
+OpenGeoportal.Utility.getLocationValue = function(location, keyArr) {
+	var url = null;
+	for ( var i in keyArr) {
+		if (_.has(keyArr, i)) {
+			if (_.has(location, keyArr[i])) {
+				url = location[keyArr[i]];
+				break;
+			}
+		}
+	}
+
+	if (_.isArray(url)) {
+		url = url[0];
+	}
+	return url;
+};
+
+OpenGeoportal.Utility.hasLocationValue = function(location, keyArr) {
+	return !_.isNull(OpenGeoportal.Utility.getLocationValue(location, keyArr));
+};

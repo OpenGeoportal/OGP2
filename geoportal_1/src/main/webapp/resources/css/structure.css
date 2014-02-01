@@ -852,6 +852,12 @@ div.colorCell:hover {
 	/*word-wrap: break-word;*/
 }
 
+.metadataIframe {
+	height: 100%;
+	width: 100%;
+	border: none;
+}
+
 td div.button {
 	margin: auto;
 }
@@ -1157,6 +1163,12 @@ Preview controls
 		transparent;
 	width: 25px;
 	height: 17px;
+}
+
+.previewLink {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -110px -89px rgba(0, 0, 0, 0);
+    height: 17px;
+    width: 25px;
 }
 
 /*******

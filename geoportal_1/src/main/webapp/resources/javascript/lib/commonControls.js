@@ -4,9 +4,9 @@
  * 
  */
 
-if (typeof OpenGeoportal == 'undefined') {
+if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
-} else if (typeof OpenGeoportal != "object") {
+} else if (typeof OpenGeoportal !== "object") {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
@@ -16,7 +16,7 @@ if (typeof OpenGeoportal == 'undefined') {
  * 
  */
 OpenGeoportal.CommonControls = function CommonControls() {
-	// dependencies; revamp with require.js
+	// dependencies; revamp with require.js?
 	var template = OpenGeoportal.ogp.appState.get("template");
 	this.cart = OpenGeoportal.ogp.appState.get("cart");
 	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
@@ -77,76 +77,30 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			previewState) {
 		access = access.toLowerCase();
 		institution = institution.toLowerCase();
-		var hasAccess = OpenGeoportal.ogp.appState.get("login").model
-				.hasAccessLogic(access, institution);
+		var loginModel = OpenGeoportal.ogp.appState.get("login").model;
+		var hasAccess = loginModel.hasAccessLogic(access, institution);
 		if (hasAccess) {
-			return this.renderActivePreviewControl(layerId, previewState);
+			return this.renderCheckboxPreviewControl(layerId, previewState);
 		} else {
-			return this.renderInActivePreviewControl(layerId, institution);
-
+			var canLogin = loginModel.canLoginLogic(institution);
+			if (canLogin) {
+				return this.renderLoginPreviewControl();
+			} else {
+				return this.renderLinkControl(layerId);
+			}
 		}
 	};
 
 	// TODO: fix this
 
-	this.renderExternalPreviewControl = function(layerId) {
-		// what defines external?
-		var imgSource = this.getImage("view_external.png");
-		var layerSource = this.getColumnData(rowObj.aData, "Institution");
-		var imgText = "Click to go to " + layerSource;
-		// previewControl = '<img class="button" onclick="' + context +
-		// '.previewLayer(this)" src="' + imgSource + '" title="' + imgText + '"
-		// />';
-		var previewControl = '<img class="button goExternalButton" src="'
-				+ imgSource + '" title="' + imgText + '" ';// open sharecart
-		// link in new tab
-		// temporary...
-		var path = "";
-		if (layerSource == "Harvard") {
-			path = "http://calvert.hul.harvard.edu:8080/opengeoportal";
-			var shareLink = path + "/openGeoPortalHome.jsp";
-			var layerId = this.getLayerIdFromRow(rowObj);
-			var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
-			var queryString = '?' + jQuery.param({
-				layer : layerId,
-				minX : geodeticBbox.left,
-				minY : geodeticBbox.bottom,
-				maxX : geodeticBbox.right,
-				maxY : geodeticBbox.top
-			});
-			shareLink += queryString;
-			previewControl += 'onclick="window.open(\'' + shareLink
-					+ '\');return false;"';
-		} else if (layerSource == "MIT") {
-			path = "http://arrowsmith.mit.edu/mitogp";
-			var shareLink = path + "/openGeoPortalHome.jsp";
-			var layerId = this.getLayerIdFromRow(rowObj);
-			var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
-			var queryString = '?' + jQuery.param({
-				layer : layerId,
-				minX : geodeticBbox.left,
-				minY : geodeticBbox.bottom,
-				maxX : geodeticBbox.right,
-				maxY : geodeticBbox.top
-			});
-			shareLink += queryString;
-			previewControl += 'onclick="window.open(\'' + shareLink
-					+ '\');return false;"';
-		}
-		previewControl += '/>';
-		return previewControl;
-	};
+	this.renderLinkControl = function(layerId) {
+		var params = {};
+		params.controlClass = "previewLink";
+		params.text = "";
+		params.tooltip = "Preview layer at external site.";
+		params.displayClass = "";
 
-	this.renderInActivePreviewControl = function(layerId, institution) {
-		var canLogin = OpenGeoportal.ogp.appState.get("login").model
-				.canLoginLogic(institution);
-		if (canLogin) {
-			return this.renderLoginPreviewControl();
-		} else {
-			// this.renderExternalPreviewControl(layerId);
-			return "";
-		}
-
+		return template.genericControl(params);
 	};
 
 	this.renderLoginPreviewControl = function() {
@@ -160,7 +114,7 @@ OpenGeoportal.CommonControls = function CommonControls() {
 
 	};
 
-	this.renderActivePreviewControl = function(layerId, previewState) {
+	this.renderCheckboxPreviewControl = function(layerId, previewState) {
 		var stateVal = null;
 		if (typeof previewState !== "undefined") {
 			stateValue = previewState;
@@ -256,20 +210,15 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return template.genericControl(params);
 	};
 
-	this.renderMetadataControl = function(dataType) {
-		if ((typeof dataType === "undefined") || (dataType === null)) {
-			return "";
-		}
+	this.renderMetadataControl = function() {
+
 		var params = {};
 		params.controlClass = "infoControl";
 		params.text = "";
-		if (dataType.toLowerCase() == "libraryrecord") {
-			params.displayClass = "viewLibraryRecordControl";
-			params.tooltip = "Show record.";
-		} else {
-			params.displayClass = "viewMetadataControl";
-			params.tooltip = "Show metadata.";
-		}
+
+		params.displayClass = "viewMetadataControl";
+		params.tooltip = "Show metadata";
+
 		return template.genericControl(params);
 	};
 
@@ -283,7 +232,7 @@ OpenGeoportal.CommonControls = function CommonControls() {
 	 */
 
 	// obtain layer's metadata via jsonp call
-	this.viewMetadata = function(layerId) {
+	this.viewMetadataFromSolr = function(layerId) {
 		// make an ajax call to retrieve metadata
 		var solr = new OpenGeoportal.Solr();
 		var url = solr.getServerName() + "?"
@@ -292,6 +241,15 @@ OpenGeoportal.CommonControls = function CommonControls() {
 				this.viewMetadataJsonpError, this);
 
 		// this.analytics.track("Metadata", "Display Metadata", layerId);
+	};
+
+	this.viewExternalMetadata = function(layerId, url) {
+		var document = template.genericIframe({
+			iframeSrc : url,
+			iframeClass : "metadataIframe"
+		});
+		var dialog$ = this.renderMetadataDialog(layerId, document);
+		dialog$.dialog("open");
 	};
 
 	this.processMetadataSolrResponse = function(data) {
@@ -321,12 +279,15 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			}
 			var document = null;
 			try {
-				document = this.renderMetadata(xmlDocument);
+				document = this.renderXmlMetadata(xmlDocument);
 			} catch (e) {
 				throw new Error(
 						"Error transforming XML document: the document may be of the wrong type.");
 			}
 			var dialog$ = this.renderMetadataDialog(layerId, document);
+			this.addMetadataDownloadButton(dialog$, layerId);
+			this.addScrollMetadataToTop();
+
 			dialog$.dialog("open");
 		} catch (e) {
 			console.log(e);
@@ -364,19 +325,13 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			autoOpen : false
 		});
 
-		var content$ = jQuery("#metadataContent");
-		content$[0].scrollTop = 0;
+		return metadataDialog$;
+	};
 
-		var buttonId = "metadataDownloadButton";
-		if (jQuery("#" + buttonId).length == 0) {
-			var params = {};
-			params.displayClass = "ui-titlebar-button";
-			params.buttonId = buttonId;
-			params.buttonLabel = "Download Metadata (XML)";
-			metadataDialog$.parent().find(".ui-dialog-titlebar").first()
-					.prepend(template.dialogHeaderButton(params));
-			jQuery("#" + buttonId).button();
-		}
+	this.addScrollMetadataToTop = function() {
+		var content$ = jQuery("#metadataContent");
+		content$.prepend(template.toMetadataTop());
+		content$[0].scrollTop = 0;
 
 		// event handlers
 		content$.find("a").click(function(event) {
@@ -389,19 +344,32 @@ OpenGeoportal.CommonControls = function CommonControls() {
 				content$.scrollTo(jQuery('[name="' + toId + '"]'));
 			}
 		});
+
+		jQuery("#toMetadataTop").on("click", function() {
+			jQuery("#metadataContent")[0].scrollTop = 0;
+		});
+	};
+
+	this.addMetadataDownloadButton = function(metadataDialog$, layerId) {
+		var buttonId = "metadataDownloadButton";
+		if (jQuery("#" + buttonId).length == 0) {
+			var params = {};
+			params.displayClass = "ui-titlebar-button";
+			params.buttonId = buttonId;
+			params.buttonLabel = "Download Metadata (XML)";
+			metadataDialog$.parent().find(".ui-dialog-titlebar").first()
+					.prepend(template.dialogHeaderButton(params));
+			jQuery("#" + buttonId).button();
+		}
+
 		jQuery("#" + buttonId).off();
 		var that = this;
 		jQuery("#" + buttonId).on("click", function() {
 			that.downloadMetadata(layerId);
 		});
-		jQuery("#toMetadataTop").on("click", function() {
-			jQuery("#metadataContent")[0].scrollTop = 0;
-		});
-
-		return metadataDialog$;
 	};
 
-	this.renderMetadata = function(xmlMetadataDocument) {
+	this.renderXmlMetadata = function(xmlMetadataDocument) {
 		var url = this.chooseStyleSheet(xmlMetadataDocument);
 		var xslDocument = this.retrieveStyleSheet(url);
 		return this.transformXml(xmlMetadataDocument, xslDocument);
@@ -469,7 +437,8 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			iframeSrc : iframeSrc
 		});
 		var iframe$ = jQuery(newIframe).appendTo('#iframes');
-		var timeout = 1 * 60 * 1000;// allow 1 minute for download before iframe
+		var timeout = 1 * 120 * 1000;// allow 2 minute for download before
+		// iframe
 		// is removed
 		jQuery(document).on("iframeload", iframe$, function() {
 			setTimeout(function() {
@@ -484,128 +453,9 @@ OpenGeoportal.CommonControls = function CommonControls() {
 				"The attempt to retrieve metadata for this layer failed.");
 	};
 
-	this.showLibraryRecord = function(layerId) {
+	this.goToExternal = function(url) {
+		window.open(url);
 
-		var location = this.backingData.findWhere({
-			LayerId : layerId
-		}).get("location");
-		// open info in location
-		var that = this;
-		for ( var urlType in location) {
-			if (urlType.toLowerCase() == "maprecord") {
-				var params = {
-					url : location[urlType],
-					dataType : 'jsonp',
-					success : that.openMapRecordSuccess
-				};
-				jQuery.ajax(params);
-			} else if (urlType.toLowerCase() == "librecord") {
-				window.open(location[urlType]);
-			}
-		}
-	};
-
-	// how do we generalize this?
-	this.openMapRecordSuccess = function(data) {
-		if (data.sys_id.length > 0) {
-			window.open("http://library.mit.edu/item/" + data.sys_id);
-			return;
-		}
-
-		if (data.row_id.length > 0) {
-			var lookupHTML = "<div><span>Title: </span>";
-			if (data.title.length > 0) {
-				lookupHTML += data.title;
-			} else {
-				lookupHTML += 'Unknown';
-			}
-			lookupHTML += '</div>';
-
-			lookupHTML += '<div><span>Publisher: </span>';
-			if (data.publisher.length > 0) {
-				lookupHTML += data.publisher;
-			} else {
-				lookupHTML += 'Unknown';
-			}
-			lookupHTML += '</div>';
-
-			if (data.cartographer.length > 0) {
-				lookupHTML += '<div><span>Cartographer: </span>';
-				lookupHTML += data.cartographer;
-				lookupHTML += '</div>';
-			}
-			lookupHTML += '<div><span>Geographic Area: </span>' + data.geoarea
-					+ '</div>';
-			var arrYears = [];
-			if (data.cont_year.length > 0) {
-				arrYears.push({
-					"label" : "Content Date",
-					"value" : data.cont_year
-				});
-			}
-			if (data.pub_year.length > 0) {
-				arrYears.push({
-					"label" : "Publication Date",
-					"value" : data.pub_year
-				});
-			}
-			if (data.mit_year.length > 0) {
-				arrYears.push({
-					"label" : "Date Acquired",
-					"value" : data.mit_year
-				});
-			}
-			if (data.est_year.length > 0) {
-				arrYears.push({
-					"label" : "Estimated Content Date",
-					"value" : data.est_year
-				});
-			}
-			if (arrYears.length > 0) {
-				var yearObj = arrYears.shift();
-				lookupHTML += '<div><span>' + yearObj.label + ': </span>'
-						+ yearObj.value + '</div>';
-			}
-			if (arrYears.length > 0) {
-				var yearObj = arrYears.shift();
-				lookupHTML += '<div<span>>' + yearObj.label + ': </span>'
-						+ yearObj.value + '</div>';
-			}
-			if (data.notes.length > 0) {
-				lookupHTML += '<div><span>Notes: </span>' + data.notes
-						+ '</div>';
-			}
-
-			if (data.library == 'Rotch') {
-				lookupHTML += '<div><span>Location: </span>Rotch Library - Map Room, Building 7-238</div>';
-			} else {
-				lookupHTML += '<div><span>Location: </span>' + data.library
-						+ '</div>';
-			}
-
-			lookupHTML += '<div><span>Drawer: </span>' + data.drawer + '</div>';
-			lookupHTML += '<div><span>Folder: </span>' + data.folder + '</div>';
-
-		} else {
-			lookupHTML = 'Error: Please contact GIS Help.';
-			;
-		}
-
-		if (typeof jQuery('#mapRecordDialog')[0] == 'undefined') {
-			var dialogDiv = '<div id="mapRecordDialog" class="dialog"> \n';
-			dialogDiv += '</div> \n';
-			jQuery('body').append(dialogDiv);
-		}
-		var libRecordDialog = jQuery("#mapRecordDialog");
-		libRecordDialog.dialog({
-			zIndex : 9999,
-			width : 572,
-			height : 266,
-			title : "<div>MAP RECORD</div>"
-		});
-		libRecordDialog[0].scrollTop = 0;
-		jQuery("#mapRecordDialog").html(lookupHTML);
-		libRecordDialog.dialog("open");
 	};
 
 	this.solrAutocomplete = function(textField$, solrField) {
@@ -801,30 +651,19 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return divId;
 	};
 
-	this.dialogTemplate = function dialogTemplate(dialogDivId, dialogContent,
-			dialogTitle, buttonsObj) {
-		if (typeof jQuery('#' + dialogDivId)[0] == 'undefined') {
-			var dialogDiv = '<div id="' + dialogDivId + '" class="dialog"> \n';
-			dialogDiv += dialogContent;
-			dialogDiv += '</div> \n';
-			jQuery('#dialogs').append(dialogDiv);
-			jQuery("#" + dialogDivId).dialog({
-				zIndex : 3000,
-				autoOpen : false,
-				width : 'auto',
-				title : dialogTitle,
-				resizable : true,
-				buttons : buttonsObj
-			});
-		} else {
-			// replace dialog text/controls & open the instance of 'dialog' that
-			// already exists
-			jQuery("#" + dialogDivId).html(dialogContent);
-			jQuery("#" + dialogDivId).dialog("option", "buttons", buttonsObj);
-
-		}
-		jQuery("#" + dialogDivId).dialog('open');
-	};
+	/*
+	 * this.dialogTemplate = function dialogTemplate(dialogDivId, dialogContent,
+	 * dialogTitle, buttonsObj) { if (typeof jQuery('#' + dialogDivId)[0] ==
+	 * 'undefined') { var dialogDiv = '<div id="' + dialogDivId + '"
+	 * class="dialog"> \n'; dialogDiv += dialogContent; dialogDiv += '</div>
+	 * \n'; jQuery('#dialogs').append(dialogDiv); jQuery("#" +
+	 * dialogDivId).dialog({ zIndex : 3000, autoOpen : false, width : 'auto',
+	 * title : dialogTitle, resizable : true, buttons : buttonsObj }); } else { //
+	 * replace dialog text/controls & open the instance of 'dialog' that //
+	 * already exists jQuery("#" + dialogDivId).html(dialogContent); jQuery("#" +
+	 * dialogDivId).dialog("option", "buttons", buttonsObj); } jQuery("#" +
+	 * dialogDivId).dialog('open'); };
+	 */
 
 	this.minimizeDialog = function(dialogId) {
 		// 1. collect current state of dialog before minimizing.

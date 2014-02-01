@@ -101,7 +101,13 @@ OpenGeoportal.Template = function() {
 	var genericDialogHtml = '<div id="<%= id %>" class="dialog"></div>';
 	this.genericDialogShell = _.template(genericDialogHtml);
 
-	var metadataContentHtml = '<div id="toMetadataTop"></div><div id="metadataContent"></div><div id="metadataFooter"><%= layerId %></div>';
+	var genericIframeHtml = '<iframe class="<%= iframeClass%>" src="<%= iframeSrc %>" />';
+	this.genericIframe = _.template(genericIframeHtml);
+
+	var toMetadataTopHtml = '<div id="toMetadataTop"></div>';
+	this.toMetadataTop = _.template(toMetadataTopHtml);
+
+	var metadataContentHtml = '<div id="metadataContent"></div><div id="metadataFooter"><%= layerId %></div>';
 	this.metadataContent = _.template(metadataContentHtml);
 
 	var iframeDownloadHtml = '<iframe class="<%= iframeClass%>" src="<%= iframeSrc %>" onload="jQuery(document).trigger(\'iframeload\')"/>';

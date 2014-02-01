@@ -94,15 +94,10 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							columnClass : "colMetadata",
 							width : 30,
 							dtRender : function(data, type, full) {
-								var dataType = that.getColumnData(full,
-										"DataType");
-								return that.controls
-										.renderMetadataControl(dataType);
+								return that.controls.renderMetadataControl();
 							},
 							modelRender : function(model) {
-								var dataType = model.get("DataType");
-								return that.controls
-										.renderMetadataControl(dataType);
+								return that.controls.renderMetadataControl();
 							}
 						},
 						{
@@ -1353,7 +1348,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		this.highlightRow();
 		this.previewHandler();
 		this.previewViewHandler();
-		this.viewLibraryRecordHandler();
+		this.previewLinkHandler();
 		this.viewMetadataHandler();
 		this.expandHandler();
 		this.titleClickHandler();
@@ -1527,7 +1522,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			// get the attributes for the layer retrieved from solr
 			var layerAttr = null;
 			try {
-				layerModel = this.backingData.findWhere({
+				var layerModel = this.backingData.findWhere({
 					LayerId : layerId
 				});
 				if (typeof layerModel === "undefined") {
@@ -1602,23 +1597,101 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		});
 	};
 
-	this.viewMetadataHandler = function() {
-		jQuery("#" + that.getTableId() + " tbody").on("click.viewMetadata",
-				"div.viewMetadataControl", function(event) {
-					var layerId = that.getLayerIdFromTableCell(this);
-					;
-					that.controls.viewMetadata(layerId);
-				});
+	this.previewLinkHandler = function() {
+		var that = this;
+		jQuery("#" + that.getTableId() + " tbody")
+				.on(
+						"click.previewLink",
+						"div.previewLink",
+						function(event) {
+							// this should update the preview model
+							var layerId = that.getLayerIdFromTableCell(this);
+							if (layerId.length === 0) {
+								throw new Error("layer id is not found.");
+							}
+
+							var layerModel = that.backingData.findWhere({
+								LayerId : layerId
+							});
+							var location = jQuery.parseJSON(layerModel
+									.get("Location"));
+							// if a previewLink is defined in the Location
+							// field,
+							// use it. Otherwise, try to generate a link to the
+							// Institution's ogp instance
+							var values = [ "previewLink" ];
+							var url = null;
+							if (OpenGeoportal.Utility.hasLocationValue(
+									location, values)) {
+								// display external metadata in an iframe
+								url = OpenGeoportal.Utility.getLocationValue(
+										location, values);
+
+							} else {
+								url = that
+										.constructExternalPreviewUrl(layerModel);
+							}
+
+							that.controls.goToExternal(url);
+
+						});
 	};
 
-	this.viewLibraryRecordHandler = function() {
-		jQuery("#" + that.getTableId() + " tbody").on(
-				"click.viewLibraryRecord", "div.viewLibraryRecordControl",
-				function(event) {
-					var layerId = that.getLayerIdFromTableCell(this);
-					;
-					that.contols.showLibraryRecord(layerId);
-				});
+	this.constructExternalPreviewUrl = function(layerModel) {
+		var layerSource = layerModel.get("Institution");
+		var previewLink = "";
+		// get the ogp link from config instead
+		if (layerSource == "Harvard") {
+			previewLink = "http://calvert.hul.harvard.edu:8080/opengeoportal/openGeoPortalHome.jsp";
+		} else if (layerSource == "MIT") {
+			previewLink = "http://arrowsmith.mit.edu/mitogp/openGeoPortalHome.jsp";
+		}
+
+		var layerId = layerModel.get("LayerId");
+		var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
+		var queryString = '?' + jQuery.param({
+			layer : layerId,
+			minX : geodeticBbox.left,
+			minY : geodeticBbox.bottom,
+			maxX : geodeticBbox.right,
+			maxY : geodeticBbox.top
+		});
+
+		previewLink += queryString;
+
+		return previewLink;
+	};
+
+	this.viewMetadataHandler = function() {
+		var that = this;
+		jQuery("#" + that.getTableId() + " tbody")
+				.on(
+						"click.viewMetadata",
+						"div.viewMetadataControl",
+						function(event) {
+							var layerId = that.getLayerIdFromTableCell(this);
+							// decide how to handle metadata here (external
+							// link, from
+							// solr, etc.)
+							var layerModel = that.backingData.findWhere({
+								LayerId : layerId
+							});
+							var location = jQuery.parseJSON(layerModel
+									.get("Location"));
+							// should store this somewhere else; some sort of
+							// config
+							var values = [ "metadataLink", "purl", "libRecord" ];
+							if (OpenGeoportal.Utility.hasLocationValue(
+									location, values)) {
+								// display external metadata in an iframe
+								var url = OpenGeoportal.Utility
+										.getLocationValue(location, values);
+								that.controls
+										.viewExternalMetadata(layerId, url);
+							} else {
+								that.controls.viewMetadataFromSolr(layerId);
+							}
+						});
 	};
 
 	this.titleClickHandler = function() {
