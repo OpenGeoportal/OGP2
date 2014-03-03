@@ -1,0 +1,17 @@
+{"config":{"homeInstitution": "Tufts", "institutionSpecificCss": "", 
+        "institutionSpecificJavaScript": "", 
+	"googleAnalyticsId": "UA-19787732-1", 
+	"search":{"serviceType": "solr", "serviceAddress": "http://geodata.tufts.edu/solr/select"}, 
+	"institutions": {"Tufts": {"login": {"loginType": "form", "authenticationPage": "login"}, 
+				"proxy": {"id": "proxy.Restricted.Tufts", "accessLevel": ["restricted"], "wms": "restricted/wms", "wfs": "restricted/wfs"}, 
+				"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_tufts.png", "uiClass": "tuftsIcon", "altDisplay": "Tufts", "tooltipText": "Tufts University"}}}, 
+	"Harvard":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_harvard.png", "uiClass": "harvardIcon", 
+			"altDisplay": "HGL", "tooltipText": "Harvard Geospatial Library"}}}, 
+	"Berkeley":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_berkeley.png", "uiClass": "berkeleyIcon", "altDisplay": "Berkeley", "tooltipText": "UC Berkeley"}}}, 
+	"Columbia":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_un.png", "uiClass": "columbiaIcon", "altDisplay": "Columbia University", "tooltipText": "Columbia University"}}}, 
+	"MIT":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_mit.png", "uiClass": "mitIcon", "altDisplay": "MIT", "tooltipText": "Massachusetts Institute of Technology"}}},
+	"Maryland":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_maryland.png", "uiClass": "marylandIcon", "altDisplay": "University of Maryland", "tooltipText": "University of Maryland"}}},
+			"UN":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_un.png", "uiClass": "unIcon", "altDisplay": "United Nations", "tooltipText": "United Nations"}}}, 
+		"UNWFP":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_un.png", "uiClass": "unIcon", "altDisplay": "UN World Food Program", "tooltipText": "UN World Food Program"}}},  
+	"MassGIS":{"graphics":{"sourceIcon":{"resourceLocation": "resources/media/src_massgis.png", "uiClass": "massgisIcon", "altDisplay": "MassGIS", "tooltipText": "MassGIS"}}}
+	}}}

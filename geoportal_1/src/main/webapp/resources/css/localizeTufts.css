@@ -1,0 +1,23 @@
+#logoGraphic {
+		background: none;
+		height: 0px;
+		width: 0px;
+		padding: 0px;
+}
+
+#logo > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#logo > div.logoText {
+	margin-left: 0px;
+}
+
+#footerLogos .institutionLogo {
+	background: url("../media/ogp-institutions.png") no-repeat scroll -9px
+		-59px transparent;
+	height: 30px;
+	width: 66px;
+}
+

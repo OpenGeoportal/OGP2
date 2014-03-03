@@ -1,0 +1,52 @@
+[{"id": "tufts",
+				"shortName":"Tufts",
+				"fullName": "Tufts University",
+				"login": {"loginType": "form", "authenticationPage": "login"}, 
+				"proxy": {"id": "proxy.Restricted.Tufts", "accessLevel": ["restricted"], "wms": "restricted/wms", "wfs": "restricted/wfs"}, 
+				"sourceIconClass":"tuftsIcon",
+				"selected": true
+				},
+				{"id": "harvard",
+				"shortName": "Harvard",
+				"fullName": "Harvard Geospatial Library",
+				"sourceIconClass": "harvardIcon",
+				"selected": true
+				},
+				{"id": "berkeley",
+				"shortName": "Berkeley",
+				"fullName": "UC Berkeley",
+				"sourceIconClass": "berkeleyIcon",
+				"selected": true
+				},
+				{"id": "mit",
+				"shortName": "MIT",
+				"fullName": "Massachusetts Institute of Technology",
+				"sourceIconClass": "mitIcon",
+				"selected": true
+				},
+				{"id": "maryland",
+				"shortName": "Maryland",
+				"fullName": "University of Maryland (CARPE)",
+				"sourceIconClass": "marylandIcon",
+				"selected": true
+				},
+				{"id": "un",
+				"shortName": "UN",
+				"fullName": "United Nations",
+				"sourceIconClass": "unIcon",
+				"selected": true
+				},
+				{"id": "unwfp",
+				"shortName": "UN WFP",
+				"fullName": "UN World Food Program",
+				"sourceIconClass": "unIcon",
+				"selected": true
+				},
+				{"id": "massgis",
+				"shortName": "MassGIS",
+				"fullName": "MassGIS",
+				"sourceIconClass": "massgisIcon",
+				"selected": true
+				}]
+				
+

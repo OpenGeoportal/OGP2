@@ -1,0 +1,64 @@
+<beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                    http://www.springframework.org/schema/context 
+                    http://www.springframework.org/schema/context/spring-context-3.1.xsd
+                    http://www.springframework.org/schema/security 
+                    http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+                    
+	<context:property-placeholder
+		location="WEB-INF/cas.properties,classpath*:org/opengeoportal/security/cas/**/cas.properties" />
+
+	<security:http pattern="/resources/**" security="none" />
+
+    <security:http entry-point-ref="casEntryPoint"  use-expressions="true">
+        <security:custom-filter position="CAS_FILTER" ref="casFilter" />
+		<security:intercept-url pattern="/login*" access="permitAll" requires-channel="https" />
+		<security:form-login login-page="/logout" login-processing-url="/j_spring_security_logout" />
+		<security:intercept-url pattern="/restricted/**" access="isAuthenticated()" />
+        <security:port-mappings>
+                <security:port-mapping http="${cas.publicPort}" https="${cas.securePort}" />
+        </security:port-mappings>
+		<security:intercept-url pattern="/**" access="permitAll" />
+    </security:http>
+
+    <beans:bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+       <beans:property name="authenticationManager" ref="authenticationManager"/>
+    </beans:bean>
+
+    <beans:bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">
+        <beans:property name="service" value="${cas.localSecurityCheckUrl}"/>
+        <beans:property name="sendRenew" value="false"/>
+    </beans:bean>
+    
+    <beans:bean id="casEntryPoint" class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+        <beans:property name="serviceProperties" ref="serviceProperties"/>
+        <beans:property name="loginUrl" value="${cas.loginUrl}"/>
+    </beans:bean>
+
+
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider ref="casAuthenticationProvider" />
+    </security:authentication-manager>
+
+    <beans:bean id="casAuthenticationProvider" class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+        <beans:property name="userDetailsService" ref="userDetailsService"/>
+        <beans:property name="serviceProperties" ref="serviceProperties" />
+        <beans:property name="ticketValidator">
+            <beans:bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+                <beans:constructor-arg index="0" value="${cas.serviceTicketValidator20}" />
+            </beans:bean>
+        </beans:property>
+        <beans:property name="key" value="${cas.authProviderId}"/>
+    </beans:bean>
+ 
+
+    <beans:bean id="userDetailsService" class="org.opengeoportal.security.cas.SimpleCasUserService" >
+        <beans:property name="admins" value="${cas.admins}" />
+    </beans:bean>
+
+
+</beans:beans>
