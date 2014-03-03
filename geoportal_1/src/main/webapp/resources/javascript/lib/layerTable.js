@@ -83,7 +83,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 
 						},
 						{
-							order : 13,
+							order : 15,
 							columnName : "Metadata",
 							solr : false,
 							resizable : false,
@@ -101,7 +101,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							}
 						},
 						{
-							order : 14,
+							order : 16,
 							columnName : "View",
 							solr : false,
 							resizable : false,
@@ -286,6 +286,24 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			visible : false,
 			hidable : false,
 			header : "Access"
+		}, {
+			order : 13,
+			columnName : "CollectionId",
+			solr : true,
+			resizable : false,
+			organize : false,
+			visible : false,
+			hidable : false,
+			header : "CollectionId"
+		}, {
+			order : 14,
+			columnName : "Availability",
+			solr : true,
+			resizable : false,
+			organize : false,
+			visible : false,
+			hidable : false,
+			header : "Availability"
 		}
 
 		]);
@@ -1647,6 +1665,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			previewLink = "http://arrowsmith.mit.edu/mitogp/openGeoPortalHome.jsp";
 		}
 
+		// this is really just creating a share link. consolidate the code
 		var layerId = layerModel.get("LayerId");
 		var geodeticBbox = OpenGeoportal.ogp.map.getGeodeticExtent();
 		var queryString = '?' + jQuery.param({
@@ -1664,34 +1683,17 @@ OpenGeoportal.LayerTable = function LayerTable() {
 
 	this.viewMetadataHandler = function() {
 		var that = this;
-		jQuery("#" + that.getTableId() + " tbody")
-				.on(
-						"click.viewMetadata",
-						"div.viewMetadataControl",
-						function(event) {
-							var layerId = that.getLayerIdFromTableCell(this);
-							// decide how to handle metadata here (external
-							// link, from
-							// solr, etc.)
-							var layerModel = that.backingData.findWhere({
-								LayerId : layerId
-							});
-							var location = jQuery.parseJSON(layerModel
-									.get("Location"));
-							// should store this somewhere else; some sort of
-							// config
-							var values = [ "metadataLink", "purl", "libRecord" ];
-							if (OpenGeoportal.Utility.hasLocationValue(
-									location, values)) {
-								// display external metadata in an iframe
-								var url = OpenGeoportal.Utility
-										.getLocationValue(location, values);
-								that.controls
-										.viewExternalMetadata(layerId, url);
-							} else {
-								that.controls.viewMetadataFromSolr(layerId);
-							}
-						});
+		jQuery("#" + that.getTableId() + " tbody").on("click.viewMetadata",
+				"div.viewMetadataControl", function(event) {
+					var layerId = that.getLayerIdFromTableCell(this);
+					// decide how to handle metadata here (external
+					// link, from
+					// solr, etc.)
+					var layerModel = that.backingData.findWhere({
+						LayerId : layerId
+					});
+					that.controls.viewMetadata(layerModel);
+				});
 	};
 
 	this.titleClickHandler = function() {

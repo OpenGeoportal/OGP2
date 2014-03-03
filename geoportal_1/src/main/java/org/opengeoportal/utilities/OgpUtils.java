@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.opengeoportal.solr.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -215,5 +216,16 @@ public class OgpUtils {
 		envString += doubleToString(env.getMaxX()) + ",";
 		envString += doubleToString(env.getMaxY());
 		return envString;
+	}
+	
+	public static SolrRecord findRecordById(String layerId, List<SolrRecord> recordList) throws Exception{
+		for (SolrRecord sr: recordList){
+			if (sr.getLayerId().equals(layerId)){
+				
+				return sr;
+			}
+		}
+		
+		throw new Exception("Record not found.");
 	}
 }

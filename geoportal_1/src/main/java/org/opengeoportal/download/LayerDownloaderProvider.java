@@ -36,6 +36,18 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 		return getLayerDownloader(classKey);
 	}
 
+	public Boolean isDownloadable(LayerRequest layer) {
+		Boolean downloadable = false;
+		
+		try {
+			this.getClassKey(layer);
+			downloadable = true;
+		} catch (Exception e){
+			logger.warn(e.getMessage());
+		}
+		return downloadable;
+	}
+	
 	public String getClassKey(LayerRequest layer) throws Exception {
 		JsonNode institutions = downloadConfigRetriever.getDownloadConfig().path("institutions");
 		

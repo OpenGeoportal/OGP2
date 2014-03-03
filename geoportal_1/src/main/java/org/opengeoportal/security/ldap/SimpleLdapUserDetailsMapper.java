@@ -1,4 +1,4 @@
-package org.opengeoportal.security;
+package org.opengeoportal.security.ldap;
 
 import java.util.Collection;
 import java.util.HashSet;

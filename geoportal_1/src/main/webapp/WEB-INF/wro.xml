@@ -14,7 +14,7 @@
 		<js>/resources/javascript/lib/analytics.js</js>
 		<js>/resources/javascript/lib/commonControls.js</js>
 		<js>/resources/javascript/lib/models/resultItem.js</js>
-		<js>/resources/javascript/lib/models/mapModel.js</js>
+		<js>/resources/javascript/lib/models/basemapModel.js</js>
 		<js>/resources/javascript/lib/models/tableConfig.js</js>
 		<js>/resources/javascript/lib/models/tableLayerSettings.js</js>
 		<js>/resources/javascript/lib/models/tableSortSettings.js</js>
@@ -22,6 +22,13 @@
 		<js>/resources/javascript/lib/models/cartCollection.js</js>
 		<js>/resources/javascript/lib/models/downloadQueue.js</js>
 		<js>/resources/javascript/lib/models/leftPanelModel.js</js>
+		<js>/resources/javascript/lib/models/externalPreviewWindowsCollection.js</js>
+		<js>/resources/javascript/lib/views/cartActionView.js</js>
+		<js>/resources/javascript/lib/views/downloadFlow.js</js>
+		<js>/resources/javascript/lib/views/shareCartView.js</js>
+		<js>/resources/javascript/lib/views/mapItView.js</js>
+		<js>/resources/javascript/lib/views/dynamicWebServicesView.js</js>
+
 		<js>/resources/javascript/lib/login.js</js>
 		<js>/resources/javascript/lib/models/appSettings.js</js>
 		<js>/resources/javascript/lib/models/queryModel.js</js>

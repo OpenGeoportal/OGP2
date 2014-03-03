@@ -1,17 +1,16 @@
-if (typeof OpenGeoportal == 'undefined') {
+if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
-} else if (typeof OpenGeoportal != "object") {
+} else if (typeof OpenGeoportal !== "object") {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-if (typeof OpenGeoportal.Models == 'undefined') {
+if (typeof OpenGeoportal.Models === 'undefined') {
 	OpenGeoportal.Models = {};
-} else if (typeof OpenGeoportal.Models != "object") {
+} else if (typeof OpenGeoportal.Models !== "object") {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
 OpenGeoportal.Models.QueueItem = Backbone.Model.extend({
-	idAttribute : "requestId",
 	defaults : {
 		requestId : "",
 		layers : [],
@@ -295,6 +294,53 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				jQuery.ajax(params);
 				jQuery(document).trigger("showRequestSpinner");
 
+			},
+
+			getParamsFromQueueItem : function(queueItem) {
+				// we'll have to truncate some of these attributes for the
+				// request,
+				var requestObj = queueItem.attributes;
+				var layerModels = queueItem.get("layers");
+				var layerRequests = [];
+				_.each(layerModels, function(model) {
+					layerRequests.push({
+						layerId : model.get("LayerId"),
+						format : model.get("requestedFormat")
+					});
+				});
+
+				requestObj.layers = layerRequests;
+
+				requestObj.bbox = requestObj.bbox.toBBOX();
+
+				return JSON.stringify(requestObj);
+			},
+
+			addToQueue : function(queueItem) {
+				console.log("attempting to add queueItem");
+				console.log(queueItem);
+				var that = this;
+
+				var requestInfo = this.requestTypes[queueItem.get("type")];
+
+				var params = {
+					url : requestInfo.requestUrl,
+					data : this.getParamsFromQueueItem(queueItem),
+					dataType : "json",
+					type : "POST",
+					success : function(data) {
+						var newQ = queueItem.clone();
+						newQ.set({
+							requestId : data.requestId
+						});
+						that.add(newQ);
+					},
+					error : function() {
+						jQuery(document).trigger("hideRequestSpinner");
+					}
+				};
+				jQuery.ajax(params);
+				jQuery(document).trigger("showRequestSpinner");
 			}
 
 		});

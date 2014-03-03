@@ -21,7 +21,7 @@ public class HomeController {
 	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@RequestMapping(value="/index", method=RequestMethod.GET)
+	@RequestMapping(value={"/index", "/"}, method=RequestMethod.GET)
 	public ModelAndView getHomePage(@RequestParam(value="ogpids", defaultValue = "") Set<String> layerIds,
 			@RequestParam(value="bbox", defaultValue = "-180,-90,180,90") String bbox,
 			@RequestParam(value="layer[]", defaultValue = "") Set<String> layers,
@@ -74,13 +74,6 @@ public class HomeController {
 		}
 		
 		return quotedSet;
-	}
-	
-	//support the old url
-	@RequestMapping(value="/openGeoPortalHome*", method=RequestMethod.GET)
-	public String redirectToHome(){
-		logger.info("trying to redirect");
-		return "redirect:index";
 	}
 	
 	private void addConfig(ModelAndView mav){

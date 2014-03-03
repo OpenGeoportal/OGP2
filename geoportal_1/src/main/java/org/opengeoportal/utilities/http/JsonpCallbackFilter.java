@@ -1,4 +1,4 @@
-package org.opengeoportal.utilities;
+package org.opengeoportal.utilities.http;
 
 import java.io.IOException;
 
@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.opengeoportal.utilities.GenericResponseWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class JsonpCallbackFilter implements Filter {
 			Map<String, String[]> parms = httpRequest.getParameterMap();
 			if(parms.containsKey("callback")) {
 				
-				logger.info("Wrapping response with JSONP callback '" + parms.get("callback")[0] + "'");
+				logger.debug("Wrapping response with JSONP callback '" + parms.get("callback")[0] + "'");
 
 				OutputStream out = httpResponse.getOutputStream();
 

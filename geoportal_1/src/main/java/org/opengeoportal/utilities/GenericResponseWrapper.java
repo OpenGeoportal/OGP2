@@ -7,6 +7,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
+import org.opengeoportal.utilities.http.FilterServletOutputStream;
+
 public class GenericResponseWrapper extends HttpServletResponseWrapper {
 
 	private ByteArrayOutputStream output;

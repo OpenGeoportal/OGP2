@@ -10,8 +10,6 @@
 	href="resources/css/print.css" />
 <link rel="stylesheet" href="resources/css/localize.css"
 	type="text/css" />
-<link rel="stylesheet" href="resources/css/nanoscroller.css"
-	type="text/css" />
 <!--  <script type="text/javascript" src="resources/javascript/require.js"></script>-->
 <script
 	src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
@@ -30,7 +28,6 @@
 <script type="text/javascript"
 	src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 
-<script type="text/javascript" src="resources/javascript/jquery.nanoscroller.min.js"></script>
 <script type="text/javascript" src="resources/javascript/jquery.ba-postmessage.min.js"></script>
 
 <script type="text/javascript"
@@ -53,7 +50,7 @@
 <script type="text/javascript"
 	src="resources/javascript/lib/models/resultItem.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/models/mapModel.js"></script>
+	src="resources/javascript/lib/models/basemapModel.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/tableConfig.js"></script>
 <script type="text/javascript"
@@ -81,7 +78,19 @@
 	src="resources/javascript/lib/views/leftPanel.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/tableRowSettings.js"></script>
-
+<script type="text/javascript"
+	src="resources/javascript/lib/models/externalPreviewWindowsCollection.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/cartActionView.js"></script>
+<script type="text/javascript"
+	src="resources/javascript/lib/views/downloadFlow.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/shareCartView.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/mapItView.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/dynamicWebServicesView.js"></script>
+	
 <script type="text/javascript"
 	src="resources/javascript/lib/views/search.js"></script>
 <script type="text/javascript"

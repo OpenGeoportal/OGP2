@@ -38,6 +38,7 @@ public class FormLoginService implements LoginService {
 
     public LoginStatus login(String username, String password) {
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        
         logger.debug("Attempting login.");
         Authentication auth = null;
         try {

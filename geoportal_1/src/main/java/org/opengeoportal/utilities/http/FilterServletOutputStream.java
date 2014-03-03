@@ -1,4 +1,4 @@
-package org.opengeoportal.utilities;
+package org.opengeoportal.utilities.http;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

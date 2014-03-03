@@ -231,6 +231,20 @@ OpenGeoportal.CommonControls = function CommonControls() {
 	 * 
 	 */
 
+	this.viewMetadata = function(model) {
+		var location = jQuery.parseJSON(model.get("Location"));
+		var layerId = model.get("LayerId");
+		// should store this somewhere else; some sort of
+		// config
+		var values = [ "metadataLink", "purl", "libRecord" ];
+		if (OpenGeoportal.Utility.hasLocationValue(location, values)) {
+			// display external metadata in an iframe
+			var url = OpenGeoportal.Utility.getLocationValue(location, values);
+			this.viewExternalMetadata(layerId, url);
+		} else {
+			this.viewMetadataFromSolr(layerId);
+		}
+	};
 	// obtain layer's metadata via jsonp call
 	this.viewMetadataFromSolr = function(layerId) {
 		// make an ajax call to retrieve metadata
@@ -598,6 +612,28 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return dfd.promise();
 	};
 
+	this.getShortenLinkPromise = function(longLink) {
+		var dfd = new jQuery.Deferred();
+
+		var request = {
+			"link" : longLink
+		};
+		var url = "shortenLink";
+		var ajaxArgs = {
+			url : url,
+			data : jQuery.param(request),
+			type : "GET",
+			dataType : "json",
+			success : function(data) {
+				// var shortLink = data["shortLink"];
+				dfd.resolve(data);
+			}
+		};
+
+		jQuery.ajax(ajaxArgs);
+		return dfd.promise();
+	};
+
 	this.appendButton = function(parent$, buttonId, buttonLabel, clickHandler) {
 		// var that = this;
 		var html = template.genericButton({
@@ -651,19 +687,30 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return divId;
 	};
 
-	/*
-	 * this.dialogTemplate = function dialogTemplate(dialogDivId, dialogContent,
-	 * dialogTitle, buttonsObj) { if (typeof jQuery('#' + dialogDivId)[0] ==
-	 * 'undefined') { var dialogDiv = '<div id="' + dialogDivId + '"
-	 * class="dialog"> \n'; dialogDiv += dialogContent; dialogDiv += '</div>
-	 * \n'; jQuery('#dialogs').append(dialogDiv); jQuery("#" +
-	 * dialogDivId).dialog({ zIndex : 3000, autoOpen : false, width : 'auto',
-	 * title : dialogTitle, resizable : true, buttons : buttonsObj }); } else { //
-	 * replace dialog text/controls & open the instance of 'dialog' that //
-	 * already exists jQuery("#" + dialogDivId).html(dialogContent); jQuery("#" +
-	 * dialogDivId).dialog("option", "buttons", buttonsObj); } jQuery("#" +
-	 * dialogDivId).dialog('open'); };
-	 */
+	// used in geoCommonsExport.js...anywhere else?
+	this.dialogTemplate = function dialogTemplate(dialogDivId, dialogContent,
+			dialogTitle, buttonsObj) {
+		if (typeof jQuery('#' + dialogDivId)[0] === 'undefined') {
+			var dialogDiv = '<div id="' + dialogDivId + '" class="dialog"> \n';
+			dialogDiv += dialogContent;
+			dialogDiv += '</div>\n';
+			jQuery('#dialogs').append(dialogDiv);
+			jQuery("#" + dialogDivId).dialog({
+				zIndex : 3000,
+				autoOpen : false,
+				width : 'auto',
+				title : dialogTitle,
+				resizable : true,
+				buttons : buttonsObj
+			});
+		} else {
+			// replace dialog text/controls & open the instance of 'dialog' that
+			// already exists
+			jQuery("#" + dialogDivId).html(dialogContent);
+			jQuery("#" + dialogDivId).dialog("option", "buttons", buttonsObj);
+		}
+		jQuery("#" + dialogDivId).dialog('open');
+	};
 
 	this.minimizeDialog = function(dialogId) {
 		// 1. collect current state of dialog before minimizing.

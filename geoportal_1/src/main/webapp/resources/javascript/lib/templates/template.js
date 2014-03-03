@@ -131,4 +131,35 @@ OpenGeoportal.Template = function() {
 
 	var textTableCellHtml = '<td class="<%= colClass %>"><div class="cellWrapper" title="<%= contents %>"><%= contents %></div></td>';
 	this.textTableCell = _.template(textTableCellHtml);
+
+	/**
+	 * download controls
+	 */
+
+	var formatControlHtml = '<label for="<%= controlId %>" class="<%= controlClass %>"><%= controlLabel %></label>';
+	formatControlHtml += '<select id="<%= controlId %>" class="<%= controlClass %>">';
+	formatControlHtml += '<% _.each(formats, function(formatEl) { %><option value="<%= formatEl.formatType %>"><%= formatEl.formatDisplay %></option><% }); %>';
+	formatControlHtml += '</select><br/>';
+	this.formatSelectionControl = _.template(formatControlHtml);
+
+	var clipControlHtml = '<input id="checkClip" type="checkbox" checked="checked" /><label for="checkClip" id="checkClipLabel">Clip data to map extent</label><br/> \n';
+	this.clipControl = _.template(clipControlHtml);
+
+	var addEmailHtml = '<div><label for="emailAddress">You have selected some layers that require an email address. Please enter your email to receive a download link:</label><br />\n';
+	addEmailHtml += '<input id="emailAddress" type="text" /></div>\n';
+	addEmailHtml += '<span id="emailValidationError" class="warning"></span>';
+	this.requireEmailAddress = _.template(addEmailHtml);
+
+	// How can this be done in a better way? too much logic; probably split it
+	// into several templates and apply logic in the view
+	var downloadNoticeHtml = "<div>You have selected <%= total %> layer<% if ( plural ) { %>s<% } %> for download.</div>";
+	downloadNoticeHtml += "<% if (downloadCount > 0){ if ( emailCount === 0){%><div>A zip file will be generated with your layers. <% } else { %>";
+	downloadNoticeHtml += "<div>A zip file will be generated with layers directly downloadable by the OpenGeoportal site. <% } %>";
+	downloadNoticeHtml += "It may take several minutes to process your layers.<br /> ";
+	downloadNoticeHtml += '<span class="notice">Do not close the OpenGeoportal website until the process is complete, or you will lose your download.</span></div><%}';
+	downloadNoticeHtml += " if (emailCount > 0){ if ( downloadCount === 0) {%><br/><div>You will be emailed a link to your layers within the next few minutes. </div><% } else { %>";
+	downloadNoticeHtml += "<br/><div>You will be emailed a link to layers not directly downloadable by the OpenGeoportal site within the next few minutes. </div><% }} %>";
+
+	this.layerDownloadNotice = _.template(downloadNoticeHtml);
+
 };

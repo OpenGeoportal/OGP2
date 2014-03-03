@@ -1,12 +1,12 @@
-if (typeof OpenGeoportal == 'undefined') {
+if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
-} else if (typeof OpenGeoportal != "object") {
+} else if (typeof OpenGeoportal !== "object") {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-if (typeof OpenGeoportal.Views == 'undefined') {
+if (typeof OpenGeoportal.Views === 'undefined') {
 	OpenGeoportal.Views = {};
-} else if (typeof OpenGeoportal.Views != "object") {
+} else if (typeof OpenGeoportal.Views !== "object") {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 

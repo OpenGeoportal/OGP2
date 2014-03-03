@@ -330,6 +330,52 @@ OpenGeoportal.Utility.getLocationValue = function(location, keyArr) {
 	return url;
 };
 
+OpenGeoportal.Utility.getArrayToLower = function(arr) {
+	var lowerArr = [];
+	_.each(arr, function(element) {
+		lowerArr.push(element.toLowerCase());
+	});
+
+	return lowerArr;
+};
+
+OpenGeoportal.Utility.arrayContainsIgnoreCase = function(arr, val) {
+	var lcArr = OpenGeoportal.Utility.getArrayToLower(arr);
+	var lcVal = val.toLowerCase();
+
+	return (_.indexOf(lcArr, lcVal) >= 0);
+
+};
+
+OpenGeoportal.Utility.hasLocationValueIgnoreCase = function(location, keyArr) {
+
+	var keyArrLower = OpenGeoportal.Utility.getArrayToLower(_.keys(location));
+	var lowerArr = OpenGeoportal.Utility.getArrayToLower(keyArr);
+
+	var hasKey = false;
+
+	for ( var i in lowerArr) {
+		if (_.has(lowerArr, i)) {
+
+			if (_.indexOf(keyArrLower, lowerArr[i]) >= 0) {
+				hasKey = true;
+			}
+
+		}
+	}
+
+	return hasKey;
+};
+
 OpenGeoportal.Utility.hasLocationValue = function(location, keyArr) {
 	return !_.isNull(OpenGeoportal.Utility.getLocationValue(location, keyArr));
+};
+
+OpenGeoportal.Utility.calculateTextAreaRows = function(theText) {
+	var numCharacters = theText.length;
+	var rows = 1;
+	if (numCharacters > 75) {
+		rows = Math.floor(numCharacters / 40);
+	}
+	return rows;
 };

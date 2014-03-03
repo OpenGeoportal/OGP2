@@ -210,7 +210,7 @@ OpenGeoportal.Solr = function() {
 	this.SearchRequestColumns = [ "Name", "Institution", "Access", "DataType",
 			"LayerDisplayName", "Publisher", "GeoReferenced", "Originator",
 			"Location", "MinX", "MaxX", "MinY", "MaxY", "ContentDate",
-			"LayerId", "score", "WorkspaceName" ];
+			"LayerId", "score", "WorkspaceName", "CollectionId", "Availability" ];
 
 	// this function returns a Solr fl clause specifying the columns to return
 	// for the passed request

@@ -5,27 +5,28 @@
  * @author Chris Barnett
  */
 
-if (typeof OpenGeoportal == 'undefined') {
+if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
-} else if (typeof OpenGeoportal != "object") {
+} else if (typeof OpenGeoportal !== "object") {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
 // Repeat the creation and type-checking code for the next level
-if (typeof OpenGeoportal.Export == 'undefined') {
+if (typeof OpenGeoportal.Export === 'undefined') {
 	OpenGeoportal.Export = {};
-} else if (typeof OpenGeoportal.Export != "object") {
+} else if (typeof OpenGeoportal.Export !== "object") {
 	throw new Error("OpenGeoportal.Export already exists and is not an object");
 }
 
 OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	// console.log(exportObj);
+
 	this.appState = OpenGeoportal.ogp.appState;
 	this.template = this.appState.get("template");
 	this.controls = this.appState.get("controls");
 
-	// console.log(exportObj);
-	this.layerObj = exportObj.layers;
+	// an array of Backbone Models representing layers to export
+	this.layerModels = exportObj.layers;
 	this.descriptor = "geoCommonsExport";
 
 	this.extentOptions = {
@@ -91,7 +92,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 
 	this.getInputElement = function(paramObj) {
 		// function(labelText, inputType, className, idName, defaultValue){
-		if (typeof paramObj.id == "undefined") {
+		if (typeof paramObj.id === "undefined") {
 			throw new Error("id must be defined.");
 		}
 		var idName = paramObj.id;
@@ -132,11 +133,15 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	this.getGeoCommonsExportDialogContent = function() {
 		var identifier = this.descriptor;
 		var content = '<form id="' + identifier + 'Form">';
+
+		var d = new Date();
+		var arrDate = [ d.getMonth(), d.getDate(), d.getFullYear() ];
+		var date = arrDate.join(".");
 		var textBoxObj = {
 			elementType : "textbox",
 			id : identifier + "Title",
 			name : "Title",
-			value : "OGP Export",
+			value : "OGP Export " + date,
 			classes : [ "dialog", identifier + "Form" ]
 		};
 		content += this.getInputElement(textBoxObj);
@@ -144,7 +149,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 		textBoxObj.id = identifier + "Description";
 		textBoxObj.name = "Description";
 
-		var layerObj = this.layerObj;
+		var layerObj = this.layerModels;
 		var titleArr = [];
 		for ( var i in layerObj) {
 			titleArr.push(layerObj[i].get("LayerDisplayName"));
@@ -201,13 +206,13 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 		requestObj.username = jQuery("#" + descriptor + "Username").val();
 		requestObj.password = jQuery("#" + descriptor + "Password").val();
 		requestObj.extent = this.extentOptions["Layer Max"];// jQuery("#" +
-															// descriptor +
-															// "Extent").val();
+		// descriptor +
+		// "Extent").val();
 		requestObj.title = jQuery("#" + descriptor + "Title").val();
 		requestObj.description = jQuery("#" + descriptor + "Description").val();
 		this.ogpids = [];
-		for ( var indx in this.layerObj) {
-			this.ogpids.push(this.layerObj[indx].get("LayerId"));
+		for ( var i in this.layerModels) {
+			this.ogpids.push(this.layerModels[i].get("LayerId"));
 		}
 		requestObj.OGPIDS = this.ogpids;
 		return requestObj;
@@ -216,7 +221,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	this.getBasemapId = function getBasemapId(basemapDescriptor) {
 		basemapDescriptor = basemapDescriptor.toLowerCase();
 		var basemapMap = this.exportBasemapOptions;
-		if (basemapMap[basemapDescriptor] != "undefined") {
+		if (basemapMap[basemapDescriptor] !== "undefined") {
 			return basemapMap[basemapDescriptor];
 		} else {
 			throw new Error('Basemap "' + basemapDescriptor + '" is undefined.');
@@ -226,13 +231,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	this.exportLayers = function exportLayers() {
 		var requestObj = this.createExportRequest();
 		this.appState.get("requestQueue").createRequest(requestObj);
-		/*
-		 * var that = this; var params = { url: "geocommons/requestExport",
-		 * data: JSON.stringify(requestObj), processData: false, dataType:
-		 * "json", type: "POST", context: this, success:
-		 * function(data){that.appState.get("requestQueue").createRequest(requestObj);} };
-		 * jQuery.ajax(params);
-		 */
+
 	};
 
 };

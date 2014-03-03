@@ -26,101 +26,221 @@ if (typeof OpenGeoportal.Models === 'undefined') {
  * 
  */
 
-OpenGeoportal.Models.DataTypeAware = OpenGeoportal.Models.ResultItem.extend({
-	initialize : function() {
-		this.assignDataTypeAttributes();
-	},
-	assignDataTypeAttributes : function() {
-		// really, this should take into account location field....what url
-		// types does the layer have;
-		// preview controls are available according to what attributes this
-		// model has
-		var dataType = this.get("DataType").toLowerCase();
-		var baseType = "";
-		switch (dataType) {
-		case "raster":
-		case "paper map":
-			baseType = "raster";
-			break;
-		default:
-			// we're defaulting to vector type
-			baseType = "vector";
-			break;
-		}
-		;
+OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
+		.extend({
+			initialize : function() {
+				this.parseLocation();
+				this.assignAttributes();
+			},
+			parseLocation : function() {
+				this.set({
+					parsedLocation : jQuery.parseJSON(this.get("Location"))
+				});
+			},
+			// a stub
+			assignAttributes : function() {
+				console.log("subclass me!");
+			},
+			supportedAttributesByType : [],
+			getAttributesByType : function(type) {
+				var arrAttr = this.supportedAttributesByType;
+				var objAttr = {};
+				for ( var i in arrAttr) {
+					if (arrAttr[i].type === type) {
+						objAttr = arrAttr[i];
+					}
+				}
 
-		this.set({
-			baseType : baseType
-		});
-		// really, this should take into account location field....what url
-		// types does the layer have;
-		var attr = jQuery.extend(this.baseDefaults[baseType], this
-				.getSubTypeSpecificAttributes(this));
-		this.set(attr);
-		return this;
-	},
+				if (_.isEmpty(objAttr)) {
+					// if no match, then there are no attributes to add
+					return objAttr;
+				}
 
-	getSubTypeSpecificAttributes : function(model) {
-		if (model.get("baseType") === "vector") {
-			var dataType = this.get("DataType").toLowerCase();
-			var typeSpecificAttr = this.typeSpecificVectorAttr[dataType];
-			if (typeof typeSpecificAttr == "undefined") {
-				typeSpecificAttr = this.typeSpecificVectorAttr.unknown;
+				var attributes = {};
+				if (_.has(objAttr, "discriminator")
+						&& objAttr["discriminator"] !== "none") {
+					// parse the object further based on discriminator value
+					if (!this.has(objAttr["discriminator"])) {
+						throw new Error(
+								"Model does not contain the attribute : "
+										+ objAttr["discriminator"]);
+					}
+					var key = this.get(objAttr["discriminator"]).toLowerCase();
+					if (_.has(objAttr.attributes, key)) {
+						attributes = objAttr.attributes[key];
+					} else {
+						console
+								.log("attributes Object does not contain the property : "
+										+ key);
+					}
+
+				} else {
+					attributes = objAttr.attributes;
+				}
+
+				return attributes;
+			},
+			missingAttribute : function(attributeName) {
+				throw new Error("Model does not contain the attribute '"
+						+ attributeName + "'");
+			},
+			isPublic : function() {
+				var access = this.get("Access").toLowerCase();
+				if (access !== "public") {
+
+					return false;
+				}
+				return true;
+			},
+			attributeIsOneOf : function(attr, attrVals) {
+				if (this.has(attr)) {
+					var val = this.get(attr);
+					return OpenGeoportal.Utility.arrayContainsIgnoreCase(
+							attrVals, val);
+				}
+
+				this.missingAttribute(att);
+			},
+			isVector : function() {
+				var attr = "DataType";
+				// we'll assume that unknown is a vector
+				var attrVals = [ "point", "line", "polygon", "undefined" ];
+				return this.attributeIsOneOf(attr, attrVals);
+			},
+			isRaster : function() {
+				var attr = "DataType";
+				var attrVals = [ "raster", "paper map", "scanned map" ];
+				return this.attributeIsOneOf(attr, attrVals);
+			},
+			hasOGCEndpoint : function(ogcProtocol) {
+				var attr = "parsedLocation";
+				if (this.has(attr)) {
+					var location = this.get(attr);
+					return OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+							location, [ ogcProtocol ]);
+				}
+
+				this.missingAttribute(att);
 			}
-			return typeSpecificAttr;
-		} else {
-			return this.typeSpecificRasterAttr;
-		}
-	},
 
-	baseDefaults : {
-		raster : {},
-		vector : {}
-	},
-	typeSpecificRasterAttr : {},
-	typeSpecificVectorAttr : {}
+		});
 
-});
-
-OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.DataTypeAware.extend({
+OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
+	// preview controls are available according to what attributes this
+	// model has
+	// previewType determines what function is used to preview the layer
 	defaults : {
 		preview : "off",
 		resourceName : "",
 		previewType : "",
 		showControls : false
+	// panel is hidden by default
 	},
 
-	baseDefaults : {
-		raster : {
-			getFeature : false,
-			opacity : 100,
-			sld : ""
-		},
-		vector : {
-			getFeature : false,
-			opacity : 100,
-			colorPickerOn : false,
-			sld : ""
+	// preview types:
+	// wms, arcgis, tilecache w/wms, tilecache w/out wms (essentially wmts,
+	// right?), imageCollection,
+	// browseGraphic, previewUrl
+	supportedAttributesByType : [ {
+		type : "wms",
+		discriminator : "DataType",
+		attributes : {
+			raster : {
+				getFeature : false,
+				opacity : 100,
+				sld : ""
+			},
+
+			"paper map" : {
+				opacity : 100
+			},
+			// it's understood that point, line, polygon, are vector types
+			point : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				sld : "",
+				color : "#ff0000",
+				graphicWidth : 2
+			},
+			line : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				sld : "",
+				color : "#0000ff",
+				graphicWidth : 1
+			},
+			polygon : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				sld : "",
+				opacity : 80,
+				color : "#aaaaaa",
+				graphicWidth : 1
+			},
+			"undefined" : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				sld : "",
+				color : "#aaaaaa",
+				graphicWidth : 1
+			}
 		}
+	}, {
+		type : "tilecache",
+		attributes : {
+			opacity : 100
+		}
+	}, {
+		type : "arcgisrest",
+		attributes : {
+			opacity : 100
+		}
+	} ],
+
+	setPreviewType : function() {
+		var locationObj = this.get("parsedLocation");
+		var locationKey = "";
+		var previewType = "default";
+
+		if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
+				[ "wms" ])) {
+			previewType = "wms";
+		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+				locationObj, [ "arcgisrest" ])) {
+			previewType = "arcgisrest";
+		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+				locationObj, [ "tilecache" ])) {
+			// if we're here, the location field has a tilecache value, but no
+			// wms value or arcgisrest value
+			previewType = "tilecache";
+		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+				locationObj, [ "imagecollection" ])) {
+			// {"imageCollection": {"path": "furtwangler/17076013_03_028a.tif",
+			// "url": "http://gis.lib.berkeley.edu:8080/geoserver/wms",
+			// "collectionurl":
+			// "http://www.lib.berkeley.edu/EART/mapviewer/collections/histoposf"}}
+			previewType = "imagecollection";
+		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+				locationObj, [ "arcgisrest" ])) {
+			previewType = "arcgisrest";
+		}
+
+		this.set({
+			previewType : previewType
+		});
+
+		return previewType;
 	},
-	typeSpecificVectorAttr : {
-		point : {
-			color : "#ff0000",
-			graphicWidth : 2
-		},
-		line : {
-			color : "#0000ff",
-			graphicWidth : 1
-		},
-		polygon : {
-			opacity : 80,
-			color : "#aaaaaa",
-			graphicWidth : 1
-		},
-		unknown : {
-			color : "#aaaaaa",
-			graphicWidth : 1
-		}
+
+	assignAttributes : function() {
+		// do some categorization
+		var previewType = this.setPreviewType();
+		var attr = this.getAttributesByType(previewType);
+		this.set(attr);
 	}
 });
 
@@ -131,10 +251,6 @@ OpenGeoportal.Attributes = Backbone.Collection.extend({
 });
 
 OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
-	/*
-	 * //the collection should handle setting the title
-	 * this.previewed.getFeatureTitle = displayName;
-	 */
 	model : OpenGeoportal.Models.PreviewLayer,
 	initialize : function() {
 		this.listenTo(this, "change:preview", this.changePreview);

@@ -1,4 +1,4 @@
-package org.opengeoportal.security;
+package org.opengeoportal.security.cas;
 /* Copyright 2004, 2005, 2006 Acegi Technology Pty Limited
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,13 +61,24 @@ public final class SimpleCasUserService extends AbstractCasAssertionUserDetailsS
 		return ArrayUtils.contains(adminList, username);
 	}
 	
+	//public SimpleCasUserService() {}
+	
     public SimpleCasUserService(final String[] attributes) {
         Assert.notNull(attributes, "attributes cannot be null.");//should null attributes be allowed, since we are not using CAS attributes for our roles?
        // Assert.isTrue(attributes.length > 0, "At least one attribute is required to retrieve roles from.");
         this.attributes = attributes;
     }
 
-    @SuppressWarnings("rawtypes")
+    /**
+     * Converts the returned attribute values to uppercase values.
+     *
+     * @param convertToUpperCase true if it should convert, false otherwise.
+     */
+    public void setConvertToUpperCase(final boolean convertToUpperCase) {
+        this.convertToUpperCase = convertToUpperCase;
+    }
+    
+    //@SuppressWarnings("rawtypes")
 	@Override
     protected UserDetails loadUserDetails(final Assertion assertion) {
         final List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
@@ -81,6 +92,9 @@ public final class SimpleCasUserService extends AbstractCasAssertionUserDetailsS
 		}
         
         
+		//attempt to add authorities based on attributes passed
+		//perhaps this is not safe; an attribute that happens to have an ogp role name could be present inadvertantly
+		/*
         for (final String attribute : this.attributes) {
             final Object value = assertion.getPrincipal().getAttributes().get(attribute);
 
@@ -100,16 +114,10 @@ public final class SimpleCasUserService extends AbstractCasAssertionUserDetailsS
             }
 
         }
+        */
 
         return new User(username, NON_EXISTENT_PASSWORD_VALUE, true, true, true, true, grantedAuthorities);
     }
 
-    /**
-* Converts the returned attribute values to uppercase values.
-*
-* @param convertToUpperCase true if it should convert, false otherwise.
-*/
-    public void setConvertToUpperCase(final boolean convertToUpperCase) {
-        this.convertToUpperCase = convertToUpperCase;
-    }
+
 }

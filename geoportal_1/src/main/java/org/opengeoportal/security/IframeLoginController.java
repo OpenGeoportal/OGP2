@@ -39,7 +39,10 @@ public class IframeLoginController {
 		  
 		  //test
 		  //json = json.replace("false", "true");
+		  
+		  //send the authentication status as a json string
 		  mav.addObject("authStatus", json);
+		  //the sendingPage must be set to the domain of the OGP instance running for postMessage to work properly
 		  mav.addObject("sendingPage", sendingPage);
 
 		  return mav;

@@ -25,7 +25,10 @@
       class="org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler">
         <beans:property name="permissionEvaluator" ref="layerPermissionEvaluator"/>
   </beans:bean>
+  
   <beans:bean id="layerPermissionEvaluator" class="org.opengeoportal.security.LayerPermissionEvaluator" />
+  
+  
 	<!--<security:ldap-server url="${ldap.url}" /> -->
 	<security:authentication-manager alias="authenticationManager">
 		<!--<security:ldap-authentication-provider user-search-filter="${ldap.userSearchFilter}" 
