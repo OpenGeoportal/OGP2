@@ -34,6 +34,7 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 
 
 	PropertiesFile propertiesFile;
+	Properties props;
 	OgpConfig ogpConfig;
 	
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -46,6 +47,7 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 		this.propertiesFile = propertiesFile;
 	}
 	
+	
 	@Override
 	public OgpConfig getConfig() {
 		return ogpConfig;
@@ -57,7 +59,7 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
  
 	@Override
 	public OgpConfig load() throws Exception {
-		Properties props = propertiesFile.getProperties();
+		props = propertiesFile.getProperties();
 		
 		ogpConfig = new OgpConfig();
 		
@@ -83,46 +85,47 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 		}
 
 
-		String analyticsKey = getPropertyWithDefault(props, ANALYTICS_KEY, "");
+		String analyticsKey = getPropertyWithDefault(ANALYTICS_KEY, "");
 		ogpConfig.setAnalyticsId(analyticsKey);
 
-		String pageTitlePrimary = getPropertyWithDefault(props, TITLE_PRIMARY, TITLE_PRIMARY_DEFAULT);
+		String pageTitlePrimary = getPropertyWithDefault(TITLE_PRIMARY, TITLE_PRIMARY_DEFAULT);
 		ogpConfig.setPageTitlePrimary(pageTitlePrimary);
 	
-		String pageTitleOffset = getPropertyWithDefault(props, TITLE_OFFSET, TITLE_OFFSET_DEFAULT);
+		String pageTitleOffset = getPropertyWithDefault(TITLE_OFFSET, TITLE_OFFSET_DEFAULT);
 		ogpConfig.setPageTitleOffset(pageTitleOffset);
 		
-		String extraJs = getPropertyWithDefault(props, EXTRA_JS, "");
+		String extraJs = getPropertyWithDefault(EXTRA_JS, "");
 		ogpConfig.setJsLocalized(extraJs);
 		
-		String extraCss = getPropertyWithDefault(props, EXTRA_CSS, "");
+		String extraCss = getPropertyWithDefault(EXTRA_CSS, "");
 		ogpConfig.setCssLocalized(extraCss);
 		
 		
 		LoginConfig logConf = ogpConfig.getLoginConfig();
 		
 		//This should throw an error if LOGIN_REPOSITORY is not set properly
-		String val = getPropertyWithDefault(props, LOGIN_REPOSITORY, "");
+		String val = getPropertyWithDefault(LOGIN_REPOSITORY, "");
 		if (StringUtils.isNotEmpty(val)){
 			logConf.setRepositoryId(val);
 		} else {
 			throw new Exception("Must set a value for Login Repository! ['" + LOGIN_REPOSITORY + "']");
 		}
 		
-		String typeVal = getPropertyWithDefault(props, LOGIN_TYPE, LOGIN_TYPE_DEFAULT);		
+		String typeVal = getPropertyWithDefault(LOGIN_TYPE, LOGIN_TYPE_DEFAULT);		
 		logConf.setType(typeVal);
 		
-		String urlVal = getPropertyWithDefault(props, LOGIN_URL, LOGIN_URL_DEFAULT);		
+		String urlVal = getPropertyWithDefault(LOGIN_URL, LOGIN_URL_DEFAULT);		
 		logConf.setUrl(urlVal);
 
-		String sdVal = getPropertyWithDefault(props, SECURE_DOMAIN, "");		; //should default to current domain with https:; for now let the client do this
+		String sdVal = getPropertyWithDefault(SECURE_DOMAIN, "");		; //should default to current domain with https:; for now let the client do this
 		logConf.setSecureDomain(sdVal);
 
 
 		return ogpConfig;
 	}
 
-	String getPropertyWithDefault(Properties props, String propertyName, String defaultPropertyValue){
+	@Override
+	public String getPropertyWithDefault(String propertyName, String defaultPropertyValue){
 		String val = null;
 		if (props.containsKey(propertyName) && StringUtils.isNotEmpty(props.getProperty(propertyName))){
 			val = props.getProperty(propertyName);  //default to type form

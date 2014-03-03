@@ -151,7 +151,7 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 			dataType : "json"
 
 		};
-		// eh. should modify spring security to return a 200 instead of a 302
+		// meh. should modify spring security to return a 200 instead of a 302 ?
 
 		jQuery.ajax(ajaxArgs).always(function() {
 			that.fetch();
@@ -355,7 +355,7 @@ OpenGeoportal.Views.Login = Backbone.View
 					success : function(data) {
 						that.model.set(data);
 						if (that.model.get("authenticated")) {
-							console.log("resolve");
+							// console.log("resolve");
 							deferred.resolve();
 						}
 

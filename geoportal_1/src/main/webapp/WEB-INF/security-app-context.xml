@@ -8,12 +8,13 @@
 
 	<security:http pattern="/resources/**" security="none" />
 	
-	<security:http auto-config='true' use-expressions="true">
+	<security:http auto-config='false' use-expressions="true">
+		<security:form-login login-page="/${login.url}"/>
 		<security:intercept-url pattern="/log*" access="permitAll" requires-channel="https" />
 		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
 		<security:intercept-url pattern="/restricted/**" access="isAuthenticated()" />
 		<security:intercept-url pattern="/**" access="permitAll" />
-		 <security:http-basic />
+		 <!-- <security:http-basic /> -->
 		<security:logout logout-url="/logout" logout-success-url="/logoutResponse"/>
 	</security:http>
 
