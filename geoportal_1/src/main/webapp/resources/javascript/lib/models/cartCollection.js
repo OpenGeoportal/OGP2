@@ -13,110 +13,8 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 	defaults : {},
-	downloadKeys : [ "wfs", "wcs", "wms", "filedownload", "download" ],
-	webserviceKeys : [ "wms", "wfs", "wcs" ],
 
-	isMapItAvailable : function(model) {
-		// public vector wms layers only. we can increase the complexity
-		// if other web mapping sites have different criteria
-		var isAvailable = false;
-		if (this.isPublic() && this.isVector() && this.hasOGCEndpoint("wms")) {
-			isAvailable = true;
-		}
 
-		return isAvailable;
-	},
-
-	setMapItAttributes : function() {
-		var attr = {};
-		if (this.isMapItAvailable()) {
-			attr = {
-				mapit : [ "GeoCommons" ]
-			};
-		}
-		this.set(attr);
-	},
-
-	isDownloadAvailable : function() {
-		var isAvailable = this.isPublic();
-
-		// check permissions
-		if (!isAvailable) {
-			isAvailable = OpenGeoportal.ogp.appState.get("login").model
-					.hasAccess(this);
-		}
-
-		// short-circuit for no permission
-		if (isAvailable) {
-
-			// check that an appropriate url is available
-			isAvailable = OpenGeoportal.Utility.hasLocationValueIgnoreCase(this
-					.get("parsedLocation"), this.downloadKeys);
-		}
-
-		return isAvailable;
-
-	},
-
-	setDownloadAttributes : function() {
-		// either a download type that can be handled by OGP backend or
-		// something else, like an external link (fileDownload). Alternatively,
-		// no download is available for the resource. Ultimately, to determine
-		// if the download can be handled by the backend, a request should be
-		// made to the backend.
-
-		var locationObj = this.get("parsedLocation");
-		var locationKey = "";
-		var availableFormats = [];
-		var downloadType = "ogpServer";
-
-		/*
-		 * if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj, [
-		 * "externalUrl" ])) { downloadType = "ogpClient"; } else {
-		 */
-		if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
-				[ "wfs" ])) {
-			availableFormats.push("shapefile");
-		}
-
-		if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
-				[ "wms" ])) {
-			availableFormats.push("kmz");
-		}
-
-		if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
-				[ "wcs" ])) {
-			availableFormats.push("geotiff");
-		}
-		/* } */
-
-		this.set({
-			downloadType : downloadType,
-			downloadFormats : availableFormats
-		});
-
-	},
-
-	setDynamicWebServiceAttributes : function() {
-		// public with wms, wfs, or wcs endpoints
-		if (this.isPublic()) {
-			var arrTypes = [];
-			var arrProtocols = this.webserviceKeys;
-			for ( var i in arrProtocols) {
-				var ogcProtocol = arrProtocols[i];
-				if (this.hasOGCEndpoint(ogcProtocol)) {
-					arrTypes.push(ogcProtocol);
-				}
-			}
-			var attr = {};
-
-			attr = {
-				dynamicWebService : arrTypes
-			};
-			this.set(attr);
-		}
-
-	},
 
 	intersectsBounds : function(bounds) {
 
@@ -151,11 +49,7 @@ OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 	assignAttributes : function() {
 
-		this.setMapItAttributes();
-
-		this.setDownloadAttributes();
-
-		this.setDynamicWebServiceAttributes();
+		//additional attributes are assigned in views
 
 	}
 });

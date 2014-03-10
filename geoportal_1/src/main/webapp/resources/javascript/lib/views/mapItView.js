@@ -18,7 +18,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.MapIt = OpenGeoportal.Views.CartActionView.extend({
 
 	cartFilter : function(model) {
-		return model.isMapItAvailable();
+		return this.isMapItAvailable(model);
 	},
 
 	cartAction : function() {
@@ -32,6 +32,28 @@ OpenGeoportal.Views.MapIt = OpenGeoportal.Views.CartActionView.extend({
 		var geoCommonsExport = new OpenGeoportal.Export.GeoCommons(exportObj);
 		geoCommonsExport.exportDialog(this);
 
+	},
+
+
+	isMapItAvailable : function(model) {
+		// public vector wms layers only. we can increase the complexity
+		// if other web mapping sites have different criteria
+		var isAvailable = false;
+		if (model.isPublic() && model.isVector() && model.hasOGCEndpoint("wms")) {
+			isAvailable = true;
+		}
+
+		return isAvailable;
+	},
+
+	setMapItAttributes : function() {
+		var attr = {};
+		if (this.isMapItAvailable()) {
+			attr = {
+				mapit : [ "GeoCommons" ]
+			};
+		}
+		this.set(attr);
 	},
 
 	createExportParams : function(arrModels) {

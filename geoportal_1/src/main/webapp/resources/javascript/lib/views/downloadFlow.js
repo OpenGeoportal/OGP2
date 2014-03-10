@@ -83,12 +83,17 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 		.extend({
 
 			cartFilter : function(model) {
-				return model.get("isChecked");
+				// what values do we need to attempt a download?
+				return this.isDownloadAvailable(model) && model.get("isChecked");
 			},
 
 			cartAction : function() {
+				
+
+				
 				var sortedLayers = this.sortLayersByDownloadType();
 
+				
 				if (_.has(sortedLayers, "ogpServer")
 						&& sortedLayers.ogpServer.length > 0) {
 					// get user input and form a request to send to the ogp
@@ -114,6 +119,28 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				}
 
 			},
+			
+			isDownloadAvailable : function(model) {
+				var isAvailable = model.isPublic();
+
+				// check permissions
+				if (!isAvailable) {
+					isAvailable = OpenGeoportal.ogp.appState.get("login").model
+							.hasAccess(model);
+				}
+
+				// short-circuit for no permission
+				if (isAvailable) {
+
+					// check that an appropriate url is available
+					isAvailable = OpenGeoportal.Utility.hasLocationValueIgnoreCase(model
+							.get("Location"), this.downloadKeys);
+				}
+
+				return isAvailable;
+
+			},
+			
 			failHandler1 : function() {
 				alert("finalize request failed");
 			},
@@ -126,11 +153,56 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// a layer that should use client side download in
 				// OpenGeoportal.Models.CartLayer:setDownloadAttributes
 			},
+			downloadKeys : [ "wfs", "wcs", "wms", "filedownload", "download" ],
+			
+			setDownloadAttributes : function(model) {
+				// either a download type that can be handled by OGP backend or
+				// something else, like an external link (fileDownload). Alternatively,
+				// no download is available for the resource. Ultimately, to determine
+				// if the download can be handled by the backend, a request should be
+				// made to the backend.
 
+				var locationObj = model.get("Location");
+				var locationKey = "";
+				var availableFormats = [];
+				var downloadType = "ogpServer";
+
+				/*
+				 * if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj, [
+				 * "externalUrl" ])) { downloadType = "ogpClient"; } else {
+				 */
+				if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
+						[ "wfs" ])) {
+					availableFormats.push("shapefile");
+				}
+
+				if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
+						[ "wms" ])) {
+					availableFormats.push("kmz");
+				}
+
+				if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
+						[ "wcs" ])) {
+					availableFormats.push("geotiff");
+				}
+				/* } */
+
+				model.set({
+					downloadType : downloadType,
+					downloadFormats : availableFormats
+				});
+
+			},
 			sortLayersByDownloadType : function() {
 				// sort layers depending on whether the server or client will
 				// handle the request
 				var layers = this.getApplicableLayers();
+				//assign attributes
+				var that = this;
+				_.each(layers, function(model){
+					that.setDownloadAttributes(model);
+				});
+				
 				var sortedLayers = {};
 				_.each(layers, function(model) {
 					var dlType = model.get("downloadType");

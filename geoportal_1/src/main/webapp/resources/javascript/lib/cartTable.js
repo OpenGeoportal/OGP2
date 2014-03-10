@@ -85,9 +85,12 @@ OpenGeoportal.CartTable = function CartTable() {
 							var layerId = that.getTableObj().fnGetData(rowObj)["LayerId"];
 							// console.log(layerId);
 							var checkVal = jQuery(this).is(":checked");
-							that.backingData.get(layerId).set({
-								isChecked : checkVal
-							});
+							var model = that.backingData.findWhere({LayerId: layerId});
+							if (typeof model !== "undefined"){
+								model.set({
+									isChecked : checkVal
+								});
+							}
 						});
 	};
 

@@ -19,8 +19,9 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 		.extend({
 
 			cartFilter : function(model) {
+				var wsAvailable = false;
 				var attr = "dynamicWebService";
-				if (model.has(attr)) {
+				if (model.has(attr) && model.get("isChecked")) {
 					if (model.get(attr).length > 0) {
 						wsAvailable = true;
 					}
@@ -29,6 +30,12 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 			},
 
 			cartAction : function() {
+				//assign attributes;  filter relies on attributes set, so do this first
+				var that = this;
+				this.collection.each( function(model){
+					that.setDynamicWebServiceAttributes(model);
+				});
+				
 				var arrModels = this.getApplicableLayers();
 				var dialogContent = "";
 
@@ -41,6 +48,28 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				this.createDialog(dialogContent);
 			},
 
+			webserviceKeys : [ "wms", "wfs", "wcs" ],
+
+			setDynamicWebServiceAttributes : function(model) {
+				// public with wms, wfs, or wcs endpoints
+				if (model.isPublic()) {
+					var arrTypes = [];
+					var arrProtocols = this.webserviceKeys;
+					for ( var i in arrProtocols) {
+						var ogcProtocol = arrProtocols[i];
+						if (model.hasOGCEndpoint(ogcProtocol)) {
+							arrTypes.push(ogcProtocol);
+						}
+					}
+					var attr = {};
+
+					attr = {
+						dynamicWebService : arrTypes
+					};
+					model.set(attr);
+				}
+
+			},
 			generateContent : function(arrModels) {
 				// TODO: translate to template; generate from
 
