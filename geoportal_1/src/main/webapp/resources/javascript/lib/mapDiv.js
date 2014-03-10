@@ -1092,11 +1092,11 @@ OpenGeoportal.MapController = function() {
 
 		if (layerModel.has("wmsProxy")) {
 			populateUrlArray([ layerModel.get("wmsProxy") ]);
-		} else if ((typeof layerModel.get("parsedLocation").tilecache !== "undefined")
+		} else if ((typeof layerModel.get("Location").tilecache !== "undefined")
 				&& useTilecache) {
-			populateUrlArray(layerModel.get("parsedLocation").tilecache);
+			populateUrlArray(layerModel.get("Location").tilecache);
 		} else {
-			populateUrlArray(layerModel.get("parsedLocation").wms);
+			populateUrlArray(layerModel.get("Location").wms);
 		}
 
 		// console.log(urlArray);
@@ -1746,7 +1746,7 @@ OpenGeoportal.MapController = function() {
 		requestObj.AddLayer = [ layerModel.get("qualifiedName") ];
 		requestObj.ValidationKey = "OPENGEOPORTALROCKS";
 		var params = {
-			url : layerModel.get("parsedLocation").serviceStart,
+			url : layerModel.get("Location").serviceStart,
 			dataType : "jsonp",
 			data : requestObj,
 			type : "GET",
@@ -1820,7 +1820,7 @@ OpenGeoportal.MapController = function() {
 		// (OpenLayers is merely dynamically setting the src attribute of img
 		// tags)
 		// console.log(mapObj);
-		if (typeof layerModel.get("parsedLocation").wms !== "undefined") {
+		if (typeof layerModel.get("Location").wms !== "undefined") {
 			this.setWmsLayerInfo(layerModel);
 		} else {
 			// assume it exists
@@ -2127,7 +2127,7 @@ OpenGeoportal.MapController = function() {
 		// (per geoserver docs)
 		var newLayer = new OpenLayers.Layer.ArcGIS93Rest(layerModel
 				.get("LayerDisplayName"),
-				layerModel.get("parsedLocation").ArcGISRest, {
+				layerModel.get("Location").ArcGISRest, {
 					layers : "show:" + layerModel.get("Name"),
 					transparent : true
 				}, {
@@ -2154,7 +2154,7 @@ OpenGeoportal.MapController = function() {
 
 	this.previewBrowseGraphic = function(layerModel) {
 		var dialogHtml = '<img src="'
-				+ layerModel.get("parsedLocation").browseGraphic + '"/>';
+				+ layerModel.get("Location").browseGraphic + '"/>';
 		if (typeof jQuery('#browseGraphic')[0] == 'undefined') {
 			var infoDiv = '<div id="browseGraphic" class="dialog">'
 					+ dialogHtml + '</div>';

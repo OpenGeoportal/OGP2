@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.OpenGeoPortal</groupId>
+	<groupId>org.opengeoportal</groupId>
 	<artifactId>geoportal</artifactId>
 	<packaging>war</packaging>
 	<version>2.0.BETA</version>
@@ -28,7 +28,7 @@
 		</repository>
 	</repositories>
 	<!--mvn test runs the Selenium 2 based junit tests. you probably won't like 
-		the default value for the OpenGeoPortal server. You can specify it via -Durl=http://geoportal-demo.atech.tufts.edu 
+		the default value for the OpenGeoportal server. You can specify it via -Durl=http://geoportal-demo.atech.tufts.edu 
 		the tests run with both the Firefox and Chrome browsers. to run the tests 
 		on a headless server use -Dheadless=true. additional information is at http://code.google.com/p/opengeoportal/wiki/AutomatedTesting -->
 	<!-- Shared version number properties -->
@@ -39,7 +39,7 @@
 		<jackson.version>2.2.3</jackson.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wro4j.version>1.6.3</wro4j.version>
+		<wro4j.version>1.7.2</wro4j.version>
 		<warFile.name>opengeoportal</warFile.name>
 	</properties>
 	<dependencies>
@@ -146,10 +146,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- <dependency> <groupId>org.apache.tomcat</groupId> <artifactId>servlet-api</artifactId> 
-			<version>6.0.13</version> </dependency> -->
-		<!-- <dependency> <groupId>com.googlecode.json-simple</groupId> <artifactId>json-simple</artifactId> 
-			<version>1.1</version> </dependency> -->
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
@@ -176,9 +173,6 @@
 			<version>2.20.0</version>
 			<scope>runtime</scope>
 		</dependency>
-
-		<!--<dependency> <groupId>org.seleniumhq.selenium</groupId> <artifactId>selenium-chrome-driver</artifactId> 
-			<version>2.7.0</version> <scope>test</scope> </dependency> -->
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -227,6 +221,11 @@
 			<version>${org.springframework.security.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-cas</artifactId>
+			<version>${org.springframework.security.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
 			<version>1.5</version>
@@ -241,18 +240,13 @@
 			<artifactId>cors-filter</artifactId>
 			<version>1.6</version>
 		</dependency>
-		<dependency>
-			<groupId>ro.isdc.wro4j</groupId>
-			<artifactId>wro4j-maven-plugin</artifactId>
-			<version>1.6.3</version>
-			<type>maven-plugin</type>
-		</dependency>
+
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-main</artifactId>
 			<version>${geotools.version}</version>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-shapefile</artifactId>
 			<version>${geotools.version}</version>
@@ -278,10 +272,10 @@
 			<version>${geotools.version}</version>
 		</dependency>
 		<dependency>
-   			<groupId>org.geotools</groupId>
-   			<artifactId>gt-wfs</artifactId>
-   			<version>${geotools.version}</version>
- 		</dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-wfs</artifactId>
+			<version>${geotools.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-cache</artifactId>
@@ -314,10 +308,11 @@
 			<artifactId>jstl</artifactId>
 			<version>1.2</version>
 		</dependency>
+
 		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-cas</artifactId>
-			<version>3.1.4.RELEASE</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.1</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -345,13 +340,26 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin> <groupId>ro.isdc.wro4j</groupId> <artifactId>wro4j-maven-plugin</artifactId> 
-				<version>${wro4j.version}</version> <executions> <execution> <phase>compile</phase> 
-				<goals> <goal>run</goal> </goals> </execution> </executions> <configuration> 
-				<targetGroups>ogp,ogpLib</targetGroups> <minimize>true</minimize> <cssDestinationFolder>${basedir}/target/${warFile.name}/resources/css/</cssDestinationFolder> 
-				<jsDestinationFolder>${basedir}/target/${warFile.name}/resources/javascript/</jsDestinationFolder> 
-				<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory> 
-				</configuration> </plugin> 
+			<plugin>
+				<groupId>ro.isdc.wro4j</groupId>
+				<artifactId>wro4j-maven-plugin</artifactId>
+				<version>${wro4j.version}</version>
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<targetGroups>ogp,ogpLib</targetGroups>
+					<minimize>true</minimize>
+					<cssDestinationFolder>${basedir}/target/${warFile.name}/resources/css/</cssDestinationFolder>
+					<jsDestinationFolder>${basedir}/target/${warFile.name}/resources/javascript/</jsDestinationFolder>
+					<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

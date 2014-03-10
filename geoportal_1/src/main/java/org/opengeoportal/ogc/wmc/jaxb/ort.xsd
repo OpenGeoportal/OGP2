@@ -16,7 +16,7 @@
 
 	<!-- ============================================================== includes 
 		and imports ============================================================== -->
-	<include schemaLocation="wmcAll.xsd" />
+	<!-- <include schemaLocation="wmcAll.xsd" />-->
 	<import namespace="http://www.w3.org/1999/xlink" schemaLocation="http://www.w3.org/1999/xlink.xsd" />
 	<!-- ============================================================== elements 
 		and types ============================================================== -->

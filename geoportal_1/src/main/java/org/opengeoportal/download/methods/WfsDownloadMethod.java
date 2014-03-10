@@ -13,6 +13,7 @@ import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wfs.WfsGetFeature;
 import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.utilities.LocationFieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,14 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	 
 	@Override
 	public List<String> getUrls(LayerRequest layer) throws Exception{
+		
+		//WFS services from ArcGIS Rest endpoints don't return shape-zip, so we have to use a different method
+		//in the future, we should look to merge the 2 WFS download methods.  If the geotools version is fast enough,
+		//it could be used for both types
+		if(LocationFieldUtils.hasArcGISRestUrl(layer.getLayerInfo().getLocation())){
+			return null;
+		}
+	
 		String url = layer.getWfsUrl();
 		this.checkUrl(url);
 		return urlToUrls(url);

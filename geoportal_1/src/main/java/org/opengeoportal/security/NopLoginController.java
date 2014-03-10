@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
  *
  */
 @Controller
-public class NoopLoginController {
+public class NopLoginController {
 	@Autowired
 	@Qualifier("formLoginService")
 	LoginService loginService;
@@ -41,8 +41,8 @@ public class NoopLoginController {
 		logger.debug("Login status checked");
 		
 		  String sendingPage = ogpConfigRetriever.getPropertyWithDefault("ogp.domain", "");
-		  String noopUser = ogpConfigRetriever.getPropertyWithDefault("login.noop.user", "");
-		  String noopPass = ogpConfigRetriever.getPropertyWithDefault("login.noop.password", "");
+		  String noopUser = ogpConfigRetriever.getPropertyWithDefault("login.nop.user", "");
+		  String noopPass = ogpConfigRetriever.getPropertyWithDefault("login.nop.password", "");
 
 		  //create the model to return
 		  ModelAndView mav = new ModelAndView("iframeLogin"); 

@@ -23,7 +23,7 @@
 	<xs:import namespace="http://www.w3.org/1999/xlink"
 		schemaLocation="http://www.w3.org/1999/xlink.xsd" />
 	<xs:include schemaLocation="./ort.xsd" />
-	<xs:include schemaLocation="./wmcAll.xsd" />
+	<xs:include schemaLocation="./collection.xsd" />
 	<!-- ============================================================== elements 
 		and types ============================================================== -->
 	<xs:element name="ViewContext" type="context:ViewContextType" />

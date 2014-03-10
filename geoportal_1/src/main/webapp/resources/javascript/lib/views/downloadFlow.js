@@ -406,7 +406,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			requiresEmailAddress : function(model, format) {
 				/*
 				 * var useEmail = OpenGeoportal.Utility
-				 * .hasLocationValueIgnoreCase( model.get("parsedLocation"),
+				 * .hasLocationValueIgnoreCase( model.get("Location"),
 				 * this.emailKeys);
 				 */
 				// there should be a more generalized way to do this, rather

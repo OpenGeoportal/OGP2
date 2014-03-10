@@ -27,7 +27,7 @@ public class GetWmcController {
 	private WmcCreator wmcCreator;
 	
 	@RequestMapping(method=RequestMethod.GET, produces="application/xml")
-	public void getLayerInfo(@RequestParam("OGPIDS") Set<String> layerIds, HttpServletResponse response) throws Exception {
+	public void getLayerInfo(@RequestParam("ogpids") Set<String> layerIds, HttpServletResponse response) throws Exception {
 		Map<String,OwsType> layerMap = new LinkedHashMap<String,OwsType>();
 		for (String layer: layerIds){
 			String[] formatArr = layer.split("=");

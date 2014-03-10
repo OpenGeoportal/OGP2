@@ -395,7 +395,21 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 				// columns w/ solr == true should be populated with the returned
 				// solr data
 				var headingName = currentModel.get("columnName");
-				if (currentModel.has("solr") && currentModel.get("solr")) {
+				
+				if (headingName === "Location"){
+					//just parse the json here, so we can use the results elsewhere
+					var locationParsed = {};
+					try {
+						var rawVal = solrLayers[j][headingName];
+						if (rawVal.length > 2){
+							locationParsed = jQuery.parseJSON(rawVal);
+						}
+					} catch (e){
+						console.log([solrLayers[j]["LayerId"], e]);
+					}
+					rowObj[headingName] = locationParsed; //table copy
+					solrLayers[j][headingName] = locationParsed; //collection copy
+				} else if (currentModel.has("solr") && currentModel.get("solr")) {
 
 					// if the tableheading can't be found in the solr object put
 					// in an empty string as a placeholder

@@ -83,7 +83,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 
 						},
 						{
-							order : 15,
+							order : 16,
 							columnName : "Metadata",
 							solr : false,
 							resizable : false,
@@ -101,7 +101,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							}
 						},
 						{
-							order : 16,
+							order : 17,
 							columnName : "View",
 							solr : false,
 							resizable : false,
@@ -115,15 +115,17 @@ OpenGeoportal.LayerTable = function LayerTable() {
 								var layerId = full.LayerId;
 								var access = full.Access.toLowerCase();
 								var institution = full.Institution;
+								var location = full.Location;
 								return that.controls.renderPreviewControl(
-										layerId, access, institution);
+										layerId, access, institution, location);
 							},
 							modelRender : function(model) {
 								var layerId = model.get("LayerId");
 								var access = model.get("Access").toLowerCase();
 								var institution = model.get("Institution");
+								var location = model.get("Location");
 								return that.controls.renderPreviewControl(
-										layerId, access, institution);
+										layerId, access, institution, location);
 							}
 						} ]);
 	};
@@ -304,6 +306,16 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			visible : false,
 			hidable : false,
 			header : "Availability"
+		},
+		{
+			order : 15,
+			columnName : "Location",
+			solr : true,
+			resizable : false,
+			organize : false,
+			visible : false,
+			hidable : false,
+			header : "Location"
 		}
 
 		]);
@@ -1631,8 +1643,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							var layerModel = that.backingData.findWhere({
 								LayerId : layerId
 							});
-							var location = jQuery.parseJSON(layerModel
-									.get("Location"));
+							var location = layerModel.get("Location");
 							// if a previewLink is defined in the Location
 							// field,
 							// use it. Otherwise, try to generate a link to the

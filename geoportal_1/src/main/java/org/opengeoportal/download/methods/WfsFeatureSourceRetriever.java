@@ -9,6 +9,7 @@ import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.opengeoportal.download.types.LayerRequest;
+import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -22,14 +23,20 @@ public class WfsFeatureSourceRetriever implements FeatureSourceRetriever {
 
 	@Override
 	public void createFeatureSourceFromLayerRequest(LayerRequest layerRequest) throws Exception{
-		setFeatureSource(layerRequest.getWfsUrl(), layerRequest.getLayerNameNS());
+		setFeatureSource(layerRequest.getWfsUrl(), layerRequest.getLayerNameNS(), LocationFieldUtils.hasArcGISRestUrl(layerRequest.getLayerInfo().getLocation()));
 	}
 	
-	void setFeatureSource(String wfsEndPoint, String layerName) throws Exception{
+	void setFeatureSource(String wfsEndPoint, String layerName, Boolean isFromArcGISServer) throws Exception{
 		String getCapabilities = OgpUtils.combinePathWithQuery(wfsEndPoint, "REQUEST=GetCapabilities&VERSION=1.1.0");
 
-		Map connectionParameters = new HashMap();
+		// Both ArcGIS Server 9.3 and 10 are compliant with WFS 1.1.0, so hard-coding VERSION=1.1.0 should be fine. 
+		
+		Map<String, String> connectionParameters = new HashMap<String, String>();
 		connectionParameters.put("WFSDataStoreFactory:GET_CAPABILITIES_URL", getCapabilities );
+		
+		if (isFromArcGISServer){
+			connectionParameters.put("WFSDataStoreFactory:WFS_STRATEGY", "arcgis");
+		}
 /*
  * “WFSDataStoreFactory:GET_CAPABILITIES_URL” 	Link to capabilities document. The implementation supports both WFS 1.0 (read/write) and WFS 1.1 (read-only).
 “WFSDataStoreFactory:PROTOCOL” 	Optional: True for Post, False for GET, null for auto
@@ -57,9 +64,9 @@ Optional default of true. WFS implementations are terrible for actually obeying 
 		//find the typeName we're looking for
 		String typeName = "";
 		for (int i = 0; i < typeNames.length; i++){
-			if (typeNames[i].equalsIgnoreCase(layerName)){
-				typeName = layerName;
-				break;
+				if (typeNames[i].contains(layerName)){
+					typeName = typeNames[i];
+					break;
 			}
 		}
 		

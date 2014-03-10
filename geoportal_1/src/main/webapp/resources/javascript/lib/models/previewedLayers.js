@@ -29,14 +29,9 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 		.extend({
 			initialize : function() {
-				this.parseLocation();
 				this.assignAttributes();
 			},
-			parseLocation : function() {
-				this.set({
-					parsedLocation : jQuery.parseJSON(this.get("Location"))
-				});
-			},
+
 			// a stub
 			assignAttributes : function() {
 				console.log("subclass me!");
@@ -113,7 +108,7 @@ OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 				return this.attributeIsOneOf(attr, attrVals);
 			},
 			hasOGCEndpoint : function(ogcProtocol) {
-				var attr = "parsedLocation";
+				var attr = "Location";
 				if (this.has(attr)) {
 					var location = this.get(attr);
 					return OpenGeoportal.Utility.hasLocationValueIgnoreCase(
@@ -202,7 +197,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 	} ],
 
 	setPreviewType : function() {
-		var locationObj = this.get("parsedLocation");
+		var locationObj = this.get("Location");
 		var locationKey = "";
 		var previewType = "default";
 

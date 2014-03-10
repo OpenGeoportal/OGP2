@@ -30,6 +30,7 @@ public class WfsDescribeFeature implements OgcInfoRequest{
 	 	return describeFeatureQuery;
 	}
 	
+	
 	@Override
 	public OwsInfo parseResponse(InputStream inputStream) throws Exception {
 
@@ -65,7 +66,16 @@ public class WfsDescribeFeature implements OgcInfoRequest{
 				describeLayerInfo.put("nameSpace", schemaAttributes.getNamedItem("targetNamespace").getNodeValue());
 
 				//we can get the geometry column name from here
-				NodeList elementNodes = document.getElementsByTagName("xsd:element");
+				NodeList elementNodes;
+				
+				if(document.getElementsByTagName("xsd:element").getLength()!=0){
+					elementNodes = document.getElementsByTagName("xsd:element");
+				} else {
+					//ArcGIS uses prefix "xs" but xs and xsd are essentially same if they refer to the same schema.
+					//See reference http://stackoverflow.com/questions/1193563/difference-between-xs-and-xsd-in-xml-schema-file
+					elementNodes = document.getElementsByTagName("xs:element");
+				}
+				
 				for (int i = 0; i < elementNodes.getLength(); i++){
 					Node currentNode = elementNodes.item(i);
 					NamedNodeMap currentAttributeMap = currentNode.getAttributes();
@@ -93,6 +103,8 @@ public class WfsDescribeFeature implements OgcInfoRequest{
 			
 			return owsResponse;
 		 }
+	
+
 
 
 	@Override
@@ -109,4 +121,9 @@ public class WfsDescribeFeature implements OgcInfoRequest{
 	public String getVersion() {
 		return VERSION;
 	}
+	
 }
+
+
+
+

@@ -73,21 +73,31 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return template.genericControl(params);
 	};
 
-	this.renderPreviewControl = function(layerId, access, institution,
+	this.canPreview = function(location){
+		//where is a good place to centralize this?
+		return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
+	};
+	
+	this.renderPreviewControl = function(layerId, access, institution, location,
 			previewState) {
 		access = access.toLowerCase();
 		institution = institution.toLowerCase();
-		var loginModel = OpenGeoportal.ogp.appState.get("login").model;
-		var hasAccess = loginModel.hasAccessLogic(access, institution);
-		if (hasAccess) {
-			return this.renderCheckboxPreviewControl(layerId, previewState);
-		} else {
-			var canLogin = loginModel.canLoginLogic(institution);
-			if (canLogin) {
-				return this.renderLoginPreviewControl();
+		if (this.canPreview(location)){
+			var loginModel = OpenGeoportal.ogp.appState.get("login").model;
+			var hasAccess = loginModel.hasAccessLogic(access, institution);
+			if (hasAccess) {
+				return this.renderCheckboxPreviewControl(layerId, previewState);
 			} else {
-				return this.renderLinkControl(layerId);
+				var canLogin = loginModel.canLoginLogic(institution);
+				if (canLogin) {
+					return this.renderLoginPreviewControl();
+				} else {
+					return this.renderLinkControl(layerId);
+				}
 			}
+		} else {
+			//render an empty control if no location elements to support preview
+			return "";
 		}
 	};
 
@@ -232,7 +242,7 @@ OpenGeoportal.CommonControls = function CommonControls() {
 	 */
 
 	this.viewMetadata = function(model) {
-		var location = jQuery.parseJSON(model.get("Location"));
+		var location = model.get("Location");
 		var layerId = model.get("LayerId");
 		// should store this somewhere else; some sort of
 		// config

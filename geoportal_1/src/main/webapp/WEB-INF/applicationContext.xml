@@ -21,9 +21,9 @@
 	</oxm:jaxb2-marshaller>
 
 	<beans:bean id="proxy.simple" class="org.opengeoportal.proxy.GenericProxyImpl" />
-	<beans:bean id="userContext.ogp"
+	<!-- <beans:bean id="userContext.ogp"
 		class="org.opengeoportal.security.OgpUserContextImpl" />
-		
+		-->
 
 	<!-- config -->
 	<beans:bean id="properties.generalOgp" class="org.opengeoportal.config.PropertiesFile">
@@ -71,7 +71,7 @@
 		</beans:value> </beans:list> </beans:property> </beans:bean> -->
 
 	<beans:bean id="jsonpCallbackFilter"
-		class="org.opengeoportal.utilities.JsonpCallbackFilter" />
+		class="org.opengeoportal.utilities.http.JsonpCallbackFilter" />
 	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.proxy.ImageHandlerFactory" />
 	
 	<beans:bean id="imageHandler" class="org.opengeoportal.proxy.ImageHandlerImpl" scope="prototype" lazy-init="true" />

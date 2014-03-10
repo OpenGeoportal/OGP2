@@ -3,32 +3,23 @@ package org.opengeoportal.download.methods;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
-import org.geotools.data.AbstractDataStoreFactory;
-import org.geotools.data.FeatureWriter;
-import org.geotools.data.FileDataStoreFactorySpi;
-import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.data.store.ContentFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
@@ -108,23 +99,26 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	 * @param targetFeatureStore
 	 * @throws IOException
 	 */
-	protected void copyFeatures(SimpleFeatureSource featureSource, SimpleFeatureStore targetStore) throws IOException{
+	protected void copyFeatures(SimpleFeatureSource featureSource, SimpleFeatureSource targetSource) throws IOException {
 
 	    /*
          * Write the features to the shapefile
          */
-        Transaction transaction = new DefaultTransaction();
+        Transaction transaction = new DefaultTransaction("create");
 
-        //if (featureSource instanceof SimpleFeatureStore) {
+        if (targetSource instanceof SimpleFeatureStore) {
             
             /*
              * SimpleFeatureStore has a method to add features from a
              * SimpleFeatureCollection object, so we use the ListFeatureCollection
              * class to wrap our list of features.
              */
+        	SimpleFeatureStore targetStore = (SimpleFeatureStore) targetSource;
+        	targetStore.setTransaction(transaction);
+        	
             try {
             	SimpleFeatureCollection collection = featureSource.getFeatures();
-            	SimpleFeatureIterator collIter = collection.features();
+            	//SimpleFeatureIterator collIter = collection.features();
             	
             	logger.info(collection.getSchema().toString());
             	logger.info(targetStore.getSchema().toString());
@@ -142,7 +136,10 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
             } finally {
                 transaction.close();
             }
-
+        } else {
+            logger.error("Does not support read/write access");
+            //System.exit(1);  //no, let's not do that! throw an exception?
+        }
 	}
 	
 	/**
@@ -152,9 +149,7 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	 * @throws Exception 
 	 */
 	@Override
-	public
-	File exportToShapefile()
-	        throws Exception {
+	public Set<File> exportToShapefiles() throws Exception {
 		
 		File directory = directoryRetriever.getDownloadDirectory();
 
@@ -164,8 +159,8 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	    String typeName = ft.getTypeName();
 	    String fileName = OgpFileUtils.filterName(typeName);
 	    
-	    File file = new File(directory, fileName + ".shp");
-	    file.createNewFile();
+	    File fileSHP = new File(directory, fileName + ".shp");
+	    fileSHP.createNewFile();
 
         /*
          * Get an output file name and create the new shapefile
@@ -174,7 +169,7 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
         ShapefileDataStoreFactory dataStoreFactory = new ShapefileDataStoreFactory();
 
         Map<String, Serializable> params = new HashMap<String, Serializable>();
-        params.put("url", file.toURI().toURL());
+        params.put("url", fileSHP.toURI().toURL());
         params.put("create spatial index", Boolean.TRUE);
 
         ShapefileDataStore shpDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
@@ -186,14 +181,23 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
          */
        // newDataStore.forceSchemaCRS(DefaultGeographicCRS.WGS84);
 	    String[] typeNames = shpDataStore.getTypeNames();
-        SimpleFeatureStore featureStore = (SimpleFeatureStore) shpDataStore.getFeatureSource(typeNames[0]);
+        SimpleFeatureSource shpFeatureSource =shpDataStore.getFeatureSource(typeNames[0]);
         
 	    logger.info("created schema");
-
 	    logger.info("created feature store");
-	    copyFeatures(featureSource, featureStore);
+	    copyFeatures(featureSource, shpFeatureSource);
 	    logger.info("copied features");
+	    	    
+	    Set<File> shapeFileSet = new HashSet<File>();
+	    File fileDBF = new File(directory, fileName + ".dbf");
+	    File fileSHX = new File(directory, fileName + ".shx");
+	    File filePRJ = new File(directory, fileName + ".prj");
 	    
-	    return file;
+	    shapeFileSet.add(fileSHP);
+	    shapeFileSet.add(fileSHX);
+	    shapeFileSet.add(filePRJ);
+	    shapeFileSet.add(fileDBF);
+	    
+	    return shapeFileSet;
 	}
 }
