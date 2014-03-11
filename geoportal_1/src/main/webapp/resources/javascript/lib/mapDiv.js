@@ -147,7 +147,9 @@ OpenGeoportal.MapController = function() {
 			geodesic : true
 		});
 
-		var controls = [ zoomBar, scaleLine, displayCoords, nav, panel ];
+		var attribution = new OpenLayers.Control.Attribution();
+		
+		var controls = [ zoomBar, scaleLine, displayCoords, nav, panel, attribution ];
 		return controls;
 	};
 
@@ -607,6 +609,7 @@ OpenGeoportal.MapController = function() {
 			getLayerDefinition : function() {
 				var bgMap = new OpenLayers.Layer.OSM(this.get("displayName"),
 						null, {
+							//attribution: "",
 							basemapType : this.get("type"),
 							layerRole : "basemap"
 						});

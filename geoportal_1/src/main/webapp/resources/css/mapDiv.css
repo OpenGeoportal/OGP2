@@ -118,6 +118,11 @@ div.olControlMousePosition {
 	opacity: 0;
 }
 
+
+.olControlAttribution {
+    bottom: 0 !important;
+}
+
 .olControlScaleLine {
 	left: auto !important;
 	right: 10px;
