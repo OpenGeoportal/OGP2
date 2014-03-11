@@ -29,10 +29,23 @@ jQuery(document)
 					var ogp = OpenGeoportal.ogp; // an alias
 
 					// holds and initializes app-wide settings
-					ogp.appState = new OpenGeoportal.Models.OgpSettings();
-					ogp.appState.set({
-						controls : new OpenGeoportal.CommonControls()
+					//template should move...not app state.  also login?
+					ogp.appState = new OpenGeoportal.Models.OgpSettings({
+						template : new OpenGeoportal.Template(),
+						queryTerms : new OpenGeoportal.Models.QueryTerms(),
+						previewed : new OpenGeoportal.PreviewedLayers(),
+						cart : new OpenGeoportal.CartCollection(),
+						login : new OpenGeoportal.Views.Login({
+							model : new OpenGeoportal.Models.User()
+						}),
+						requestQueue : new OpenGeoportal.RequestQueue(),
+						currentTab : 0
+						
 					});
+					
+					//controls depends on some of the previous settings, so set it last.
+					//shouldn't go in app state 
+					ogp.appState.set({controls : new OpenGeoportal.CommonControls()});
 
 					// handles behavior of "frame elements", like expansion of
 					// advanced search area, left panel

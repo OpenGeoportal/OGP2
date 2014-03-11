@@ -13,17 +13,4 @@ if (typeof OpenGeoportal.Models === 'undefined') {
  */
 
 OpenGeoportal.Models.OgpSettings = Backbone.Model.extend({
-	initialize : function() {
-		this.set({
-			queryTerms : new OpenGeoportal.Models.QueryTerms(),
-			previewed : new OpenGeoportal.PreviewedLayers(),
-			cart : new OpenGeoportal.CartCollection(),
-			template : new OpenGeoportal.Template(),
-			login : new OpenGeoportal.Views.Login({
-				model : new OpenGeoportal.Models.User()
-			}),
-			requestQueue : new OpenGeoportal.RequestQueue(),
-			currentTab : 0
-		});
-	}
 });
