@@ -607,12 +607,17 @@ OpenGeoportal.MapController = function() {
 			subType : "osm",
 			zoomLevels : 17,
 			getLayerDefinition : function() {
+				var attribution = "Tiles &copy; <a href='http://openstreetmap.org/'>OpenStreetMap</a> contributors, CC BY-SA &nbsp;";
+				attribution += "Data &copy; <a href='http://openstreetmap.org/'>OpenStreetMap</a> contributors, ODbL";
+				
 				var bgMap = new OpenLayers.Layer.OSM(this.get("displayName"),
 						null, {
-							//attribution: "",
+							attribution: attribution,
 							basemapType : this.get("type"),
 							layerRole : "basemap"
 						});
+
+				
 				return bgMap;
 			},
 

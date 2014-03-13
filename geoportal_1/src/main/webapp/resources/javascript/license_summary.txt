@@ -1,0 +1,44 @@
+JavaScript:
+
+OpenLayers				2-clause BSD	(see webapp/resources/javascript/openlayers/OpenLayers-2.11)
+DataTables				GPLv2 or 3-clause BSD   (see webapp/resources/javascript/DataTables/)
+jQuery, jQueryUI		MIT license (in header)
+Backbone				MIT license
+Underscore				MIT license
+staaky-spinners			informal/unlicensed;  “feel free to use it in your own projects” https://github.com/staaky/spinners
+ExplorerCanvas 			Apache license
+jQuery.ScrollTo			MIT license https://github.com/flesler/jquery.scrollTo
+jQuery.ba-postmessage	dual MIT/GPL license https://github.com/cowboy/jquery-postmessage
+
+A note about OSM attribution:
+
+	How to credit OpenStreetMap
+
+	We require that you use the credit “© OpenStreetMap contributors”.
+
+	You must also make it clear that the data is available under the Open Database License, and if using our map tiles, 
+	that the cartography is licensed as CC BY-SA. You may do this by linking to this copyright page. Alternatively, and as 
+	a requirement if you are distributing OSM in a data form, you can name and link directly to the license(s). In media 
+	where links are not possible (e.g. printed works), we suggest you direct your readers to openstreetmap.org (perhaps by 
+	expanding 'OpenStreetMap' to this full address), to opendatacommons.org, and if relevant, to creativecommons.org.
+
+	For a browsable electronic map, the credit should appear in the corner of the map.
+
+A note about Google Maps attributions:
+
+ref:
+http://www.google.com/permissions/geoguidelines/attr-guide.html
+
+	Do I need to use the text provided on the imagery?
+
+	The automatically generated Google logo and data provider attribution may only be removed or obstructed if reintroduced 
+	in a visible form elsewhere within the Content (e.g. photo caption below a Google Earth still). In other words, your text 
+	must be as visible as it would have been if you had used the default text that we provide.
+
+	What does the attribution text need to say?
+
+	If you are not using the text provided directly on Google Maps and Google Earth imagery, the text of your attribution must 
+	say the name “Google” and the relevant data provider(s), such as “Map data: Google, Bluesky”. You may customize the style 
+	and placement of the attribution text, just so long as the text is legible to the average viewer or reader. Note that Google 
+	logos cannot be used in-line (e.g. "These maps from [Google logo].”)"
+	

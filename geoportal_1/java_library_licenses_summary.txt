@@ -1,0 +1,15 @@
+
+Java:
+Spring Framework 	 	version 2.0 of the Apache License.
+Spring Security	 		Apache 2.0 license
+GeoTools	 			LGPL ;  example code is explicitly public domain http://docs.geotools.org/stable/userguide/welcome/license.html
+Apache HttpComponents	Apache 2.0 license
+Commons Compress	 	Apache 2.0 license
+HttpClient Mime	 		Apache 2.0 license
+Jackson JSON library	dual, Apache 2.0, LGPL 2.1
+JUnit	  				IBM's Common Public License Version 0.5 
+Solr 	 				Apache 2.0 license
+cors filter 	 		Apache 2.0 license.  http://software.dzhuvinov.com/cors-filter.html
+log4j	 				Apache 2.0 license
+slf4j	 				MIT license
+Selenium				Apache 2.0 License
