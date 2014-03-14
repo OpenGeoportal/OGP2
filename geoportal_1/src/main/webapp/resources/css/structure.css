@@ -96,6 +96,11 @@ h4 {
     color: #FFFFFF;
 }
 
+li.searchAttribution.ui-widget-content.ui-menu-divider {
+    border: medium none;
+    margin: 0;
+}
+
 #mapClearButton {
 	float: right;
 	margin-top: 1px;

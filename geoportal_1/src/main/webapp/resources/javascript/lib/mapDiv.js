@@ -193,6 +193,9 @@ OpenGeoportal.MapController = function() {
 			projection : new OpenLayers.Projection("EPSG:900913"),
 			maxResolution : 2.8125,
 			maxExtent : mapBounds,
+			//minZoomLevel: 1,
+			//maxZoomLevel: 17,
+			//numZoomLevels: 16,
 			units : "m",
 			zoom : initialZoom,
 			controls : controls
@@ -528,7 +531,7 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			subType : google.maps.MapTypeId.TERRAIN,
 			type : "Google",
-			zoomLevels : 15,
+			zoomLevels : 22,
 			getLayerDefinition : that.googleMapsLayerDefinition,
 			showOperations : function(model) {
 				that.googleMapsShow(model);
@@ -585,7 +588,7 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			subType : google.maps.MapTypeId.ROADMAP,
 			type : "Google",
-			zoomLevels : 20,
+			zoomLevels : 22,
 			getLayerDefinition : that.googleMapsLayerDefinition,
 			showOperations : function(model) {
 				that.googleMapsShow(model);
@@ -605,7 +608,7 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			type : "osm",
 			subType : "osm",
-			zoomLevels : 17,
+			zoomLevels : 22,
 			getLayerDefinition : function() {
 				var attribution = "Tiles &copy; <a href='http://openstreetmap.org/'>OpenStreetMap</a> contributors, CC BY-SA &nbsp;";
 				attribution += "Data &copy; <a href='http://openstreetmap.org/'>OpenStreetMap</a> contributors, ODbL";
@@ -1195,21 +1198,49 @@ OpenGeoportal.MapController = function() {
 		var bottomLeft = this.WGS84ToMercator(mapObj.west, mapObj.south);
 		var topRight = this.WGS84ToMercator(mapObj.east, mapObj.north);
 
+		//if pixel distance b/w topRight and bottomLeft falls below a certain threshold, 
+		//add a marker(fixed pixel size) in the center, so the user can see where the layer is
+		var blPixel = this.getPixelFromLonLat(bottomLeft);
+		var trPixel = this.getPixelFromLonLat(topRight);
+		var pixelDistance = blPixel.distanceTo(trPixel);
+		var threshold = 10;
+		var displayMarker = false;
+		
+		if (pixelDistance <= threshold){
+			displayMarker = true;
+		}
+
+		
+		var arrFeatures = [];
 		if (bottomLeft.lon > topRight.lon) {
 			var dateline = this.WGS84ToMercator(180, 0).lon;
-			var box1 = new OpenLayers.Feature.Vector(new OpenLayers.Bounds(
+			var geom1 = new OpenLayers.Bounds(
 					bottomLeft.lon, bottomLeft.lat, dateline, topRight.lat)
-					.toGeometry());
-			var box2 = new OpenLayers.Feature.Vector(new OpenLayers.Bounds(
+					.toGeometry();
+			var geom2 = new OpenLayers.Bounds(
 					topRight.lon, topRight.lat, -1 * dateline, bottomLeft.lat)
-					.toGeometry());
-			featureLayer.addFeatures([ box1, box2 ]);
+					.toGeometry();
+			arrFeatures.push(new OpenLayers.Feature.Vector(geom1));
+			arrFeatures.push(new OpenLayers.Feature.Vector(geom2));
+
+			if (displayMarker){
+				arrFeatures.push(new OpenLayers.Feature.Vector(geom1.getCentroid()));
+			}
+			
 		} else {
-			var box = new OpenLayers.Feature.Vector(new OpenLayers.Bounds(
-					bottomLeft.lon, bottomLeft.lat, topRight.lon, topRight.lat)
-					.toGeometry());
-			featureLayer.addFeatures([ box ]);
+			var geom = new OpenLayers.Bounds(
+					bottomLeft.lon, bottomLeft.lat, topRight.lon, topRight.lat).toGeometry();
+			
+			var box = new OpenLayers.Feature.Vector(geom);
+			
+			arrFeatures.push(box);
+			
+			if (displayMarker){
+				arrFeatures.push(new OpenLayers.Feature.Vector(geom.getCentroid()));
+			}
 		}
+		
+		featureLayer.addFeatures(arrFeatures);
 		this.setLayerIndex(featureLayer, (this.layers.length - 1));
 
 		// do a comparison with current map extent
@@ -1237,6 +1268,8 @@ OpenGeoportal.MapController = function() {
 		var layerLeft = bottomLeft.lon;
 		var layerRight = topRight.lon;
 
+
+		
 		var showEWArrows = true;
 		// don't show arrows for east and west offscreen if multiple "worlds"
 		// are on screen
