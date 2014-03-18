@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DirectoryRetrieverImpl implements DirectoryRetriever {
-	private static final String DOWNLOAD_DIRECTORY = "download";
+	private static final String DOWNLOAD_DIRECTORY = "ogpdownload";
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 

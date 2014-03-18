@@ -39,13 +39,13 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 			int counter = 0;
 			long timeInterval = maxAge * 60 * 1000;
 			File[] downloadedFiles = directoryRetriever.getDownloadDirectory().listFiles();
-			/*for (File old: downloadedFiles){
-				logger.info(old.getAbsolutePath());
-			}*/
+
 			long currentTime = System.currentTimeMillis();
 
 			for (File downloadedFile : downloadedFiles) {
-			
+				if (!downloadedFile.canWrite()){
+					logger.warn("No permissions to delete file: " + downloadedFile.getName());
+				}
 				if (downloadedFile.isDirectory()){
 					File[] innerDownloadedFiles = downloadedFile.listFiles();
 					for (File innerDownloadedFile : innerDownloadedFiles) {
