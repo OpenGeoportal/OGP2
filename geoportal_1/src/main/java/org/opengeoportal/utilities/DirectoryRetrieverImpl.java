@@ -7,10 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DirectoryRetrieverImpl implements DirectoryRetriever {
-	private static final String DOWNLOAD_DIRECTORY = "ogpdownload";
+	private String downloadDirectory;
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	DirectoryRetrieverImpl(String downloadDirectory) {
+		this.downloadDirectory = downloadDirectory;
+	}
 	
 	/**
 	 * a method to create a directory to put downloaded files into, if it doesn't already exist
@@ -47,9 +50,9 @@ public class DirectoryRetrieverImpl implements DirectoryRetriever {
 	public File getDownloadDirectory() {
 		File theDirectory = null;
 		try {
-			theDirectory = getDirectory(DOWNLOAD_DIRECTORY);
+			theDirectory = getDirectory(downloadDirectory);
 		} catch (IOException e) {
-			logger.error("Unable to retrieve directory ['" + DOWNLOAD_DIRECTORY + "'] in the temp directory.");
+			logger.error("Unable to retrieve directory ['" + downloadDirectory + "'] in the temp directory.");
 		}
 		return theDirectory;
 	}

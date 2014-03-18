@@ -127,7 +127,9 @@
 	<beans:bean id="quickDownload"
 		class="org.opengeoportal.utilities.QuickWfsDownload" scope="prototype" />
 
-	<beans:bean id="directoryRetriever.simple" class="org.opengeoportal.utilities.DirectoryRetrieverImpl" />
+	<beans:bean id="directoryRetriever.simple" class="org.opengeoportal.utilities.DirectoryRetrieverImpl" >
+		<beans:constructor-arg index="0" value="${ogp.downloadDir}" />
+	</beans:bean>
 	
 	<beans:bean id="downloadPackager"
 		class="org.opengeoportal.download.DownloadPackagerImpl" scope="prototype" />
