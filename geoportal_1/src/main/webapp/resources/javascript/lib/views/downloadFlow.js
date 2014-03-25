@@ -48,13 +48,10 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.QueueItem.extend({
 
 	initialize : function() {
 		this.set({
+			requestUrl: "requestDownload",
 			type : "layer",
-			bbox : {
-				minx : -180,
-				miny : -90,
-				maxx : 180,
-				maxy : 90
-			}
+			bbox : new OpenLayers.Bounds(-180,-90,180,90)
+		
 		});
 		this.listenTo(this, "invalid", function(model, error) {
 
@@ -67,7 +64,6 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.QueueItem.extend({
 		});
 	},
 	validate : function(attrs, options) {
-		console.log("trying to validate" + attrs[0]);
 		var emailAddressProperty = "email";
 		var emailAddress = attrs[emailAddressProperty];
 
@@ -328,7 +324,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					// now that we're done with this dialog, update the model
 					// with user specified preferences and resolve the
 					// setPreferences deferred obj
-					console.log("dialogDonePromise is done");
 					try {
 						that.updateModelsWithPreferences();
 						setPreferencesDeferred.resolveWith(that);
@@ -434,12 +429,11 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				if (this.preferences.get("isClipped")) {
 					// set bounds in the downloadRequest model
 					var extent = OpenGeoportal.ogp.map.getGeodeticExtent();
-					console.log(extent);
 					this.downloadRequest.set({
 						bbox : extent
 					});
 				}
-
+				//console.log("models updated with preferences");
 			},
 
 			/**
@@ -447,6 +441,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			 */
 
 			finalizeRequest : function() {
+				//console.log("starting finalize request");
 				var finalizeRequestDeferred = jQuery.Deferred();
 				var dialogDonePromise = this.openFinalizeRequestDialog();
 
@@ -469,10 +464,10 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			},
 
 			shouldUseHGLOpenDelivery : function(model, format) {
-				var bool = ((model.get("Institution").toLowerCase() === "harvard")
-						&& model.isRaster() && (OpenGeoportal.Utility
-						.arrayContainsIgnoreCase(formats, requestedFormat)));
-				return bool;
+				var bool1 = model.get("Institution").toLowerCase() === "harvard";
+				var bool2 = model.isRaster();
+				var bool3 = OpenGeoportal.Utility.arrayContainsIgnoreCase(["geotiff"], model.get("requestedFormat"));
+				return bool1 && bool2 && bool3;
 			},
 			/* emailKeys : [ "emailUrl" ], */
 			requiresEmailAddress : function(model, format) {
@@ -498,8 +493,9 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var required = false;
 				_.each(arrModels, function(model) {
 					var format = model.get("requestedFormat");
-					required = required
-							|| that.requiresEmailAddress(model, format);
+					var currentRequired = that.requiresEmailAddress(model, format);
+					required = required || currentRequired;
+					model.set({requiresEmail: currentRequired});
 				});
 
 				if (required) {
@@ -529,6 +525,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				var total = emailCount + downloadCount;
 				var plural = (total > 1);
+
 				template = this.template.layerDownloadNotice({
 					emailCount : emailCount,
 					downloadCount : downloadCount,
@@ -620,7 +617,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 			},
 			getFinalizeRequestDialogContent : function() {
-
 				var downloadContinue = this.getLayerDownloadNotice();
 				downloadContinue += this.getEmailAddressElement();
 
@@ -642,10 +638,39 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			},
 
 			sendDownloadRequest : function($dialog) {
+				//split into 2 requests if there are email requests
+				var layers = this.downloadRequest.get("layers");
+				var emailLayers = [];
+				var dlLayers = [];
+				var requestQ = OpenGeoportal.ogp.appState.get("requestQueue");
+				
+				_.each(layers, function(model){
+					if (model.has("requiresEmail") && model.get("requiresEmail")){
+						emailLayers.push(model);
+					} else {
+						dlLayers.push(model);
+					}
+				});
+				
+				
+				if (emailLayers.length > 0){
+					
+					var emailRequest = this.downloadRequest.clone();
+					emailRequest.set({layers: emailLayers});
 
-				OpenGeoportal.ogp.appState.get("requestQueue").addToQueue(
-						this.downloadRequest);
+					requestQ.addToQueue(emailRequest);
+					
+					if (dlLayers.length > 0){
+						this.downloadRequest.set({layers: dlLayers});
+						//console.log(this.downloadRequest);
+						requestQ.addToQueue(this.downloadRequest);
 
+					}
+				} else {
+					requestQ.addToQueue(this.downloadRequest);
+				}
+				
+	
 				this.showTransferAnimation($dialog);
 				// where should this go?
 				// jQuery(".downloadSelection,
@@ -653,61 +678,5 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// downloadUnselection");
 
 			}
-		/*
-		 * requestErrorMessage : function(errorMessageObj) {
-		 * 
-		 * var line = ""; var failedToDownload = null; for (failedToDownload in
-		 * data.failed) { line += "<tr>"; // for (var infoElement in
-		 * data.failed[failedToDownload]){ line += "<td>"; line += '<span
-		 * class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px
-		 * 0;"></span>'; line += "</td>"; line += "<td>"; line +=
-		 * data.failed[failedToDownload]["institution"]; line += "</td>"; line += "<td>";
-		 * line += data.failed[failedToDownload]["title"]; line += "</td>";
-		 * line += "<td>"; line += data.failed[failedToDownload]["layerId"];
-		 * line += "</td>"; line += '<td><span class="warning">'; line +=
-		 * data.failed[failedToDownload]["message"]; line += "</span></td>"; // }
-		 * line += "</tr>"; } if (line.length > 0) { var message = '<table
-		 * class="downloadStatus">'; message += line; message += "</table>";
-		 * this.genericModalDialog(message, "Download Errors"); } },
-		 */
-
-		/*
-		 * this.requestDownloadSuccess = function(data) { // this will simply be
-		 * a request Id. add it to the request queue. //
-		 * OpenGeoportal.org.downloadQueue.registerLayerRequest(data.requestId); //
-		 * will also have status info for requested layers in this returned //
-		 * object
-		 * 
-		 * var line = ""; for (var failedToDownload in data.failed){ line += "<tr>";
-		 * //for (var infoElement in data.failed[failedToDownload]){ line += "<td>";
-		 * line += '<span class="ui-icon ui-icon-alert" style="float:left;
-		 * margin:0 7px 20px 0;"></span>'; line += "</td>"; line += "<td>";
-		 * line += data.failed[failedToDownload]["institution"]; line += "</td>";
-		 * line += "<td>"; line += data.failed[failedToDownload]["title"];
-		 * line += "</td>"; line += "<td>"; line +=
-		 * data.failed[failedToDownload]["layerId"]; line += "</td>"; line += '<td><span
-		 * class="warning">'; line += data.failed[failedToDownload]["message"];
-		 * line += "</span></td>"; //} line += "</tr>"; } if (line.length >
-		 * 0){ var message = '<table class="downloadStatus">'; message += line;
-		 * message += "</table>"; this.genericModalDialog(message, "DOWNLOAD
-		 * ERRORS"); } if (data.succeeded.length > 0){ //check packageLink if
-		 * (typeof data.packageLink != 'undefined'){ jQuery("body").append('<iframe
-		 * style="display:none" src="' + data.packageLink + '"></iframe>'); }
-		 * var line = ""; for (var successful in data.succeeded){ if
-		 * (data.succeeded[successful].disposition == "LINK_EMAILED"){ line += "<tr>";
-		 * line += "<td>"; line += data.succeeded[successful]["institution"];
-		 * line += "</td>"; line += "<td>"; line +=
-		 * data.succeeded[successful]["title"]; line += "</td>"; //line += "<td>";
-		 * //line += data.succeeded[successful]["layerId"]; //line += "</td>";
-		 * //line += "<td>"; //line += data.succeeded[successful]["message"];
-		 * //line += "</td>"; line += "</tr>"; } }
-		 * 
-		 * if (line.length > 0){ var message = "<p>A link for the following
-		 * layers was emailed to '" + requestObj.email + "'. "; message += '<span
-		 * class="notice">It may take up to 10 minutes to receive the email.</span></p>';
-		 * message += '<table class="downloadStatus">'; message += line;
-		 * message += "</table>"; this.genericModalDialog(message, "LAYERS
-		 * EMAILED"); } } };
-		 */
 
 		});

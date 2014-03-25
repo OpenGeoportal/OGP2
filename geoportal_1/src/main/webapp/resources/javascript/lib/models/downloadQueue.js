@@ -71,7 +71,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				var doDownload = false;
 				var i = null;
 
-				if (typeof statuses != "undefined") {
+				if (typeof statuses !== "undefined") {
 					for (i in statuses) {
 						var responseType = statuses[i].responseType;
 						if (responseType === "download") {
@@ -120,6 +120,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				// if all succeeded, no need to pop up a message; the user
 				// should see the save file dialog
 				// "requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
+				//console.log(model);
 				var failed = [];
 				var succeeded = [];
 				var i = null;
@@ -128,23 +129,47 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 					var status = currentLayer.status.toLowerCase();
 					var layerName = currentLayer.id;
 					if (status != "success") {
-						failed.push(layerName);
+						failed.push(currentLayer);
 					} else {
-						succeeded.push(layerName);
+						succeeded.push(currentLayer);
 					}
 
 				}
 
-				if (failed.length > 0) {
-					alert("These layers failed: " + failed.join());
+				var email = "";
+				if (model.has("email")){
+					email = model.get("email");
 				}
-
-				if (succeeded.length > 0) {
-					// alert("These layers succeeded!: " + succeeded.join());
-				}
-
+				
+				this.noticeDialog(succeeded, failed, email);
+				
 			},
 
+			noticeDialog: function(succeeded, failed, email){
+				var text = "";
+				var failedIds = [];
+				if (failed.length > 0) {
+					_.each(failed, function(status){
+						failedIds.push(status.id);
+					});
+					text += "These layers failed: " + failedIds.join();
+				}
+
+				var emailedIds = [];
+				if (succeeded.length > 0) {
+					_.each(succeeded, function(status){
+						if (status.responseType === "email"){
+							emailedIds.push(status.id);
+						}
+					});
+					text += "The following layers have been emailed to " + email + ": " + emailedIds.join();
+				}
+				
+				if (text.length > 0){
+					alert(text);
+				}
+			},
+			
 			checkPoll : function() {
 				var pending = this.where({
 					status : "PROCESSING"
@@ -248,10 +273,9 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 					});
 				}
 			},
-			// Each of these should move to the code that generates the request.
+			// Each of these should move to the code that generates the request. use promises?
 			requestTypes : {
 				layer : {
-					requestUrl : "requestDownload",
 					retrieveUrl : "getDownload",
 					successCallback : function() {
 						this.iframeDownload.apply(this, arguments);
@@ -299,37 +323,43 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 			getParamsFromQueueItem : function(queueItem) {
 				// we'll have to truncate some of these attributes for the
 				// request,
-				var requestObj = queueItem.attributes;
-				var layerModels = queueItem.get("layers");
-				var layerRequests = [];
-				_.each(layerModels, function(model) {
-					layerRequests.push({
-						layerId : model.get("LayerId"),
-						format : model.get("requestedFormat")
+				try {
+					var requestObj = queueItem.attributes;
+					var layerModels = queueItem.get("layers");
+				
+					var layerRequests = [];
+					_.each(layerModels, function(model) {
+						layerRequests.push({
+							layerId : model.get("LayerId"),
+							format : model.get("requestedFormat")
+						});
 					});
-				});
 
-				requestObj.layers = layerRequests;
+					requestObj.layers = layerRequests;
 
-				requestObj.bbox = requestObj.bbox.toBBOX();
+					requestObj.bbox = requestObj.bbox.toBBOX();
 
-				return JSON.stringify(requestObj);
+					return JSON.stringify(requestObj);
+					
+				} catch (e){
+					console.log(e);
+					throw new Error("Error creating params");
+				}
 			},
 
 			addToQueue : function(queueItem) {
-				console.log("attempting to add queueItem");
-				console.log(queueItem);
+				//TODO: return a promise; the deferred can be an attribute of newQ.  the deferred can be resolved on "status change".
+				//the promise.done back in the object that added an object to the q handles the retrievals and notifications
+				
+				var newQ = queueItem.clone();
 				var that = this;
 
-				var requestInfo = this.requestTypes[queueItem.get("type")];
-
 				var params = {
-					url : requestInfo.requestUrl,
-					data : this.getParamsFromQueueItem(queueItem),
+					url : queueItem.get("requestUrl"),
+					data : this.getParamsFromQueueItem(newQ),
 					dataType : "json",
 					type : "POST",
 					success : function(data) {
-						var newQ = queueItem.clone();
 						newQ.set({
 							requestId : data.requestId
 						});
@@ -339,8 +369,10 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 						jQuery(document).trigger("hideRequestSpinner");
 					}
 				};
+
 				jQuery.ajax(params);
 				jQuery(document).trigger("showRequestSpinner");
+
 			}
 
 		});

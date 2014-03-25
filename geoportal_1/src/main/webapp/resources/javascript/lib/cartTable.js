@@ -142,8 +142,10 @@ OpenGeoportal.CartTable = function CartTable() {
 	this.addSharedLayersToCart = function() {
 		if (OpenGeoportal.Config.shareIds.length > 0) {
 			var solr = new OpenGeoportal.Solr();
+			var that = this;
 			solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds,
-					this.getLayerInfoJsonpSuccess, this.getLayerInfoJsonpError);
+					function(){that.getLayerInfoJsonpSuccess.apply(that, arguments);}, 
+					function(){that.getLayerInfoJsonpError.apply(that, arguments);});
 			return true;
 		} else {
 			return false;
@@ -151,18 +153,26 @@ OpenGeoportal.CartTable = function CartTable() {
 	};
 
 	this.getLayerInfoJsonpSuccess = function(data) {
-		// console.log(this);
-		var docs = data.response.docs;
-		that.backingData.add(docs);
-
+		var tableData = this.processSearchResponse(data);
+		var that = this;
+		
 		// if we want to preview the layer call below
 		var i = null;
-		for (i in docs) {
-			that.addToPreviewed(docs[i].LayerId);
+		
+		//the layers won't get added to the cart table via reset, so remove them and re-add them.
+		var collection = this.backingData.clone();
+		this.backingData.reset();
+		collection.each(function(model){
+			that.backingData.add(model);
+			try{
+				that.addToPreviewed(model.get("LayerId"));
+			} catch (e) {
+				console.log(e);
+			}
 			// add info about color and size here as well.
 			// layerid~1AAA tilde is delimiter, first character is size, last
 			// three are color?
-		}
+		});
 
 		jQuery(document).trigger("map.zoomToLayerExtent", {
 			bbox : OpenGeoportal.Config.shareBbox

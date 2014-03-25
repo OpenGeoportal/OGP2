@@ -2173,10 +2173,10 @@ OpenGeoportal.MapController = function() {
 						jQuery(document).trigger("hideLoadIndicator");
 					});
 					
-					console.log("wms layer");
-					console.log(layerModel);
-					console.log("openlayers layer");
-					console.log(newLayer);
+					//console.log("wms layer");
+					//console.log(layerModel);
+					//console.log("openlayers layer");
+					//console.log(newLayer);
 					
 					that.addLayer(newLayer);
 				});
