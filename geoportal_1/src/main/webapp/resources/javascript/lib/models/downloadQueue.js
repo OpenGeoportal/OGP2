@@ -162,7 +162,9 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 							emailedIds.push(status.id);
 						}
 					});
-					text += "The following layers have been emailed to " + email + ": " + emailedIds.join();
+					if (emailedIds.length > 0){
+						text += "The following layers have been emailed to " + email + ": " + emailedIds.join();
+					}
 				}
 				
 				if (text.length > 0){
