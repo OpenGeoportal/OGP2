@@ -295,11 +295,11 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	background: none repeat scroll 0 0 red;
 }
 
-.resizableCol>.ui-resizable-e {
+th >.ui-resizable-e {
 	cursor: col-resize;
 	float: right;
 	height: 14px;
-	margin: 0 -9px 0 0;
+	margin: -14px -9px 0 0;
 	position: static;
 	width: 7px;
 }

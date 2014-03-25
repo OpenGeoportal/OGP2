@@ -12,6 +12,8 @@
 <script src="resources/javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
 <script src="resources/javascript/panZoom.js"></script>
 
+<link rel="stylesheet" href="resources/css/jquery-ui-ogpTheme.custom.css" type="text/css" />
+
 
 <c:choose>
       <c:when test="${dev}" >
@@ -19,7 +21,6 @@
       </c:when>
 
       <c:otherwise>
-      <link rel="stylesheet" href="resources/css/jquery-ui-ogpTheme.custom.css" type="text/css" />
       <link rel="stylesheet" href="resources/css/ogp.css" type="text/css" />
      
       <script type="text/javascript" src="resources/javascript/ogp.js"></script>

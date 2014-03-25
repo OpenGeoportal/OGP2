@@ -144,7 +144,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			displayName : "Data Type",
 			header : "Type",
 			columnClass : "colType",
-			width : 29,
+			width : 30,
 			dtRender : function(data, type, full) {
 				var dataType = data;
 				return that.controls.renderTypeIcon(dataType);
@@ -202,7 +202,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			width : 200,
 			organize : "alpha",
 			visible : true,
-			hidable : true,
+			hidable : false,
 			displayName : "Name",
 			header : "Name",
 			columnClass : "colTitle"
@@ -211,7 +211,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			columnName : "Originator",
 			solr : true,
 			resizable : true,
-			minWidth : 59,
+			minWidth : 62,
 			width : 86,
 			organize : "group",
 			visible : true,
@@ -225,7 +225,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			columnName : "Publisher",
 			solr : true,
 			resizable : true,
-			minWidth : 55,
+			minWidth : 58,
 			width : 80,
 			organize : "group",
 			visible : false,
@@ -497,19 +497,20 @@ OpenGeoportal.LayerTable = function LayerTable() {
 
 	this.tableDrawCallbacks = {
 		callbacks : {
-			// wrapCells: function(){this.wrapCells();},
+			wrapHeaderCells: function(){
+				this.wrapHeaderCells();
+			},
 			tooltips : function() {
 				this.createTooltips();
 			},
 			expandRows : function() {
 				this.callbackExpand();
 			},
-			colResize : function() {
-				this.resizeColumnsCallback();
-			},
+
 			adjustColumns : function() {
 				this.adjustColumnSizes();
 			}
+
 		}
 	};
 
@@ -660,11 +661,10 @@ OpenGeoportal.LayerTable = function LayerTable() {
 	 **************************************************************************/
 
 	// wrap the content of each table cell in a div so we can control the size
-	this.wrapCells = function() {
+	this.wrapHeaderCells = function() {
 		// console.log("wrapping cells");
 		var tableName = this.getWrapperDiv();
-		// jQuery('#' + tableName + ' th').each(function (iPosition, Element){
-		jQuery('#' + tableName + ' td').each(function(iPosition, Element) {
+		jQuery('#' + tableName + ' th').each(function(iPosition, Element) {
 
 			// reference the column, so we can set the width of each div
 			var tableCell = jQuery(this);
@@ -674,239 +674,71 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		});
 	};
 
-	// wrap the content of each table cell in a div so we can control the size
-	this.wrapCell = function(tdEl) {
-		jQuery(tdEl).wrapInner('<div class="cellWrapper"></div>');
-	};
 
-	// dynamically size the table depending on visible columns & the width of
-	// the container
-	this.sizeCells = function() {
-		console.log("####################size cells called");
-		// determine which fields are showing, set widths from header object
-		// if they add up to the total width, we're done. otherwise we need to
-		// adjust
-		// we need to maintain minimum widths
-		var tableID = this.getTableID();
-		var adjustObj;
 
-		var totalWidth = jQuery('#left_col').width();
-		var arrColumns = this.getVisibleColumns();
-		totalWidth = totalWidth - (arrColumns.length * 7) + 1;// account for
-		// cell padding
-		// plus right
-		// borders of
-		// cells,
-		// leftmost
-		// border
-		// var divWidth = totalWidth;
-		var arrSizable = [];
-		var sizableWidth = 0;
-		var headingsObj = this.tableHeadingsObj;
-		for ( var i in arrColumns) {
-			var currentColumn = arrColumns[i];
-			var currentWidth = headingsObj.getWidth(currentColumn);
-			if (headingsObj.getValue(currentColumn, "resizable")) {
-				sizableWidth += currentWidth;
-				arrSizable.push(currentColumn);
-			} else {
-				var fixedColumnWidth = parseFloat(currentWidth);
-				totalWidth = totalWidth - fixedColumnWidth;
-			}
-		}
-		var numberSizable = arrSizable.length;
-		if (numberSizable == 0) {
-			return;// we're done. exit the function
-		}
-		// working here....
-		if (numberSizable == 1) {
-			var currentClass = headingsObj.getValue(arrSizable[0], "sClass");
-			var currentMinWidth = headingsObj.getValue(arrSizable[0],
-					"minWidth");
-			if (totalWidth >= currentMinWidth) {
-				jQuery('#' + tableID + ' .' + currentClass + ' > div').width(
-						totalWidth);
-			} else {
-				// debugging
-				this.removeExtraColumn();
-				// alert('remaining width is less than the minWidth for the
-				// column (sizable = 1)');
-				// what can we do here? I think we have to remove columns to
-				// make things fit.
-				// this will fail to adjust columns properly if the visible
-				// resizable column is not
-				// removed by the above function
-			}
-			// should also update the currentWidth;
-			headingsObj.setWidth(arrSizable[0], totalWidth);
-			return;// we're done. exit the function
-		}
 
-		// following is executed if numberSizable is > 1
-		// determine if the total width currently set for the sizable columns is
-		// equal to the
-		// width available on the page.
-		var remainingWidth = totalWidth - sizableWidth;
-		if (remainingWidth == 0) {
-			// set columns to currentWidth values
-			for ( var j in arrSizable) {
-				var currentSizable = arrSizable[j];
-				// var currentMinWidth = headingsObj.getValue(currentSizable,
-				// "minWidth");
-				var currentWidth = headingsObj.getValue(currentSizable,
-						"currentWidth");
-				var currentClass = headingsObj.getValue(currentSizable,
-						"sClass");
-				jQuery('#' + tableID + ' .' + currentClass + ' > div').width(
-						currentWidth);
-				// since setWidth cannot set a 'currentWidth' smaller than
-				// 'minWidth', we
-				// should be ok not comparing with 'minWidth' here
-				headingsObj.setWidth(currentSizable, currentWidth);
-			}
-			;
-		} else {
-			// split the difference between columns and add to each
-			// currentWidth, taking care not to go below minWidth
-			var remainder = remainingWidth % numberSizable;
-			// widthDifference * numberSizable will always be <= remainingWidth
-			var widthDifference = Math.floor(remainingWidth / numberSizable);
-			var propagate = 0;// we need this variable outside the loop.
-			var adjustArr = [];
-			for ( var j in arrSizable) {
-				var currentSizable = arrSizable[j];
-				var currentMinWidth = headingsObj.getValue(currentSizable,
-						"minWidth");
-				var currentWidth = headingsObj.getValue(currentSizable,
-						"currentWidth")
-						+ widthDifference - propagate;
-				var currentClass = headingsObj.getValue(currentSizable,
-						"sClass");
-				// we only want to apply the remainder to the first field if
-				// possible
-				if (remainder > 0) {
-					currentWidth++;
-					remainder--;
-				}
-				if (currentWidth >= currentMinWidth) {
-					adjustObj = {};
-					adjustObj.sClass = currentClass;
-					adjustObj.availableWidth = currentWidth - currentMinWidth;
-					adjustObj.currentWidth = currentWidth;
-					adjustObj.currentSizable = currentSizable;
-					adjustArr.push(adjustObj);
-					jQuery('#' + tableID + ' .' + currentClass + ' > div')
-							.width(currentWidth);
-					headingsObj.setWidth(currentSizable, currentWidth);
-					propagate = 0;
-				} else {
-					// if we set the column to the currentMinWidth, we have to
-					// propagate the difference to
-					// another column.
-					propagate = currentMinWidth - currentWidth;
-					jQuery('#' + tableID + ' .' + currentClass + ' > div')
-							.width(currentMinWidth);
-					headingsObj.setWidth(currentSizable, currentMinWidth);
-				}
-			}
-			;
-			while (propagate > 0) {
-				// in this case, we need to start taking width from earlier
-				// columns
-				if (adjustArr.length > 0) {
-					for ( var k in adjustArr) {
-						var currentAdjust = adjustArr[k];
-						// compare the value of propagate with the value of
-						// currentAdjust.availableWidth
-						var adjustDelta = propagate
-								- currentAdjust.availableWidth;
-						if (adjustDelta <= 0) {
-							jQuery(
-									'#' + tableID + ' .' + currentAdjust.sClass
-											+ ' > div').width(
-									currentAdjust.currentWidth - propagate);
-							headingsObj.setWidth(adjustObj.currentSizable,
-									currentAdjust.currentWidth - propagate);
-							return; // we're done
-						} else {
-							jQuery(
-									'#' + tableID + ' .' + currentAdjust.sClass
-											+ ' > div').width(
-									currentAdjust.currentWidth
-											- currentAdjust.availableWidth);
-							headingsObj.setWidth(adjustObj.currentSizable,
-									currentAdjust.currentWidth
-											- currentAdjust.availableWidth);
-							propagate = adjustDelta;
-						}
-					}
-				} else {
-					// if propagate is still > 0 when all columns are at
-					// minWidth, we have to remove a column from display
-					this.removeExtraColumn();
-					return; // avoid possible infinite loop
-				}
-			}
-		}
-		// totalWidth must be shared between all visible columns
-	};
 
-	this.resizeColumnsCallback = function() {
-		this.markResizableColumns();
-		this.resizeColumns();
-	};
-
+	/**
+	 * find visible columns where "resizable" is "true". Store the selector for the th element if resizable.
+	 */
 	this.markResizableColumns = function() {
-		var matches = this.tableHeadingsObj.where({
-			resizable : true
-		});
 		var parent$ = jQuery("#" + this.getWrapperDiv());
-		if (parent$.find("dataTables_scrollHeadInner").length > 0) {
-			parent$ = parent$.find("dataTables_scrollHeadInner").first();
+		if (parent$.find(".dataTables_scrollHeadInner").length > 0) {
+			parent$ = parent$.find(".dataTables_scrollHeadInner").first();
+		} else {
+			return;
 		}
-		for ( var i in matches) {
-			var sel$ = parent$.find("th." + matches[i].get("columnClass"));
-			if (sel$.length !== 0) {
-				if (!sel$.hasClass("resizableCol")) {
-					sel$.addClass("resizableCol");
-					matches[i].set({
-						headerSelector : sel$
-					});
-				}
-			}
-		}
-	};
 
-	this.getResizableColumns = function() {
-		var resizables = jQuery("#searchResultsTable_wrapper .resizableCol");
-		var columns = [];
-		var that = this;
-		resizables.each(function() {
-			var possibleMatches = that.tableHeadingsObj.filter(function(model) {
-				return model.has("headerSelector");
+		var matches = this.getVisibleResizableColumns();
+
+		_.each(matches, function(model){
+			var sel$ = parent$.find("th." + model.get("columnClass"));
+
+			model.set({
+				headerSelector : sel$
 			});
-			for ( var i in possibleMatches) {
-				var sel = possibleMatches[i].get("headerSelector");
-				if (sel[0] === this) {
-					columns.push(possibleMatches[i]);
-				}
-			}
 		});
-		// return models for resizable columns
-		return columns;
+		
 	};
 
+	this.getVisibleResizableColumns = function() {
+		var visCols = this.getVisibleColumns();
+		var matches = this.tableHeadingsObj.filter(function(model){
+			if (model.get("resizable")){
+				var columnName = model.get("columnName");
+				return (_.contains(visCols, columnName));
+				
+			}
+			return false;
+		});
+		
+		return matches;
+
+	};
+
+	/**
+	 * returns an array of column keys visible on the page according to datatables
+	 */
 	this.getVisibleColumns = function() {
-		// returns an array of column keys visible on the page
+		
 		var arrReturn = [];
 
 		var arrColumns = this.getTableObj().fnSettings().aoColumns;
 		for ( var i in arrColumns) {
-			if (arrColumns[i].bVisible == true) {
+			if (arrColumns[i].bVisible === true) {
 				arrReturn.push(arrColumns[i].mData);
 			}
 		}
 		return arrReturn;
+	};
+	
+	this.getVisibleColumnModels = function(){
+		var visCols = this.getVisibleColumns();
+		var matches = this.tableHeadingsObj.filter(function(model){
+			return (_.contains(visCols, model.get("columnName")));
+		});
+		
+		return matches;
 	};
 
 	this.getFixedColumnsWidth = function() {
@@ -968,7 +800,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		var offset = 7;// padding plus border...should get this value
 		// dynamically
 		for ( var j in arrColumns) {
-			totalWidth += parseInt(arrColumns[j].get("width")) + offset;
+			totalWidth += parseInt(arrColumns[j].get("width")) + 7;
 		}
 
 		return totalWidth;
@@ -990,46 +822,48 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		/*
 		 * determine which fields are showing, set widths from header object if
 		 * they add up to the total width, we're done. otherwise we need to
-		 * adjust we need to maintain minimum widths
+		 * adjust. we also need to maintain minimum widths
 		 */
-		var resizables = this.getResizableColumns();
 
+		var resizables = this.getVisibleResizableColumns();
+		
 		var numColumns = resizables.length;
 		if (numColumns === 0) {
-			return; // we're done. exit the function
+			throw new Error("No resizable columns!");
+			//return; // we're done. exit the function
 		}
 
 		// remaining width must be distributed among visible resizable columns
 		// outerWidth of visible resizable columns must total remaining width
 		var remainingWidth = jQuery("#" + this.getWrapperDiv()).width()
 				- this.getFixedColumnsWidth();
-		// console.log("***********************************************************");
-		// console.log("fixed cols width: " + this.getFixedColumnsWidth());
-		// console.log("remaining width: " + remainingWidth);
+
 		// at this point, remainingWidth must be a positive value. make sure
 		// minWidth of the panel is set to ensure this.
 		if (remainingWidth < 0) {
 			return;
-			// throw new Error("Minimum column width is less than panel width.
-			// Adjust minWidth for the panel to ensure this does not happen.");
+			//throw new Error("Minimum column width is less than panel width. Adjust minWidth for the panel to ensure this does not happen.");
 		}
 
-		var totalWidth = this.getTotalWidths(resizables);
-		if (remainingWidth === totalWidth) {
+		var resizablesWidth = this.getTotalWidths(resizables);
+		//console.log("resizables widths");
+		//console.log(resizablesWidth);
+		
+		if (remainingWidth === resizablesWidth) {
 			// console.log("no change. quitting resize.");
 			return;
 		}
 
-		var totalMinWidth = this.getTotalMinWidths(resizables);
+		var resizablesMinWidth = this.getTotalMinWidths(resizables);
 		// console.log("remaining width minus minwidths: " + (remainingWidth -
 		// totalMinWidth));
-		while ((remainingWidth - totalMinWidth) < 0) {
+		while ((remainingWidth - resizablesMinWidth) < 0) {
 			console.log("should remove a column");
 			// we need to remove columns until remainingWidth is a positive
 			// value
 			resizables = this.removeExtraColumn(resizables);
-			totalMinWidth = this.getTotalMinWidths(resizables);
-			totalWidth = this.getTotalWidths(resizables);
+			resizablesMinWidth = this.getTotalMinWidths(resizables);
+			resizablesWidth = this.getTotalWidths(resizables);
 		}
 
 		numColumns = resizables.length;
@@ -1038,12 +872,14 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			return; // we're done. exit the function
 		}
 
-		var play = remainingWidth - totalWidth;
+		var play = remainingWidth - resizablesWidth;
+		//console.log("remaining Width minus total resizables width");
+		//console.log(play);
 		// padding and border accounted in totalWidth
-		var colOffset = Math.floor(play / numColumns);
-		// console.log("col offset: " + colOffset);
+		var colOffset = Math.floor(play / numColumns) - 7;
+		 //console.log("col offset: " + colOffset);
 		var colRemainder = play % numColumns;
-		// console.log("colRemainder: " + colRemainder);
+		 //console.log("colRemainder: " + colRemainder);
 
 		var newSizes = [];
 		var totalNewWidth = 0;
@@ -1053,15 +889,15 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			var size = {};
 
 			size.oldWidth = resizables[i].get("width");
+			
 			size.newWidth = size.oldWidth + colOffset + colRemainder;
 			// just apply the remainder for the first iteration
 			colRemainder = 0;
 
 			size.minWidth = resizables[i].get("minWidth");
 			newSizes.push(size);
-			// console.log("old width: " + resizables[i].get("width"));
-			// console.log("new width for " + resizables[i].get("columnName") +
-			// ": " + size.newWidth);
+			//console.log("old width: " + resizables[i].get("width"));
+			//console.log("new width for " + resizables[i].get("columnName") + ": " + size.newWidth);
 
 			if (size.newWidth < size.minWidth) {
 				// console.log("newWidth less than minwidth");
@@ -1101,9 +937,18 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			}
 		}
 
+		
+		var that = this;
+		_.each(this.getVisibleColumnModels(), function(model){
+			that.setColumnWidth(model);
+		});
 		// console.log("end value for remainder: " + minWidthCarryOver);
 		// console.log("***********************************************************");
 		this.getTableObj().fnAdjustColumnSizing(false);
+
+		//re-apply resizable behavior with up to date sizes.
+		this.resizeColumns();
+		
 
 	};
 
@@ -1117,9 +962,10 @@ OpenGeoportal.LayerTable = function LayerTable() {
 	};
 
 	this.resizeColumns = function() {
-		// console.log("resizeColumns called");
-		var columns = this.getResizableColumns();
+		//mark columns that are resizable and store selectors
+		this.markResizableColumns();
 
+		var columns = this.getVisibleResizableColumns();
 		// we need at least 2 columns for resizing to work
 		if (columns.length < 2) {
 			return;
@@ -1128,30 +974,46 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		for (var i = 0; i < (columns.length - 1); i++) {
 			var currentModel = columns[i];
 			var remainingColumns = columns.slice(i);
+			
+				// reset column resizable state; trying to destroy a 'resizable' that hasn't been initialized causes an error
+				if (currentModel.has("resizableApplied") && currentModel.get("resizableApplied")){
+						//should have been set by markResizableColumns
+						if (currentModel.has("headerSelector")){
+							var sel$ = currentModel.get("headerSelector");
 
-			// reset column resizable state
-			try {
-				var sel$ = currentModel.get("headerSelector");
-				if (sel$.hasClass("resizable-applied")) {
-					sel$.resizable("destroy");
+							try{
+								sel$.resizable("destroy");
+								currentModel.set({resizableApplied: false});
+								//console.log("resizable removed");
+							} catch (e){
+								//sometimes no resizable to destroy...
+								//TODO: debug
+							}
+						} 
+
 				}
-			} catch (e) {
-				// ignore. I'm not sure how to detect which elements have
-				// "resizable" initialized
-				// console.log(e);
-			}
 
-			this.addResizableColumn(currentModel, remainingColumns);
+				if (currentModel.has("headerSelector")){
+						this.addResizableColumn(currentModel, remainingColumns);
+				} 
+			
 		}
+
 	};
 
 	this.addResizableColumn = function(model, remainingColumns) {
 		var that = this;
-		// console.log(model.get("headerSelector"));
-		model.get("headerSelector").addClass("resizable-applied").resizable(
+		var innerHeader$ = jQuery(".dataTables_scrollBody th." + model.get("columnClass"));
+		var alsoResizes$ = innerHeader$;
+
+		var resizableEl$ = model.get("headerSelector");
+		resizableEl$.resizable(
 				{
-					alsoResize : ".dataTables_scrollBody th."
-							+ model.get("columnClass"),
+					create: function( event, ui ) {
+						//console.log("created resizable");
+						model.set({resizableApplied: true});
+					},
+					alsoResize : alsoResizes$,
 					handles : "e",
 					minWidth : model.get("minWidth"),
 					start : function(event, ui) {
@@ -1171,7 +1033,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 						}
 						var maxWidth = remainingWidth
 								- (remainingMinWidth - model.get("minWidth"));
-						model.get("headerSelector").resizable("option",
+						resizableEl$.resizable("option",
 								"maxWidth", maxWidth);
 					},
 
@@ -1189,7 +1051,6 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							var colModel = remainingColumns[k];
 							var currentWidth = colModel.get("width");
 
-							var header$ = colModel.get("headerSelector");
 							/*
 							 * var measuredWidth = header$.width(); //offset is
 							 * the number of extra pixels for padding, borders
@@ -1208,11 +1069,12 @@ OpenGeoportal.LayerTable = function LayerTable() {
 								newWidth = proposedNewWidth;
 								totalPlay = 0;
 							}
-
-							colModel.get("headerSelector").add(
-									".dataTables_scrollBody th."
-											+ colModel.get("columnClass"))
-									.width(newWidth);
+							var innerResize$ = jQuery(".dataTables_scrollBody th." + colModel.get("columnClass"));
+							var header$ = colModel.get("headerSelector");
+							var colResizables$ = header$.add(innerResize$);
+							//console.log("next resize " + colModel.get("columnClass"));
+							//console.log(colResizables$);
+							colResizables$.width(newWidth);
 						}
 						// adjust all remaining resizables a little
 						// (difference/num remaining resizables). apply any
@@ -1260,10 +1122,12 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		var iCol = this.getColumnsIndex()[model.get("columnName")];
 		var tableObj = this.getTableObj();
 		tableObj.fnSetColumnVis(iCol, false);
+		if (model.has("headerSelector")){
+			model.unset("headerSelector");
+		}
 	};
 
 	this.toggleColumn = function(model) {
-		console.log(arguments);
 		var action;
 		var visible = model.get("visible");
 		var column = model.get("columnName");
@@ -1274,8 +1138,8 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			this.hideCol(model);
 		}
 
-		this.resizeColumnsCallback();
-
+		that.adjustColumnSizes();
+		
 		action = visible ? "Column Added" : "Column Removed";
 
 		// analytics.track("Change Results Columns Displayed", action, column);
@@ -1398,7 +1262,6 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		jQuery("#left_col").on("adjustContents", function() {
 			// console.log("adjustColumns triggered");
 			that.adjustColumnSizes();
-			that.resizeColumnsCallback(); // other callbacks needed?
 		});
 	};
 

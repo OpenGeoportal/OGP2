@@ -190,7 +190,7 @@ OpenGeoportal.MapController = function() {
 
 		var options = {
 			allOverlays : true,
-			projection : new OpenLayers.Projection("EPSG:900913"),
+			projection : new OpenLayers.Projection("EPSG:3857"),
 			maxResolution : 2.8125,
 			maxExtent : mapBounds,
 			//minZoomLevel: 1,
@@ -1076,10 +1076,8 @@ OpenGeoportal.MapController = function() {
 	this.getPreviewUrlArray = function(layerModel, useTilecache) {
 		// is layer public or private? is this a request that can be handled by
 		// a tilecache?
-		// is this a wms request? something to think about. for now, we only
-		// support wms previews
-		var urlArraySize = 3; // this seems to be a good size for OpenLayers
-		// performance
+
+		var urlArraySize = 1; // this seems to be a good size for OpenLayers performance
 		var urlArray = [];
 		var populateUrlArray = function(addressArray) {
 			if (addressArray.length == 1) {
@@ -1841,7 +1839,7 @@ OpenGeoportal.MapController = function() {
 				console.log("got an error trying to get layer info");
 			},
 			complete : function() {
-				jQuery("body").trigger(model.get("qualifiedName") + 'Exists');
+				jQuery("body").trigger(model.get("LayerId") + 'Exists');
 
 				// jQuery(document).trigger("hideLoadIndicator");
 			}
@@ -1865,7 +1863,7 @@ OpenGeoportal.MapController = function() {
 			this.setWmsLayerInfo(layerModel);
 		} else {
 			// assume it exists
-			jQuery("body").trigger(layerModel.get("qualifiedName") + 'Exists');
+			jQuery("body").trigger(layerModel.get("LayerId") + 'Exists');
 		}
 	};
 
@@ -2058,6 +2056,43 @@ OpenGeoportal.MapController = function() {
 		this.setLayerIndex(featureLayer, (this.layers.length - 1));
 	};
 
+
+	
+	this.getLayerName = function(layerModel, url) {
+		var layerName = layerModel.get("Name");
+		var wmsNamespace = layerModel.get("WorkspaceName");
+		//if there is a workspace name listed and the layername doesn't already contain one, prepend it
+		var qualifiedName = layerName;
+		if ((wmsNamespace.length > 0) && (layerName.indexOf(":") == -1)) {
+			qualifiedName = wmsNamespace + ":" + layerName;
+		}
+
+		layerModel.set({
+			qualifiedName : qualifiedName
+		});
+
+		// tilecache and GeoServer names are different for Harvard layers
+		if (layerModel.get("Institution") === "Harvard") {
+			var tilecacheName = layerName.substr(layerName.indexOf(".") + 1);
+			tilecacheName = tilecacheName.substr(layerName.indexOf(":") + 1);
+			
+			layerModel.set({
+				tilecacheName : tilecacheName
+			});
+			
+			//see if used url matches the tilecache url
+			if (layerModel.get("Location").tilecache[0] === url){
+				layerName = layerModel.get("tilecacheName")
+			} else {
+				layerName = qualifiedName;
+			}
+		} else {
+			layerName = qualifiedName;
+		}
+
+		return layerName;
+	};
+	
 	this.addWMSLayer = function(layerModel) {
 		// mapObj requires institution, layerName, title, datatype, access
 		/*
@@ -2090,25 +2125,7 @@ OpenGeoportal.MapController = function() {
 		// use a tilecache if we are aware of it
 
 		var wmsArray = this.getPreviewUrlArray(layerModel, true);
-		// add the namespace if it's not already in the name
-		var wmsNamespace = "";
-		if (layerModel.has("WorkspaceName")) {
-			wmsNamespace = layerModel.get("WorkspaceName");
-		}
-		var layerName = layerModel.get("Name");
-		if ((wmsNamespace.length > 0) && (layerName.indexOf(":") == -1)) {
-			layerName = wmsNamespace + ":" + layerName;
-		}
-
-		layerModel.set({
-			qualifiedName : layerName
-		});
-
-		// tilecache and GeoServer names are different for Harvard layers
-		if (layerModel.get("Institution") === "Harvard") {
-			layerName = layerName.substr(layerName.indexOf(".") + 1);
-			layerName = layerName.substr(layerName.indexOf(":") + 1);
-		}
+	
 
 		// won't actually do anything, since noMagic is true and transparent is
 		// true
@@ -2120,33 +2137,47 @@ OpenGeoportal.MapController = function() {
 			format = "image/png";
 		}
 
-		// if this is a raster layer, we should use jpeg format, png for vector
-		// (per geoserver docs)
-		var newLayer = new OpenLayers.Layer.WMS(layerModel
-				.get("LayerDisplayName"), wmsArray, {
-			layers : layerName,
-			format : format,
-			tiled : true,
-			exceptions : "application/vnd.ogc.se_xml",
-			transparent : true,
-			version : "1.3.0"
-		}, {
-			transitionEffect : 'resize',
-			opacity : opacitySetting * .01,
-			ogpLayerId : layerModel.get("LayerId"),
-			ogpLayerRole : "LayerPreview"
-		});
-		// how should this change? trigger custom events with jQuery
-		newLayer.events.register('loadstart', newLayer, function() {
-			jQuery(document).trigger("showLoadIndicator");
-		});
-		newLayer.events.register('loadend', newLayer, function() {
-			jQuery(document).trigger("hideLoadIndicator");
-		});
+
 		var that = this;
+
+		
 		// we do a check to see if the layer exists before we add it
-		jQuery("body").bind(layerModel.get("qualifiedName") + 'Exists',
+		jQuery("body").bind(layerModel.get("LayerId") + 'Exists',
 				function() {
+					// if this is a raster layer, we should use jpeg format, png for vector
+					// (per geoserver docs)
+					var layerName = that.getLayerName(layerModel, wmsArray[0]);
+						
+					var newLayer = new OpenLayers.Layer.WMS(
+							layerModel.get("LayerDisplayName"), 
+							wmsArray, 
+						{
+							layers : layerName, 
+							format : format,
+							tiled : true,
+							exceptions : "application/vnd.ogc.se_xml",
+							transparent : true,
+							version : "1.3.0"
+						}, {
+							transitionEffect : 'resize',
+							opacity : opacitySetting * .01,
+							ogpLayerId : layerModel.get("LayerId"),
+							ogpLayerRole : "LayerPreview"
+					});
+			
+					newLayer.events.register('loadstart', newLayer, function() {
+						jQuery(document).trigger("showLoadIndicator");
+					});
+
+					newLayer.events.register('loadend', newLayer, function() {
+						jQuery(document).trigger("hideLoadIndicator");
+					});
+					
+					console.log("wms layer");
+					console.log(layerModel);
+					console.log("openlayers layer");
+					console.log(newLayer);
+					
 					that.addLayer(newLayer);
 				});
 		this.layerExists(layerModel);

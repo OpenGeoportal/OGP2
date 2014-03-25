@@ -393,6 +393,7 @@ OpenGeoportal.Views.Query = Backbone.View
 						"{!tag=dt}"));
 
 				var repositories = this.model.get("repository");
+				//console.log(repositories);
 				solr.addFilter(solr.createFilter("Institution", repositories,
 						"{!tag=insf}"));
 
@@ -474,7 +475,7 @@ OpenGeoportal.Views.Query = Backbone.View
 							{
 								collection : repositoryCollection,
 								el : "div#repositoryDropdown",
-								valueAttribute : "id",
+								valueAttribute : "shortName",
 								displayAttribute : "shortName",
 								buttonLabel : "Select repositories",
 								itemClass : "repositoryMenuItem",

@@ -67,7 +67,6 @@ OpenGeoportal.Config.getWMSProxy = function(institution, accessLevel) {
 };
 
 OpenGeoportal.Config.RepositoryCollection = Backbone.Collection.extend({
-	idAttribute: "id",
 	url: "config/repositories"
 });
 
