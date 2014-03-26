@@ -72,6 +72,7 @@ OpenGeoportal.MapController = function() {
 			console.log("problem registering map events");
 			console.log(e);
 		}
+		
 	};
 
 	/**
@@ -218,6 +219,7 @@ OpenGeoportal.MapController = function() {
 
 		// call OpenLayers.Map with function arguments
 		OpenLayers.Map.call(this, "ogpMap", options);
+
 	};
 
 	/**
@@ -367,6 +369,7 @@ OpenGeoportal.MapController = function() {
 		this.clearLayersHandler();
 		this.attributeDescriptionHandler();
 		this.mouseCursorHandler();
+		this.loadIndicatorHandler();
 	};
 
 	/**
@@ -852,6 +855,25 @@ OpenGeoportal.MapController = function() {
 		});
 	};
 
+	this.loadIndicatorHandler = function() {
+		var loadIndicator = "mapLoadIndicator";
+		var liSelector = "#" + loadIndicator;
+		var that = this;
+		jQuery(document).on("showLoadIndicator", function(e) {
+			
+			if (jQuery(liSelector).length === 0){
+				var html = that.template.loadIndicator({elId: loadIndicator});
+				jQuery(".olControlPanel").append(html);
+				
+			}
+			OpenGeoportal.Utility.showLoadIndicator(liSelector);
+		});
+
+		jQuery(document).on("hideLoadIndicator", function(e) {
+			OpenGeoportal.Utility.hideLoadIndicator(liSelector);
+		});
+	};
+	
 	/***************************************************************************
 	 * map utility functions
 	 **************************************************************************/
@@ -1618,7 +1640,6 @@ OpenGeoportal.MapController = function() {
 
 						}
 					}
-
 					jQuery(document).trigger("hideLoadIndicator");
 				}
 			};
@@ -1836,12 +1857,12 @@ OpenGeoportal.MapController = function() {
 				// let the user know the layer is not previewable
 				// remove the layer from preview panel
 				// throw new Error("layer could not be added");
-				console.log("got an error trying to get layer info");
+				//console.log("got an error trying to get layer info");
 			},
 			complete : function() {
 				jQuery("body").trigger(model.get("LayerId") + 'Exists');
 
-				// jQuery(document).trigger("hideLoadIndicator");
+				jQuery(document).trigger("hideLoadIndicator");
 			}
 		};
 		jQuery.ajax(ajaxParams);
@@ -2166,10 +2187,12 @@ OpenGeoportal.MapController = function() {
 					});
 			
 					newLayer.events.register('loadstart', newLayer, function() {
+						//console.log("Load start");
 						jQuery(document).trigger("showLoadIndicator");
 					});
 
 					newLayer.events.register('loadend', newLayer, function() {
+						//console.log("Load end");
 						jQuery(document).trigger("hideLoadIndicator");
 					});
 					
@@ -2197,9 +2220,10 @@ OpenGeoportal.MapController = function() {
 
 		// if this is a raster layer, we should use jpeg format, png for vector
 		// (per geoserver docs)
-		var newLayer = new OpenLayers.Layer.ArcGIS93Rest(layerModel
-				.get("LayerDisplayName"),
-				layerModel.get("Location").ArcGISRest, {
+		var newLayer = new OpenLayers.Layer.ArcGIS93Rest(
+				layerModel.get("LayerDisplayName"),
+				layerModel.get("Location").ArcGISRest, 
+				{
 					layers : "show:" + layerModel.get("Name"),
 					transparent : true
 				}, {

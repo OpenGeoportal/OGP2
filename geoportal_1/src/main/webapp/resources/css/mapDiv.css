@@ -96,10 +96,19 @@
 }
 
 #mapLoadIndicator {
-	float: left;
-	height: 28px;
-	margin: -3px 5px;
-	width: 28px;
+	background-color: #E9EAEB;
+    border: 1px solid #8B8C8E;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    height: 24px;
+    margin: 3px;
+    padding: 0 2px 3px 1px;
+    width: 26px;
+    visibility: none;
+    -moz-box-shadow: 2px 5px 4px -1px #777777;
+	-webkit-box-shadow: 2px 5px 4px -1px #777777;
+	box-shadow: 2px 5px 4px -1px #777777;
+
 }
 
 div.olControlMousePosition {

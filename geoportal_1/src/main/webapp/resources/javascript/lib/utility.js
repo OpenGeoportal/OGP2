@@ -137,28 +137,31 @@ OpenGeoportal.Utility.getIndicatorStatus = function(selector) {
 	return {};
 };
 
+/**
+ * show load indicator (spinner).  using HTML5 canvas "Spinner"
+ * @param selector	jQuery selector
+ * @param options
+ */
 OpenGeoportal.Utility.showLoadIndicator = function(selector, options) {
 	/*
-	 * 
-	 * 
+	 * Spinners methods:
 	 * Spinners.create('.loading').play(); Spinners.get('.loading').pause();
 	 * Spinners.get('.loading').stop(); Spinners.get('.loading').remove();
 	 * Spinners.get(document.getElementById('mySpinner')).toggle();
-	 * 
-	 * 
 	 */
-	// jQuery(selector).hide();
+	//console.log("showLoadIndicator called");
 	var spinner = Spinners.get(selector);
 	if (spinner.items().length === 0) {
 		// create new spinner
 		var params = {
+			radius: 5,
 			height : 5,
 			width : 5,
 			dashes : 8,
-			color : '#ffffff'
+			color : '#4E4E4F'
 		};
 
-		if (typeof options != "undefined") {
+		if (typeof options !== "undefined") {
 			params = jQuery.extend(params, options);
 		}
 		spinner = Spinners.create(selector, params);
@@ -167,7 +170,7 @@ OpenGeoportal.Utility.showLoadIndicator = function(selector, options) {
 	spinner.play();
 
 	var status = OpenGeoportal.Utility.getIndicatorStatus(selector);
-	if (typeof status.currentRequests == "undefined") {
+	if (typeof status.currentRequests === "undefined") {
 		OpenGeoportal.Utility.loadIndicatorStatus.push({
 			selector : selector,
 			currentRequests : 1
@@ -179,15 +182,20 @@ OpenGeoportal.Utility.showLoadIndicator = function(selector, options) {
 	jQuery(selector).fadeIn();
 };
 
+/**
+ * hide the load indicator (spinner)
+ * @param selector	jQuery selector
+ */
 OpenGeoportal.Utility.hideLoadIndicator = function(selector) {
+	//console.log("hideLoadIndicator called");
 	var status = OpenGeoportal.Utility.getIndicatorStatus(selector);
-	if (typeof status.currentRequests != "undefined") {
+	if (typeof status.currentRequests !== "undefined") {
 		if (status.currentRequests > 0) {
 			status.currentRequests--;
 		}
 	}
 
-	if (typeof status.currentRequests == "undefined"
+	if (typeof status.currentRequests === "undefined"
 			|| status.currentRequests === 0) {
 		jQuery(selector).fadeOut();
 

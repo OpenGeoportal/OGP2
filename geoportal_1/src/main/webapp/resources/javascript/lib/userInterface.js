@@ -43,7 +43,6 @@ OpenGeoportal.UserInterface = function() {
 
 		this.initializeTabs();
 
-		this.loadIndicatorHandler();
 		this.requestIndicatorHandler();
 
 		jQuery("body").fadeTo('fast', 1);
@@ -207,16 +206,6 @@ OpenGeoportal.UserInterface = function() {
 		});
 	};
 
-	this.loadIndicatorHandler = function() {
-		var loadIndicator = "#mapLoadIndicator";
-		jQuery(document).bind("showLoadIndicator", function(e) {
-			that.utility.showLoadIndicator(loadIndicator);
-		});
-
-		jQuery(document).bind("hideLoadIndicator", function(e) {
-			that.utility.hideLoadIndicator(loadIndicator);
-		});
-	};
 
 	this.requestIndicatorHandler = function() {
 		var loadIndicator = "#processingIndicator";

@@ -276,7 +276,7 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	float: left;
 	cursor: default;
 	display: none;
-	z-index: 1006;
+	z-index: 1010;
 }
 
 #left_tabs {
@@ -427,7 +427,7 @@ th >.ui-resizable-e {
 	position: absolute;
 	padding: 0px;
 	height: 100%;
-	z-index: 1006;
+	z-index: 1010;
 }
 
 .sub_headerButtons {
