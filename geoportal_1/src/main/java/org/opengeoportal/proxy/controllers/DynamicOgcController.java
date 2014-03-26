@@ -24,17 +24,12 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.http.*;
 import org.apache.http.client.methods.AbortableHttpRequest;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.HeaderGroup;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.response.QueryResponse;
@@ -529,6 +524,7 @@ private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) thro
 
 	    try {
 	      try {
+	        //proxyRequest.setEntity(new InputStreamEntity(servletRequestInputStream));
 	        proxyRequest.setEntity(new InputStreamEntity(servletRequestInputStream, servletRequest.getContentLength()));
 
 	        // Execute the request
@@ -623,8 +619,8 @@ private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) thro
     while (enumerationOfHeaderNames.hasMoreElements()) {
       String headerName = (String) enumerationOfHeaderNames.nextElement();
       //TODO why?
-     // if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH))
-       // continue;
+      if (headerName.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH))
+        continue;
       if (hopByHopHeaders.containsHeader(headerName))
          continue;
       // As per the Java Servlet API 2.5 documentation:
