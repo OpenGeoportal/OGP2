@@ -1,8 +1,6 @@
 package org.opengeoportal.ogc;
 
-import java.io.IOException;
 import java.io.OutputStream;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +9,13 @@ import java.util.UUID;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
+import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.opengeoportal.ogc.wmc.jaxb.BoundingBoxType;
 import org.opengeoportal.ogc.wmc.jaxb.GeneralType;
 import org.opengeoportal.ogc.wmc.jaxb.LayerListType;
-import org.opengeoportal.ogc.wmc.jaxb.LayerType;
+import org.opengeoportal.ogc.wmc.jaxb.LayerType; 
 import org.opengeoportal.ogc.wmc.jaxb.OnlineResourceType;
 import org.opengeoportal.ogc.wmc.jaxb.ServerType;
 import org.opengeoportal.ogc.wmc.jaxb.ServiceType;
@@ -25,6 +24,8 @@ import org.opengeoportal.ogc.wmc.jaxb.ViewContextType;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.XmlMappingException;
@@ -186,17 +187,23 @@ public class WmcCreatorImpl implements WmcCreator {
 	@Autowired
     private Marshaller marshaller;
 	
-	public LayerListType getLayerList(Map<String, OwsType> idsAndFormats) throws Exception{
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	public LayerListType getLayerList(Map<String, OwsType> idsAndFormats) throws Exception {
 		
 		List<SolrRecord> records = layerInfoRetriever.fetchAllLayerInfo(idsAndFormats.keySet());
 		LayerListType layerList = new LayerListType();
 		for (SolrRecord record: records){
-			layerList.getLayer().add(populateLayer(record, idsAndFormats.get(record.getLayerId())));
+			try {
+				layerList.getLayer().add(populateLayer(record, idsAndFormats.get(record.getLayerId())));
+			} catch (Exception e){
+				logger.error(e.getMessage());
+			}
 		}
 		return layerList;
 	}
 	
-	public LayerType populateLayer(SolrRecord record, OwsType format) throws Exception{
+	public LayerType populateLayer(SolrRecord record, OwsType format) throws Exception {
 		/*
 		 * 	<xs:complexType name="LayerType">
 		<xs:sequence>
@@ -232,31 +239,47 @@ public class WmcCreatorImpl implements WmcCreator {
 		ServerType server = new ServerType();
 		OnlineResourceType olresource = new OnlineResourceType();
 
+		String location = record.getLocation();
+
+		ServiceType serviceType;
+		String serviceVersion;
+		TypeType resourceType;
+		String resourceHref;
+		
 		if (format == OwsType.DISPLAY){
-			server.setService(ServiceType.OGC_WMS);
-			server.setVersion("1.1.1");
-			olresource.setType(TypeType.SIMPLE);
-			olresource.setHref(LocationFieldUtils.getWmsUrl(record.getLocation()));
-			server.setOnlineResource(olresource);
+			if (LocationFieldUtils.hasWmsUrl(location)){
+				serviceType = ServiceType.OGC_WMS;
+				serviceVersion = "1.1.1";
+				resourceType = TypeType.SIMPLE;
+				resourceHref = LocationFieldUtils.getWmsUrl(location);
+			} else {
+				throw new Exception("No OGC Web Map Services associated with this layer.");
+			}
 		} else {
-			String location = record.getLocation();
-			String url = "";
-			try {
-				url = LocationFieldUtils.getWfsUrl(location);
-				server.setService(ServiceType.OGC_WFS);
-				server.setVersion("1.1.1");
-				olresource.setType(TypeType.SIMPLE);
-				olresource.setHref(url);
-			} catch (Exception e){
-				url = LocationFieldUtils.getWmsUrl(location);
-				server.setService(ServiceType.OGC_WMS);
-				server.setVersion("1.1.1");
-				olresource.setType(TypeType.SIMPLE);
-				olresource.setHref(url);
+			//OwsType.DATA
+			if (LocationFieldUtils.hasWfsUrl(location)){
+				serviceType = ServiceType.OGC_WFS;
+				serviceVersion = "1.1.0";
+				resourceType = TypeType.SIMPLE;
+				resourceHref = LocationFieldUtils.getWfsUrl(location);
+			} else if (LocationFieldUtils.hasWmsUrl(location)){
+				//fall back to WMS
+				serviceType = ServiceType.OGC_WMS;
+				serviceVersion = "1.1.1";
+				resourceType = TypeType.SIMPLE;
+				resourceHref = LocationFieldUtils.getWmsUrl(location);
+			}else {
+				throw new Exception("No OGC Web Map Services associated with this layer.");
 			}
 
-			server.setOnlineResource(olresource);
 		}
+		
+		
+		server.setService(serviceType);
+		server.setVersion(serviceVersion);
+		olresource.setType(resourceType);
+		olresource.setHref(resourceHref);
+		server.setOnlineResource(olresource);
 		
 		layer.setServer(server);
 		
@@ -269,7 +292,7 @@ public class WmcCreatorImpl implements WmcCreator {
 		return layer;
 	}
 	
-	public GeneralType getGeneralInfo(){
+	public GeneralType getGeneralInfo(BoundingBoxType bounds){
 		/*
 		 * 	<xs:complexType name="GeneralType">
 		<xs:sequence>
@@ -286,17 +309,49 @@ public class WmcCreatorImpl implements WmcCreator {
 	</xs:complexType>
 		 */
 		GeneralType generalInfo = new GeneralType();
-		generalInfo.setTitle("OpenGeoportal Dynamic Web Map Context");
+		generalInfo.setTitle("OpenGeoportal Web Map Context");
 		//generalInfo.setContactInformation(value);
 		/*
 		 * 		<BoundingBox SRS="EPSG:4326" minx="-180.000000" miny="-90.000000" maxx="180.000000" maxy="90.000000"/>
 
 		 */
+		
+		generalInfo.setBoundingBox(bounds);
+		
+		return generalInfo;
+	}
+	
+	public ViewContextType createViewContext(Map<String,OwsType> idsAndFormats, BoundingBox bounds) throws Exception{
+		ViewContextType wmcResponse = new ViewContextType();
+		
+		wmcResponse.setGeneral(getGeneralInfo(convertOGPBoundsToWMCBounds(bounds)));
+		wmcResponse.setLayerList(getLayerList(idsAndFormats));
+		wmcResponse.setId(UUID.randomUUID().toString());
+		wmcResponse.setVersion("1.1.0");
+		return wmcResponse;
+	}
+	
+	BoundingBoxType convertOGPBoundsToWMCBounds(BoundingBox bounds){
+		
 		BoundingBoxType bboxType = new BoundingBoxType();
-		Double minx = -180.000000;
-		Double miny = -90.000000;
-		Double maxx = 180.000000;
-		Double maxy = 90.000000;
+		
+		Double minx;
+		Double miny;
+		Double maxx;
+		Double maxy;
+		
+		if (bounds != null){
+			minx = bounds.getMinX();
+			miny = bounds.getMinY();
+			maxx = bounds.getMaxX();
+			maxy = bounds.getMaxY();
+		} else {
+			minx = -180.000000;
+			miny = -90.000000;
+			maxx = 180.000000;
+			maxy = 90.000000;
+		}
+		
 		String srs  = "EPSG:4326";
 		
 		bboxType.setMinx(new BigDecimal(minx));
@@ -305,30 +360,20 @@ public class WmcCreatorImpl implements WmcCreator {
 		bboxType.setMaxy(new BigDecimal(maxy));
 		bboxType.setSRS(srs);
 		
-		generalInfo.setBoundingBox(bboxType);
-		
-		return generalInfo;
-	}
-	
-	public ViewContextType createViewContext(Map<String,OwsType> idsAndFormats) throws Exception{
-		ViewContextType wmcResponse = new ViewContextType();
-		wmcResponse.setGeneral(getGeneralInfo());
-		wmcResponse.setLayerList(getLayerList(idsAndFormats));
-		wmcResponse.setId(UUID.randomUUID().toString());
-		wmcResponse.setVersion("1.1.0");
-		return wmcResponse;
+		return bboxType;
 	}
 	
 	@Override
-	public Result getWmcResponse(Map<String,OwsType> idsAndFormats, OutputStream os) throws Exception{
-		ViewContextType viewContext = createViewContext(idsAndFormats);
+	public Result getWmcResponse(Map<String,OwsType> idsAndFormats, BoundingBox bounds, OutputStream os) throws Exception{
+		
+		ViewContextType viewContext = createViewContext(idsAndFormats, bounds);
 		
 		Result result = new StreamResult(os);
 		try {
 			marshaller.marshal(viewContext, result);
 		} catch (XmlMappingException e) {
  			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		

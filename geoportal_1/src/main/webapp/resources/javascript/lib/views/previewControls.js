@@ -57,7 +57,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	initRender : function() {
 		// render preview tools for a previewed layer
 		var markup = "";
-		var template = OpenGeoportal.ogp.appState.get("template");
+		var template = OpenGeoportal.ogp.template;
 
 		if (this.model.has("opacity")) {
 			// render opacity control

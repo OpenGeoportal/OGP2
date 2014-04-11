@@ -73,7 +73,7 @@ public class QuickWfsDownload implements QuickDownload {
 		requestString += "&typeName=" + workspace + ":" + layerName;
 		requestString += "&srsName=EPSG:4326";
 		requestString += "&BBOX=" + requestBounds.toString() + ",EPSG:4326";
-		HttpClient httpclient = ogpHttpClient.getHttpClient();
+		HttpClient httpclient = ogpHttpClient.getCloseableHttpClient();
 		File outputFile = null;
     
     	String wfsLocation = LocationFieldUtils.getWfsUrl(layerInfo.getLocation());

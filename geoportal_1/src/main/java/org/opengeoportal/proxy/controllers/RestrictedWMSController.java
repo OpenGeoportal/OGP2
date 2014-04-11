@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.proxy.GenericProxy;
+import org.opengeoportal.proxy.ProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,8 @@ public class RestrictedWMSController {
 	@Autowired
 	OgpConfigRetriever ogpConfigRetriever;
 	
-	@Autowired @Qualifier("proxy.simple")
-	private GenericProxy genericProxy;
+	@Autowired 
+	private ProxyFactory proxyFactory;
 	
 	@RequestMapping(value="/{repositoryId}/wms", method=RequestMethod.GET)
 	public void forwardWMSRequest(@PathVariable String repositoryId, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -42,7 +43,8 @@ public class RestrictedWMSController {
 					+ request.getQueryString();
 			logger.info("executing WMS request to protected GeoServer: "
 					+ remoteUrl);
-			this.genericProxy.proxyRequest(request, response, remoteUrl);
+			GenericProxy proxy = proxyFactory.getObject();
+			proxy.proxyRequest(request, response, remoteUrl);
 		} else {
 			response.sendError(403);
 		}

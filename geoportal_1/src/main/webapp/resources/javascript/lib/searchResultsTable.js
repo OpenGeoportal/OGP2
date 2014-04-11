@@ -28,6 +28,8 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 
 	this.backingData = OpenGeoportal.ogp.results;
 
+	this.cart = OpenGeoportal.ogp.cartView.collection;
+
 	this.addTableDrawCallback("sortGraphics", function() {
 		this.createSortGraphics();
 	});
@@ -42,6 +44,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 	 * "19px", "bSortable": false, "fnRender": function(oObj){return
 	 * thisObj.getSaveControl(oObj);}}}
 	 */
+	
 	var columnObj = {
 		order : 1,
 		columnName : "Save",
@@ -55,11 +58,11 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 		width : 19,
 		dtRender : function(data, type, full) {
 			var layerId = full.LayerId;
-			return that.controls.renderSaveControl(layerId);
+			return that.controls.renderSaveControl(layerId, that.cart);
 		},
 		modelRender : function(model) {
 			var layerId = model.get("LayerId");
-			return that.controls.renderSaveControl(layerId);
+			return that.controls.renderSaveControl(layerId, that.cart);
 		}
 
 	};
@@ -346,7 +349,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 				});
 
 		this.previewedLayers = new OpenGeoportal.Views.PreviewedLayersTable({
-			collection : OpenGeoportal.ogp.appState.get("previewed"),
+			collection : that.previewed,
 			el : jQuery(".dataTables_scrollHead table")
 		});
 

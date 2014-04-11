@@ -40,7 +40,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				jQuery("#whereField").attr("placeholder", this.whereText);
 				jQuery("#whatField").attr("placeholder", this.whatText);
 
-				this.controls = OpenGeoportal.ogp.appState.get("controls");
+				this.controls = OpenGeoportal.ogp.controls;
 				var that = this;
 				this.controls.prependButton(jQuery(".basicSearchButtons"),
 						"basicSearchSubmit", "Search", function() {
@@ -520,6 +520,7 @@ OpenGeoportal.Views.Query = Backbone.View
 							iconRenderer : iconRenderer,
 							controlClass : "dataTypeCheck"
 						});
+
 				this.dataTypes = dataTypesMenu;
 				this.model.set({
 					dataType : this.dataTypes.getValueAsArray()

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -51,35 +52,44 @@ public class GetFeatureInfoController {
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    
 	    SolrRecord layerInfo = getSolrRecord(layerId);
-	    String wmsEndpoint = proxyConfigRetriever.getExternalUrl("wms", layerInfo.getInstitution(), layerInfo.getAccess(), layerInfo.getLocation());
+	    
+	    
+	    
+	    String wmsEndpoint = proxyConfigRetriever.getInternalUrl("wms", layerInfo.getInstitution(), layerInfo.getAccess(), layerInfo.getLocation());
 	    
 	    //filter any query terms
 	    wmsEndpoint = OgpUtils.filterQueryString(wmsEndpoint);
 
-	    String layerName = 	OgpUtils.getLayerNameNS(layerInfo.getWorkspaceName(), layerInfo.getName());
-	    String query = createWmsGetFeatureInfoQuery(layerName, xCoord, yCoord, bbox, height, width);
+	    String query = createRequestFromSolrRecord(layerInfo, xCoord, yCoord, bbox, height, width);
 	    
 		logger.info("executing WMS getFeatureRequest: " + wmsEndpoint + "?" + query);
 
 		sendGetRequest(wmsEndpoint, query, request, response);
 
 	}
+	//Not necessary...only allowed layers are fetched from solr
+	//@PostAuthorize("hasPermission(#layerInfo, 'download')")
+	String createRequestFromSolrRecord(SolrRecord layerInfo, String xCoord, String yCoord, String bbox, String height, String width) throws Exception{
+	    String layerName = 	OgpUtils.getLayerNameNS(layerInfo.getWorkspaceName(), layerInfo.getName());
+		return this.createWmsGetFeatureInfoQuery(layerName, xCoord, yCoord, bbox, height, width);
+	}
 	
 	String createWmsGetFeatureInfoQuery(String layerName, String xCoord, String yCoord, String bbox, String height, String width){
 	    //in caps to support ogc services through arcgis server 9.x
 	    String query = "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&INFO_FORMAT=" + RESPONSE_FORMAT  
-				+ "&SRS=EPSG:900913&FEATURE_COUNT=" + NUMBER_OF_FEATURES + "&STYLES=&HEIGHT=" + height + "&WIDTH=" + width +"&BBOX=" + bbox 
+				+ "&SRS=EPSG:3857&FEATURE_COUNT=" + NUMBER_OF_FEATURES + "&STYLES=&HEIGHT=" + height + "&WIDTH=" + width +"&BBOX=" + bbox 
 				+ "&X=" + xCoord + "&Y=" + yCoord +"&QUERY_LAYERS=" + layerName + "&LAYERS=" + layerName + "&EXCEPTIONS=" + EXCEPTION_FORMAT;
 	    
 	    return query;
 	}
 	
+	
 	void sendGetRequest(String wmsEndpoint, String wmsQuery, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-		if (!wmsEndpoint.contains("http")){
+		/*if (!wmsEndpoint.contains("http")){
 			//this is a relative path
 			request.getRequestDispatcher(wmsEndpoint + "?" + wmsQuery).forward(request, response);
 
-		} else {
+		} else {*/
 			InputStream input = null;
 			try{ 
 			    String method = "GET";
@@ -90,7 +100,7 @@ public class GetFeatureInfoController {
 			} finally {
 				IOUtils.closeQuietly(input);
 			}
-		}
+		//}
 	}
 	
 	

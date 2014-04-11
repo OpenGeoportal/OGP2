@@ -197,8 +197,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 											this).is(":checked");
 								});
 
-				var divId = OpenGeoportal.ogp.appState.get("controls")
-						.genericModalDialog(warningMessage, "Restricted Layer");
+				var divId = OpenGeoportal.ogp.controls.genericModalDialog(warningMessage, "Restricted Layer");
 
 				var addToCartFunction = function() {
 					that.add(layerModel);

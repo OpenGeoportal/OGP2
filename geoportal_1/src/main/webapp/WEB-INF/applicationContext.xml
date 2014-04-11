@@ -3,27 +3,27 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
 	xmlns:oxm="http://www.springframework.org/schema/oxm" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-       		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-           	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd
-           	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+       		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+           	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
+           	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
            	http://www.springframework.org/schema/oxm http://www.springframework.org/schema/oxm/spring-oxm.xsd">
 
 	<beans:import resource="security-app-context.xml"/>
 	<beans:import resource="classpath*:org/opengeoportal/**/applicationContext.xml" />
 	<context:annotation-config />
-	<context:property-placeholder
-		location="WEB-INF/ogp.properties,classpath*:org/opengeoportal/**/*.properties" />
+	<context:property-placeholder location="WEB-INF/ogp.properties,classpath*:org/opengeoportal/**/*.properties" />
 
 	<!--experimental -->
-	<oxm:jaxb2-marshaller id="marshaller">
-		<oxm:class-to-be-bound
-			name="org.opengeoportal.ogc.wmc.jaxb.ViewContextType" />
-	</oxm:jaxb2-marshaller>
+    <oxm:jaxb2-marshaller id="marshaller" >
+    	<oxm:class-to-be-bound name="org.opengeoportal.ogc.wmc.jaxb.ViewContextType"/>
+    </oxm:jaxb2-marshaller>
 
-	<beans:bean id="proxy.simple" class="org.opengeoportal.proxy.GenericProxyImpl" />
-	<!-- <beans:bean id="userContext.ogp"
-		class="org.opengeoportal.security.OgpUserContextImpl" />
-		-->
+
+    
+	<beans:bean id="proxyFactory" class="org.opengeoportal.proxy.ProxyFactory"/>
+
+	<beans:bean id="proxy.simple" class="org.opengeoportal.proxy.GenericProxyImpl" scope="prototype" lazy-init="true" />
+
 
 	<!-- config -->
 	<beans:bean id="properties.generalOgp" class="org.opengeoportal.config.PropertiesFile">
@@ -49,26 +49,6 @@
 	<beans:bean id="config.search" class="org.opengeoportal.config.search.SearchConfigRetrieverFromProperties" init-method="load" >
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
-
-	<!-- misc -->
-	<!-- <beans:bean id="localSchemaLSResourceResolver.wmsDescribeLayerResponse" 
-		class="org.opengeoportal.Utilities.LocalSchemaLSResourceResolver"> <beans:property 
-		name="resource" value="classpath:org/OpenGeoportal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" 
-		/> </beans:bean> -->
-	<!-- <beans:bean id="ogcRestTemplate" class="org.springframework.web.client.RestTemplate"> 
-		<beans:property name="messageConverters" ref="ogcMarshallingHttpMessageConverter"/> 
-		</beans:bean> -->
-	<!-- <beans:bean id="ogcMarshallingHttpMessageConverter" class="org.springframework.http.converter.xml.MarshallingHttpMessageConverter"> 
-		<beans:property name="marshaller" ref="ogcJaxb2Marshaller" /> <beans:property 
-		name="unmarshaller" ref="ogcJaxb2Marshaller" /> <beans:property name="supportedMediaTypes"> 
-		<beans:list> <beans:value>application/vnd.ogc.wms_xml</beans:value> <beans:value>application/xml</beans:value> 
-		<beans:value>text/xml</beans:value> </beans:list> </beans:property> </beans:bean> -->
-	<!-- <beans:bean id="ogcJaxb2Marshaller" class="org.opengeoportal.Download.Methods.CustomMarshaller"> -->
-	<!-- <beans:property name="schemaResourceResolver" ref="localSchemaLSResourceResolver.wmsDescribeLayerResponse"/> -->
-	<!-- <beans:property name="schema" value="classpath:org/OpenGeoportal/Download/Types/Generated/WMS_DescribeLayerResponse.dtd" 
-		/> -->
-	<!-- <beans:property name="classesToBeBound"> <beans:list> <beans:value>org.opengeoportal.Download.Types.Generated.ogc.WMSDescribeLayer.WMSDescribeLayerResponse 
-		</beans:value> </beans:list> </beans:property> </beans:bean> -->
 
 	<beans:bean id="jsonpCallbackFilter"
 		class="org.opengeoportal.utilities.http.JsonpCallbackFilter" />
@@ -98,8 +78,6 @@
 		class="org.opengeoportal.export.geocommons.GeoCommonsJsonClient"
 		scope="prototype" />
 
-	<!--<beans:bean id="wmsDescribeLayer" class="org.opengeoportal.Download.Methods.WmsDescribeLayerImpl" 
-		/> -->
 
 	<beans:bean id="requestStatusManager"
 		class="org.opengeoportal.download.RequestStatusManagerImpl" />

@@ -22,11 +22,11 @@ if (typeof OpenGeoportal == 'undefined') {
  */
 OpenGeoportal.LayerTable = function LayerTable() {
 
-	this.appState = OpenGeoportal.ogp.appState;
-
-	this.previewed = this.appState.get("previewed");
-	this.template = this.appState.get("template");
-	this.controls = this.appState.get("controls");
+	this.login = OpenGeoportal.ogp.appState.get("login");
+	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
+	
+	this.template = OpenGeoportal.ogp.template;
+	this.controls = OpenGeoportal.ogp.controls;
 
 	this.tableLayerState = new OpenGeoportal.TableRowSettings();
 	this.analytics = new OpenGeoportal.Analytics();
@@ -113,19 +113,19 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							width : 39,
 							dtRender : function(data, type, full) {
 								var layerId = full.LayerId;
-								var access = full.Access.toLowerCase();
+								var model = that.backingData.findWhere({LayerId: layerId});
+								/*var access = full.Access.toLowerCase();
 								var institution = full.Institution;
-								var location = full.Location;
+								var location = full.Location;*/
 								return that.controls.renderPreviewControl(
-										layerId, access, institution, location);
+										model);
 							},
 							modelRender : function(model) {
-								var layerId = model.get("LayerId");
+								/*var layerId = model.get("LayerId");
 								var access = model.get("Access").toLowerCase();
 								var institution = model.get("Institution");
-								var location = model.get("Location");
-								return that.controls.renderPreviewControl(
-										layerId, access, institution, location);
+								var location = model.get("Location");*/
+								return that.controls.renderPreviewControl(model);
 							}
 						} ]);
 	};
@@ -1436,8 +1436,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							var layerId = that.getLayerIdFromTableCell(this);
 							// console.log(layerId);
 
-							var loginPromise = that.appState.get("login")
-									.promptLogin();
+							var loginPromise = that.login.promptLogin();
 							jQuery.when(loginPromise).then(function() {
 								that.addToPreviewed(layerId);
 							}, null, null);
@@ -1453,9 +1452,11 @@ OpenGeoportal.LayerTable = function LayerTable() {
 				function() {
 					// console.log(this);
 					var data = that.getRowData(jQuery(this)).data;
+					var model = that.backingData.findWhere({LayerId: data.LayerId});
 					jQuery(this).parent().html(
-							that.controls.renderPreviewControl(data.LayerId,
-									data.Access, data.Institution));
+							/*that.controls.renderPreviewControl(model.get("LayerId"),
+									model.get("Access"), model.get("Institution"), model.get("Location"), model.collection));*/
+							that.controls.renderPreviewControl(model));
 				});
 
 		jQuery(document).on(
@@ -1464,9 +1465,10 @@ OpenGeoportal.LayerTable = function LayerTable() {
 				function() {
 					// console.log(this);
 					var data = that.getRowData(jQuery(this)).data;
+					var model = that.backingData.findWhere({LayerId: data.LayerId});
+
 					jQuery(this).parent().html(
-							that.controls.renderPreviewControl(data.LayerId,
-									data.Access, data.Institution));
+							that.controls.renderPreviewControl(model));
 				});
 
 	};

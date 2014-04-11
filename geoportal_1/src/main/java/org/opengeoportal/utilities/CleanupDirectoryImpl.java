@@ -28,6 +28,21 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 		this.maxAge = maxAge;
 	}
 
+	private Boolean fileDelete(File file){
+		String descriptor = "file";
+		if (file.isDirectory()){
+			descriptor = "directory";
+		}
+		
+		if (file.canWrite() && !file.isHidden()){
+			logger.info("Deleting " + descriptor + ": " + file.getName());
+			return file.delete();
+
+		} else {
+			logger.warn("No permissions to delete "+ descriptor + ": " + file.getName());
+			return false;
+		}
+	};
 	/* (non-Javadoc)
 	 * @see org.OpenGeoPortal.Utilities.CleanupDirectory#cleanupDownloadDirectory()
 	 */
@@ -43,29 +58,31 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 			long currentTime = System.currentTimeMillis();
 
 			for (File downloadedFile : downloadedFiles) {
-				if (!downloadedFile.canWrite()){
-					logger.warn("No permissions to delete file: " + downloadedFile.getName());
-				}
+
 				if (downloadedFile.isDirectory()){
+					if (!downloadedFile.canRead()){
+						continue;
+					}
 					File[] innerDownloadedFiles = downloadedFile.listFiles();
 					for (File innerDownloadedFile : innerDownloadedFiles) {
+						
 						if (currentTime - innerDownloadedFile.lastModified() > timeInterval){
-							logger.info("Deleting file: " + innerDownloadedFile.getName());
-							innerDownloadedFile.delete();
-							counter++;
+							if (fileDelete(innerDownloadedFile)){
+								counter++;
+							}
 						}
 					}
 					if (downloadedFile.listFiles().length == 0){
-						logger.info("Deleting directory: " + downloadedFile.getName());
-						downloadedFile.delete();
-						counter++;
+						if (fileDelete(downloadedFile)){
+							counter++;
+						}
 					}
 				} else { 
 				
 					if (currentTime - downloadedFile.lastModified() > timeInterval){
-						logger.info("Deleting file: " + downloadedFile.getName());
-						downloadedFile.delete();
-						counter++;
+						if (fileDelete(downloadedFile)){
+							counter++;
+						}
 					}
 					
 				}

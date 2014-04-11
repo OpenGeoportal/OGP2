@@ -16,8 +16,8 @@ OpenGeoportal.Models.QueueItem = Backbone.Model.extend({
 		layers : [],
 		bbox : "",
 		email : "",
-		status : "PROCESSING",
-		type : ""
+		status : "REQUESTING",
+		requestType : ""
 	}
 
 /*
@@ -40,6 +40,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 			initialize : function() {
 				this.listenTo(this, "add change:status",
 						this.handleStatusChange);
+				this.controls = OpenGeoportal.ogp.controls;
 			},
 
 			handleStatusChange : function(model) {
@@ -51,6 +52,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 					try {
 						this.handleDownload(model);
 					} catch (e) {
+						console.log(e);
 						console.log("Download handler failed.");
 					}
 					try {
@@ -84,14 +86,17 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				}
 
 				if (doDownload) {
-					var type = model.get("type");
+					var type = model.get("requestType");
+					console.log(model);
+					console.log(type);
+					console.log(this);
 					this.requestTypes[type].successCallback.call(this, model);
 				}
 			},
 
 			openGeoCommons : function(model) {
 				// should open map in GeoCommons
-				var url = this.requestTypes[model.get("type")].retrieveUrl;
+				var url = this.requestTypes[model.get("requestType")].retrieveUrl;
 				url += "?requestId=" + model.get("requestId");
 
 				var successFunction = function(data) {
@@ -108,7 +113,8 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 			},
 
 			iframeDownload : function(model) {
-				var url = this.requestTypes[model.get("type")].retrieveUrl;
+				var url = this.requestTypes[model.get("requestType")].retrieveUrl;
+				
 				url += "?requestId=" + model.get("requestId");
 				jQuery('body').append(
 						'<iframe class="download" src="' + url + '"></iframe>');
@@ -152,7 +158,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 					_.each(failed, function(status){
 						failedIds.push(status.id);
 					});
-					text += "These layers failed: " + failedIds.join();
+					text += "The following layers failed to download: " + failedIds.join(", ");
 				}
 
 				var emailedIds = [];
@@ -168,7 +174,9 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				}
 				
 				if (text.length > 0){
-					alert(text);
+					var dialog$ = this.controls.genericModalDialog(text, "Download Notice");
+					var buttonsObj = {buttons: [{text: "OK", click: function(){jQuery(this).dialog.close();}}]};
+					dialog$.dialog("option", "buttons", buttonsObj);
 				}
 			},
 			
@@ -176,7 +184,6 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				var pending = this.where({
 					status : "PROCESSING"
 				});
-
 				if (typeof pending == "undefined" || pending.length === 0) {
 					// if nothing in the queue has a status "PROCESSING", then
 					// stop the poll
@@ -191,7 +198,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				if (this.pollRunning) {
 					clearInterval(this.pollId);
 					this.pollRunning = false;
-					jQuery(document).trigger("hideRequestSpinner");
+					//jQuery(document).trigger("hideRequestSpinner");
 				}
 			},
 
@@ -217,9 +224,9 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				}
 
 				var layerCount = this.getLayerCount();
-				jQuery(document).trigger("showRequestSpinner", {
+				/*jQuery(document).trigger("showRequestSpinner", {
 					layers : layerCount
-				});
+				});*/
 
 			},
 
@@ -302,23 +309,25 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 			createRequest : function(requestObj) {
 				var that = this;
 
-				var requestInfo = this.requestTypes[requestObj.type];
+				var requestInfo = this.requestTypes[requestObj.requestType];
 
+				var model = this.add(requestObj);
 				var params = {
 					url : requestInfo.requestUrl,
 					data : JSON.stringify(requestObj),
 					dataType : "json",
 					type : "POST",
 					success : function(data) {
-						requestObj.requestId = data.requestId;
-						that.add(requestObj);
+						model.set({
+							requestId : data.requestId,
+							status: "PROCESSING"
+						});
 					},
 					error : function() {
-						jQuery(document).trigger("hideRequestSpinner");
+						//
 					}
 				};
 				jQuery.ajax(params);
-				jQuery(document).trigger("showRequestSpinner");
 
 			},
 
@@ -354,7 +363,8 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				//the promise.done back in the object that added an object to the q handles the retrievals and notifications
 				
 				var newQ = queueItem.clone();
-				var that = this;
+				this.add(newQ);
+
 
 				var params = {
 					url : queueItem.get("requestUrl"),
@@ -363,17 +373,16 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 					type : "POST",
 					success : function(data) {
 						newQ.set({
-							requestId : data.requestId
+							requestId : data.requestId,
+							status: "PROCESSING"
 						});
-						that.add(newQ);
 					},
 					error : function() {
-						jQuery(document).trigger("hideRequestSpinner");
+						//
 					}
 				};
 
 				jQuery.ajax(params);
-				jQuery(document).trigger("showRequestSpinner");
 
 			}
 

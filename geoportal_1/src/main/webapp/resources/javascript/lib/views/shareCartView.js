@@ -63,7 +63,7 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 				var promise = this.controls.getShortenLinkPromise(longLink);
 
 				promise.done(function(data) {
-					console.log(data);
+					//console.log(data);
 					jQuery("#shareText").attr(
 							"rows",
 							OpenGeoportal.Utility

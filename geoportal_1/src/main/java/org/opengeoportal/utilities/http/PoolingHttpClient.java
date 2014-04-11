@@ -1,23 +1,34 @@
 package org.opengeoportal.utilities.http;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import javax.annotation.PreDestroy;
 import javax.net.ssl.SSLContext;
 
-import org.apache.http.client.HttpClient;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.opengeoportal.config.proxy.InternalServerMapping;
+import org.opengeoportal.config.proxy.ProxyConfig;
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
+import org.opengeoportal.config.proxy.ServerMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class PoolingHttpClient implements OgpHttpClient {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -26,6 +37,9 @@ public class PoolingHttpClient implements OgpHttpClient {
 	private Boolean initCalled = false;
 	int maxConnections;
 	int maxConnectionsRt;
+	
+	@Autowired
+	private ProxyConfigRetriever proxyConfigRetriever;
 	
 	public int getMaxConnections() {
 		return maxConnections;
@@ -166,9 +180,12 @@ import org.apache.http.util.EntityUtils;
 		// Increase max connections for localhost:80 to 50
 		//HttpHost localhost = new HttpHost("locahost", 80);
 		//cm.setMaxPerRoute(new HttpRoute(localhost), 50);
-		client = HttpClients.custom()
+
+        client = HttpClients.custom()
 				.setConnectionManager(connectionManager)
-				.build();
+                .setDefaultCredentialsProvider(getCredentialsProvider())
+                .build();
+        
 		
 		initCalled = true;
 		//client.getParams().setParameter(CoreProtocolPNames.HTTP_CONTENT_CHARSET, "UTF-8");
@@ -176,12 +193,47 @@ import org.apache.http.util.EntityUtils;
 		//client.getParams().setParameter("http.connection-manager.timeout", 10);
 	}
 	
-	@Override
-	public HttpClient getHttpClient() {
-		if (!initCalled){
-			init();
-		}
-		return client;
+	private CredentialsProvider getCredentialsProvider(){
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+
+        List<ProxyConfig> proxyList = proxyConfigRetriever.getConfig();
+        //get info from properties
+        for (ProxyConfig config: proxyList){
+        	List<ServerMapping> serverList = config.getServerMapping();
+        	for (ServerMapping server: serverList){
+        		InternalServerMapping intServer = (InternalServerMapping) server;
+        		String username = intServer.getUsername();
+        		String password = intServer.getPassword();
+				try {
+					URL url = new URL(intServer.getInternalUrl());
+	        		String domain = url.getHost();
+	        		int port = url.getPort();
+	        		if (port == -1){
+	        			String protocol = url.getProtocol();
+	        			if (protocol == "http"){
+	        				port = 80;
+	        			} else if (protocol == "https"){
+	        				port = 443;
+	        			}
+	        		}
+	        		logger.info("credential info");
+	        		logger.info(username);
+	        		logger.info(password);
+	        		logger.info(domain);
+	        		logger.info(Integer.toString(port));
+	        		
+	        		credsProvider.setCredentials(
+	        				new AuthScope(domain, port),
+	        				new UsernamePasswordCredentials(username, password));
+				} catch (MalformedURLException e) {
+					logger.error(e.getLocalizedMessage());
+				}
+        		
+
+        	}
+        }
+        
+        return credsProvider;
 	}
 	
 	@Override

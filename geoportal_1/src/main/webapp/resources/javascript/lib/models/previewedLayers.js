@@ -110,7 +110,9 @@ OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 			hasOGCEndpoint : function(ogcProtocol) {
 				var attr = "Location";
 				if (this.has(attr)) {
+					
 					var location = this.get(attr);
+
 					return OpenGeoportal.Utility.hasLocationValueIgnoreCase(
 							location, [ ogcProtocol ]);
 				}
@@ -197,8 +199,14 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 	} ],
 
 	setPreviewType : function() {
+		if (!this.has("Location")){
+			return "noPreview";
+		}
 		var locationObj = this.get("Location");
-		var locationKey = "";
+		
+		if (_.isEmpty(locationObj)){
+			return "noPreview";
+		}
 		var previewType = "default";
 
 		if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(locationObj,
@@ -334,10 +342,20 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 
 	getLayerModel : function(resultModel) {
-		this.add(resultModel.attributes);
-		var layerModel = this.findWhere({
-			LayerId : resultModel.get("LayerId")
-		});
+		var layerId = resultModel.get("LayerId");
+		var arrModel = this.where({LayerId: layerId});
+		var layerModel;
+		if (arrModel.length > 1){
+			throw new Error("There are " + arrModel.length + " layers in the previewed layers collection.  This should never happen.");
+		}
+		if (arrModel.length > 0){
+			layerModel = arrModel[0];
+		} else {
+			this.add(resultModel.attributes);
+			layerModel = this.findWhere({
+				LayerId : layerId
+			});
+		}
 		return layerModel;
 	},
 

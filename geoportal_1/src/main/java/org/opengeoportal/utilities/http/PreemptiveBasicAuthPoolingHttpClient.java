@@ -58,10 +58,6 @@ public class PreemptiveBasicAuthPoolingHttpClient implements OgpHttpClient {
 		client =  new DefaultHttpClient(connectionManager);
 	}
 	
-	@Override
-	public HttpClient getHttpClient() {
-		return client;
-	}
 
 	@Override
 	public CloseableHttpClient getCloseableHttpClient() {

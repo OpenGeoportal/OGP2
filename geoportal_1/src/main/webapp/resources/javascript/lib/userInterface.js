@@ -16,8 +16,8 @@ if (typeof OpenGeoportal == 'undefined') {
 
 OpenGeoportal.UserInterface = function() {
 	this.appState = OpenGeoportal.ogp.appState;
-	this.template = this.appState.get("template");
-	this.controls = this.appState.get("controls");
+	this.template = OpenGeoportal.ogp.template;
+	this.controls = OpenGeoportal.ogp.controls;
 
 	this.utility = OpenGeoportal.Utility;
 
@@ -206,45 +206,20 @@ OpenGeoportal.UserInterface = function() {
 		});
 	};
 
-
-	this.requestIndicatorHandler = function() {
-		var loadIndicator = "#processingIndicator";
-		var that = this;
-		jQuery(document).bind(
-				"showRequestSpinner",
-				function(e, data) {
-					var tickerText = "Sending Request...";
-					if (typeof data != "undefined"
-							&& typeof data.layers != "undefined") {
-						tickerText = "Processing " + data.layers;
-						if (data.layers > 1) {
-							tickerText += " layers...";
-						} else {
-							tickerText += " layer...";
-						}
-					}
-					that.showRequestTicker(tickerText);
-					that.utility.showLoadIndicator(loadIndicator, {
-						color : "#000000"
-					});
-				});
-
-		jQuery(document).bind("hideRequestSpinner", function(e) {
-			jQuery("#requestTickerContainer").fadeOut();
-			that.utility.hideLoadIndicator(loadIndicator);
+	this.requestIndicatorHandler = function(){
+		//var indicatorColl = new OpenGeoportal.LoadIndicatorCollection();
+		var indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: this.appState.get("requestQueue"), template: this.template});
+	
+		/*jQuery(document).on("showRequestSpinner", function(e){
+			indicatorColl.add([{actionType: "dlRequestQ", actionId: "dl"}]);
 		});
+		
+		jQuery(document).on("hideRequestSpinner", function(e){
+			var model = indicatorColl.findWhere({actionType: "dlRequestQ", actionId: "dl"});
+			indicatorColl.remove(model);
+		});*/
 	};
 
-	this.showRequestTicker = function(tickerText) {
-		if (jQuery("#requestTickerContainer").length == 0) {
-			jQuery("body")
-					.append(
-							'<div id="requestTickerContainer" class="raised"><div id="processingIndicator"></div><div id="requestTicker"></div></div></div>');
-		}
-		jQuery("#requestTicker").html(tickerText);
-		jQuery("#requestTickerContainer").fadeIn();
-
-	};
 
 	this.resizeWindowHandler = function() {
 		var rollRightWidth = jQuery("#roll_right").width() + 1;// border

@@ -49,7 +49,7 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.QueueItem.extend({
 	initialize : function() {
 		this.set({
 			requestUrl: "requestDownload",
-			type : "layer",
+			requestType : "layer",
 			bbox : new OpenLayers.Bounds(-180,-90,180,90)
 		
 		});
@@ -353,13 +353,13 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var dialogId = "downloadSettingsDialog";
 				if (jQuery('#' + dialogId).length === 0) {
 					var downloadDiv = this.template.genericDialogShell({
-						id : dialogId
+						elId : dialogId
 					});
 					jQuery('#dialogs').append(downloadDiv);
 				}
 				var dialog$ = jQuery("#" + dialogId);
 				dialog$.html(dialogContent);
-
+				dialog$.addClass("downloadDialog");
 				dialog$.dialog(params);
 				dialog$.dialog("option", "disabled", false);
 
@@ -542,7 +542,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var dialogId = "downloadFinalizeDialog";
 				if (jQuery('#' + dialogId).length === 0) {
 					var downloadDiv = this.template.genericDialogShell({
-						id : dialogId
+						elId : dialogId
 					});
 					jQuery('#dialogs').append(downloadDiv);
 				}
@@ -550,7 +550,8 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var dialogContent = this.getFinalizeRequestDialogContent();
 				var dialog$ = jQuery("#" + dialogId);
 				dialog$.html(dialogContent);
-
+				dialog$.addClass("downloadDialog");
+				
 				var that = this;
 				var cancelFunction = function() {
 					jQuery(this).dialog('close');
@@ -652,6 +653,9 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					}
 				});
 				
+				var that = this;
+				jQuery(document).one("requestTickerRendered",
+						function(){that.showTransferAnimation($dialog);});		
 				
 				if (emailLayers.length > 0){
 					
@@ -670,8 +674,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					requestQ.addToQueue(this.downloadRequest);
 				}
 				
-	
-				this.showTransferAnimation($dialog);
+
 				// where should this go?
 				// jQuery(".downloadSelection,
 				// .downloadUnselection").removeClass("downloadSelection

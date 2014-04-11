@@ -38,6 +38,8 @@
 	src="resources/javascript/lib/models/cartCollection.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/downloadQueue.js"></script>
+<script type="text/javascript"
+	src="resources/javascript/lib/models/loadIndicator.js"></script>
 <script type="text/javascript" src="resources/javascript/lib/login.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/appSettings.js"></script>
@@ -47,6 +49,8 @@
 	src="resources/javascript/lib/models/leftPanelModel.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/selectBoxes.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/mapLoadIndicatorView.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/cart.js"></script>
 <script type="text/javascript"

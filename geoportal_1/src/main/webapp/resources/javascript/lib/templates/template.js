@@ -33,9 +33,13 @@ OpenGeoportal.Template = function() {
 			.template('<button class="mapStyledButton <%= displayClass %>" title="<%= title %>" ><%= buttonText %></button>');
 	this.basemapMenu = _.template('<div id="basemapMenu"></div>');
 
-	var loadIndicator =  '<div id="<%= elId %>" class="loadIndicator"></div>';
-	this.loadIndicator = _.template(loadIndicator);
+	var loadIndicatorHtml =  '<div class="loadIndicator"></div>';
+	this.loadIndicator = _.template(loadIndicatorHtml);
 	
+	var requestIndicatorHtml = '<div class="raised">';
+	requestIndicatorHtml += '<div id="processingIndicator" class="loadIndicator"></div><div id="requestTicker" class="loadInfo"></div></div></div>';
+	this.requestIndicator = _.template(requestIndicatorHtml);
+
 	var selectHtml = '<div class="styledSelect">' + "<div>"
 			+ '<button class="select"><%= buttonLabel %></button>' + "</div>"
 			+ "<ul><%= menuHtml%></ul>";// +
@@ -100,7 +104,7 @@ OpenGeoportal.Template = function() {
 	var genericIconHtml = '<div class="<%= controlClass %> <%= displayClass %>" title="<%= tooltip %>"><%= text %></div>';
 	this.genericIcon = _.template(genericIconHtml);
 
-	var genericDialogHtml = '<div id="<%= id %>" class="dialog"></div>';
+	var genericDialogHtml = '<div id="<%= elId %>" class="dialog"></div>';
 	this.genericDialogShell = _.template(genericDialogHtml);
 
 	var genericIframeHtml = '<iframe class="<%= iframeClass%>" src="<%= iframeSrc %>" />';
@@ -163,5 +167,28 @@ OpenGeoportal.Template = function() {
 	downloadNoticeHtml += "<br/><div>You will be emailed a link to layers not directly downloadable by the OpenGeoportal site within the next few minutes. </div><% }} %>";
 
 	this.layerDownloadNotice = _.template(downloadNoticeHtml);
+	
+
+	var wmcDialogContentHtml = '<span class="sub_headerTitle"><%= wmc.title %></span>'; //'<a href="#">?</a>';
+	wmcDialogContentHtml += '<br/><span><%= wmc.caption %></span><div class="owsServicesLinkContainer">';
+	wmcDialogContentHtml += '<label for="<%= wmc.preferenceElId %>"><%= wmc.preferenceText %></label><select id="<%= wmc.preferenceElId %>">';
+	wmcDialogContentHtml += '<% _.each(wmc.preference, function(type) { %><option value="<%= type.value %>"><%= type.label %></option><% }); %></select>';
+	wmcDialogContentHtml += '<div id="<%= wmc.generateButtonId %>" class="button">Generate WMC</div>';
+    wmcDialogContentHtml += '<br/></div><br/>';
+
+    var dynamicWSDialogContentHtml = '<% _.each(webservices, function(serviceInfo){ %><span class="sub_headerTitle"><%= serviceInfo.title %></span>'; //'<a href="#">?</a>';
+    dynamicWSDialogContentHtml += '<br/><span><%= serviceInfo.caption %></span><div class="owsServicesLinkContainer">';
+    dynamicWSDialogContentHtml += '<textarea class="shareServicesText linkText" ><%= serviceInfo.url %></textarea> <br /></div><br/><% }); %>';
+	
+	//var webServicesDialogContentHtml = '<p>Web Services are provided in multiple formats.</p>';
+	var webServicesDialogContentHtml = '<div id="owsServicesArea">';
+	webServicesDialogContentHtml += dynamicWSDialogContentHtml;
+	webServicesDialogContentHtml += wmcDialogContentHtml;
+	webServicesDialogContentHtml += '</div>';
+
+	this.webServicesDialogContent = _.template(webServicesDialogContentHtml);
+	
+
+		
 
 };

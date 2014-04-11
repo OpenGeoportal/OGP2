@@ -126,11 +126,13 @@ OpenGeoportal.Utility.loadIndicatorStatus = [];// {selector: "",
 // track of how many requests
 // there are for this spinner
 
-OpenGeoportal.Utility.getIndicatorStatus = function(selector) {
+OpenGeoportal.Utility.getIndicatorStatus = function(selector, loadType) {
 	var indicators = OpenGeoportal.Utility.loadIndicatorStatus;
 	for ( var i in indicators) {
 		if (indicators[i].selector === selector) {
-			return indicators[i];
+			if (indicators[i].loadType === loadType){
+				return indicators[i];
+			}
 		}
 	}
 
@@ -142,7 +144,7 @@ OpenGeoportal.Utility.getIndicatorStatus = function(selector) {
  * @param selector	jQuery selector
  * @param options
  */
-OpenGeoportal.Utility.showLoadIndicator = function(selector, options) {
+OpenGeoportal.Utility.showLoadIndicator = function(selector, loadType, options) {
 	/*
 	 * Spinners methods:
 	 * Spinners.create('.loading').play(); Spinners.get('.loading').pause();
@@ -169,10 +171,11 @@ OpenGeoportal.Utility.showLoadIndicator = function(selector, options) {
 
 	spinner.play();
 
-	var status = OpenGeoportal.Utility.getIndicatorStatus(selector);
+	var status = OpenGeoportal.Utility.getIndicatorStatus(selector, loadType);
 	if (typeof status.currentRequests === "undefined") {
 		OpenGeoportal.Utility.loadIndicatorStatus.push({
 			selector : selector,
+			loadType: loadType,
 			currentRequests : 1
 		});
 	} else {
@@ -186,15 +189,17 @@ OpenGeoportal.Utility.showLoadIndicator = function(selector, options) {
  * hide the load indicator (spinner)
  * @param selector	jQuery selector
  */
-OpenGeoportal.Utility.hideLoadIndicator = function(selector) {
+OpenGeoportal.Utility.hideLoadIndicator = function(selector, loadType) {
 	//console.log("hideLoadIndicator called");
-	var status = OpenGeoportal.Utility.getIndicatorStatus(selector);
+	var status = OpenGeoportal.Utility.getIndicatorStatus(selector, loadType);
 	if (typeof status.currentRequests !== "undefined") {
 		if (status.currentRequests > 0) {
 			status.currentRequests--;
 		}
 	}
 
+	//TODO: if currentRequests === 0, remove the object
+	//TODO: only stop the spinner if length of status array is 0
 	if (typeof status.currentRequests === "undefined"
 			|| status.currentRequests === 0) {
 		jQuery(selector).fadeOut();

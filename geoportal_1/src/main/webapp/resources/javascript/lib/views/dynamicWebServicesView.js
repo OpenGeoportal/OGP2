@@ -70,59 +70,129 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				}
 
 			},
+			
+			getWfsUrl: function(arrIds){
+				var path = top.location.href.substring(0, top.location.href.lastIndexOf("/"));
+				path += "/dynamic/wfs?ogpids=" + arrIds.join() + "&request=GetCapabilities";
+				return path;
+			},
+		
+			getWmsUrl: function(arrIds){
+				var path = top.location.href.substring(0, top.location.href.lastIndexOf("/"));
+				path += "/dynamic/wms?ogpids=" + arrIds.join() + "&request=GetCapabilities";
+				return path;
+			},
+			
+			generateWmc: function(arrIds, protocolPref, bbox){
+				var wmcSource = "wmc?ogpids=" + arrIds.join();
+				wmcSource += "&type=" + protocolPref;
+				wmcSource += "&minx=" + bbox.left + "&miny=" + bbox.bottom + "&maxx=" + bbox.right + "&maxy=" + bbox.top;
+				this.controls.iframeDownload("wmcDownloadIframe", wmcSource);
+			},
+			
 			generateContent : function(arrModels) {
-				// TODO: translate to template; generate from
 
-				var arrIds = [];
+				var arrWmsIds = [];
+				var arrWfsIds = [];
+				
+				var uniqueAdd = function(arr, item){
+					if (!_.contains(arr, item)){
+						arr.push(item);
+					}
+				};
 				_.each(arrModels, function(model) {
-					arrIds.push(model.get("LayerId"));
+					_.each(model.get("dynamicWebService"), function(ogctype){
+						var layerId = model.get("LayerId");
+						if (ogctype === "wms"){
+							uniqueAdd(arrWmsIds, layerId);
+
+						} else if (ogctype === "wfs"){
+							uniqueAdd(arrWfsIds, layerId);
+
+						} else if (ogctype === "wcs"){
+							uniqueAdd(arrWmsIds, layerId);
+
+						}
+					});
+					
+
 				});
+				
+				
+				var serviceTypes = {webservices:[]};
+				
+				var wmcButtonId = "wmcGenerateButton";
+				var wmcPreferenceId = "wmcPreferredType";
+				var wmcService = {
+	            	 title : "Web Map Context (WMC):",
+	            	 caption : "OGC standard for sharing web services. Press the button to generate a WMC file.",
+	            	 preferenceText: "Choose how the web service will be used: ",
+	            	 preference: [{label: "Analysis", value: "data"}, {label: "Display", value:"display"}],
+	            	 preferenceElId: wmcPreferenceId,
+	            	 generateButtonId: wmcButtonId
+	             };
+				
+				serviceTypes.wmc = wmcService;
+				
+				var that = this;
+				jQuery(document).on("click", "#" + wmcButtonId, function(){
+					//generate and return the wmc
+					//var bbox = jQuery("#" + bboxId).val();
+					var bbox = new OpenLayers.Bounds(-180,-90,180,90);
+					var pref = jQuery("#" + wmcPreferenceId).val();
+					//use wms ids; server side will pick the appropriate service based on preference and availability
+					that.generateWmc(arrWmsIds, pref, bbox);
+				});
+				
+				if (arrWfsIds.length > 0) {
+					var wfsUrl = this.getWfsUrl(arrWfsIds);
+
+					var wfsService =		
+						             {
+						            	 url : wfsUrl,
+						            	 title : "Web Feature Service (WFS):",
+						            	 caption : "Suitable for analysis. Creates a vector web service. Only available for vector data. Paste the selected link into your desktop mapping software."
+						             };
+				
+					serviceTypes.webservices.push(wfsService);
+				}
+				
+				if (arrWmsIds.length > 0){
+					var wmsUrl = this.getWmsUrl(arrWmsIds);
+
+					var wmsService = 
+						             {
+						            	 url : wmsUrl,
+						            	 title : "Web Mapping Service (WMS):",
+						            	 caption : "Suitable for base maps. Creates a raster web service for all your data. Vector data will be converted to raster format. Paste the selected link into your desktop mapping software."
+						             }; 
+						             
+					serviceTypes.webservices.push(wmsService);
+
+				};
+				
 
 				var dialogContent = "";
-				var serviceTypes = [
-						{
-							url : "dynamic/wfs",
-							title : "Web Feature Service (WFS):",
-							caption : "Creates a vector web service. Only available for vector data."
-						},
-						{
-							url : "dynamic/wms",
-							title : "Web Mapping Service (WMS):",
-							caption : "Creates a raster web service for all your data. Vector data will be converted to raster format."
-						} ];// WCS later?
-				var path = top.location.href.substring(0, top.location.href
-						.lastIndexOf("/"));
-				dialogContent += '<p>Web Services are provided in two formats. Paste the selected link into your desktop mapping software.</p>';
-				dialogContent += '<div id="owsServicesArea">\n';
-				var i = null;
-				for (i in serviceTypes) {
-					dialogContent += '<span class="sub_headerTitle">'
-							+ serviceTypes[i].title
-							+ '</span><a href="#">?</a>';
-					dialogContent += '<br/><span>' + serviceTypes[i].caption
-							+ '</span>';
-					dialogContent += '<div class="owsServicesLinkContainer">';
-					var dynamicCapabilitiesRequest = path + "/"
-							+ serviceTypes[i].url + "?ogpids=" + arrIds.join()
-							+ "&request=GetCapabilities";
-					dialogContent += '<textarea class="shareServicesText linkText" >'
-							+ dynamicCapabilitiesRequest
-							+ '</textarea> <br />\n';
-					dialogContent += '</div><br/>';
+				
+				if (serviceTypes.webservices.length > 0){
+					dialogContent = this.template.webServicesDialogContent(serviceTypes);
+				} else {
+					dialogContent = "No Web Services are available for the selected layers.";
 				}
-
-				dialogContent += '</div>';
 
 				return dialogContent;
 			},
 
 			createDialog : function(content) {
-				if (typeof jQuery('#shareDialog')[0] === 'undefined') {
-					var shareDiv = '<div id="shareServicesDialog" class="dialog"> \n';
-					shareDiv += '</div> \n';
-					jQuery('#dialogs').append(shareDiv);
-					jQuery("#shareServicesDialog")
-							.dialog(
+				var dialogId = "shareServicesDialog";
+				var dialog$ = jQuery("#" + dialogId);
+
+				if (dialog$.length === 0) {
+					var wrapper = this.template.genericDialogShell({elId: dialogId});
+
+					jQuery('#dialogs').append(wrapper);
+					dialog$ = jQuery("#" + dialogId);
+					dialog$.dialog(
 									{
 										zIndex : 3000,
 										autoOpen : false,
@@ -145,7 +215,8 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				// replace dialog text/controls & open the instance of 'dialog'
 				// that
 				// already exists
-				jQuery("#shareServicesDialog").html(content);
+				dialog$.html(content);
+				dialog$.find(".button").button(); 	//instantiate any jquery ui buttons
 				var that = this;
 				jQuery(".shareServicesText").each(
 						function() {
@@ -156,7 +227,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 													.text()));
 						});
 
-				jQuery("#shareServicesDialog").dialog('open');
+				dialog$.dialog('open');
 
 				jQuery('.shareServicesText').bind("focus", function() {
 					// Select input field contents

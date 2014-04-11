@@ -924,13 +924,13 @@ span.columnNote {
 	font-style: italic;
 }
 
-.downloadSettingsDialog {
+.downloadDialog {
 	margin-left: 17px;
 	line-height: 20px;
 	margin-top: 5px;
 }
 
-.downloadSettingsDialog div {
+.downloadDialog div {
 	padding-top: 5px;
 	padding-bottom: 5px;
 }
@@ -945,13 +945,13 @@ span.columnNote {
 	border: 1px solid #417DC1;
 }
 
-.downloadSettingsDialog select {
+.downloadDialog select {
 	width: 100px;
 	position: absolute;
 	left: 126px;
 }
 
-.downloadSettingsDialog label.downloadSelect {
+.downloadDialog label.downloadSelect {
 	display: inline-block;
 	text-align: right;
 	width: 90px;
@@ -987,6 +987,10 @@ span.columnNote {
 
 #owsServicesArea .sub_headerTitle {
 	margin-left: 0px;
+}
+
+.owsServicesLinkContainer > label, .owsServicesLinkContainer > select, .owsServicesLinkContainer > div {
+    margin: 4px;
 }
 
 table.downloadStatus {

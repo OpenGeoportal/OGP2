@@ -28,7 +28,9 @@ if (typeof OpenGeoportal === 'undefined') {
 OpenGeoportal.MapController = function() {
 	// dependencies
 	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-	this.template = OpenGeoportal.ogp.appState.get("template");
+	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
+
+	this.template = OpenGeoportal.ogp.template;
 	var analytics = new OpenGeoportal.Analytics();
 
 	/**
@@ -855,7 +857,42 @@ OpenGeoportal.MapController = function() {
 		});
 	};
 
-	this.loadIndicatorHandler = function() {
+	this.loadIndicatorHandler = function(){
+		this.indicatorCollection = new OpenGeoportal.LoadIndicatorCollection();
+		this.indicatorView = new OpenGeoportal.Views.MapLoadIndicatorView({collection: this.indicatorCollection, template: this.template});
+	
+		var getCriteria = function(e){
+			var actionObj = {};
+
+			if (typeof e.loadType === "undefined"){
+				actionObj.actionType = "generic";
+			} else {
+				actionObj.actionType = e.loadType;
+			}
+			
+			var layerId;
+
+			if (typeof e.layerId === "undefined"){
+				actionObj.actionId = "unspecified";
+			} else {
+				actionObj.actionId = e.layerId;
+			}
+			
+			return actionObj;
+		};
+		var that = this;
+		jQuery(document).on("showLoadIndicator", function(e){
+			
+			that.indicatorCollection.add([getCriteria(e)]);
+		});
+		
+		jQuery(document).on("hideLoadIndicator", function(e){
+			var model = that.indicatorCollection.findWhere(getCriteria(e));
+			that.indicatorCollection.remove(model);
+		});
+	};
+	
+/*	this.oldLoadIndicatorHandler = function() {
 		var loadIndicator = "mapLoadIndicator";
 		var liSelector = "#" + loadIndicator;
 		var that = this;
@@ -864,15 +901,28 @@ OpenGeoportal.MapController = function() {
 			if (jQuery(liSelector).length === 0){
 				var html = that.template.loadIndicator({elId: loadIndicator});
 				jQuery(".olControlPanel").append(html);
-				
 			}
-			OpenGeoportal.Utility.showLoadIndicator(liSelector);
+			var loadType;
+
+			if (typeof e.loadType === "undefined"){
+				loadType = "generic";
+			} else {
+				loadType = e.loadType;
+			}
+			OpenGeoportal.Utility.showLoadIndicator(liSelector, loadType);
 		});
 
 		jQuery(document).on("hideLoadIndicator", function(e) {
-			OpenGeoportal.Utility.hideLoadIndicator(liSelector);
+			var loadType;
+
+			if (typeof e.loadType === "undefined"){
+				loadType = "generic";
+			} else {
+				loadType = e.loadType;
+			}
+			OpenGeoportal.Utility.hideLoadIndicator(liSelector, loadType);
 		});
-	};
+	};*/
 	
 	/***************************************************************************
 	 * map utility functions
@@ -1397,7 +1447,7 @@ OpenGeoportal.MapController = function() {
 		}
 
 		var requestObj = {
-			type : "image"
+			requestType : "image"
 		};
 		requestObj.layers = [];
 
@@ -1459,8 +1509,7 @@ OpenGeoportal.MapController = function() {
 		requestObj.width = currSize.w - offset.x;
 		requestObj.height = parseInt(requestObj.width / ar);
 		// add the request to the queue
-		OpenGeoportal.ogp.appState.get("requestQueue")
-				.createRequest(requestObj);
+		this.requestQueue.createRequest(requestObj);
 	};
 
 	this.processMetadataSolrResponse = function(data) {
@@ -1599,6 +1648,15 @@ OpenGeoportal.MapController = function() {
 			searchString += "&height=" + mapObject.size.h + "&width="
 					+ mapObject.size.w;
 
+			var params = {
+					ogpid: layerId,
+					bbox: mapExtent.toBBOX(),
+					x: Math.round(pixel.x),
+					y: Math.round(pixel.y),
+					height: mapObject.size.h,
+					width: mapObject.size.w
+			};
+			
 			var layerModel = mapObject.previewed.findWhere({
 				LayerId : layerId
 			});
@@ -1608,7 +1666,7 @@ OpenGeoportal.MapController = function() {
 			var ajaxParams = {
 				type : "GET",
 				url : 'featureInfo',
-				data : searchString,
+				data : params,
 				dataType : 'html',
 				beforeSend : function() {
 					if (mapObject.currentAttributeRequests.length > 0) {
@@ -1617,10 +1675,11 @@ OpenGeoportal.MapController = function() {
 						for ( var i in mapObject.currentAttributeRequests) {
 							mapObject.currentAttributeRequests.splice(i, 1)[0]
 									.abort();
+							jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature"});
 						}
 					}
 
-					jQuery(document).trigger("showLoadIndicator");
+					jQuery(document).trigger({type: "showLoadIndicator", loadType: "getFeature"});
 				},
 				success : function(data, textStatus, XMLHttpRequest) {
 
@@ -1629,8 +1688,8 @@ OpenGeoportal.MapController = function() {
 				},
 				error : function(jqXHR, textStatus, errorThrown) {
 					if ((jqXHR.status != 401) && (textStatus != 'abort')) {
-						new OpenGeoportal.ErrorObject(new Error(),
-								"Error retrieving Feature Information.");
+						throw new Error("Error retrieving Feature Information.");
+							
 					}
 				},
 				complete : function(jqXHR) {
@@ -1640,7 +1699,7 @@ OpenGeoportal.MapController = function() {
 
 						}
 					}
-					jQuery(document).trigger("hideLoadIndicator");
+					jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature"});
 				}
 			};
 
@@ -1663,10 +1722,12 @@ OpenGeoportal.MapController = function() {
 		if (!layerModel.has("layerAttributes")) {
 			var attributes = new OpenGeoportal.Attributes();
 			for ( var i in attrNames) {
-				var attrModel = new OpenGeoportal.Models.Attribute({
-					attributeName : attrNames[i]
-				});
-				attributes.add(attrModel);
+				if (attrNames.hasOwnProperty(i)){
+					var attrModel = new OpenGeoportal.Models.Attribute({
+						attributeName : attrNames[i]
+					});
+					attributes.add(attrModel);
+				}
 			}
 			layerModel.set({
 				layerAttributes : attributes
@@ -1714,7 +1775,7 @@ OpenGeoportal.MapController = function() {
 
 		if (typeof jQuery('#featureInfo')[0] === 'undefined') {
 			var infoDiv = template.genericDialogShell({
-				id : "featureInfo"
+				elId : "featureInfo"
 			});
 			jQuery("#dialogs").append(infoDiv);
 			jQuery("#featureInfo").dialog({
@@ -1812,13 +1873,13 @@ OpenGeoportal.MapController = function() {
 			type : "GET",
 			traditional : true,
 			complete : function() {
-				jQuery(document).trigger("hideLoadIndicator");
+				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "serviceStart"});
 
 			},
 			statusCode : {
 				200 : function() {
 					jQuery("body").trigger(
-							layerModel.get("qualifiedName") + 'Exists');
+							layerModel.get("LayerId") + 'Exists');
 				},
 				500 : function() {
 					throw new Error("layer could not be added");
@@ -1826,7 +1887,7 @@ OpenGeoportal.MapController = function() {
 			}
 		};
 
-		jQuery(document).trigger("showLoadIndicator");
+		jQuery(document).trigger({type:"showLoadIndicator", loadType: "serviceStart"});
 
 		jQuery.ajax(params);
 	};
@@ -1862,11 +1923,11 @@ OpenGeoportal.MapController = function() {
 			complete : function() {
 				jQuery("body").trigger(model.get("LayerId") + 'Exists');
 
-				jQuery(document).trigger("hideLoadIndicator");
+				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getWmsInfo"});
 			}
 		};
 		jQuery.ajax(ajaxParams);
-		jQuery(document).trigger("showLoadIndicator");
+		jQuery(document).trigger({type: "showLoadIndicator", loadType: "getWmsInfo"});
 
 	};
 
@@ -2188,12 +2249,12 @@ OpenGeoportal.MapController = function() {
 			
 					newLayer.events.register('loadstart', newLayer, function() {
 						//console.log("Load start");
-						jQuery(document).trigger("showLoadIndicator");
+						jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad"});
 					});
 
 					newLayer.events.register('loadend', newLayer, function() {
 						//console.log("Load end");
-						jQuery(document).trigger("hideLoadIndicator");
+						jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad"});
 					});
 					
 					//console.log("wms layer");
@@ -2235,10 +2296,10 @@ OpenGeoportal.MapController = function() {
 		newLayer.projection = new OpenLayers.Projection("EPSG:3857");
 		// how should this change? trigger custom events with jQuery
 		newLayer.events.register('loadstart', newLayer, function() {
-			jQuery(document).trigger("showLoadIndicator");
+			jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad"});
 		});
 		newLayer.events.register('loadend', newLayer, function() {
-			jQuery(document).trigger("hideLoadIndicator");
+			jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad"});
 		});
 		var that = this;
 		// we do a cursory check to see if the layer exists before we add it
@@ -2372,7 +2433,7 @@ OpenGeoportal.MapController = function() {
 			currModel.set({
 				preview : "off"
 			});
-			throw new OpenGeoportal.ErrorObject(err,
+			throw new Error(
 					'Unable to Preview layer "'
 							+ currModel.get("LayerDisplayName") + '"');
 		}

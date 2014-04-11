@@ -16,10 +16,11 @@ if (typeof OpenGeoportal === 'undefined') {
  * 
  */
 OpenGeoportal.CommonControls = function CommonControls() {
-	// dependencies; revamp with require.js?
-	var template = OpenGeoportal.ogp.appState.get("template");
-	this.cart = OpenGeoportal.ogp.appState.get("cart");
-	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
+	var template;
+	
+	this.setTemplate = function(controlsTemplate) {
+		template = controlsTemplate;
+	};
 
 	/***************************************************************************
 	 * 
@@ -78,21 +79,23 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
 	};
 	
-	this.renderPreviewControl = function(layerId, access, institution, location,
-			previewState) {
-		access = access.toLowerCase();
-		institution = institution.toLowerCase();
+	this.renderPreviewControl = function(model, previewState){
+		//function(layerId, access, institution, location, previewedCollection,previewState) {
+		var access = model.get("Access").toLowerCase();
+		var institution = model.get("Institution").toLowerCase();
+		var location = model.get("Location");
 		if (this.canPreview(location)){
 			var loginModel = OpenGeoportal.ogp.appState.get("login").model;
 			var hasAccess = loginModel.hasAccessLogic(access, institution);
+			
 			if (hasAccess) {
-				return this.renderCheckboxPreviewControl(layerId, previewState);
+				return this.renderCheckboxPreviewControl(model, previewState);
 			} else {
 				var canLogin = loginModel.canLoginLogic(institution);
 				if (canLogin) {
 					return this.renderLoginPreviewControl();
 				} else {
-					return this.renderLinkControl(layerId);
+					return this.renderLinkControl(model);
 				}
 			}
 		} else {
@@ -103,7 +106,7 @@ OpenGeoportal.CommonControls = function CommonControls() {
 
 	// TODO: fix this
 
-	this.renderLinkControl = function(layerId) {
+	this.renderLinkControl = function(model) {
 		var params = {};
 		params.controlClass = "previewLink";
 		params.text = "";
@@ -124,17 +127,18 @@ OpenGeoportal.CommonControls = function CommonControls() {
 
 	};
 
-	this.renderCheckboxPreviewControl = function(layerId, previewState) {
+	/**
+	 * @requires depends on previewed collection
+	 */
+	this.renderCheckboxPreviewControl = function(model, previewState) {
 		var stateVal = null;
 		if (typeof previewState !== "undefined") {
 			stateValue = previewState;
 		} else {
-			var currModel = this.previewed.findWhere({
-				LayerId : layerId
-			});
+
 			stateVal = "off";
-			if (typeof currModel !== "undefined") {
-				stateVal = currModel.get("preview");
+			if (typeof model !== "undefined") {
+				stateVal = model.get("preview");
 				if (typeof stateVal === "undefined") {
 					stateVal = "off";
 				}
@@ -198,9 +202,12 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return template.genericIcon(params);
 	};
 
-	this.renderSaveControl = function(layerId) {
+	/**
+	 * @requires cart collection
+	 */
+	this.renderSaveControl = function(layerId, cartCollection) {
 		var stateVal = false;
-		var selModel = this.cart.findWhere({
+		var selModel =	cartCollection.findWhere({
 			LayerId : layerId
 		});
 		if (typeof selModel !== 'undefined') {
@@ -324,7 +331,7 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		var dialogId = "metadataDialog";
 		if (typeof jQuery('#' + dialogId)[0] == 'undefined') {
 			jQuery('#dialogs').append(template.genericDialogShell({
-				id : dialogId
+				elId : dialogId
 			}));
 		}
 

@@ -18,8 +18,8 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.CartActionView = Backbone.View.extend({
 	initialize : function() {
-		this.template = OpenGeoportal.ogp.appState.get("template");
-		this.controls = OpenGeoportal.ogp.appState.get("controls");
+		this.template = OpenGeoportal.ogp.template;
+		this.controls = OpenGeoportal.ogp.controls;
 		this.cartAction();
 	},
 

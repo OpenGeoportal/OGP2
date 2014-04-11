@@ -49,7 +49,11 @@ $.fn.val = function(value) {
 
 
 OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({	
-
+	constructor: function (options) {
+		//allow options to be passed in the constructor argument as in previous Backbone versions.
+		    this.options = options;
+		    Backbone.View.apply(this, arguments);
+		  },
 	uiInit: function(selectFunction){
 		var that = this;
 		this.$el.addClass("dropdown").attr("ogpSelectMenu", true);
@@ -116,8 +120,8 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	setValue: function(){throw new Error("no function for setValue defined.");},
 	initRender: function(){
 		//template
-		var template = OpenGeoportal.ogp.appState.get("template");
-		this.$el.html(template.styledSelectBody(this.getTemplateParams()));
+		this.template = OpenGeoportal.ogp.template;
+		this.$el.html(this.template.styledSelectBody(this.getTemplateParams()));
 
 		this.uiInit();
 		this.setValue();
@@ -139,15 +143,14 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 
 		var menuHtml = "";	
 		var buttonLabel = this.getButtonLabel();
-		var template = OpenGeoportal.ogp.appState.get("template");
 		var valueAttr = this.getValueAttribute();
 		var displayAttr = this.getDisplayAttribute();
 		var itemClass = this.getItemClass();
-
+		that = this;
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
-			menuHtml += template.simpleMenuItem({name: name, value: value, className: itemClass});
+			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: itemClass});
 		});
 
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
@@ -219,15 +222,14 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 	getTemplateParams: function(){
 		var menuHtml = "";	
 		var buttonLabel = this.getButtonLabel();
-		var template = OpenGeoportal.ogp.appState.get("template");
 		var valueAttr = this.getValueAttribute();
 		var displayAttr = this.getDisplayAttribute();
 		var itemClass = this.getItemClass();
-
+		var that = this;
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
-			menuHtml += template.simpleMenuItem({name: name, value: value, className: itemClass});
+			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: itemClass});
 		});
 
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
@@ -293,7 +295,6 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 	getTemplateParams: function(){
 		var menuHtml = "";	
 		var buttonLabel = this.getButtonLabel();
-		var template = OpenGeoportal.ogp.appState.get("template");
 		var valueAttr = this.getValueAttribute();
 		var displayAttr = this.getDisplayAttribute();
 		var itemClass = this.getItemClass();
@@ -301,7 +302,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		var controlClass = this.options.controlClass;
 		var selectionAttr = this.getSelectionAttribute();
 		var collectionFilter = this.options.collectionFilter;
-		
+		var that = this;
 		this.collection.each(function(currModel){
 			if (typeof  collectionFilter != "undefined"){
 				if(currModel.get(collectionFilter.attr) !== collectionFilter.val){
@@ -316,8 +317,8 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			if (currModel.get(selectionAttr)){
 				isSelected = "checkOn";
 			}
-			var control = template.genericControl({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
-			menuHtml += template.controlMenuItem({icon: icon, control: control, name: name, value: value, className: itemClass});
+			var control = that.template.genericControl({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
+			menuHtml += that.template.controlMenuItem({icon: icon, control: control, name: name, value: value, className: itemClass});
 		});
 
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
@@ -334,6 +335,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 
 OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	initialize: function() {
+		this.headings = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
 		this.listenTo(this.model, "change", this.setValue);
 		this.listenTo(this.model, "change", this.render);
 		this.initRender();
@@ -345,10 +347,9 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var buttonLabel = this.getButtonLabel();
 		var displayAttr  = "displayName";
 		var valueAttr = "columnName";
-		var template = OpenGeoportal.ogp.appState.get("template");		
-		
-		var headings = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
-		headings.each(function(currModel){
+		that = this;
+
+		this.headings.each(function(currModel){
 
 			if (!currModel.get("organize")){
 				return;
@@ -361,7 +362,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 			if (colName.toLowerCase() == value.toLowerCase()){
 				selected = "selected";
 			}
-			menuHtml += template.simpleMenuItem({name: name, value: value, className: selected});
+			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: selected});
 		});
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
 	},
@@ -377,8 +378,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var menuHtml = "";	
 		var colName = this.model.get("column");	
 		var direction = this.model.get("direction"); //TODO: should render an arrow, up or down, for the selected column
-		var headings = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
-		var currModel = headings.findWhere({columnName: colName});
+		var currModel = this.headings.findWhere({columnName: colName});
 		var name = "";
 		if (currModel.has("displayName")){
 			name = currModel.get("displayName");

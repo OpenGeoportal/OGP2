@@ -6,7 +6,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-
+import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.WmcCreator;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.slf4j.Logger;
@@ -27,24 +27,23 @@ public class GetWmcController {
 	private WmcCreator wmcCreator;
 	
 	@RequestMapping(method=RequestMethod.GET, produces="application/xml")
-	public void getLayerInfo(@RequestParam("ogpids") Set<String> layerIds, HttpServletResponse response) throws Exception {
+	public void getLayerInfo(@RequestParam("ogpids") Set<String> layerIds, @RequestParam("type") String ogcType, @RequestParam("minx") Double minx, @RequestParam("miny") Double miny,
+			@RequestParam("maxx") Double maxx, @RequestParam("maxy") Double maxy, HttpServletResponse response) throws Exception {
+		
+		OwsType requestedType = OwsType.parseOwsType(ogcType);
+		BoundingBox bounds = new BoundingBox(minx,miny,maxx,maxy);
 		Map<String,OwsType> layerMap = new LinkedHashMap<String,OwsType>();
-		for (String layer: layerIds){
-			String[] formatArr = layer.split("=");
-			if (formatArr.length > 1){
-				try {
-				layerMap.put(formatArr[0], OwsType.parseOwsType(formatArr[1]));
-				} catch (Exception e){
-					logger.error(e.getMessage());
-					layerMap.put(formatArr[0], OwsType.DISPLAY);
-				}
-			} else {
-				//default to DISPLAY (WMS)
-				layerMap.put(formatArr[0], OwsType.DISPLAY);
-			} 
+		for (String layer: layerIds){					
+				layerMap.put(layer, requestedType);
 		}
-		response.setContentType("application/xml");
-		wmcCreator.getWmcResponse(layerMap, response.getOutputStream());
+		
+		
+		String disposition = "attachment";
+		String contentType = "application/xml;charset=UTF-8";
+			
+		response.setHeader("Content-Disposition", disposition + "; filename=\"wmc.xml\"");
+		response.setContentType(contentType);
+		wmcCreator.getWmcResponse(layerMap, bounds, response.getOutputStream());
 		
 	}
 	

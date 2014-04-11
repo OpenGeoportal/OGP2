@@ -1,9 +1,9 @@
-<script src="http://documentcloud.github.com/underscore/underscore-min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="http://documentcloud.github.com/backbone/backbone-min.js"></script>
+<script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/backbonejs/1.1.2/backbone-min.js"></script>
 <script src="//ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
 <script src="resources/javascript/dataTables.scroller.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 <script src="resources/javascript/jquery.scrollTo-min.js"></script>
 <script src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 <!--  <script type="text/javascript" src="resources/javascript/jquery.ba-resize.js"></script>-->

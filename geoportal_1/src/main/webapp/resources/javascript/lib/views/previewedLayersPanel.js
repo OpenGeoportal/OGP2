@@ -24,8 +24,8 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 
 	},
 	initialize : function() {
-		this.template = OpenGeoportal.ogp.appState.get("template");
-		this.controls = OpenGeoportal.ogp.appState.get("controls");
+		this.template = OpenGeoportal.ogp.template;
+		this.controls = OpenGeoportal.ogp.controls;
 		// share config with the results table
 		this.tableConfig = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
 

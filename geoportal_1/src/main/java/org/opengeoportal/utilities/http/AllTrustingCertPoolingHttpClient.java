@@ -58,24 +58,6 @@ public class AllTrustingCertPoolingHttpClient implements OgpHttpClient {
 		initCalled = true;
 	}
 	
-	@Override
-	public HttpClient getHttpClient(){
-		if (!initCalled){
-			try {
-				init();
-			} catch (KeyManagementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (KeyStoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return client;
-	}
 
 	@Override
 	public CloseableHttpClient getCloseableHttpClient() {

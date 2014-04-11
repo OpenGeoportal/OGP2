@@ -33,7 +33,7 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	OgpHttpClient ogpHttpClient;
 	
 	private void init() throws Exception {
-		HttpClient httpClient = ogpHttpClient.getHttpClient();
+		HttpClient httpClient = ogpHttpClient.getCloseableHttpClient();
 		URL url = searchConfigRetriever.getInternalSearchUrl();
 		String url$ = url.toString();
 		
@@ -61,10 +61,9 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 		return solrServer;
 	}
 	
-	//use Spring Security hasPermission expression instead
-	//probably use a filter to get a collection containing only layers the
+	//use Spring Security hasPermission expression 
+	//use a filter to get a collection containing only layers the
 	//user is authorized to download.
-	//don't know what this filter should look like yet.
 	@Override
 	@PostFilter("hasPermission(filterObject, 'download')")
 	public List<SolrRecord> fetchAllowedRecords(Set<String> layerIdSet) throws Exception{

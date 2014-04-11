@@ -4,6 +4,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 public interface OgpHttpClient {
-	HttpClient getHttpClient();
+	//HttpClient getHttpClient();
 	CloseableHttpClient getCloseableHttpClient();
 }

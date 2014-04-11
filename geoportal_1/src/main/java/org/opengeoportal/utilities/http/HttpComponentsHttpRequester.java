@@ -82,7 +82,7 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 	
 	public InputStream sendGetRequest(String url) throws MalformedURLException, IOException{
 		logger.debug("about to send url: " + url);
-		HttpClient httpclient = ogpHttpClient.getHttpClient();
+		HttpClient httpclient = ogpHttpClient.getCloseableHttpClient();
 		InputStream replyStream = null;
 		HttpResponse response = null;
 		try {
@@ -119,7 +119,7 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 
 	protected InputStream sendPostRequest(String serviceURL,
 			String requestBody, String contentType) throws IOException{
-		HttpClient httpclient = ogpHttpClient.getHttpClient();
+		HttpClient httpclient = ogpHttpClient.getCloseableHttpClient();
 		InputStream replyStream = null;
 		try{
 			HttpPost httppost = new HttpPost(serviceURL);

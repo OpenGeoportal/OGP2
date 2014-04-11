@@ -21,9 +21,9 @@ if (typeof OpenGeoportal.Export === 'undefined') {
 OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	// console.log(exportObj);
 
-	this.appState = OpenGeoportal.ogp.appState;
-	this.template = this.appState.get("template");
-	this.controls = this.appState.get("controls");
+	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
+	this.template = OpenGeoportal.ogp.template;
+	this.controls = OpenGeoportal.ogp.controls;
 
 	// an array of Backbone Models representing layers to export
 	this.layerModels = exportObj.layers;
@@ -201,7 +201,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 		// title, description....most of these will be provided by a form
 		var descriptor = this.descriptor;
 		var requestObj = {};
-		requestObj.type = "exportTo";
+		requestObj.requestType = "exportTo";
 		requestObj.basemap = jQuery("#" + descriptor + "Basemap").val();
 		requestObj.username = jQuery("#" + descriptor + "Username").val();
 		requestObj.password = jQuery("#" + descriptor + "Password").val();
@@ -230,7 +230,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 
 	this.exportLayers = function exportLayers() {
 		var requestObj = this.createExportRequest();
-		this.appState.get("requestQueue").createRequest(requestObj);
+		this.requestQueue.createRequest(requestObj);
 
 	};
 
