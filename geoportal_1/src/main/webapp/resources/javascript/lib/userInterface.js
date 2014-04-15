@@ -76,7 +76,7 @@ OpenGeoportal.UserInterface = function() {
 				jQuery("#welcomeBubble").hide({
 					effect : "drop",
 					duration : 250,
-					queue : false,
+					//queue : false,
 					complete : function() {
 						that.panelView.model.set({
 							mode : "open"

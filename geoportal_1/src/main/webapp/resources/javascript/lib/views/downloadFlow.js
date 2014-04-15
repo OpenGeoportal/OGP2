@@ -51,8 +51,8 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.QueueItem.extend({
 			requestUrl: "requestDownload",
 			requestType : "layer",
 			bbox : new OpenLayers.Bounds(-180,-90,180,90)
-		
 		});
+		
 		this.listenTo(this, "invalid", function(model, error) {
 
 			if (error === "email") {
@@ -78,44 +78,9 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.QueueItem.extend({
 OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 		.extend({
 
-			cartFilter : function(model) {
-				// what values do we need to attempt a download?
-				return this.isDownloadAvailable(model) && model.get("isChecked");
-			},
 
-			cartAction : function() {
-				
+			downloadKeys : [ "wfs", "wcs", "wms", "filedownload", "download" ],
 
-				
-				var sortedLayers = this.sortLayersByDownloadType();
-
-				
-				if (_.has(sortedLayers, "ogpServer")
-						&& sortedLayers.ogpServer.length > 0) {
-					// get user input and form a request to send to the ogp
-					// server
-					this.downloadRequest = new OpenGeoportal.Models.DownloadRequest();
-					this.downloadRequest.set({
-						layers : sortedLayers.ogpServer
-					});
-
-					this.preferences = new OpenGeoportal.Models.DownloadPreferences();
-					var that = this;
-					this.setPreferences().then(this.finalizeRequest,
-							this.failHandler1).then(this.sendDownloadRequest,
-							this.failHandler2);
-
-				} else if (_.has(sortedLayers, "ogpClient")
-						&& sortedLayers.ogpClient.length > 0) {
-					// handle the downloads from the client
-					this.clientSideDownload(sortedLayers.ogpClient);
-
-				} else {
-					throw new Error("No valid layers in the cart collection!");
-				}
-
-			},
-			
 			isDownloadAvailable : function(model) {
 				var isAvailable = model.isPublic();
 
@@ -136,6 +101,52 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				return isAvailable;
 
 			},
+			cartFilter : function(model) {
+				// what values do we need to attempt a download?
+				return this.isDownloadAvailable(model) && model.get("isChecked");
+			},
+			
+			cartAction : function() {
+				
+
+				
+				var sortedLayers = this.sortLayersByDownloadType();
+
+				var hasServerLayers = _.has(sortedLayers, "ogpServer") && sortedLayers.ogpServer.length > 0;
+				if (hasServerLayers) {
+					// get user input and form a request to send to the ogp
+					// server
+					this.downloadRequest = new OpenGeoportal.Models.DownloadRequest();
+					this.downloadRequest.set({
+						layers : sortedLayers.ogpServer
+					});
+
+					this.preferences = new OpenGeoportal.Models.DownloadPreferences();
+					var that = this;
+					this.setPreferences().then(this.finalizeRequest,
+							this.failHandler1).then(this.sendDownloadRequest,
+							this.failHandler2);
+
+				} 
+			
+				var hasClientLayers = _.has(sortedLayers, "ogpClient") && sortedLayers.ogpClient.length > 0;
+				if (hasClientLayers) {
+					// handle the downloads from the client
+					this.clientSideDownload(sortedLayers.ogpClient);
+
+				} 
+				
+				if (!hasServerLayers && !hasClientLayers)  {
+					if (this.collection.length === 0){
+						console.log("cart collection is empty.");
+					} else {
+						throw new Error("No valid layers in the cart collection!");
+					}
+				} 
+
+				//return this.deferred.promise();
+			},
+
 			
 			failHandler1 : function() {
 				alert("finalize request failed");
@@ -149,7 +160,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// a layer that should use client side download in
 				// OpenGeoportal.Models.CartLayer:setDownloadAttributes
 			},
-			downloadKeys : [ "wfs", "wcs", "wms", "filedownload", "download" ],
 			
 			setDownloadAttributes : function(model) {
 				// either a download type that can be handled by OGP backend or
@@ -609,10 +619,9 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// when the download button is pushed, run an animation, close
 				// the dialog
 				var options = {
-					to : "#requestTickerContainer",
-					className : "ui-effects-transfer"
+					to : "#requestTickerContainer"
 				};
-				dialog$.parent().effect("transfer", options, 500, function() {
+				dialog$.parent().delay().effect("transfer", options, 500, function() {
 					dialog$.dialog('close');
 				});
 
@@ -623,6 +632,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				return downloadContinue;
 			},
+			
 			updateRequestFromFinalize : function() {
 
 				// validate the email address
@@ -673,13 +683,8 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				} else {
 					requestQ.addToQueue(this.downloadRequest);
 				}
-				
 
-				// where should this go?
-				// jQuery(".downloadSelection,
-				// .downloadUnselection").removeClass("downloadSelection
-				// downloadUnselection");
-
+				//this.deferred.resolve();
 			}
 
 		});

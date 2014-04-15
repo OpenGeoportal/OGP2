@@ -52,7 +52,7 @@ OpenGeoportal.CartTable = function CartTable() {
 
 	this.initCartHandlers = function() {
 		this.checkHandler();
-		this.createCartButtons();
+		this.highlightRowsHandler();
 	};
 
 	// **************Table Specific
@@ -61,13 +61,7 @@ OpenGeoportal.CartTable = function CartTable() {
 		return number;
 	};
 
-	this.removeRows = function() {
 
-		var checkedModels = this.backingData.where({
-			isChecked : true
-		});
-		this.backingData.remove(checkedModels);
-	};
 
 	this.getEmptyTableMessage = function getEmptyTableMessage() {
 		return "No data layers have been added to the cart.";
@@ -92,11 +86,13 @@ OpenGeoportal.CartTable = function CartTable() {
 								});
 							}
 						});
+		
+
+		 jQuery(document).on('click', '#downloadHeaderCheck',
+				 that.toggleChecksSaved);
 	};
 
-	// ?
-	// jQuery(document).on('click', '#downloadHeaderCheck',
-	// that.toggleChecksSaved);
+
 
 	this.toggleChecksSaved = function(eventObj) {
 		var target = eventObj.target;
@@ -113,6 +109,18 @@ OpenGeoportal.CartTable = function CartTable() {
 		}
 	};
 
+	this.highlightRowsHandler = function(){
+		var that = this;
+		jQuery(document).on("highlightCartRows", function(e){
+
+			that.markSelected(e.layers);
+		});
+		jQuery(document).on("clearCartRows", function(e){
+
+			that.clearMarkedRows();
+		});
+	};
+	
 	this.markRowsWithClass = function(arrModel, markClass) {
 		var i = null;
 		for (i in arrModel) {
@@ -129,12 +137,12 @@ OpenGeoportal.CartTable = function CartTable() {
 
 	this.clearMarkedRows = function() {
 		jQuery(".cartSelected").removeClass("cartSelected");
-		jQuery(".cartUnavailable").removeClass("cartUnavailable");
+		jQuery(".cartAction").removeClass("cartAction");
 	};
 
-	this.markUnavailableAndSelected = function(arrUnavailable, arrSelected) {
+	this.markSelected = function(arrSelected) {
 		this.clearMarkedRows();
-		this.markRowsWithClass(arrUnavailable, "cartUnavailable");
+		this.markRowsWithClass(this.backingData.models, "cartAction");
 		this.markRowsWithClass(arrSelected, "cartSelected");
 	};
 
@@ -162,8 +170,8 @@ OpenGeoportal.CartTable = function CartTable() {
 		//the layers won't get added to the cart table via reset, so remove them and re-add them.
 		var collection = this.backingData.clone();
 		this.backingData.reset();
+		this.backingData.add(collection.models);
 		collection.each(function(model){
-			that.backingData.add(model);
 			try{
 				that.addToPreviewed(model.get("LayerId"));
 			} catch (e) {
@@ -172,6 +180,7 @@ OpenGeoportal.CartTable = function CartTable() {
 			// add info about color and size here as well.
 			// layerid~1AAA tilde is delimiter, first character is size, last
 			// three are color?
+			console.log(that.previewed);
 		});
 
 		jQuery(document).trigger("map.zoomToLayerExtent", {
@@ -186,120 +195,7 @@ OpenGeoportal.CartTable = function CartTable() {
 				"The attempt to retrieve layer information from layerIds failed.");
 	};
 
-	this.displayOptionText = function(event, optionText, listLabel) {
-		var button$ = jQuery(event.target);
 
-		if (!button$.hasClass(".button")) {
-			button$ = button$.closest(".button");
-		}
-
-		var optionContainer$ = jQuery("#optionDetails");
-		optionContainer$.html('<div>' + optionText + '</div>');
-
-		if (optionContainer$.css("display") === "none") {
-			optionContainer$.show();
-			jQuery(".arrow_buttons").hide();
-		}
-		button$.parent().find(".button").removeClass("detailsBottom");
-		button$.addClass("detailsBottom");
-
-	};
-
-	this.addCartHeaderButton = function(buttonId, buttonLabel, helpText,
-			listLabel, clickHandler) {
-		var that = this;
-		this.controls.appendButton(jQuery("#cartHeader"), buttonId,
-				buttonLabel, clickHandler).on("mouseover", function(event) {
-			that.displayOptionText(event, helpText, listLabel);
-			// TODO: how do I highlight rows in the table?
-		});
-	};
-
-	this.createCartButtons = function() {
-
-		var that = this;
-		var mapItHtml = "Open highlighted layers in GeoCommons to create maps.";
-		var shareHtml = "Create a link to share this Cart.";
-		var webServiceHtml = "Stream highlighted layers into an application.";
-		var downloadHtml = "Download highlighted layers to your computer.";
-		var removeHtml = "Remove selected layers from Cart.";
-
-		var cartCollection = this.backingData;
-
-		var removeClick = function() {
-			that.removeRows();
-		};
-		// what happens to views when they go out of scope?
-		var downloadClick = function() {
-			new OpenGeoportal.Views.Download({
-				collection : cartCollection
-			});
-		};
-		var mapItClick = function() {
-			new OpenGeoportal.Views.MapIt({
-				collection : cartCollection
-			});
-		};
-		var webServiceClick = function() {
-			new OpenGeoportal.Views.WebServices({
-				collection : cartCollection
-			});
-		};
-		var shareClick = function() {
-			new OpenGeoportal.Views.ShareCart({
-				collection : cartCollection
-			});
-		};
-
-		this.addCartHeaderButton("removeFromCartButton", "Remove", removeHtml,
-				"removeFromCart", removeClick);
-		this.addCartHeaderButton("downloadButton", "Download", downloadHtml,
-				"download", downloadClick);
-		this.addCartHeaderButton("webServiceButton", "Web Service",
-				webServiceHtml, "webService", webServiceClick);
-		this.addCartHeaderButton("shareButton", "Share", shareHtml,
-				"shareLink", shareClick);
-		this.addCartHeaderButton("mapItButton", "MapIt", mapItHtml, "mapIt",
-				mapItClick);
-
-		// Hover handler
-		var hideDetails = function() {
-			jQuery(".arrow_buttons").show();
-			jQuery("#optionDetails").hide();
-			jQuery(".button").removeClass("detailsBottom");
-			jQuery(".cartSelected, .cartUnavailable").removeClass(
-					"cartSelected cartUnavailable");
-		};
-		// hide on the header, rather than the buttons, so the ui doesn't flash
-		jQuery("#cartHeader.tableHeader").on("mouseleave", hideDetails);
-		// hide here, or it's annoying to get to tabs
-		jQuery("#optionDetails").on("mouseenter", hideDetails);
-
-		/*
-		 * 
-		 * function(){if ((jQuery("#shareDialog").length ==
-		 * 0)||(!jQuery("#shareDialog").dialog("isOpen"))){jQuery("#optionDetails").hide();
-		 * jQuery(".downloadSelection,
-		 * .downloadUnselection").removeClass("downloadSelection
-		 * downloadUnselection");}});
-		 * .hover(function(){jQuery("#optionDetails").html(webServiceHtml).show();that.getLayerList("webService");},
-		 * function(){if ((jQuery("#shareServicesDialog").length ==
-		 * 0)||(!jQuery("#shareServicesDialog").dialog("isOpen"))){jQuery("#optionDetails").hide();
-		 * jQuery(".downloadSelection,
-		 * .downloadUnselection").removeClass("downloadSelection
-		 * downloadUnselection");}});
-		 * jQuery("#downloadButton").hover(function(){jQuery("#optionDetails").html(downloadHtml).show();that.getLayerList("download");},
-		 * function(){if ((jQuery("#downloadDialog").length ==
-		 * 0)||(!jQuery("#downloadDialog").dialog("isOpen"))){jQuery("#optionDetails").hide();
-		 * jQuery(".downloadSelection,
-		 * .downloadUnselection").removeClass("downloadSelection
-		 * downloadUnselection");}});
-		 * jQuery("#removeFromCartButton").hover(function(){jQuery("#optionDetails").html(removeHtml).show();that.getLayerList("removeFromCart");},
-		 * function(){jQuery("#optionDetails").hide();jQuery(".downloadSelection,
-		 * .downloadUnselection").removeClass("downloadSelection
-		 * downloadUnselection");});
-		 */
-	};
 
 };
 

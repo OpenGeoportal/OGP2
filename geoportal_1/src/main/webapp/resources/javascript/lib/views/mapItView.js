@@ -21,20 +21,6 @@ OpenGeoportal.Views.MapIt = OpenGeoportal.Views.CartActionView.extend({
 		return this.isMapItAvailable(model);
 	},
 
-	cartAction : function() {
-		var arrModels = this.getApplicableLayers();
-		// filter the cart collection and retrieve those that can be
-		// shared
-
-		var exportObj = this.createExportParams(arrModels);
-		// the dialog should probably be in this View; the export object should
-		// be more abstract
-		var geoCommonsExport = new OpenGeoportal.Export.GeoCommons(exportObj);
-		geoCommonsExport.exportDialog(this);
-
-	},
-
-
 	isMapItAvailable : function(model) {
 		// public vector wms layers only. we can increase the complexity
 		// if other web mapping sites have different criteria
@@ -45,6 +31,22 @@ OpenGeoportal.Views.MapIt = OpenGeoportal.Views.CartActionView.extend({
 
 		return isAvailable;
 	},
+	
+	cartAction : function() {
+		var arrModels = this.getApplicableLayers();
+		// filter the cart collection and retrieve those that can be
+		// shared
+
+		var exportObj = this.createExportParams(arrModels);
+		// the dialog should probably be in this View; the export object should
+		// be more abstract
+		var geoCommonsExport = new OpenGeoportal.Export.GeoCommons(exportObj);
+		var dialog$ = geoCommonsExport.exportDialog(this);
+
+	},
+
+
+
 
 	setMapItAttributes : function() {
 		var attr = {};

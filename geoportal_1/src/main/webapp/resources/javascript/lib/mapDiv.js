@@ -870,8 +870,6 @@ OpenGeoportal.MapController = function() {
 				actionObj.actionType = e.loadType;
 			}
 			
-			var layerId;
-
 			if (typeof e.layerId === "undefined"){
 				actionObj.actionId = "unspecified";
 			} else {
@@ -882,47 +880,19 @@ OpenGeoportal.MapController = function() {
 		};
 		var that = this;
 		jQuery(document).on("showLoadIndicator", function(e){
-			
+
 			that.indicatorCollection.add([getCriteria(e)]);
 		});
 		
 		jQuery(document).on("hideLoadIndicator", function(e){
+
 			var model = that.indicatorCollection.findWhere(getCriteria(e));
-			that.indicatorCollection.remove(model);
+			if (typeof model !== "undefined"){
+				that.indicatorCollection.remove(model);
+			}
 		});
 	};
 	
-/*	this.oldLoadIndicatorHandler = function() {
-		var loadIndicator = "mapLoadIndicator";
-		var liSelector = "#" + loadIndicator;
-		var that = this;
-		jQuery(document).on("showLoadIndicator", function(e) {
-			
-			if (jQuery(liSelector).length === 0){
-				var html = that.template.loadIndicator({elId: loadIndicator});
-				jQuery(".olControlPanel").append(html);
-			}
-			var loadType;
-
-			if (typeof e.loadType === "undefined"){
-				loadType = "generic";
-			} else {
-				loadType = e.loadType;
-			}
-			OpenGeoportal.Utility.showLoadIndicator(liSelector, loadType);
-		});
-
-		jQuery(document).on("hideLoadIndicator", function(e) {
-			var loadType;
-
-			if (typeof e.loadType === "undefined"){
-				loadType = "generic";
-			} else {
-				loadType = e.loadType;
-			}
-			OpenGeoportal.Utility.hideLoadIndicator(liSelector, loadType);
-		});
-	};*/
 	
 	/***************************************************************************
 	 * map utility functions
@@ -1673,13 +1643,12 @@ OpenGeoportal.MapController = function() {
 						// abort any outstanding requests before submitting a
 						// new one
 						for ( var i in mapObject.currentAttributeRequests) {
-							mapObject.currentAttributeRequests.splice(i, 1)[0]
-									.abort();
-							jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature"});
+							var request = mapObject.currentAttributeRequests.splice(i, 1)[0];
+							request.featureRequest.abort();
 						}
 					}
 
-					jQuery(document).trigger({type: "showLoadIndicator", loadType: "getFeature"});
+					jQuery(document).trigger({type: "showLoadIndicator", loadType: "getFeature", layerId: layerId});
 				},
 				success : function(data, textStatus, XMLHttpRequest) {
 
@@ -1694,16 +1663,16 @@ OpenGeoportal.MapController = function() {
 				},
 				complete : function(jqXHR) {
 					for ( var i in mapObject.currentAttributeRequests) {
-						if (mapObject.currentAttributeRequests[i] === jqXHR) {
+						if (mapObject.currentAttributeRequests[i].featureRequest === jqXHR) {
 							mapObject.currentAttributeRequests.splice(i, 1);
 
 						}
 					}
-					jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature"});
+					jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature", layerId: layerId});
 				}
 			};
 
-			mapObject.currentAttributeRequests.push(jQuery.ajax(ajaxParams));
+			mapObject.currentAttributeRequests.push({layerId: layerId, featureRequest: jQuery.ajax(ajaxParams)});
 
 			analytics.track("Layer Attributes Viewed", institution, layerId);
 		} else {
@@ -1873,7 +1842,7 @@ OpenGeoportal.MapController = function() {
 			type : "GET",
 			traditional : true,
 			complete : function() {
-				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "serviceStart"});
+				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "serviceStart", layerId: layerModel.get("LayerId")});
 
 			},
 			statusCode : {
@@ -1887,7 +1856,7 @@ OpenGeoportal.MapController = function() {
 			}
 		};
 
-		jQuery(document).trigger({type:"showLoadIndicator", loadType: "serviceStart"});
+		jQuery(document).trigger({type:"showLoadIndicator", loadType: "serviceStart", layerId: layerModel.get("LayerId")});
 
 		jQuery.ajax(params);
 	};
@@ -1923,11 +1892,11 @@ OpenGeoportal.MapController = function() {
 			complete : function() {
 				jQuery("body").trigger(model.get("LayerId") + 'Exists');
 
-				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getWmsInfo"});
+				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getWmsInfo", layerId: model.get("LayerId")});
 			}
 		};
 		jQuery.ajax(ajaxParams);
-		jQuery(document).trigger({type: "showLoadIndicator", loadType: "getWmsInfo"});
+		jQuery(document).trigger({type: "showLoadIndicator", loadType: "getWmsInfo", layerId: model.get("LayerId")});
 
 	};
 
@@ -2249,12 +2218,12 @@ OpenGeoportal.MapController = function() {
 			
 					newLayer.events.register('loadstart', newLayer, function() {
 						//console.log("Load start");
-						jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad"});
+						jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
 					});
 
 					newLayer.events.register('loadend', newLayer, function() {
 						//console.log("Load end");
-						jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad"});
+						jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
 					});
 					
 					//console.log("wms layer");
@@ -2296,10 +2265,10 @@ OpenGeoportal.MapController = function() {
 		newLayer.projection = new OpenLayers.Projection("EPSG:3857");
 		// how should this change? trigger custom events with jQuery
 		newLayer.events.register('loadstart', newLayer, function() {
-			jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad"});
+			jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
 		});
 		newLayer.events.register('loadend', newLayer, function() {
-			jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad"});
+			jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
 		});
 		var that = this;
 		// we do a cursory check to see if the layer exists before we add it

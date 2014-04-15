@@ -88,6 +88,8 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 											'geocommons',
 											'toolbar=0,menubar=0,status=0,location=0,height=500,width=400');
 						});
+		
+		return jQuery("#" + dialogDivId);
 	};
 
 	this.getInputElement = function(paramObj) {

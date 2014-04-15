@@ -348,14 +348,17 @@ table.display tr.row_selected_bottom td {
 	border-bottom: #d8e8fa 1px solid !important;
 }
 
-table.display tr.cartSelected td {
+table.display tr.cartAction td {
+	opacity: .6;
+}
+
+table.display tr.cartAction.cartSelected td {
+	opacity: 1;
 	background-color: #CDE4FA;
 	border-color: #CDE4FA;
 }
 
-table.display tr.cartUnavailable td {
-	opacity: .6;
-}
+
 
 div.box {
 	height: 100px;

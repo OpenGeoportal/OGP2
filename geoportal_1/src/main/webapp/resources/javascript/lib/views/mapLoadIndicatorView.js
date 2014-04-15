@@ -22,18 +22,21 @@ OpenGeoportal.Views.LoadIndicatorView = Backbone.View.extend({
 		this.listenTo(this.collection, "remove", this.hideSpinner);
 	},
 		
-	showSpinner : function(model){
+	showSpinner : function(){
 		//is loader element visible? is spinner spinning?
 
 		if (jQuery("#" + this.id).length === 0){
 			this.render();
 		}
+
 		this.startSpinner();
 		this.refreshText();
-		
+
 		if (!this.$el.is(":visible")){
-			this.$el.fadeIn();
+			//if you try to fadeIn/fadeOut, you can end up with a race condition
+				this.$el.show();
 		}
+
 	},
 	
 	refreshText: function(text){
@@ -55,12 +58,13 @@ OpenGeoportal.Views.LoadIndicatorView = Backbone.View.extend({
 	},
 	
 	hideSpinner : function(){
-		//is loader element visible? is spinner spinning?
 
+		//is loader element visible? is spinner spinning?		
 		//only hide the spinner if the collection is empty
 		if (this.collection.length === 0 ){
 			if (this.$el.is(":visible")){
-				this.$el.fadeOut(400, this.stopSpinner);
+				this.$el.hide();
+				this.stopSpinner();				 
 			}	
 		}
 
@@ -71,7 +75,6 @@ OpenGeoportal.Views.LoadIndicatorView = Backbone.View.extend({
 	startSpinner : function(){
 		if (this.spinner === null) {
 			// create new spinner
-			console.log("creating spinner");
 			var selector;
 			if (this.$el.hasClass("loadIndicator")){
 				selector = this.el;
@@ -82,6 +85,7 @@ OpenGeoportal.Views.LoadIndicatorView = Backbone.View.extend({
 			}
 			this.spinner = Spinners.create(selector, this.spinnerParams);
 		}
+		
 		this.spinner.play();
 	},
 	

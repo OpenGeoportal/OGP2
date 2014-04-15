@@ -18,9 +18,19 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.CartActionView = Backbone.View.extend({
 	initialize : function() {
+		console.log("initialize cart action view");
 		this.template = OpenGeoportal.ogp.template;
 		this.controls = OpenGeoportal.ogp.controls;
-		this.cartAction();
+		this.initView();
+	},
+	//defaut initView is a nop.  override if subclasses require additional initialization
+	initView: function(){
+		//nop
+	},
+	// the default filter for a cart action. It should be overridden in the
+	// subclassed view
+	cartFilter : function(model) {
+		return model.get("isChecked");
 	},
 
 	getApplicableLayers : function() {
@@ -34,19 +44,12 @@ OpenGeoportal.Views.CartActionView = Backbone.View.extend({
 		return arrItems;
 	},
 
-	// the default filter for a cart action. It should be overridden in the
-	// subclassed view
-	cartFilter : function(model) {
-		return model.get("isChecked");
-	},
-	// entry point
+	//deferred: jQuery.Deferred(),
+	// entry point, returns promise, resolved at the end of the action
 	cartAction : function() {
-		throw new Error("Please implement an override for 'cartAction'");
+		alert("Please implement an override for 'cartAction'");
+		//this.deferred.resolve();
+		//return this.deferred.promise();
 	}
-/*
- * 
- * downloadFilter : function(model) { return model.isDownloadAvailable(); },
- * 
- * 
- */
+
 });

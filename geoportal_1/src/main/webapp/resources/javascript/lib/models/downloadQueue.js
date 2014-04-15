@@ -87,9 +87,6 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 
 				if (doDownload) {
 					var type = model.get("requestType");
-					console.log(model);
-					console.log(type);
-					console.log(this);
 					this.requestTypes[type].successCallback.call(this, model);
 				}
 			},

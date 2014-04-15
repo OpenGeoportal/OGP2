@@ -17,7 +17,6 @@ if (typeof OpenGeoportal.Views === 'undefined') {
  */
 OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 		.extend({
-
 			cartFilter : function(model) {
 				var wsAvailable = false;
 				var attr = "dynamicWebService";
@@ -29,12 +28,17 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				return wsAvailable;
 			},
 
-			cartAction : function() {
+			initView: function(){
 				//assign attributes;  filter relies on attributes set, so do this first
+
 				var that = this;
 				this.collection.each( function(model){
 					that.setDynamicWebServiceAttributes(model);
 				});
+			},
+
+			cartAction : function() {
+
 				
 				var arrModels = this.getApplicableLayers();
 				var dialogContent = "";
@@ -46,6 +50,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				}
 
 				this.createDialog(dialogContent);
+				
 			},
 
 			webserviceKeys : [ "wms", "wfs", "wcs" ],
@@ -192,6 +197,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 
 					jQuery('#dialogs').append(wrapper);
 					dialog$ = jQuery("#" + dialogId);
+					var that = this;
 					dialog$.dialog(
 									{
 										zIndex : 3000,
@@ -199,6 +205,10 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 										height : 'auto',
 										title : 'Web Services',
 										width : 495,
+										close: function( event, ui ) {
+											//resolve the deferred object on dialog close
+											//that.deferred.resolve();
+										},
 										buttons : {
 											Close : function() {
 												jQuery(this).dialog('close');

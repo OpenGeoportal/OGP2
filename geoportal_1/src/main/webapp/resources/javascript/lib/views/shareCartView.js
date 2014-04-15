@@ -18,11 +18,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 		.extend({
-
-			cartFilter : function(model) {
-				return model.get("isChecked");
-			},
-
+			
 			cartAction : function() {
 
 				var arrModels = this.getApplicableLayers();
@@ -56,7 +52,8 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 					this.getShortLink(shareLink);
 				}
 
-				this.createShareDialog(dialogContent);
+				var dialog$ = this.createShareDialog(dialogContent);
+
 			},
 
 			getShortLink : function(longLink) {
@@ -111,5 +108,7 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 					// Select input field contents
 					this.select();
 				});
+				
+				return jQuery("#shareDialog");
 			}
 		});
