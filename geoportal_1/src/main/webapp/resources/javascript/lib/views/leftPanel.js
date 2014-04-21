@@ -209,6 +209,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 								"#container").height());
 						ui.element.resizable("option", "maxHeight", jQuery(
 								"#container").height());
+
 					},
 					resize : function(event, ui) {
 						var delta = ui.size.width - ui.originalSize.width;
@@ -217,6 +218,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 						jQuery(".slideHorizontal").css({
 							"margin-left" : newMargin + "px"
 						});
+						jQuery(this).trigger("panelResizing");
 
 					},
 					stop : function(event, ui) {
@@ -226,6 +228,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 							openWidth : newWidth
 						});
 						jQuery(this).trigger("adjustContents");
+
 					}
 				});
 			}

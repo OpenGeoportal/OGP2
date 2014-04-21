@@ -74,28 +74,15 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return template.genericControl(params);
 	};
 
-	this.canPreview = function(location){
-		//where is a good place to centralize this?
-		return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
-	};
-	
-	this.renderPreviewControl = function(model, previewState){
-		//function(layerId, access, institution, location, previewedCollection,previewState) {
-		var access = model.get("Access").toLowerCase();
-		var institution = model.get("Institution").toLowerCase();
-		var location = model.get("Location");
-		if (this.canPreview(location)){
-			var loginModel = OpenGeoportal.ogp.appState.get("login").model;
-			var hasAccess = loginModel.hasAccessLogic(access, institution);
-			
+	this.renderPreviewControl = function(canPreview, hasAccess, canLogin, stateVal){
+		if (canPreview){
 			if (hasAccess) {
-				return this.renderCheckboxPreviewControl(model, previewState);
+				return this.renderCheckboxPreviewControl(stateVal);
 			} else {
-				var canLogin = loginModel.canLoginLogic(institution);
 				if (canLogin) {
 					return this.renderLoginPreviewControl();
 				} else {
-					return this.renderLinkControl(model);
+					return this.renderLinkControl();
 				}
 			}
 		} else {
@@ -103,10 +90,10 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			return "";
 		}
 	};
-
+	
 	// TODO: fix this
 
-	this.renderLinkControl = function(model) {
+	this.renderLinkControl = function() {
 		var params = {};
 		params.controlClass = "previewLink";
 		params.text = "";
@@ -130,29 +117,18 @@ OpenGeoportal.CommonControls = function CommonControls() {
 	/**
 	 * @requires depends on previewed collection
 	 */
-	this.renderCheckboxPreviewControl = function(model, previewState) {
-		var stateVal = null;
-		if (typeof previewState !== "undefined") {
-			stateValue = previewState;
-		} else {
+	this.renderCheckboxPreviewControl = function(previewState) {
+		var stateVal = previewState;
 
-			stateVal = "off";
-			if (typeof model !== "undefined") {
-				stateVal = model.get("preview");
-				if (typeof stateVal === "undefined") {
-					stateVal = "off";
-				}
-			}
-		}
 		var params = {};
 		params.controlClass = "previewControl";
 		params.text = "";
 		switch (stateVal) {
-		case "off":
+		case false:
 			params.tooltip = "Preview layer on the map";
 			params.displayClass = "checkOff";
 			break;
-		case "on":
+		case true:
 			params.tooltip = "Turn off layer preview on the map";
 			params.displayClass = "checkOn";
 			break;
@@ -202,17 +178,9 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return template.genericIcon(params);
 	};
 
-	/**
-	 * @requires cart collection
-	 */
-	this.renderSaveControl = function(layerId, cartCollection) {
-		var stateVal = false;
-		var selModel =	cartCollection.findWhere({
-			LayerId : layerId
-		});
-		if (typeof selModel !== 'undefined') {
-			stateVal = true;
-		}
+
+	this.renderSaveControl = function(stateVal) {
+
 		var params = {};
 		params.controlClass = "saveControl";
 		params.text = "";
@@ -239,8 +207,8 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		return template.genericControl(params);
 	};
 
-	this.renderDownloadControl = function() {
-		return template.defaultDownloadCheckbox();
+	this.renderDownloadControl = function(isChecked) {
+		return template.defaultDownloadCheckbox({isChecked: isChecked});
 	};
 
 	/*

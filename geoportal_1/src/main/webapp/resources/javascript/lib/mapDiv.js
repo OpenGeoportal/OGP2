@@ -1890,12 +1890,15 @@ OpenGeoportal.MapController = function() {
 				//console.log("got an error trying to get layer info");
 			},
 			complete : function() {
-				jQuery("body").trigger(model.get("LayerId") + 'Exists');
+				//jQuery("body").trigger(model.get("LayerId") + 'Exists');
 
 				jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getWmsInfo", layerId: model.get("LayerId")});
 			}
 		};
 		jQuery.ajax(ajaxParams);
+		//for now, don't wait for wmsinfo response to start loading the layer; perhaps only call if there is an error
+		jQuery("body").trigger(model.get("LayerId") + 'Exists');
+
 		jQuery(document).trigger({type: "showLoadIndicator", loadType: "getWmsInfo", layerId: model.get("LayerId")});
 
 	};

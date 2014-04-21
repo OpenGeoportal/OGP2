@@ -1261,6 +1261,104 @@ Repositories
 		-10px transparent;
 }
 
+
+/**************
+Backbone table view
+***************/
+
+.tableWrapper {
+	font-family: Verdana,Geneva,sans-serif;
+}
+
+.tableHeaders {
+    border-bottom: 1px solid #CCCCCC;
+    width: 100%;
+}
+
+/*.rowContainer {
+	height: 100%;
+	overflow: auto;	
+}*/
+
+.tableRow {
+	width: 100%;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
+.tableCell {
+    display: inline-block;
+}
+
+.tableHeaders > .tableCell {
+    border-color: #CCCCCC;
+    border-style: none none none solid;
+    border-width: 0 0 0 1px;
+    color: #000000;
+    font-size: 12px;
+    font-weight: normal;
+    margin: 0;
+    padding: 3px;
+    position: relative;
+    text-align: center;
+    height: 18px;
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.rowContainer .tableCell {
+	    height: 17px;
+	    color: #4E4E4E;
+	    overflow: hidden;
+    	padding: 2px 4px 2px 3px;
+}
+
+.tableCell > div {
+	margin: auto;
+}
+
+.tableCell > .cellWrapper {
+	width: 100%;
+	margin-left: 2px;
+    margin-right: 2px;
+    overflow: hidden;
+    font-size: 11px;
+    height: 17px;
+    line-height: 17px;
+}
+
+
+.previewControls > div {
+    line-height: 15px;
+}
+
+.rowContainer .colTitle {
+	cursor: pointer;
+}
+
+.tableRow.rowHover {
+	background-color: #ebf6ff;
+	border-bottom: #d8e8fa 1px solid !important;
+	border-top: #d8e8fa 1px solid !important;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.emptyTable {
+    padding: 5px;
+    text-align: center;
+}
+
+.tableRow.cartAction  {
+	opacity: .6;
+}
+
+.tableRow.cartAction.cartSelected {
+	opacity: 1;
+	background-color: #CDE4FA;
+	border-color: #CDE4FA;
+}
+
 /*************
 Info Bubble
 *************/
@@ -1400,16 +1498,17 @@ button.closeBubble {
 .detailsBottom:after {
 	content: "";
 	position: absolute;
-	left: 50%;
-	width: 8px;
-	height: 8px;
+	left: 47%;
+	width: 10px;
+	height: 10px;
 	/* box-shadow: 6px 5px 9px -9px black;*/
 	-webkit-transform: rotate(45deg);
 	-moz-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);
 	-o-transform: rotate(45deg);
 	tranform: rotate(45deg);
-	border-bottom: 8px solid #4B8ACF;
-	top: -14px;
+	background-color: #4B8ACF;
+	/*border-bottom: 8px solid #4B8ACF;*/
+	top: -11px;
 	z-index: 999;
 }

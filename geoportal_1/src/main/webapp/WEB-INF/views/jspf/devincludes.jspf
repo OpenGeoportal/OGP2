@@ -52,7 +52,11 @@
 	<script type="text/javascript"
 	src="resources/javascript/lib/views/mapLoadIndicatorView.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/views/cart.js"></script>
+	src="resources/javascript/lib/views/cartHeader.js"></script>
+		<script type="text/javascript"
+	src="resources/javascript/lib/views/cartRowView.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/cartView.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/leftPanel.js"></script>
 <script type="text/javascript"
@@ -81,8 +85,7 @@
 <script type="text/javascript" src="resources/javascript/lib/solr.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/searchResultsTable.js"></script>
-<script type="text/javascript"
-	src="resources/javascript/lib/cartTable.js"></script>
+
 
 <script type="text/javascript"
 	src="resources/javascript/lib/geoCommonsExport.js"></script>

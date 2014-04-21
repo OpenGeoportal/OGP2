@@ -56,7 +56,11 @@ jQuery(document)
 					ogp.map.initMap("map");
 
 					// creating the cart
-					ogp.cartView = new OpenGeoportal.Views.Cart({
+					new OpenGeoportal.Views.CartHeader({
+						collection: ogp.appState.get("cart"),
+						el: $("#cartHeader")
+					});
+					ogp.cartView = new OpenGeoportal.Views.CartTable({
 						collection : ogp.appState.get("cart"),
 						el : $("#cart")
 					});
@@ -82,8 +86,7 @@ jQuery(document)
 
 										// if the url is a share link, add the
 										// shared layers to the cart
-										var hasSharedLayers = ogp.cartView.cartTableObj
-												.addSharedLayersToCart();
+										var hasSharedLayers = ogp.cartView.addSharedLayers();
 
 										// introFlow dictates behavior of info
 										// bubbles, first search opens Search

@@ -21,7 +21,7 @@
 	height: 31px;
 	position: absolute;
 	right: 0;
-	z-index: 1000;
+	z-index: 1005;
 }
 
 #neCorner {
@@ -56,7 +56,7 @@
     margin: 10px;
     position: absolute;
     width: 0;
-    z-index: 1;
+    z-index: 1001;
     display: none;
 }
 

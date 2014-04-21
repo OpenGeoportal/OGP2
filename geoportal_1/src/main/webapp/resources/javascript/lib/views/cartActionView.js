@@ -18,7 +18,6 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.CartActionView = Backbone.View.extend({
 	initialize : function() {
-		console.log("initialize cart action view");
 		this.template = OpenGeoportal.ogp.template;
 		this.controls = OpenGeoportal.ogp.controls;
 		this.initView();

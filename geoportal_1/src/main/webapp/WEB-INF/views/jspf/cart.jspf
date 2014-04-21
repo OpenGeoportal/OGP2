@@ -1,8 +1,0 @@
-
-<div id="cartHeader" class="tableHeader">
-	<div id="optionDetails" class="shadowDown">
-		<div id="optionText"></div>
-	</div>
-</div>
-
-<div id="cart"></div>

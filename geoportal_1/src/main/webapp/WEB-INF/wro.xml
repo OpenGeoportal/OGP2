@@ -28,7 +28,9 @@
 		<js>/resources/javascript/lib/models/leftPanelModel.js</js>
 		<js>/resources/javascript/lib/views/selectBoxes.js</js>
 		<js>/resources/javascript/lib/views/mapLoadIndicatorView.js</js>
-		<js>/resources/javascript/lib/views/cart.js</js>
+		<js>/resources/javascript/lib/views/cartHeader.js</js>
+		<js>/resources/javascript/lib/views/cartRowView.js</js>
+		<js>/resources/javascript/lib/views/cartView.js</js>
 		<js>/resources/javascript/lib/views/leftPanel.js</js>
 		<js>/resources/javascript/lib/views/tableRowSettings.js</js>
 		<js>/resources/javascript/lib/models/externalPreviewWindowsCollection.js</js>
@@ -43,7 +45,6 @@
 		<js>/resources/javascript/lib/layerTable.js</js>
 		<js>/resources/javascript/lib/solr.js</js>
 		<js>/resources/javascript/lib/searchResultsTable.js</js>
-		<js>/resources/javascript/lib/cartTable.js</js>
 		<js>/resources/javascript/lib/geoCommonsExport.js</js>
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>

@@ -54,6 +54,10 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		    this.options = options;
 		    Backbone.View.apply(this, arguments);
 		  },
+		  events: {
+			  "click .select" : "toggleMenu",
+			  "blur .ui-menu" : "hideMenu"
+		  },
 	uiInit: function(selectFunction){
 		var that = this;
 		this.$el.addClass("dropdown").attr("ogpSelectMenu", true);
@@ -62,26 +66,41 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 				secondary: "ui-icon-triangle-1-s"
 			}
 		})
-		.on("click", function(event) {
-			event.preventDefault;
-			var menu$ = $( this ).parent().next().toggle().position({
-				my: "left top",
-				at: "left bottom",
-				of: this
-			}).focus().one("blur", function(event){
-				event.preventDefault;
-				jQuery(this).hide();
-			});
-			
-			return false;
-		})
 		.parent()
 		.buttonset()
 		.next()
 		.hide()
 		.menu( {
-			select: function(event, ui){that.selectCallback(event, ui, that);}
+			select: function(event, ui){that.selectCallback(event, ui, that);},
+			position :{
+				my: "left top",
+				at: "left bottom",
+				of: this
+			}
 		});
+	},
+	hideMenu: function(){
+		var menu$ = this.$el.find(".ui-menu");
+		menu$.slideUp({duration: 100});
+	},
+	showMenu: function(){
+		var menu$ = this.$el.find(".ui-menu");
+		menu$.slideDown({
+			duration: 100,
+			done: function(){
+					$( this ).focus();
+			}			
+		});
+	},
+	toggleMenu: function(e){
+		e.preventDefault;
+		
+		var menu$ = this.$el.find(".select").first().parent().next();
+		if (menu$.css("display") != "none"){
+			this.hideMenu();
+		} else {
+			this.showMenu();
+		}
 	},
 	getButtonLabel: function(){
 		return this.getAttributeName(this.options.buttonLabel, "Select one");
@@ -234,8 +253,10 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
 	},
+	lastFocus: null,
 	selectCallback: function(event, ui, context){
 		var valueAttr = this.getValueAttribute();
+		this.lastFocus = ui.item;
 		var selValue = ui.item.find("input[type=hidden]").first().val();
 		var selModel = this.collection.find(function(model) {
 			return model.get(valueAttr) === selValue;
@@ -286,6 +307,9 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 				}
 			});
 		});
+		if (this.lastFocus !== null){
+			$(".ui-menu" ).menu( "focus", null, this.lastFocus );
+		}
 		return this;
 	}
 

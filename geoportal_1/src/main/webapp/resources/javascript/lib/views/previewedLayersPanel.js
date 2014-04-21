@@ -181,7 +181,7 @@ OpenGeoportal.Views.PreviewedLayersRow = Backbone.View.extend({
 			if (this.model.has("toolView")) {
 				this.model.get("toolView").remove();
 				this.model.unset("toolView");
-				this.$el.next().parent(".controls").remove();
+				this.$el.next(".controls").remove();
 			}
 		}
 

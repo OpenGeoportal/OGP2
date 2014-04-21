@@ -28,7 +28,7 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 
 	this.backingData = OpenGeoportal.ogp.results;
 
-	this.cart = OpenGeoportal.ogp.cartView.collection;
+	this.cart = OpenGeoportal.ogp.appState.get("cart");
 
 	this.addTableDrawCallback("sortGraphics", function() {
 		this.createSortGraphics();
@@ -58,11 +58,28 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 		width : 19,
 		dtRender : function(data, type, full) {
 			var layerId = full.LayerId;
-			return that.controls.renderSaveControl(layerId, that.cart);
+			var stateVal = false;
+			var selModel =	that.cart.findWhere({
+				LayerId : layerId
+			});
+			if (typeof selModel !== 'undefined') {
+				stateVal = true;
+			}
+			return that.controls.renderSaveControl(stateVal);
 		},
 		modelRender : function(model) {
 			var layerId = model.get("LayerId");
-			return that.controls.renderSaveControl(layerId, that.cart);
+	
+			var stateVal = false;
+			var selModel =	that.cart.findWhere({
+				LayerId : layerId
+			});
+			if (typeof selModel !== 'undefined') {
+				stateVal = true;
+			}
+						
+			
+			return that.controls.renderSaveControl(stateVal);
 		}
 
 	};
@@ -396,13 +413,12 @@ OpenGeoportal.SearchResultsTable = function SearchResultsTable() {
 		var that = this;
 		jQuery(document).on("click.save",
 				"#" + this.getTableId() + " div.saveControl", function(event) {
-					var cart = OpenGeoportal.ogp.cartView.collection;
 					var aData = that.getRowData(this).data;
 					var layerId = that.getColumnData(aData, "LayerId");
 					var layerModel = that.backingData.findWhere({
 						LayerId : layerId
 					});
-					cart.toggleCartState(layerModel);
+					that.cart.toggleCartState(layerModel);
 				});
 	};
 

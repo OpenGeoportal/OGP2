@@ -109,7 +109,7 @@ table.display {
 	border-collapse: collapse;
 	table-layout: fixed;
 	cursor: default;
-
+	margin-bottom: 1px;
 	/*	width: 100%;
 	clear: both;
 	*/
@@ -142,6 +142,7 @@ table.display thead th {
 	color: #000000;
 	font-weight: normal;
 	position: relative;
+	white-space: nowrap;
 	/* cursor: hand;*/
 }
 
@@ -213,9 +214,6 @@ td.searchResultsCell {
 	text-overflow: ellipsis;
 }
 
-.colExpand {
-	border-bottom: 1px solid rgb(236, 236, 236);
-}
 
 th.colExpand {
 	border-left: 0 none !important;
@@ -348,15 +346,7 @@ table.display tr.row_selected_bottom td {
 	border-bottom: #d8e8fa 1px solid !important;
 }
 
-table.display tr.cartAction td {
-	opacity: .6;
-}
 
-table.display tr.cartAction.cartSelected td {
-	opacity: 1;
-	background-color: #CDE4FA;
-	border-color: #CDE4FA;
-}
 
 
 

@@ -6,6 +6,17 @@ if (typeof OpenGeoportal == 'undefined') {
 
 OpenGeoportal.Template = function() {
 
+	var cartHeaderHtml =	'<div id="optionDetails" class="shadowDown">';
+	cartHeaderHtml +=	'<div id="optionText"></div></div>';
+	
+	this.cartHeader = _.template(cartHeaderHtml);
+	
+	var cartTableHtml = '<div class="tableWrapper"><div class="tableHeaders">';
+	cartTableHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
+	cartTableHtml += '</div>';
+	cartTableHtml += '<div class="rowContainer"></div></div>';
+	this.cartTable = _.template(cartTableHtml);
+	
 	this.dataTable = _
 			.template('<table id="<%= tableId %>" class="display"></table>');
 
@@ -67,6 +78,8 @@ OpenGeoportal.Template = function() {
 	var previewToolContainerHtml = '<tr class="controls"><td class="previewTools" colspan="<%=colspan%>"><div></div></td></tr>';
 	this.previewToolsContainer = _.template(previewToolContainerHtml);
 
+	var cartPreviewToolContainerHtml = '<div class="controls"><div class="previewTools" ><div></div></div></div>';
+	this.cartPreviewToolsContainer = _.template(cartPreviewToolContainerHtml);
 	// html content/formatting for expanded row
 	var previewToolHtml = '<div class="previewControls"><%=toolsMarkup%>';
 	previewToolHtml += '</div>';
@@ -119,9 +132,11 @@ OpenGeoportal.Template = function() {
 	var iframeDownloadHtml = '<iframe class="<%= iframeClass%>" src="<%= iframeSrc %>" onload="jQuery(document).trigger(\'iframeload\')"/>';
 	this.iframeDownload = _.template(iframeDownloadHtml);
 
-	var defaultDownloadCheckboxHtml = '<input type="checkbox" class="cartCheckBox" checked />';
+	var defaultDownloadCheckboxHtml = '<input type="checkbox" class="cartCheckBox" <% if ( isChecked ) { %>checked<% } %> />';
 	this.defaultDownloadCheckbox = _.template(defaultDownloadCheckboxHtml);
 
+	var emptyTableHtml = '<div class="emptyTable"><%= message %></div>';
+	this.emptyTable = _.template(emptyTableHtml);
 	// var list = "<% _.each(people, function(name) { %> <li><%= name %></li> <%
 	// }); %>";
 	var attributeTableHtml = '<table class="attributeInfo">'
@@ -137,6 +152,12 @@ OpenGeoportal.Template = function() {
 
 	var textTableCellHtml = '<td class="<%= colClass %>"><div class="cellWrapper" title="<%= contents %>"><%= contents %></div></td>';
 	this.textTableCell = _.template(textTableCellHtml);
+	
+	var cartCellHtml = '<div class="tableCell <%= colClass %>"><%= contents %></div>';
+	this.cartCell = _.template(cartCellHtml);
+
+	var textCartCellHtml = '<div class="tableCell <%= colClass %>" title="<%= contents %>"><div class="cellWrapper"><%= contents %></div></div>';
+	this.textCartCell = _.template(textCartCellHtml);
 
 	/**
 	 * download controls
