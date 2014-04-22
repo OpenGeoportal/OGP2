@@ -11,11 +11,11 @@ OpenGeoportal.Template = function() {
 	
 	this.cartHeader = _.template(cartHeaderHtml);
 	
-	var cartTableHtml = '<div class="tableWrapper"><div class="tableHeaders">';
-	cartTableHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
-	cartTableHtml += '</div>';
-	cartTableHtml += '<div class="rowContainer"></div></div>';
-	this.cartTable = _.template(cartTableHtml);
+	var tableViewHtml = '<div class="tableWrapper"><div class="tableHeaders">';
+	tableViewHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
+	tableViewHtml += '</div>';
+	tableViewHtml += '<div class="rowContainer"></div></div>';
+	this.tableView = _.template(tableViewHtml);
 	
 	this.dataTable = _
 			.template('<table id="<%= tableId %>" class="display"></table>');

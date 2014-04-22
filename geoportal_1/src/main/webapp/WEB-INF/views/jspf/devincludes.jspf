@@ -51,6 +51,10 @@
 	src="resources/javascript/lib/views/selectBoxes.js"></script>
 	<script type="text/javascript"
 	src="resources/javascript/lib/views/mapLoadIndicatorView.js"></script>
+		<script type="text/javascript"
+	src="resources/javascript/lib/views/layerRowView.js"></script>
+		<script type="text/javascript"
+	src="resources/javascript/lib/views/layerTableView.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/cartHeader.js"></script>
 		<script type="text/javascript"
@@ -81,10 +85,10 @@
 <script type="text/javascript"
 	src="resources/javascript/lib/views/previewedLayersPanel.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/layerTable.js"></script>
+	src="resources/javascript/lib/views/searchResultsRowView.js"></script>
 <script type="text/javascript" src="resources/javascript/lib/solr.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/searchResultsTable.js"></script>
+	src="resources/javascript/lib/views/searchResultsView.js"></script>
 
 
 <script type="text/javascript"

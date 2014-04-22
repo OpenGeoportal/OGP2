@@ -359,7 +359,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 
 OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	initialize: function() {
-		this.headings = OpenGeoportal.ogp.resultsTableObj.tableHeadingsObj;
+		this.headings = this.options.headings;
 		this.listenTo(this.model, "change", this.setValue);
 		this.listenTo(this.model, "change", this.render);
 		this.initRender();

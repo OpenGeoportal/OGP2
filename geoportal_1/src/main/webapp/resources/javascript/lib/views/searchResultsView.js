@@ -11,105 +11,94 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 }
 
 
-OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
+OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 		.extend({
-			events : {
-				"click #downloadHeaderCheck" : "setChecks"
+
+			events: {
+				"render": "attachScrollHandler"
 			},
-			
-			emptyTableMessage: "No data layers have been added to the cart.",
-			
 			initSubClass: function(){
-				this.listenTo(this.collection, "add", this.addedToCart);
-				this.listenTo(this.collection, "remove", this.removedFromCart);
-			},
-			
-			setChecks: function(e){
-				var isChecked = jQuery(e.target).is(':checked');
+				this.cart = OpenGeoportal.ogp.appState.get("cart");
+				this.tableOrganize = new OpenGeoportal.TableSortSettings();
 				
-					this.collection.each(function(model){
-						model.set({isChecked: isChecked});
-					});
+				this.tableLayerState = new OpenGeoportal.TableRowSettings();
+				this.sortView = new OpenGeoportal.Views.Sort({
+					model : this.tableOrganize,
+					el : $("#sortDropdown"),
+					headings: this.tableConfig
+				});
+				var that = this;
+				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.getResults();});
+				var iconRenderer = function() {
+						return "";
+				};
 				
+				var columnMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
+							{
+								collection : this.tableConfig,
+								el : "div#columnDropdown",
+								collectionFilter : {
+									attr : "hidable",
+									val : true
+								},
+								valueAttribute : "columnName",
+								displayAttribute : "displayName",
+								selectionAttribute : "visible",
+								buttonLabel : "Columns",
+								itemClass : "columnMenuItem",
+								iconRenderer : iconRenderer,
+								controlClass : "columnCheck"
+							}
+				);
+				
+				this.listenTo(this.collection, "reset", this.render);
+				this.listenTo(this.collection, "reset", this.updateResultsNumber);
+				//should call setFrameHeight whenever the search panel height changes
+				this.listenTo(this.collection, "reset", this.setFrameHeight);
+			    this.listenTo(this.collection.fullCollection, "add", this.renderRow);
+
+				$(".rowContainer").scroll(function(e){that.checkScroll();});
+				this.fireSearchHandler();
 			},
-			addedToCart : function(model) {
-				var layerId = model.get("LayerId");
-				model.set({
-					isChecked : true
+			attachScrollHandler: function(){
+				var that = this;
+				$(".rowContainer").on("scroll", function(){that.checkScroll();});
+			},
+			checkScroll: function () {
+			      var triggerPoint = 100; // 100px from the bottom
+			      var scrollEl = $(".rowContainer")[0];
+			        if( scrollEl.scrollTop + scrollEl.clientHeight + triggerPoint > scrollEl.scrollHeight ) {
+			          this.collection.getNextPage(); // Load next page
+			        }
+			    },
+			setFrameHeight: function(){
+				if ($(".rowContainer").length === 0){
+					return;
+				}
+				
+				var ht = Math.ceil(jQuery(document).height() - $(".rowContainer").position().top - jQuery("#footer").height() - jQuery("#header").height());
+				$(".rowContainer").height(ht);
+			},
+			fireSearchHandler: function(){
+				var that = this;
+				jQuery(document).on("fireSearch", function(){
+					that.collection.getFirstPage({dataType: "jsonp", jsonp: "json.wrf"});
 				});
-				// update search results table
-				jQuery(document).trigger("view.showInCart", {
-					layerId : layerId
-				});
-
-				this.updateSavedLayersNumber();
-				this.render();
 			},
-			removedFromCart : function(model) {
-				var layerId = model.get("LayerId");
-				// update search results table
-				jQuery(document).trigger("view.showNotInCart", {
-					layerId : layerId
-				});
-
-				this.updateSavedLayersNumber();
-				this.render();
-			},
-			updateSavedLayersNumber : function() {
-				var number$ = jQuery('.savedLayersNumber');
-
-				number$.text('(' + this.collection.length + ')');
-
-				OpenGeoportal.Utility.elementFlash(number$.parent());
-
-			},
-
+			emptyTableMessage: "No matching layers.",
 			//renderedViews : {}, // keep a reference to rendered
 			// views...necessary?
 			renderRow : function(model) {
-				var row = new OpenGeoportal.Views.CartRow(
+				var row = new OpenGeoportal.Views.SearchResultsRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
 				this.$el.find(".rowContainer").append(row.el);
 			},
-
-
-			addSharedLayers: function() {
-				if (OpenGeoportal.Config.shareIds.length > 0) {
-					var solr = new OpenGeoportal.Solr();
-					var that = this;
-					solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds,
-							function(){that.getLayerInfoSuccess.apply(that, arguments);}, 
-							function(){that.getLayerInfoError.apply(that, arguments);});
-					return true;
-				} else {
-					return false;
-				}
+			updateResultsNumber: function() {
+				jQuery('.resultsNumber').text(this.collection.totalResults);
 			},
-
-			getLayerInfoSuccess: function(data) {
-
-				var arr = this.solrToCollection(data);
-				this.collection.add(arr);
-				this.previewed.add(arr);
-				this.previewed.each(function(model){
-					model.set({previewed: "on"});
-				});
-
-				jQuery(document).trigger("map.zoomToLayerExtent", {
-					bbox : OpenGeoportal.Config.shareBbox
-				});
-				// jQuery("#tabs").tabs("option", "active", 1);
-
-			},
-
-			getLayerInfoJsonpError:function() {
-				throw new Error(
-						"The attempt to retrieve layer information from layerIds failed.");
-			},
-
 			addColumns: function(tableConfigCollection) {
 				var that = this;
 				tableConfigCollection
@@ -132,20 +121,29 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 
 								},
 								{
-										order : 1,
-										columnName : "checkBox",
-										resizable : false,
-										organize : false,
-										visible : true,
-										hidable : false,
-										header : "<input type=\"checkbox\" id=\"downloadHeaderCheck\" checked />",
-										columnClass : "colChkBoxes",
-										width : 21,
-										modelRender : function(model) {
-											
-											return that.controls.renderDownloadControl(model.get("isChecked"));
-											
+									order : 1,
+									columnName : "Save",
+									resizable : false,
+									organize : false,
+									visible : true,
+									hidable : false,
+									header : "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>",
+									columnClass : "colSave",
+									width : 19,
+									modelRender : function(model) {
+										var layerId = model.get("LayerId");
+								
+										var stateVal = false;
+										var selModel =	that.cart.findWhere({
+											LayerId : layerId
+										});
+										if (typeof selModel !== 'undefined') {
+											stateVal = true;
 										}
+													
+										
+										return that.controls.renderSaveControl(stateVal);
+									}
 									},
 									{
 										order : 2,

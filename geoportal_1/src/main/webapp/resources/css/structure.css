@@ -1275,10 +1275,9 @@ Backbone table view
     width: 100%;
 }
 
-/*.rowContainer {
-	height: 100%;
+.rowContainer {
 	overflow: auto;	
-}*/
+}
 
 .tableRow {
 	width: 100%;
@@ -1334,6 +1333,7 @@ Backbone table view
 
 .rowContainer .colTitle {
 	cursor: pointer;
+	color: #000000;
 }
 
 .tableRow.rowHover {
