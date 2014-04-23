@@ -14,6 +14,16 @@
 
 <link rel="stylesheet" href="resources/css/jquery-ui-ogpTheme.custom.css" type="text/css" />
 
+<script>
+if (!Object.create) {
+	Object.create = function(o) {
+		function F() {
+		}
+		F.prototype = o;
+		return new F();
+	};
+};
+</script>
 
 <c:choose>
       <c:when test="${dev}" >
