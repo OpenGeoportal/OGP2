@@ -14,6 +14,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocumentList;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.w3c.dom.*;
 
 /**
@@ -21,12 +22,20 @@ import org.w3c.dom.*;
  * @author chris
  *
  */
+
 public class MetadataFromSolr implements MetadataRetriever {
 	@Autowired
 	private LayerInfoRetriever layerInfoRetriever;
 	private String layerId;
 	private Document xmlDocument;
 	private DocumentBuilder builder;
+	private Resource fgdcStyleSheet;
+	private Resource iso19139StyleSheet;
+	
+	public enum MetadataType {
+		ISO_19139, FGDC;
+
+	}
 	
 	MetadataFromSolr() {
 		// Create a factory
@@ -181,6 +190,88 @@ public class MetadataFromSolr implements MetadataRetriever {
 
 		return xmlString;
 	}
+	
+	@Override
+	public String getMetadataAsHtml(String layerID) throws Exception {
+		String xmlString = this.getXMLStringFromSolr(layerID, "LayerId");
+		
+		Document document = null;
+		try {
+			document = buildXMLDocFromString(layerId, xmlString);
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		//get the metadata type and correct xslt document
+		
+		Source xmlSource = new DOMSource(document);
+		
+		StringWriter stringWriter = new StringWriter();
+		StreamResult streamResult = new StreamResult(stringWriter);
+		
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		
+        Source xslt = new StreamSource(getStyleSheet(document));
+        
+        Transformer transformer = transformerFactory.newTransformer(xslt);
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+		transformer.transform(xmlSource, streamResult);
+		String outputString = stringWriter.toString();
+
+		return outputString;
+
+	}
+	
+	File getStyleSheet(Document document) throws Exception{
+		MetadataType metadataType = getMetadataType(document);
+		//getMetadataType throws an exception if not fgdc or iso19139
+		if (metadataType.equals(MetadataType.FGDC)){
+			return this.getFgdcStyleSheet().getFile();
+		} else {
+			return this.getIso19139StyleSheet().getFile();
+		}
+	}
+	
+    public static MetadataType getMetadataType(Document document) throws Exception {
+        MetadataType metadataType = null;
+        try {
+            //<metstdn>FGDC Content Standards for Digital Geospatial Metadata
+            //<metstdv>FGDC-STD-001-1998
+        	NodeList rootNodes = document.getElementsByTagName("metadata");
+        	if (rootNodes.getLength() > 0){ 
+        		if (document.getElementsByTagName("metstdn").item(0).getTextContent().toLowerCase().contains("fgdc")){
+        			metadataType = MetadataType.FGDC;
+        		}
+        	}
+        } catch (Exception e){/*ignore*/
+            //document.getElementsByTagName("metstdn").item(0).getTextContent().toLowerCase();
+        }
+
+        try {
+
+            NodeList rootNodes = document.getElementsByTagNameNS("*", "MD_Metadata");
+            NodeList altRootNodes = document.getElementsByTagNameNS("*", "MI_Metadata");
+            int totalNodes = rootNodes.getLength() + altRootNodes.getLength();
+            if (totalNodes > 0){
+                    metadataType = MetadataType.ISO_19139;
+                
+            }
+        } catch (Exception e){/*ignore*/}
+
+        if (metadataType == null){
+            //throw an exception...metadata type is not supported
+            throw new Exception("Metadata Type is not supported.");
+        }
+        return metadataType;
+    }
 /*
  * <ptcontac>
 <cntinfo>
@@ -298,5 +389,21 @@ public class MetadataFromSolr implements MetadataRetriever {
 			fullAddress += ", " + country;
 		}
 		return fullAddress;
+	}
+
+	public Resource getFgdcStyleSheet() {
+		return fgdcStyleSheet;
+	}
+
+	public void setFgdcStyleSheet(Resource fgdcStyleSheet) {
+		this.fgdcStyleSheet = fgdcStyleSheet;
+	}
+
+	public Resource getIso19139StyleSheet() {
+		return iso19139StyleSheet;
+	}
+
+	public void setIso19139StyleSheet(Resource iso19139StyleSheet) {
+		this.iso19139StyleSheet = iso19139StyleSheet;
 	}
 }

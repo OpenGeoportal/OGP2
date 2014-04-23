@@ -9,4 +9,5 @@ public interface MetadataRetriever {
 	String getContactName(String layerID);
 	String getContactPhoneNumber(String layerId);
 	String getContactAddress(String layerID);
+	String getMetadataAsHtml(String layerID) throws Exception;
 }

@@ -227,20 +227,10 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			var url = OpenGeoportal.Utility.getLocationValue(location, values);
 			this.viewExternalMetadata(layerId, url);
 		} else {
-			this.viewMetadataFromSolr(layerId);
+			this.viewMetadataFromOgp(layerId);
 		}
 	};
-	// obtain layer's metadata via jsonp call
-	this.viewMetadataFromSolr = function(layerId) {
-		// make an ajax call to retrieve metadata
-		var solr = new OpenGeoportal.Solr();
-		var url = solr.getServerName() + "?"
-				+ jQuery.param(solr.getMetadataParams(layerId));
-		var query = solr.sendToSolr(url, this.viewMetadataJsonpSuccess,
-				this.viewMetadataJsonpError, this);
-
-		// this.analytics.track("Metadata", "Display Metadata", layerId);
-	};
+	
 
 	this.viewExternalMetadata = function(layerId, url) {
 		var document = template.genericIframe({
@@ -250,39 +240,21 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		var dialog$ = this.renderMetadataDialog(layerId, document);
 		dialog$.dialog("open");
 	};
-
-	this.processMetadataSolrResponse = function(data) {
-		var solrResponse = data.response;
-		var totalResults = solrResponse.numFound;
-		if (totalResults != 1) {
-			throw new Error("Request for Metadata returned " + totalResults
-					+ ".  Exactly 1 was expected.");
-			return;
-		}
-		var doc = solrResponse.docs[0]; // get the first layer object
-		return doc;
-	};
-	// handles jsonp response from request for metadata call
-	this.viewMetadataJsonpSuccess = function(data) {
+	
+	this.viewMetadataFromOgp = function(layerId){
 		try {
-			var doc = this.processMetadataSolrResponse(data);
-			var metadataRawText = doc.FgdcText;
-			var layerId = doc.LayerId;
-
-			var xmlDocument = null;
-			try {
-				xmlDocument = jQuery.parseXML(metadataRawText);
-			} catch (e) {
-				throw new Error(
-						"Error parsing returned XML: the document may be invalid.");
-			}
+			
 			var document = null;
-			try {
-				document = this.renderXmlMetadata(xmlDocument);
-			} catch (e) {
-				throw new Error(
-						"Error transforming XML document: the document may be of the wrong type.");
+			var params = {
+					url: "getMetadata",
+					data: {id: layerId},
+					async: false,
+					success: function(data){
+						document = data;
+					}
 			}
+			jQuery.ajax(params);
+
 			var dialog$ = this.renderMetadataDialog(layerId, document);
 			this.addMetadataDownloadButton(dialog$, layerId);
 			this.addScrollMetadataToTop();
@@ -292,8 +264,8 @@ OpenGeoportal.CommonControls = function CommonControls() {
 			console.log(e);
 			throw new Error("Error opening the metadata dialog.");
 		}
-
 	};
+
 
 	this.renderMetadataDialog = function(layerId, document) {
 		var dialogId = "metadataDialog";
@@ -368,63 +340,10 @@ OpenGeoportal.CommonControls = function CommonControls() {
 		});
 	};
 
-	this.renderXmlMetadata = function(xmlMetadataDocument) {
-		var url = this.chooseStyleSheet(xmlMetadataDocument);
-		var xslDocument = this.retrieveStyleSheet(url);
-		return this.transformXml(xmlMetadataDocument, xslDocument);
-	};
 
-	this.chooseStyleSheet = function(metadataDocument) {
-		var stylesheetPath = "resources/xml/";
-		var ISO_19139_styleSheet = "isoBasic.xsl";
-		var FGDC_styleSheet = "FGDC_V2_a.xsl";
-		var xslUrl = null;
-
-		if (metadataDocument.firstChild.localName == "MD_Metadata") {
-			// ISO 19139 stylesheet
-			xslUrl = ISO_19139_styleSheet;
-		} else {
-			// FGDC stylesheet
-			xslUrl = FGDC_styleSheet;
-		}
-		xslUrl = stylesheetPath + xslUrl;
-
-		return xslUrl;
-	};
-
-	this.retrieveStyleSheet = function(url) {
-		var styleSheet = null;
-
-		var params = {
-			url : url,
-			async : false,
-			dataType : 'xml',
-			success : function(data) {
-				styleSheet = data;
-			}
-		};
-		jQuery.ajax(params);
-		return styleSheet;
-	};
-
-	this.transformXml = function(xmlDocument, styleSheet) {
-		var resultDocument = null;
-		if (styleSheet !== null) {
-			if (window.ActiveXObject) {
-				// IE
-				resultDocument = xmlDocument.transformNode(styleSheet);
-			} else {
-				var xsltProcessor = new XSLTProcessor();
-				xsltProcessor.importStylesheet(styleSheet);
-				resultDocument = xsltProcessor.transformToFragment(xmlDocument,
-						window.document);
-			}
-		}
-		return resultDocument;
-	};
 
 	this.downloadMetadata = function downloadMetadata(layerId) {
-		var iframeSource = "getMetadata/download?id=" + layerId;
+		var iframeSource = "getMetadata/xml?download=true&id=" + layerId;
 		this.iframeDownload("metadataDownloadIframe", iframeSource);
 
 		// this.analytics.track("Metadata", "Download Metadata", layerId);

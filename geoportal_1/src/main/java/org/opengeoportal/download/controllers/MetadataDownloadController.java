@@ -1,7 +1,5 @@
 package org.opengeoportal.download.controllers;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.opengeoportal.download.MetadataRetriever;
@@ -26,46 +24,65 @@ public class MetadataDownloadController {
 	@Autowired
 	private LayerInfoRetriever layerInfoRetriever;
 
-	@RequestMapping(value="/{download}", method=RequestMethod.GET)
-	public @ResponseBody void processMetadataDownload(@PathVariable String download, @RequestParam("id") String id, HttpServletResponse response) throws Exception {
-		Boolean downloadBool = false;
-		if (download.equals("download")){
-			downloadBool = true;
-		}
-		handleMetadataRequest(id, downloadBool, response);
+	 /**
+	 * This controller should receive a GET request with the layerId and a boolean "inline" that tells whether the data should 
+	 * appear inline or as an attachment
+	 *
+	 * @author Chris Barnett
+	 */
+	@RequestMapping(value="/{format}", method=RequestMethod.GET)
+	public @ResponseBody void processMetadataDownload(@PathVariable String format, @RequestParam("download") Boolean download, @RequestParam("id") String id, HttpServletResponse response) throws Exception {
+
+		handleMetadataRequest(id, download, format, response);
 	}
 	
 	
 	@RequestMapping(method=RequestMethod.GET)
 	public @ResponseBody void processMetadataDownload(@RequestParam("id") String id, HttpServletResponse response) throws Exception {
-		 /**
-		 * This controller should receive a GET request with the layerId and a boolean "inline" that tells whether the data should 
-		 * appear inline or as an attachment
-		 *
-		 * @author Chris Barnett
-		 */
-		handleMetadataRequest(id, false, response);
+
+		handleMetadataRequest(id, false, "html", response);
 	}
 	
-	private void handleMetadataRequest(String id, Boolean download, HttpServletResponse response) throws IOException{
-		String disposition;
-		String contentType;
-		if (download){
-			disposition = "attachment";
-			contentType = "application/xml;charset=UTF-8";
+	private void handleMetadataRequest(String id, Boolean download, String format, HttpServletResponse response) throws Exception{
+
+		String metadataString = getMetadataString(id, format);
+
+		response.setContentLength(metadataString.getBytes("UTF-8").length);
+
+		response.setHeader("Content-Disposition", getContentDisposition(download) + "; filename=\""
+				+ getFileName(id) + "." + format.toLowerCase().trim() + "\"");
+		response.setContentType(getContentType(format));
+		// return a link to the zip file, or info to create link
+		response.getWriter().write(metadataString);
+	}
+	
+	private String getMetadataString(String layerId, String format) throws Exception{
+		String metadataString = "";
+		if (format.equalsIgnoreCase("xml")){
+			metadataString = this.metadataRetriever.getXMLStringFromId(layerId, "fgdc");
+
+		} else if (format.equalsIgnoreCase("html")){
+			metadataString = this.metadataRetriever.getMetadataAsHtml(layerId);
 		} else {
-			disposition = "inline";
-			contentType = "application/xml;charset=UTF-8";
+			throw new Exception("Unrecognized format: " + format);
 		}
 		
-		String metadataString = null;
-		try {
-			metadataString = this.metadataRetriever.getXMLStringFromId(id, "fgdc");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		return metadataString;
+	}
+	
+	private String getContentDisposition(Boolean attachment){
+		String disposition;
+
+		if (attachment){
+			disposition = "attachment";
+		} else {
+			disposition = "inline";
 		}
-		response.setContentLength(metadataString.getBytes("UTF-8").length);
+		
+		return disposition;
+	}
+	
+	private String getFileName(String id){
 		String fileName = null;
 		try {
 			fileName = layerInfoRetriever.getAllLayerInfo(id).getName();
@@ -73,10 +90,20 @@ public class MetadataDownloadController {
 			e.printStackTrace();
 			fileName = id;
 		}
-		response.setHeader("Content-Disposition", disposition + "; filename=\""
-				+ OgpFileUtils.filterName(fileName) + ".xml" + "\"");
-		response.setContentType(contentType);
-		// return a link to the zip file, or info to create link
-		response.getWriter().write(metadataString);
+		
+		return OgpFileUtils.filterName(fileName);
+	}
+	
+	private String getContentType(String format) throws Exception{
+		String mimeType;
+		if (format.equalsIgnoreCase("html")){
+			mimeType = "application/html;charset=UTF-8";
+		} else if (format.equalsIgnoreCase("xml")){
+			mimeType = "application/xml;charset=UTF-8";
+			
+		} else {
+			throw new Exception("Unrecognized mime-type.");
+		}
+		return mimeType;
 	}
 }

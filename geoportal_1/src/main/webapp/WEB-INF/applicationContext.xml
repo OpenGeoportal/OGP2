@@ -95,7 +95,10 @@
 	<beans:bean id="layerInfoRetriever.solr"
 		class="org.opengeoportal.metadata.SolrLayerInfoRetriever" />
 
-	<beans:bean id="metadataRetriever.solr" class="org.opengeoportal.download.MetadataFromSolr" />
+	<beans:bean id="metadataRetriever.solr" class="org.opengeoportal.download.MetadataFromSolr" >
+		<beans:property name="fgdcStyleSheet" value="${styleSheet.fgdc}"/>
+		<beans:property name="iso19139StyleSheet" value="${styleSheet.iso19139}"/>
+	</beans:bean>
 
 	<beans:bean id="configRetriever.download"
 		class="org.opengeoportal.download.config.OgpDownloadConfigRetriever">

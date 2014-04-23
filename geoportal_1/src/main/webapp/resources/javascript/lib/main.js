@@ -11,15 +11,6 @@ if (typeof OpenGeoportal == 'undefined') {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-if (!Object.create) {
-	Object.create = function(o) {
-		function F() {
-		}
-		F.prototype = o;
-		return new F();
-	};
-}
-
 jQuery(document)
 		.ready(
 				function() {
