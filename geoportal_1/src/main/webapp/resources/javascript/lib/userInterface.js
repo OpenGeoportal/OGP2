@@ -207,17 +207,8 @@ OpenGeoportal.UserInterface = function() {
 	};
 
 	this.requestIndicatorHandler = function(){
-		//var indicatorColl = new OpenGeoportal.LoadIndicatorCollection();
 		var indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: this.appState.get("requestQueue"), template: this.template});
 	
-		/*jQuery(document).on("showRequestSpinner", function(e){
-			indicatorColl.add([{actionType: "dlRequestQ", actionId: "dl"}]);
-		});
-		
-		jQuery(document).on("hideRequestSpinner", function(e){
-			var model = indicatorColl.findWhere({actionType: "dlRequestQ", actionId: "dl"});
-			indicatorColl.remove(model);
-		});*/
 	};
 
 
@@ -245,7 +236,7 @@ OpenGeoportal.UserInterface = function() {
 	};
 
 	this.resizeMap = function(height) {
-		jQuery(".olMap").height(height);
+		jQuery("#mapOLMap").height(height);
 
 	};
 

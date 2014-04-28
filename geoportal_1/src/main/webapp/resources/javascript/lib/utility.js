@@ -1,4 +1,4 @@
-/* This javascript module includes utility functions for OpenGeoPortal plus
+/* This javascript module includes utility functions for OpenGeoportal plus
  * extra functions with no current home. OpenGeoportal.Utility is a
  * namespace rather than an object.  The XML functions might go away when we
  * upgrade to a newer version of jQuery, as it contains functions to parse XML.

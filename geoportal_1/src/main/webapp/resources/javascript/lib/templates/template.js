@@ -20,12 +20,17 @@ OpenGeoportal.Template = function() {
 	this.dataTable = _
 			.template('<table id="<%= tableId %>" class="display"></table>');
 
+	var mapControlsHtml = '<div id="mapControls"><div id="ogpMapControls">'
+		+ '</div>' + '</div>';
+	this.mapControlBar = _.template(mapControlsHtml);
+	
 	var mapToolBarHtml = '<div id="mapToolBar"><div id="ogpMapButtons">'
 			+ '</div>' + '</div>';
 
 	var genericDivHtml = '<div id="<%= elId %>" class="<%= elClass %>" ></div>';
 	this.genericDiv = _.template(genericDivHtml);
-	var mapHtml = '<div id="<%= mapId %>OLMap">' + this.genericDiv({
+	var mapHtml = '<div id="<%= mapId %>OLMap" class="olMap">'
+		+ this.genericDiv({
 		elId : "nwCorner",
 		elClass : "corner slideHorizontal"
 	}) + this.genericDiv({
@@ -42,6 +47,10 @@ OpenGeoportal.Template = function() {
 
 	this.mapButton = _
 			.template('<button class="mapStyledButton <%= displayClass %>" title="<%= title %>" ><%= buttonText %></button>');
+	
+	var mapControlHtml = '<div class="<%= controlClass %>"></div>';
+	
+	this.mapControl = _.template(mapControlHtml);
 	this.basemapMenu = _.template('<div id="basemapMenu"></div>');
 
 	var loadIndicatorHtml =  '<div class="loadIndicator"></div>';

@@ -57,7 +57,7 @@ jQuery(document)
 					});
 
 					jQuery(document)
-							.on(
+							.one(
 									"mapReady",
 									function() {
 										// wait to do this until the base map is

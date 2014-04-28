@@ -283,11 +283,13 @@ OpenGeoportal.Views.Query = Backbone.View
 			 */
 			setMapExtent : function(event, data) {
 				// make sure we're getting the right values for the extent
+				//console.log(data.mapExtent);
+				//console.log(data.mapCenter);
 				var extent = data.mapExtent;
-				var minX = extent.left;
-				var maxX = extent.right;
-				var minY = extent.bottom;
-				var maxY = extent.top;
+				var minX = extent[0];
+				var maxX = extent[2];
+				var minY = extent[1];
+				var maxY = extent[3];
 				var mapDeltaX = Math.abs(maxX - minX);
 				var mapDeltaY = Math.abs(maxY - minY);
 				if (mapDeltaX > 350) {
@@ -307,8 +309,8 @@ OpenGeoportal.Views.Query = Backbone.View
 
 				var center = data.mapCenter;
 				var mapCenter = {
-					centerX : center.lon,
-					centerY : center.lat
+					centerX : center[0],
+					centerY : center[1]
 				};
 
 				this.model.set({

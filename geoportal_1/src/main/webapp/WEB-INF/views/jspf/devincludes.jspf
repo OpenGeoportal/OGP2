@@ -89,7 +89,7 @@
 
 <script type="text/javascript"
 	src="resources/javascript/lib/geoCommonsExport.js"></script>
-<script type="text/javascript" src="resources/javascript/lib/mapDiv.js"></script>
+<script type="text/javascript" src="resources/javascript/lib/newMap.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/userInterface.js"></script>
 
