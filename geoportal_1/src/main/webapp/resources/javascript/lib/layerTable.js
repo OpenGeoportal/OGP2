@@ -14,11 +14,9 @@ if (typeof OpenGeoportal == 'undefined') {
 }
 
 /**
- * LayerTable constructor this object defines the behavior of the search results
- * table, as well as the saved layers table
+ * LayerTable constructor.  The base object for creating and interacting with DataTables.  
+ * It is subclassed in searchResultsTable.js for the search results table.
  * 
- * @param object
- *            OpenGeoportal.OgpSettings
  */
 OpenGeoportal.LayerTable = function LayerTable() {
 

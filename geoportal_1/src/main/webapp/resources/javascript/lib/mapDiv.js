@@ -1133,7 +1133,7 @@ OpenGeoportal.MapController = function() {
 		};
 
 		// check for a proxy here
-		var proxy = OpenGeoportal.Config.getWMSProxy(layerModel
+		var proxy = OpenGeoportal.Config.Proxies.getWMSProxy(layerModel
 				.get("Institution"), layerModel.get("Access"));
 		if (proxy) {
 			layerModel.set({

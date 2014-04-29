@@ -18,11 +18,13 @@
 		<js>/resources/javascript/lib/models/tableConfig.js</js>
 		<js>/resources/javascript/lib/models/tableLayerSettings.js</js>
 		<js>/resources/javascript/lib/models/tableSortSettings.js</js>
+		<js>/resources/javascript/lib/models/protocolAwareModel.js</js>
 		<js>/resources/javascript/lib/models/previewedLayers.js</js>
 		<js>/resources/javascript/lib/models/cartCollection.js</js>
 		<js>/resources/javascript/lib/models/downloadQueue.js</js>
 		<js>/resources/javascript/lib/models/loadIndicator.js</js>
-		<js>/resources/javascript/lib/login.js</js>
+		<js>/resources/javascript/lib/models/userModel.js</js>
+		<js>/resources/javascript/lib/views/loginView.js</js>
 		<js>/resources/javascript/lib/models/appSettings.js</js>
 		<js>/resources/javascript/lib/models/queryModel.js</js>
 		<js>/resources/javascript/lib/models/leftPanelModel.js</js>

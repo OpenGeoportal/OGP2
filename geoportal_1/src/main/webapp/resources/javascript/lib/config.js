@@ -22,10 +22,47 @@ if (typeof OpenGeoportal.Models === 'undefined'){
     throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * configuration info.  Gets and stores search url, analytics id, repository info, etc. from config controllers
+ */
+
 //{"searchUrl":"http://geodata.tufts.edu/solr/select","analyticsId":"UA-19787732-1","loginConfig":{"repositoryId":"tufts","type":"form","url":"login","secureDomain":"https://localhost:8443"}}
 OpenGeoportal.Models.OgpConfig = Backbone.Model.extend({
 	url: "config/general"
 });
+
+//[{"repositoryId":"tufts","accessLevels":["restricted"],"serverMapping":[{"type":"wms","externalUrl":"restricted/wms"},{"type":"wfs","externalUrl":"restricted/wfs"},{"type":"wcs","externalUrl":"restricted/wcs"}]}]
+
+OpenGeoportal.Config.ProxyCollection = Backbone.Collection.extend({
+	idAttribute: "repositoryId",
+	url: "config/proxy",
+	getWMSProxy: function(institution, accessLevel) {
+		var proxyConfig = this.findWhere({repositoryId: institution.toLowerCase()});
+		if (typeof proxyConfig !== "undefined"){
+
+			if (jQuery.inArray(accessLevel.toLowerCase(), proxyConfig.get("accessLevels")) > -1){
+				var serverMapping = proxyConfig.get("serverMapping");
+				for (var i in serverMapping){
+					if (serverMapping[i].type === "wms"){
+						return serverMapping[i].externalUrl;
+					}
+				}
+			}
+		} 
+			
+		return false;
+		
+	}
+});
+
+OpenGeoportal.Config.RepositoryCollection = Backbone.Collection.extend({
+	url: "config/repositories"
+});
+
+OpenGeoportal.Config.DataTypeCollection = Backbone.Collection.extend({
+});
+
+
 
 OpenGeoportal.Config.General = new OpenGeoportal.Models.OgpConfig();
 OpenGeoportal.Config.General.set({
@@ -39,44 +76,15 @@ OpenGeoportal.Config.General.set({
 	}
 });
 
-OpenGeoportal.Config.ProxyCollection = Backbone.Collection.extend({
-	idAttribute: "repositoryId",
-	url: "config/proxy"
-});
 
-//[{"repositoryId":"tufts","accessLevels":["restricted"],"serverMapping":[{"type":"wms","externalUrl":"restricted/wms"},{"type":"wfs","externalUrl":"restricted/wfs"},{"type":"wcs","externalUrl":"restricted/wcs"}]}]
 OpenGeoportal.Config.Proxies = new OpenGeoportal.Config.ProxyCollection();
 OpenGeoportal.Config.Proxies.fetch();
 
-OpenGeoportal.Config.getWMSProxy = function(institution, accessLevel) {
-	var proxyConfig = OpenGeoportal.Config.Proxies.findWhere({repositoryId: institution.toLowerCase()});
-	if (typeof proxyConfig !== "undefined"){
-
-		if (jQuery.inArray(accessLevel.toLowerCase(), proxyConfig.get("accessLevels")) > -1){
-			var serverMapping = proxyConfig.get("serverMapping");
-			for (var i in serverMapping){
-				if (serverMapping[i].type === "wms"){
-					return serverMapping[i].externalUrl;
-				}
-			}
-		}
-	} 
-		
-	return false;
-	
-};
-
-OpenGeoportal.Config.RepositoryCollection = Backbone.Collection.extend({
-	url: "config/repositories"
-});
 
 //"value" should be the value in solr; iconClass determines what icon shows via css
 OpenGeoportal.Config.Repositories = new OpenGeoportal.Config.RepositoryCollection();
 OpenGeoportal.Config.Repositories.fetch();
 
-
-OpenGeoportal.Config.DataTypeCollection = Backbone.Collection.extend({
-});
 
 //"value" should be the value in solr; uiClass determines what icon shows via css
 //should get this from the server as well?

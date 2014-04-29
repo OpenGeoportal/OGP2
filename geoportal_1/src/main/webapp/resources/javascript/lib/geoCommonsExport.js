@@ -18,6 +18,10 @@ if (typeof OpenGeoportal.Export === 'undefined') {
 	throw new Error("OpenGeoportal.Export already exists and is not an object");
 }
 
+/**
+ * creates dialogs and requests to export a layer to GeoCommons.
+ * @param exportObj
+ */
 OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	// console.log(exportObj);
 

@@ -32,6 +32,8 @@
 	src="resources/javascript/lib/models/tableLayerSettings.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/tableSortSettings.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/models/protocolAwareModel.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/previewedLayers.js"></script>
 <script type="text/javascript"
@@ -40,7 +42,8 @@
 	src="resources/javascript/lib/models/downloadQueue.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/loadIndicator.js"></script>
-<script type="text/javascript" src="resources/javascript/lib/login.js"></script>
+<script type="text/javascript" src="resources/javascript/lib/models/userModel.js"></script>
+<script type="text/javascript" src="resources/javascript/lib/views/loginView.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/appSettings.js"></script>
 <script type="text/javascript"
