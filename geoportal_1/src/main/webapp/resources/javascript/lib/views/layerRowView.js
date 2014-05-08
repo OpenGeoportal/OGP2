@@ -33,7 +33,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		this.controls = OpenGeoportal.ogp.controls;
 		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 		// share config with the results table
-		this.listenTo(this.previewed, "change:preview", this.render);
+		//this.listenTo(this.previewed, "change:preview", this.render);
+		//this.previewed.listenTo(this.model, "change:preview", this.render);
 		var that = this;
 		this.options.tableConfig.listenTo(this.options.tableConfig, "change:visible",
 				function() {
@@ -46,6 +47,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			that.render.apply(that, arguments);
 		});
 		this.listenTo(this.model, "change:showControls", this.render);
+		
 		this.subClassInit();
 		this.render();
 	},
@@ -117,7 +119,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	render : function() {
-
+		//console.log("render row");
 		var html = "";
 		var that = this;
 		var model = this.model;

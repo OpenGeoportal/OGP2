@@ -27,11 +27,11 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		//listen for saved items (in cart collection)
 		this.cart = OpenGeoportal.ogp.appState.get("cart");
 
-		this.listenTo(this.cart, "add remove", this.render);
 	},
 
 	toggleSave: function(){
 		//if not in cart, add it.  if in cart, remove it.
 		this.cart.toggleCartState(this.model);
+		this.render();
 	}
 });
