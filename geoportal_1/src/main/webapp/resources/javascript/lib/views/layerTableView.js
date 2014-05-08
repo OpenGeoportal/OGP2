@@ -20,12 +20,16 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				this.tableConfig = this.createTableConfig();
 
 				this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-				this.previewViewHandler();
+				//this.previewViewHandler();
 				this.adjustColumnsHandler();
 				this.initSubClass();
 				this.render();
+				this.afterRender();
 			},
 			initSubClass: function(){
+				//nop
+			},
+			afterRender: function(){
 				//nop
 			},
 			emptyTableMessage: 	"No data layers have been added to the collection.",
@@ -39,75 +43,50 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				});
 			},
 
-			previewControlShowOn: function(previewControl$) {
-				previewControl$.removeClass("checkOff").addClass("checkOn");
-				var hideLayerText = "Turn off layer preview on the map";
-				previewControl$.attr("title", hideLayerText);
-			},
-
-			previewControlShowOff: function(previewControl$) {
-				previewControl$.removeClass("checkOn").addClass("checkOff");
-				var showLayerText = "Preview layer on the map";
-				previewControl$.attr("title", showLayerText);
-			},
-
-			previewViewHandler: function() {
-				// this.listenTo(this.model, "change", this.render);
-				// change this to a backbone view
-				var that = this;
-				jQuery(document).on("view.previewOn", function(event, data) {
-					// console.log("view.previewOn fired by: " + that.getTableId());
-					var control$ = that.findPreviewControl(data.LayerId);
-					if (control$.length > 0) {
-						that.previewControlShowOn(control$);
-					}
-				});
-				jQuery(document).on("view.previewOff", function(event, data) {
-					// console.log("view.previewOff fired by:" + that.getTableId());
-					var control$ = that.findPreviewControl(data.LayerId);
-					if (control$.length > 0) {
-						that.previewControlShowOff(control$);
-					}
-				});
-			},
-			
-			findPreviewControl: function(layerId){
-				for (var i in this.renderedViews){
-					var currentView = this.renderedViews[i];
-					if (currentView.model.get("LayerId") === layerId){
-						return currentView.$el.find(".previewControl");
-					}
-				}
-				return [];
-			},
-
 			//renderedViews : {}, // keep a reference to rendered
 			// views...necessary?
-			renderRow : function(model) {
+			  renderNested: function( view, selector ) {
+			        var $element = ( selector instanceof $ ) ? selector : this.$( selector );
+			        view.setElement( $element ).render();
+			    },
+			    
+			createNewRow: function(model){
 				var row = new OpenGeoportal.Views.LayerRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
+				return row;
+			},
+			
+			renderRow : function(model) {
+
+				var row = this.createNewRow(model);
 				this.$el.find(".rowContainer").append(row.el);
+				row.delegateEvents();
 			},
 			
 			render : function() {
+
 				var that = this;
 				this.$el.html(this.template.tableView(this.getHeaderInfo()));
-				var rows = 0;
 				
 				
+				var rowcount = 0;
+				var rows = [];
+				//var rowContainer$ = 
 				this.collection.each(function(model) {
-					
-					that.renderRow(model);
-					rows ++;
-
+					var row = that.createNewRow(model);
+					rows.push(row.el);
+					//rowContainer$.append(row.el);
+					rowcount++;
 				});
 				
-				if (rows === 0){
+				if (rowcount === 0){
 					this.$el.append(this.template.emptyTable({message: this.emptyTableMessage}));
 					
+				} else {
+					this.$(".rowContainer").append(rows);
 				}
 				
 				this.updateColWidths();

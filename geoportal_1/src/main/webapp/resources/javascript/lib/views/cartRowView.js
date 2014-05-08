@@ -31,6 +31,7 @@ OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 	toggleCheck: function(){
 		this.model.set({isChecked : !this.model.get("isChecked")});
 	},
+	
 	checkedView: function(){
 		var isChecked = this.model.get("isChecked");
 

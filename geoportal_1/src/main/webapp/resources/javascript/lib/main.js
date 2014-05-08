@@ -77,15 +77,19 @@ jQuery(document)
 
 										// The collection that holds search
 										// results
+										try{
 										ogp.results = new OpenGeoportal.ResultsCollection();
-
+										} catch (e){
+											console.log(e);
+										}
 										// The search results table
+										
 										ogp.resultsTableObj = new OpenGeoportal.Views.SearchResultsTable(
 												{
 													collection: ogp.results,
 													el: $("#searchResults")
 													});
-
+									
 
 										// if the url is a share link, add the
 										// shared layers to the cart

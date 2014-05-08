@@ -32,29 +32,32 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 					});
 				
 			},
+			
 			addedToCart : function(model) {
 				var layerId = model.get("LayerId");
 				model.set({
 					isChecked : true
 				});
 				// update search results table
-				jQuery(document).trigger("view.showInCart", {
+				/*jQuery(document).trigger("view.showInCart", {
 					layerId : layerId
-				});
+				});*/
 
 				this.updateSavedLayersNumber();
 				this.render();
 			},
+			
 			removedFromCart : function(model) {
 				var layerId = model.get("LayerId");
 				// update search results table
-				jQuery(document).trigger("view.showNotInCart", {
+				/*jQuery(document).trigger("view.showNotInCart", {
 					layerId : layerId
-				});
+				});*/
 
 				this.updateSavedLayersNumber();
 				this.render();
 			},
+			
 			updateSavedLayersNumber : function() {
 				var number$ = jQuery('.savedLayersNumber');
 
@@ -64,17 +67,14 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 
 			},
 
-			//renderedViews : {}, // keep a reference to rendered
-			// views...necessary?
-			renderRow : function(model) {
+			createNewRow: function(model){
 				var row = new OpenGeoportal.Views.CartRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
-				this.$el.find(".rowContainer").append(row.el);
+				return row;
 			},
-
 
 			addSharedLayers: function() {
 				if (OpenGeoportal.Config.shareIds.length > 0) {
@@ -101,7 +101,6 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				jQuery(document).trigger("map.zoomToLayerExtent", {
 					bbox : OpenGeoportal.Config.shareBbox
 				});
-				// jQuery("#tabs").tabs("option", "active", 1);
 
 			},
 

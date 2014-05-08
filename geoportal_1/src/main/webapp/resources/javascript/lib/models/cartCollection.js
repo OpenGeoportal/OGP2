@@ -14,8 +14,6 @@ OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 	defaults : {},
 
-
-
 	intersectsBounds : function(bounds) {
 
 		var minX = this.get("MinX");
@@ -54,54 +52,12 @@ OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 	}
 });
 
-/*
- * 
- * setDownloadType : function() { // either a download type that can be handled
- * by OGP backend or // something else, like an external link (fileDownload) //
- * alternatively, no download is available for the resource // ultimately, to
- * determine if the download can be handled by // the // backend, a request
- * should be made to the backend.
- * 
- * var locationObj = this.get("parsedLocation"); var locationKey = ""; var
- * downloadType = "default";
- * 
- * if (OpenGeoportal.Utility.hasLocationValueIgnoreCase( locationObj, [ "wfs"
- * ])) { downloadType = "wfs"; } else if
- * (OpenGeoportal.Utility.hasLocationValueIgnoreCase( locationObj, [ "wcs" ])) {
- * downloadType = "wcs"; } else if
- * (OpenGeoportal.Utility.hasLocationValueIgnoreCase( locationObj, [
- * "arcgisrest" ])) { downloadType = "arcgisrest"; } else if
- * (OpenGeoportal.Utility.hasLocationValueIgnoreCase( locationObj, [ "wms" ])) {
- * downloadType = "wms"; // until we have a good mechanism // for // querying
- * the server, we'll assume // GeoServer, which means we can get kml // this way }
- * 
- * this.set({ downloadType : downloadType });
- * 
- * return downloadType; },
- * 
- * 
- */
-/*
- * // preview controls are available according to what attributes this // model
- * has // previewType determines what function is used to preview the layer //
- * preview types: // wms, arcgis, tilecache w/wms, tilecache w/out wms
- * (essentially // wmts, // right?), imageCollection, // browseGraphic,
- * previewUrl supportedAttributesByType : [ { type : "wms", discriminator :
- * "DataType", attributes : { raster : { getFeature : false, opacity : 100, sld : "" }, //
- * it's understood that point, line, polygon, are vector // types // types point : {
- * getFeature : false, opacity : 100, colorPickerOn : false, sld : "", color :
- * "#ff0000", graphicWidth : 2 }, line : { getFeature : false, opacity : 100,
- * colorPickerOn : false, sld : "", color : "#0000ff", graphicWidth : 1 },
- * polygon : { getFeature : false, opacity : 100, colorPickerOn : false, sld :
- * "", opacity : 80, color : "#aaaaaa", graphicWidth : 1 }, unknown : {
- * getFeature : false, opacity : 100, colorPickerOn : false, sld : "", color :
- * "#aaaaaa", graphicWidth : 1 } } }, { type : "tilecache", discriminator :
- * "none", attributes : { opacity : 100 } }, { type : "arcgisrest",
- * discriminator : "none", attributes : { opacity : 100 } } ],
- */
+
 OpenGeoportal.CartCollection = Backbone.Collection
 		.extend({
+			
 			model : OpenGeoportal.Models.CartLayer,
+			
 			initialize : function() {
 
 				this.listenTo(this, "invalid", function(model, error) {

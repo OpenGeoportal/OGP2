@@ -21,11 +21,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		"mouseover" : "doMouseoverOn",
 		"mouseout" : "doMouseoverOff"
 	},
+	
 	constructor: function (options) {
 		//allow options to be passed in the constructor argument as in previous Backbone versions.
 		    this.options = options;
 		    Backbone.View.apply(this, arguments);
 		  },
+		  
 	initialize : function() {
 		this.template = OpenGeoportal.ogp.template;
 		this.controls = OpenGeoportal.ogp.controls;
@@ -47,9 +49,11 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		this.subClassInit();
 		this.render();
 	},
+	
 	subClassInit: function(){
 		//nop
 	},
+	
 	removeOnLogout : function(loginView) {
 		if (!this.login.hasAccess(this.model)) {
 			this.model.set({
@@ -72,7 +76,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			update = "on";
 		}
 		model.set({preview: update});			
-		
+		this.render();
 	},
 
 	getModelFromPreviewed: function(){
@@ -182,17 +186,21 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		return this;
 
 	},
+	
 	doMouseoverOn : function(){
 		this.highlightRow();
 		this.showBounds();
 	},
+	
 	doMouseoverOff: function(){
 		this.unHighlightRow();
 		this.hideBounds();
 	},
+	
 	highlightRow : function(){
 		this.$el.addClass("rowHover");
 	},
+	
 	unHighlightRow: function(){
 		this.$el.removeClass("rowHover");
 	},
@@ -208,6 +216,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		// console.log("triggered map.showBBox");
 
 	},
+	
 	hideBounds : function() {
 		jQuery(document).trigger("map.hideBBox");
 	}

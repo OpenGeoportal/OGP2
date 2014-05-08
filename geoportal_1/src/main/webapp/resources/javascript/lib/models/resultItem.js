@@ -22,54 +22,40 @@ OpenGeoportal.ResultCollection = Backbone.Collection.extend({
 });
 
 //collection for the bbview results table (to replace above)
-OpenGeoportal.ResultsCollection = Backbone.PageableCollection.extend({
+OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem,
-    // Enable infinite paging
-    mode: "infinite",
-    
-	searcher: null,
-	url : function(){
-		if (this.searcher == null){
+	initialize: function(){
+		if (this.searcher === null){
 			this.searcher = new OpenGeoportal.Views.Query({
-				model : new OpenGeoportal.Models.QueryTerms(),
+				model : OpenGeoportal.ogp.appState.get("queryTerms"),
 				el : "form#searchForm"
 			});
 		}
-		return this.searcher.getSearchRequest();// + "&start=" + this.start + "&rows=" + this.state.pageSize;
-		},
-		
-	    // Initial pagination states
-	    state: {
-	    	firstPage: 0,
-	    	pageSize: 50
-	    },
+		var self = this;
+	},
 
-	    // You can remap the query parameters from `state` keys from
-	    // the default to those your server supports
-	    queryParams: {
-	    	currentPage: "start",
-	    	pageSize: "rows",
-	    	totalPages: null,
-	    	totalRecords: null,
-	    	sortKey: null
-	    },
+    fetchOn: false,
+	searcher: null,
+	url : function(){
+		return this.searcher.getSearchRequest();
+		},
 
 	totalResults: 0,
-	isLoading: false,
-    parseRecords: function(resp) {
+    parse: function(resp) {
         return this.solrToCollection(resp);
       },
 		// converts solr response object to backbone models
 	solrToCollection: function(dataObj) {
 			// dataObj is a Javascript object (usually) returned by Solr
-
 			this.totalResults = dataObj.response.numFound;
+			var start = dataObj.response.start;
 			var solrLayers = dataObj.response.docs;
 
 			// solr docs holds an array of hashtables, each hashtable contains a
 			// layer
 
 			var arrModels = [];
+			
 			_.each(solrLayers, function(solrLayer){
 				//just parse the json here, so we can use the results elsewhere
 				var locationParsed = {};
@@ -82,33 +68,95 @@ OpenGeoportal.ResultsCollection = Backbone.PageableCollection.extend({
 					console.log([solrLayer["LayerId"], e]);
 				}
 				solrLayer.Location = locationParsed;
+				
+				solrLayer.resultNum = start;
+				start++;
 				arrModels.push(solrLayer);
 			});
 			return arrModels;
-		}
+		},
+	    
+		enableFetch: function() {
+		      this.fetchOn = true;
+		    },
+
+		disableFetch: function() {
+		      this.fetchOn = false;
+		    },
 		
-		/*getResults: function(){
-			if (this.isLoading){
-				return;
+		extraParams: {
+			//does this get added by solr object?
+		},
+		
+		pageParams: {
+			start: 0,
+			rows: 50
+		},
+		
+		fetchStatus: null,
+		
+		newSearch: function(){
+			if (!this.fetchOn && this.fetchStatus !== null){
+				this.fetchStatus.abort();
 			}
-			var that = this;
-			this.start = 0;
-			this.isLoading = true;
-			this.fetch({dataType: "jsonp", jsonp: "json.wrf", reset: true, complete: function(){that.isLoading = false;}});
+			
+	        this.disableFetch();
+	        this.pageParams.start = 0;
+	        var that = this;
+
+	        this.fetchStatus = this.fetch({
+	          dataType: "jsonp",
+			  jsonp: "json.wrf",
+
+	          complete: function(){that.fetchComplete.apply(that, arguments);},
+	          reset: true,
+	          data: $.extend(this.pageParams, this.extraParams)
+	        });
+
 		},
 		
 		nextPage: function(){
-			if (this.isLoading){
+			if (!this.fetchOn){
 				return;
 			}
-			console.log("next page");
-			var that = this;
-			this.start += this.rows + 1;
-			this.isLoading = true;
-			this.fetch({dataType: "jsonp", jsonp: "json.wrf", remove: false, complete: function(models){
-				that.isLoading = false;
-				}
-			});
-		}*/
+			
+	       this.disableFetch();
+	        
+	       this.pageParams.start = this.last().get("resultNum") + 1;
+	       
+	       if (this.pageParams.start > this.totalResults){
+	    	   return;
+	       }
+	       var that = this;
+	       this.fetchStatus = this.fetch({
+	          dataType: "jsonp",
+			  jsonp: "json.wrf",
+
+	         // success: this.fetchSuccess,
+	         // error: this.fetchError,
+	          complete: function(){that.fetchComplete.apply(that, arguments);},
+	          remove: false,
+	          data: $.extend(this.pageParams, this.extraParams)
+	        });
+		},
+		
+	    fetchSuccess: function(collection, response) {
+		      if ((self.options.strict && collection.length >= (page + 1) * self.options.pageSize) || (!self.options.strict && response.length > 0)) {
+		        self.enableFetch();
+		        page += 1;
+		      } else {
+		        self.disableFetch();
+		      }
+		      self.options.success(collection, response);
+		    },
+
+		fetchError: function(collection, response) {
+		      self.enableFetch();
+
+		      self.options.error(collection, response);
+		    },
+		fetchComplete: function(){
+			this.enableFetch();
+		}
 
 });

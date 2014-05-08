@@ -13,11 +13,12 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 		.extend({
-
 			events: {
-				"render": "attachScrollHandler"
+				"render" : "attachEvents"
 			},
+			
 			initSubClass: function(){
+				
 				this.cart = OpenGeoportal.ogp.appState.get("cart");
 				this.tableOrganize = new OpenGeoportal.TableSortSettings();
 				
@@ -28,7 +29,10 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					headings: this.tableConfig
 				});
 				var that = this;
-				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.getResults();});
+				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.newSearch();});
+				
+				this.listenTo(this.collection, "add", this.appendRender);
+				
 				var iconRenderer = function() {
 						return "";
 				};
@@ -50,55 +54,85 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 								controlClass : "columnCheck"
 							}
 				);
-				
+			
 				this.listenTo(this.collection, "reset", this.render);
 				this.listenTo(this.collection, "reset", this.updateResultsNumber);
-				//should call setFrameHeight whenever the search panel height changes
-				this.listenTo(this.collection, "reset", this.setFrameHeight);
-			    this.listenTo(this.collection.fullCollection, "add", this.renderRow);
+				//should call setFrameHeight whenever the search panel height changes or on render
+				//this.listenTo(this.collection, "reset", this.setFrameHeight);
 
-				$(".rowContainer").scroll(function(e){that.checkScroll();});
 				this.fireSearchHandler();
+
 			},
-			attachScrollHandler: function(){
+
+			
+			scrollOffset: 100,
+			
+			attachEvents: function(){
+				this.collection.enableFetch();
 				var that = this;
-				$(".rowContainer").on("scroll", function(){that.checkScroll();});
+				this.setFrameHeight();
+				this.$el.find(".rowContainer").on("scroll", function(){that.watchScroll.apply(that, arguments);});
+				   
 			},
-			checkScroll: function () {
-			      var triggerPoint = 100; // 100px from the bottom
-			      var scrollEl = $(".rowContainer")[0];
-			        if( scrollEl.scrollTop + scrollEl.clientHeight + triggerPoint > scrollEl.scrollHeight ) {
-			          this.collection.getNextPage(); // Load next page
-			        }
-			    },
+			
+			watchScroll: function(e) {
+				var queryParams,
+				$scrollTarget = $(e.target),
+				scrollY = $scrollTarget.scrollTop() + $scrollTarget.height(),
+				docHeight = $scrollTarget[0].scrollHeight;
+
+				if (!docHeight) {
+					docHeight = $(document).height();
+				}
+
+				
+				if (scrollY >= docHeight - this.scrollOffset && prevScrollY <= scrollY) {
+					this.collection.nextPage();
+
+				}
+				prevScrollY = scrollY;
+			},
+			
 			setFrameHeight: function(){
-				if ($(".rowContainer").length === 0){
+				var $scrollTarget = this.$el.find(".rowContainer");
+				if ($scrollTarget.length === 0){
 					return;
 				}
 				
-				var ht = Math.ceil(jQuery(document).height() - $(".rowContainer").position().top - jQuery("#footer").height() - jQuery("#header").height());
-				$(".rowContainer").height(ht);
+				var ht = Math.ceil(jQuery(document).height() - $scrollTarget.position().top - jQuery("#footer").height() - jQuery("#header").height());
+				$scrollTarget.height(ht);
 			},
+			
 			fireSearchHandler: function(){
 				var that = this;
 				jQuery(document).on("fireSearch", function(){
-					that.collection.getFirstPage({dataType: "jsonp", jsonp: "json.wrf"});
+					that.collection.newSearch();
 				});
 			},
+			
 			emptyTableMessage: "No matching layers.",
-			//renderedViews : {}, // keep a reference to rendered
-			// views...necessary?
-			renderRow : function(model) {
+
+			appendRender: function(model){
+				
+				var newRow = this.createNewRow(model);
+				this.$(".rowContainer").append(newRow.el);
+
+
+			},
+			
+			createNewRow: function(model){
 				var row = new OpenGeoportal.Views.SearchResultsRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
-				this.$el.find(".rowContainer").append(row.el);
+				return row;
 			},
+
 			updateResultsNumber: function() {
 				jQuery('.resultsNumber').text(this.collection.totalResults);
 			},
+			
 			addColumns: function(tableConfigCollection) {
 				var that = this;
 				tableConfigCollection
