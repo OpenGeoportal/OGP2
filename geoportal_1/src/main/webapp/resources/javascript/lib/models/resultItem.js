@@ -139,16 +139,6 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	          data: $.extend(this.pageParams, this.extraParams)
 	        });
 		},
-		
-	    fetchSuccess: function(collection, response) {
-		      if ((self.options.strict && collection.length >= (page + 1) * self.options.pageSize) || (!self.options.strict && response.length > 0)) {
-		        self.enableFetch();
-		        page += 1;
-		      } else {
-		        self.disableFetch();
-		      }
-		      self.options.success(collection, response);
-		    },
 
 		fetchError: function(collection, response) {
 		      self.enableFetch();

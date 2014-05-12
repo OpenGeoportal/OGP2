@@ -19,7 +19,8 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		"click .colTitle" : "toggleExpand",
 		"mouseover" : "doMouseoverOn",
 		"mouseout" : "doMouseoverOff",
-		"click .saveControl" : "toggleSave"
+		"click .saveControl" : "toggleSave",
+		"istop" : "broadcastModel"
 			
 	},
 
@@ -29,6 +30,10 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 
 	},
 
+	broadcastModel: function(){
+		this.$el.closest(".rowContainer").trigger("topmodel", [this.model]);
+	},
+	
 	toggleSave: function(){
 		//if not in cart, add it.  if in cart, remove it.
 		this.cart.toggleCartState(this.model);

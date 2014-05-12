@@ -14,7 +14,8 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 		.extend({
 			events: {
-				"render" : "attachEvents"
+				"render" : "attachEvents",
+				"topmodel" : "renderPrevPage"
 			},
 			
 			initSubClass: function(){
@@ -74,7 +75,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				this.$el.find(".rowContainer").on("scroll", function(){that.watchScroll.apply(that, arguments);});
 				   
 			},
-			
+			prevScrollY: 0,
 			watchScroll: function(e) {
 				var queryParams,
 				$scrollTarget = $(e.target),
@@ -86,11 +87,19 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				}
 
 				
-				if (scrollY >= docHeight - this.scrollOffset && prevScrollY <= scrollY) {
+				if (scrollY >= docHeight - this.scrollOffset && this.prevScrollY <= scrollY) {
 					this.collection.nextPage();
 
+				} else if (scrollY < this.prevScrollY) {
+					if (jQuery(".topSpacer").length > 0){
+						if (jQuery(".topSpacer").position().top + jQuery(".topSpacer").height() > -200){
+							//add results to top
+							//console.log("add results to top");
+							this.$el.find(".tableRow").first().trigger("istop");
+						}
+					}
 				}
-				prevScrollY = scrollY;
+				this.prevScrollY = scrollY;
 			},
 			
 			setFrameHeight: function(){
@@ -111,12 +120,68 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			emptyTableMessage: "No matching layers.",
+			
+			
+			renderPrevPage: function(event, model){
+				var that = this;
+				var pageSize = this.collection.pageParams.rows;
+				var topResultNum = model.get("resultNum");
+				var prevPage = model.collection.filter(function(currModel){
+					var num = currModel.get("resultNum");
+					return num < topResultNum && num >= Math.max(topResultNum - pageSize, 0);
+				});
 
+				var spacer$ = this.$(".topSpacer");
+				spacer$.css("min-height", 0);
+				var initialTop$ = this.$(".tableRow").first();
+				_.each(prevPage, function(currModel){
+					var newRow = that.createNewRow(currModel);
+					var ht = jQuery(newRow.el).insertBefore(initialTop$).height();
+					spacer$.css("height", "-=" + ht);
+					that.$(".tableRow").last().remove();
+					that.collection.remove(that.collection.last());
+				});
+			},
+			
+			/*renderNextPage: function(event, model){
+				var that = this;
+				var pageSize = this.collection.pageParams.rows;
+
+				var bottomResultNum = model.get("resultNum");
+				var nextPage = model.collection.filter(function(currModel){
+					var num = currModel.get("resultNum");
+					return num > bottomResultNum && num <= bottomResultNum + pageSize;
+				});
+				
+
+				var spacer$ = this.$(".bottomSpacer");
+				spacer$.css("min-height", 0);
+				_.each(nextPage, function(currModel){
+					var newRow = that.createNewRow(currModel);
+					var currentBottom$ = that.$(".tableRow").last();
+					var ht = jQuery(newRow.el).insertAfter(currentBottom$).height();
+					spacer$.css("height", "-=" + ht);
+				});
+				
+				var lastNum = _.last(nextPage).get("resultNum");
+				if (lastNum < this.collection.totalResults && lastNum < bottomResultNum + pageSize){
+					this.collection.nextPage();
+				}
+			},*/
+			
 			appendRender: function(model){
 				
 				var newRow = this.createNewRow(model);
-				this.$(".rowContainer").append(newRow.el);
+				this.$(".tableRow").last().after(newRow.el);
 
+				if (model.get("resultNum") > 200){
+					var top$ = this.$(".tableRow").first();
+					if (this.$(".topSpacer").length === 0){
+						this.$(".rowContainer").prepend('<div class="topSpacer"></div>');
+					}
+					this.$(".topSpacer").css("height", "+=" + top$.height());
+					top$.remove();
+				}
 
 			},
 			
