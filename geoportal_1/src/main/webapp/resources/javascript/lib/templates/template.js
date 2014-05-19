@@ -203,7 +203,6 @@ OpenGeoportal.Template = function() {
     dynamicWSDialogContentHtml += '<br/><span><%= serviceInfo.caption %></span><div class="owsServicesLinkContainer">';
     dynamicWSDialogContentHtml += '<textarea class="shareServicesText linkText" ><%= serviceInfo.url %></textarea> <br /></div><br/><% }); %>';
 	
-	//var webServicesDialogContentHtml = '<p>Web Services are provided in multiple formats.</p>';
 	var webServicesDialogContentHtml = '<div id="owsServicesArea">';
 	webServicesDialogContentHtml += dynamicWSDialogContentHtml;
 	webServicesDialogContentHtml += wmcDialogContentHtml;
@@ -214,25 +213,21 @@ OpenGeoportal.Template = function() {
 
 	var infoBubbleHtml = '<div id="<%= elId %>" class="infoBubbleBackground triangle-isoscelesBackground '
 			+ '<%= arrowDirection %>Background"><div class="infoBubbleText triangle-isosceles '
-			+ '<%= arrowDirection %>">' + '<button class="closeBubble button"></button><%= content %>' + 
+			+ '<%= arrowDirection %>"><button class="closeBubble button"></button><%= content %>' 
 			+ '<label><input type="checkbox"/>Do not show this screen again</label></div></div>';
 	this.infoBubble = _.template(infoBubbleHtml);
 	
 	var welcomeTextHtml = '<div id="welcomeText" class="welcomeText">'
-		+ '<h1>Welcome</h1>' + '<p>'
-		+ 'There are two ways to begin your search:' + '</p>' + '<ol>'
-		+ '<li>' + 'Enter information using one or both search fields.'
-		+ '</li>' + '<li>' + 'Zoom in on a location using the map.'
-		+ '</li>' + '</ol>' + '</div>';
-	
+		+ '<h1>Welcome</h1>' 
+		+ '<p>There are two ways to begin your search:</p>'
+		+ '<ol><li>Enter information using one or both search fields.</li>'
+		+ '<li>Zoom in on a location using the map.</li></ol></div>';
+
 	this.welcomeText = _.template(welcomeTextHtml);
 	
 	var directionsTextHtml = '<div id="directionsText" class="directionsText">'
-		+ '<p>'
-		+ "You can preview layers by clicking on the 'View' button."
-		+ '</p>'
-		+ '<p>'
-		+ "Layers can be added to the 'Cart' by clicking on the + button."
-		+ '</p>' + '</div>';
+		+ "<p>You can preview layers by clicking on the 'View' button.</p>"
+		+ "<p>Layers can be added to the 'Cart' by clicking on the + button.</p></div>";
+	
 	this.directionsText = _.template(directionsTextHtml);
 };
