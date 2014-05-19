@@ -26,42 +26,40 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 // this should be a view of the query terms model
 OpenGeoportal.Views.Query = Backbone.View
 		.extend({
-			/*
-			 * model passed into this query mapExtent: {minX: -180, maxX: 180,
-			 * minY: -90, maxY: 90}, ignoreSpatial: false, displayRestricted:
-			 * [], sortBy: "score", sortDir: "asc", what: "", where: "",
-			 * keyword: "", originator: "", dataType: "", repository: "",
-			 * yearRange: {from: null, to: null}, isoTopic: "", facets: "",
-			 * searchType: "basic"
-			 */
-			whereText : "(Example: Boston, MA)",
-			whatText : "(Example: buildings)",
-			initialize : function() {
-				jQuery("#whereField").attr("placeholder", this.whereText);
-				jQuery("#whatField").attr("placeholder", this.whatText);
 
-				this.controls = OpenGeoportal.ogp.controls;
+			initialize : function() {
+				jQuery("#whereField").attr("placeholder", this.model.get("whereExample"));
+				jQuery("#whatField").attr("placeholder", this.model.get("whatExample"));
+
+				this.widgets = OpenGeoportal.ogp.widgets;
+				this.tableControls = OpenGeoportal.ogp.tableControls;
+				this.geocoder = new OpenGeoportal.Geocoder();
+				
 				var that = this;
-				this.controls.prependButton(jQuery(".basicSearchButtons"),
+				
+				this.geocoder.geocodeAutocomplete(jQuery("#whereField"));
+
+				this.widgets.prependButton(jQuery(".basicSearchButtons"),
 						"basicSearchSubmit", "Search", function() {
 							that.fireSearchWithZoom();
 						}).addClass("searchButton");
-				this.controls.geocodeAutocomplete(jQuery("#whereField"));
-				this.controls.solrAutocomplete(
+				
+				this.solrAutocomplete(
 						jQuery("#advancedOriginatorText"), "OriginatorSort");
+				
 				this.createInstitutionsMenu();
 				this.createDataTypesMenu();
 				this.createTopicsMenu();
-
+				
 				this.mapInputsToModel();
 
 				var advSearchButtons$ = jQuery(".advancedSearchButtons")
 						.first();
-				this.controls.prependButton(advSearchButtons$,
+				this.widgets.prependButton(advSearchButtons$,
 						"advancedSearchSubmit", "Search", function() {
 							that.fireSearchWithZoom();
 						}).addClass("searchButton");
-				this.controls.prependButton(advSearchButtons$,
+				this.widgets.prependButton(advSearchButtons$,
 						"advancedSearchClear", "Clear", this.clearForm);
 
 				this.listenTo(this.model, "change:mapExtent",
@@ -72,10 +70,11 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.showRestrictedHandler();
 				this.searchBoxKeypressHandler();
 
-				jQuery(document).on("map.extentChanged", function() {
-					that.setMapExtent.apply(that, arguments);
+				jQuery(document).on("map.extentChanged", function(e, data) {
+					that.model.setMapExtent(data.mapExtent, data.mapCenter);
 				});
 			},
+			
 			events : {
 				"blur input" : "setTextValue"
 			},
@@ -84,9 +83,10 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * Interface between ui and solr query
 			 ******************************************************************/
 
-			getTextInputValue : function(fieldId) {
-				var rawText = jQuery("#" + fieldId).val().trim();
-			},
+			/**
+			 * maps dom elements to attributes in the model by attaching the attribute name with jQuery.data
+			 * nb: ideally, this happens when the dom elements are created via template to ensure a match
+			 */
 			mapInputsToModel : function() {
 				jQuery("#whatField").data({
 					queryAttr : "what"
@@ -107,6 +107,9 @@ OpenGeoportal.Views.Query = Backbone.View
 					queryAttr : "dateTo"
 				});
 			},
+			/**
+			 * using the mapping in mapInputsToModel, sets the value of a model attribute from the dom value
+			 */
 			setTextValue : function(event) {
 				var target$ = jQuery(event.currentTarget);
 				var attr = target$.data().queryAttr;
@@ -116,32 +119,38 @@ OpenGeoportal.Views.Query = Backbone.View
 				// map field to model attribute
 			},
 
+			handleGeocodeResults: function(geocode, where$){
+
+				var bbox = geocode.bbox;
+				if (typeof bbox !== "undefined") {
+					where$.val(geocode.name);
+					// no need to fire search since it will be triggered by
+					// extent change
+					this.listenToOnce(this.model, "change:mapExtent",
+							this.clearWhere);
+					jQuery(document).trigger("map.zoomToLayerExtent", {
+						bbox : bbox
+					});
+
+				} else {
+					// console.log("zoomToWhere");
+					this.fireSearch();
+				}
+			},
 			zoomToWhere : function() {
 				var where$ = jQuery("#whereField");
 				var geocode = where$.data().geocode;
+				
 				if (typeof geocode !== "undefined" && _.size(geocode) > 0) {
 					// console.log("geocode value");
 					// console.log(geocode);
-
-					var bbox = geocode.bbox;
-					if (typeof bbox !== "undefined") {
-						// no need to fire search since it will be triggered by
-						// extent change
-						this.listenToOnce(this.model, "change:mapExtent",
-								this.clearWhere);
-						jQuery(document).trigger("map.zoomToLayerExtent", {
-							bbox : bbox
-						});
-
-					} else {
-						// console.log("zoomToWhere");
-						this.fireSearch();
-					}
+					this.handleGeocodeResults(geocode, where$);
+					
 				} else if (where$.val().trim().length > 0) {
 					// console.log("trying to geocode value");
 					// try to geocode the value in the where field if it doesn't
 					// come from the geocoder
-					var promise = this.controls.getGeocodePromise(where$.val()
+					var promise = this.geocoder.getGeocodePromise(where$.val()
 							.trim());
 					var that = this;
 					jQuery.when(promise).done(
@@ -149,23 +158,7 @@ OpenGeoportal.Views.Query = Backbone.View
 								// console.log("message");
 								// console.log(message);
 								if (message.values.length > 0) {
-									var geocode = where$.data.geocode;
-									geocode = message.values[0];
-									var bbox = geocode.bbox;
-									if (typeof bbox !== "undefined") {
-										where$.val(geocode.name);
-										// on the next extent change, clear the
-										// where field
-										that.listenToOnce(that.model,
-												"change:mapExtent",
-												that.clearWhere);
-										jQuery(document).trigger(
-												"map.zoomToLayerExtent", {
-													bbox : bbox
-												});
-									}
-									// console.log("geocode with messages");
-									// that.fireSearch();
+									that.handleGeocodeResults(message.values[0], where$);
 
 								} else {
 									// console.log("geocode without messages");
@@ -200,19 +193,9 @@ OpenGeoportal.Views.Query = Backbone.View
 							color : currColor
 						});
 					});
-
-					/*
-					 * var currentFontSize = where$.css("font-size"); var
-					 * currentOpacity = where$.css("opacity");
-					 * where$.animate({"opacity": 1, "font-size":
-					 * parseInt(currentFontSize) + 2}, 500).delay(1500)
-					 * .animate({ "font-size": 0 }, 300,
-					 * function(){where$.val("").css({"font-size":
-					 * currentFontSize, "opacity": currentOpacity});} );
-					 */
 				}
-
 			},
+			
 			fireSearchWithZoom : function() {
 				if (this.model.get("searchType") === "advanced") {
 					var ignoreSpatial = this.model.get("ignoreSpatial");
@@ -226,6 +209,7 @@ OpenGeoportal.Views.Query = Backbone.View
 
 				this.zoomToWhere();
 			},
+			
 			extentChangeQueue : [],
 			extentChanged : function() {
 				// should be a delay before fireSearch is called, so we don't
@@ -236,180 +220,11 @@ OpenGeoportal.Views.Query = Backbone.View
 				}
 				this.extentChangeQueue.push(id);
 
-				// console
-				// .log("*******************************************************extent
-				// changed");
 			},
 
 			fireSearch : function() {
 
 				jQuery(document).trigger("fireSearch");
-			},
-
-			/**
-			 * this function returns a solr URL with the many standard options
-			 * set it provides a base solr object for both basic and advanced
-			 * searching
-			 * 
-			 * @return Solr URL
-			 */
-			getSearchRequest : function() {
-
-				var solr = null;
-
-				var searchType = this.model.get("searchType");
-
-				if (searchType === 'basic') {
-					solr = this.getBasicSearchQuery();
-				} else if (searchType === 'advanced') {
-					solr = this.getAdvancedSearchQuery();
-				} else {
-					// fall through
-					solr = this.getBasicSearchQuery();
-				}
-
-				this.addToHistory(solr);
-				// console.log(solr.getURL());
-				return solr.getURL();
-			},
-
-			getSortInfo : function() {
-				return OpenGeoportal.ogp.resultsTableObj.tableOrganize;
-
-			},
-
-			/*
-			 * adds spatial search params to solr object if pertinent
-			 */
-			setMapExtent : function(event, data) {
-				// make sure we're getting the right values for the extent
-				var extent = data.mapExtent;
-				var minX = extent.left;
-				var maxX = extent.right;
-				var minY = extent.bottom;
-				var maxY = extent.top;
-				var mapDeltaX = Math.abs(maxX - minX);
-				var mapDeltaY = Math.abs(maxY - minY);
-				if (mapDeltaX > 350) {
-					minX = -180.0;
-					maxX = 180.0;
-				}
-				if (mapDeltaY > 165) {
-					minY = -90;
-					maxY = 90;
-				}
-				var mapExtent = {
-					minX : minX,
-					maxX : maxX,
-					minY : minY,
-					maxY : maxY
-				};
-
-				var center = data.mapCenter;
-				var mapCenter = {
-					centerX : center.lon,
-					centerY : center.lat
-				};
-
-				this.model.set({
-					mapExtent : mapExtent,
-					mapCenter : mapCenter
-				}, {
-					silent : true
-				});
-
-				// if either attribute changes, fire a search
-				if (typeof this.model.changed.mapCenter !== "undefined"
-						|| typeof this.model.changed.mapExtent !== "undefined") {
-					this.model.trigger("change:mapExtent");
-				}
-
-			},
-
-			/**
-			 * add elements specific to basic search
-			 */
-			getBasicSearchQuery : function() {
-				var solr = new OpenGeoportal.Solr();
-				solr.setSearchType(this.model.get("searchType"));
-				var sort = this.getSortInfo();
-				solr.setSort(sort.get("column"), sort.get("direction"));
-
-				solr.setBoundingBox(this.model.get("mapExtent"));
-				solr.setCenter(this.model.get("mapCenter"));
-
-				var what = this.model.get("what");
-				if ((what != null) && (what != "")) {
-					solr.setWhat(what);
-				}
-
-				/*
-				 * if ((whereField != null) && (whereField != "")){
-				 * solr.setWhere(whereField); }
-				 */
-
-				solr.addFilter(solr.createAccessFilter(this.model
-						.get("displayRestricted")));
-
-				/*
-				 * var institutionConfig =
-				 * OpenGeoportal.InstitutionInfo.getInstitutionInfo();
-				 * 
-				 * for (var institution in institutionConfig){
-				 * solr.addInstitution(institution); }
-				 */
-				return solr;
-			},
-
-			getAdvancedSearchQuery : function() {
-				var solr = new OpenGeoportal.Solr();
-				solr.setSearchType(this.model.get("searchType"));
-
-				var sort = this.getSortInfo();
-				solr.setSort(sort.get("column"), sort.get("direction"));
-
-				// check if "ignore map extent" is checked
-				var ignoreSpatial = this.model.get("ignoreSpatial");
-				solr.setIgnoreSpatial(ignoreSpatial);
-				if (!ignoreSpatial) {
-					solr.setBoundingBox(this.model.get("mapExtent"));
-					solr.setCenter(this.model.get("mapCenter"));
-				}
-
-				var keywords = this.model.get("keyword");
-				if ((keywords !== null) && (keywords !== "")) {
-					solr.setAdvancedKeywords(keywords);
-				}
-
-				var dateFrom = this.model.get("dateFrom");
-				var dateTo = this.model.get("dateTo");
-				solr.addFilter(solr.createDateRangeFilter("ContentDate",
-						dateFrom, dateTo));
-
-				var dataTypes = this.model.get("dataType");// columnName,
-				// values, joiner,
-				// prefix
-				solr.addFilter(solr.createFilter("DataType", dataTypes,
-						"{!tag=dt}"));
-
-				var repositories = this.model.get("repository");
-				//console.log(repositories);
-				solr.addFilter(solr.createFilter("Institution", repositories,
-						"{!tag=insf}"));
-
-				solr.addFilter(solr.createAccessFilter(this.model
-						.get("displayRestricted")));
-
-				var originator = this.model.get("originator");
-				// TODO: should this be a filter?
-				solr.addFilter(solr.createFilter("Originator", originator,
-						null, "AND"));
-
-				var isoTopic = this.model.get("isoTopic");
-				solr.addFilter(solr.createFilter("ThemeKeywordsSynonymsIso",
-						isoTopic));
-
-				return solr;
 			},
 
 			searchTypeHandler : function() {
@@ -425,6 +240,7 @@ OpenGeoportal.Views.Query = Backbone.View
 					});
 				});
 			},
+			
 			mapFilterHandler : function() {
 				var that = this;
 				jQuery("#mapFilterCheck").on("change", function(event) {
@@ -435,18 +251,21 @@ OpenGeoportal.Views.Query = Backbone.View
 					// analytics.track("Limit Results to Visible Map", value);
 				});
 			},
+			
 			showRestrictedHandler : function() {
+				
 				var that = this;
 				jQuery("#restrictedCheck").on("change", function(event) {
 					var arrRestricted = [];
 					if (!this.checked) {
-						arrRestricted = that.model.defaults.displayRestricted;
+						arrRestricted = [that.model.get("displayRestrictedBasic")];
 					}
 					that.model.set({
-						displayRestricted : arrRestricted
+						displayRestrictedAdvanced : arrRestricted
 					});
 				});
 			},
+			
 			searchBoxKeypressHandler : function() {
 				var that = this;
 				jQuery('.searchBox').keypress(function(event) {
@@ -467,9 +286,10 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * created from info in OpenGeoportal.Config
 			 */
 			createInstitutionsMenu : function() {
-				var iconRenderer = this.controls.renderRepositoryIcon;
-				var repositoryCollection = OpenGeoportal.Config.Repositories;
+				var repositoryCollection = this.model.get("repositoryList");
 				var that = this;
+				var iconRenderer = this.tableControls.renderRepositoryIcon;
+
 				var callback = function() {
 					var repositoryMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
 							{
@@ -508,10 +328,12 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * created from info in OpenGeoportal.InstitutionInfo
 			 */
 			createDataTypesMenu : function() {
-				var iconRenderer = this.controls.renderTypeIcon;
+				var that = this;
+				var iconRenderer = this.tableControls.renderTypeIcon;
+				var dataTypes = this.model.get("dataTypeList");
 				var dataTypesMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
 						{
-							collection : OpenGeoportal.Config.DataTypes,
+							collection : dataTypes,
 							el : "div#dataTypeDropdown",
 							valueAttribute : "value",
 							displayAttribute : "displayName",
@@ -525,7 +347,6 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.model.set({
 					dataType : this.dataTypes.getValueAsArray()
 				});
-				var that = this;
 				this.dataTypes.$el.on("change", function() {
 					that.model.set({
 						dataType : that.dataTypes.getValueAsArray()
@@ -539,82 +360,15 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * allows a user to select an ISO topic to search
 			 */
 			createTopicsMenu : function() {
-				var topicCategories = [ {
-					topic : "",
-					label : "None",
-					selected : true
-				}, {
-					topic : "farming",
-					label : "Agriculture and Farming"
-				}, {
-					topic : "biota",
-					label : "Biology and Ecology"
-				}, {
-					topic : "boundaries",
-					label : "Administrative and Political Boundaries"
-				}, {
-					topic : "climatologyMeteorologyAtmosphere",
-					label : "Atmospheric and Climatic"
-				}, {
-					topic : "economy",
-					label : "Business and Economic"
-				}, {
-					topic : "elevation",
-					label : "Elevation and Derived Products"
-				}, {
-					topic : "environment",
-					label : "Environment and Conservation"
-				}, {
-					topic : "geoscientificinformation",
-					label : "Geological and Geophysical"
-				}, {
-					topic : "health",
-					label : "Human Health and Disease"
-				}, {
-					topic : "imageryBaseMapsEarthCover",
-					label : "Imagery and Base Maps"
-				}, {
-					topic : "intelligenceMilitary",
-					label : "Military"
-				}, {
-					topic : "inlandWaters",
-					label : "Inland Water Resources"
-				}, {
-					topic : "location",
-					label : "Locations and Geodetic Networks"
-				}, {
-					topic : "oceans",
-					label : "Oceans and Estuaries"
-				}, {
-					topic : "planningCadastre",
-					label : "Cadastral"
-				}, {
-					topic : "society",
-					label : "Cultural, Society, and Demographics"
-				}, {
-					topic : "structure",
-					label : "Facilities and Structure"
-				}, {
-					topic : "transportation",
-					label : "Transportation Networks"
-				}, {
-					topic : "utilitiesCommunication",
-					label : "Utilities and Communication"
-				} ];
-
-				// Do I even need to extend this?
-				var topicCollection = Backbone.Collection.extend({});
-				var collection = new topicCollection(topicCategories);
-
-				var topicView = new OpenGeoportal.Views.CollectionSelect({
-					collection : collection,
+				var isoTopics = this.model.get("isoTopicList");
+				this.topics = new OpenGeoportal.Views.CollectionSelect({
+					collection : isoTopics,
 					el : "div#topicDropdown",
 					valueAttribute : "topic",
 					displayAttribute : "label",
 					buttonLabel : "Select a topic",
 					itemClass : "isoTopicMenuItem"
 				});
-				this.topics = topicView;
 				this.model.set({
 					isoTopic : this.topics.getValue()
 				});
@@ -630,6 +384,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			clearForm : function() {
 				// TODO: a placeholder
 			},
+			
 			clearInput : function(divName) {
 				jQuery('#' + divName + ' :input').each(
 						function() {
@@ -655,49 +410,46 @@ OpenGeoportal.Views.Query = Backbone.View
 				if (currentValue.indexOf("Search") == 0)
 					searchTextElement.value = "";
 			},
+			
+			solrAutocomplete: function(textField$, solrField) {
+				textField$.autocomplete({
+					source : function(request, response) {
+						var solr = new OpenGeoportal.Solr();
+						var facetSuccess = function(data) {
+							var labelArr = [];
+							var dataArr = data.terms[solrField];
+							for ( var i in dataArr) {
+								if (i % 2 != 0) {
+									continue;
+								}
+								var temp = {
+									"label" : dataArr[i],
+									"value" : '"' + dataArr[i] + '"'
+								};
+								labelArr.push(temp);
+								i++;
+								i++;
+							}
+							response(labelArr);
+						};
+						var facetError = function() {
+						};
+						solr.termQuery(solrField, request.term, facetSuccess,
+								facetError, this);
 
-			/*******************************************************************
-			 * Callbacks
-			 ******************************************************************/
+					},
+					minLength : 2,
+					select : function(event, ui) {
 
-			// keeping track of the last solr search is useful in multiple cases
-			// if a search that filter based on the map returned no results we
-			// want to
-			// re-run the search without the map filter and let user know if
-			// there are results
-			// after use login we re-run the query to update "login" buttons on
-			// layers
-			history : [],
-			addToHistory : function(solr) {
-				// number of search objects to keep
-				var historyLength = 5;
-				this.history.push(solr);
-				while (this.history.length > historyLength) {
-					this.history.shift();
-				}
-
-			},
-			rerunLastSearch : function() {
-				var solr = this.history.pop();
-				if (solr != null)
-					solr.executeSearchQuery(this.searchRequestJsonpSuccess,
-							this.searchRequestJsonpError);
-			},
-
-			/**
-			 * called when the last search returned no results we rerun the last
-			 * search without a spatial constraint if this search returns hits,
-			 * we let the user know there is data outside the map note that this
-			 * function changes the value returned by "getLastSolrSearch()"
-			 * 
-			 * @return
-			 */
-			addSpatialToEmptySearchMessage : function() {
-				var solr = this.history.pop();
-				if (solr != null) {
-					solr.clearBoundingBox();
-					solr.executeSearchQuery(this.emptySearchMessageHandler,
-							this.searchRequestJsonpError);
-				}
+					},
+					open : function() {
+						jQuery(this).removeClass("ui-corner-all").addClass(
+								"ui-corner-top");
+					},
+					close : function() {
+						jQuery(this).removeClass("ui-corner-top").addClass(
+								"ui-corner-all");
+					}
+				});
 			}
 		});

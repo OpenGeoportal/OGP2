@@ -63,8 +63,16 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				this.listenTo(this, "invalid", function(model, error) {
 					console.log(error);
 				});
+				
+				this.listenTo(this, "add remove", this.notifyExternal);
 			},
 
+			notifyExternal: function(model){
+				jQuery(document).trigger("cartUpdated", {
+					LayerId : model.get("LayerId")
+				});
+			},
+			
 			addLayer : function(model, options) {
 
 				// check the login object
@@ -153,7 +161,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 											this).is(":checked");
 								});
 
-				var divId = OpenGeoportal.ogp.controls.genericModalDialog(warningMessage, "Restricted Layer");
+				var divId = OpenGeoportal.ogp.widgets.genericModalDialog(warningMessage, "Restricted Layer");
 
 				var addToCartFunction = function() {
 					that.add(layerModel);

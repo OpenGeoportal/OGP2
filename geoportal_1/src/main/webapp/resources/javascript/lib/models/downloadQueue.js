@@ -171,7 +171,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				}
 				
 				if (text.length > 0){
-					var dialog$ = this.controls.genericModalDialog(text, "Download Notice");
+					var dialog$ = this.widgets.genericModalDialog(text, "Download Notice");
 					var buttonsObj = {buttons: [{text: "OK", click: function(){jQuery(this).dialog.close();}}]};
 					dialog$.dialog("option", "buttons", buttonsObj);
 				}

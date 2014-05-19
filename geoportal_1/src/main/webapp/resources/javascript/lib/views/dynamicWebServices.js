@@ -92,7 +92,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				var wmcSource = "wmc?ogpids=" + arrIds.join();
 				wmcSource += "&type=" + protocolPref;
 				wmcSource += "&minx=" + bbox.left + "&miny=" + bbox.bottom + "&maxx=" + bbox.right + "&maxy=" + bbox.top;
-				this.controls.iframeDownload("wmcDownloadIframe", wmcSource);
+				OpenGeoportal.Utility.iframeDownload("wmcDownloadIframe", wmcSource);
 			},
 			
 			generateContent : function(arrModels) {

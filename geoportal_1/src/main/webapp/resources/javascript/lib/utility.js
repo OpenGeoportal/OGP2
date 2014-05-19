@@ -392,3 +392,30 @@ OpenGeoportal.Utility.calculateTextAreaRows = function(theText) {
 	}
 	return rows;
 };
+
+OpenGeoportal.Utility.anchorsToNiceScroll = function(affectedDiv, offsetHash) {
+	jQuery("#" + affectedDiv + " a.niceScroll").click(function(event) {
+		event.preventDefault();
+		// parse the hrefs for the anchors in this DOM element into toId
+		var toId = jQuery(this).attr("href");
+		jQuery("#" + affectedDiv).scrollTo(jQuery(toId), {
+			offset : offsetHash
+		});
+	});
+};
+
+OpenGeoportal.Utility.iframeDownload = function(iframeClass, iframeSrc) {
+	var newIframe = template.iframeDownload({
+		iframeClass : iframeClass,
+		iframeSrc : iframeSrc
+	});
+	var iframe$ = jQuery(newIframe).appendTo('#iframes');
+	var timeout = 1 * 120 * 1000;// allow 2 minute for download before
+	// iframe
+	// is removed
+	jQuery(document).on("iframeload", iframe$, function() {
+		setTimeout(function() {
+			iframe$.remove();
+		}, timeout);
+	});
+};

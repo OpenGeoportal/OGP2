@@ -15,7 +15,7 @@ OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 
 	initialize: function(){
 		this.template = OpenGeoportal.ogp.template;
-		this.controls = OpenGeoportal.ogp.controls;
+		this.widgets = OpenGeoportal.ogp.widgets;
 		this.render();
 		this.createCartButtons();
 	},
@@ -58,7 +58,7 @@ OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 	addCartHeaderButton: function(buttonId, buttonLabel, helpText,
 			listLabel, clickHandler, hoverHandler) {
 		var that = this;
-		this.controls.appendButton(this.$el, buttonId,
+		this.widgets.appendButton(this.$el, buttonId,
 				buttonLabel, clickHandler).on("mouseover", function(event) {
 			that.displayOptionText(event, helpText, listLabel);
 			hoverHandler.call(that);

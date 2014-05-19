@@ -11,14 +11,16 @@ OpenGeoportal.Template = function() {
 	
 	this.cartHeader = _.template(cartHeaderHtml);
 	
-	var tableViewHtml = '<div class="tableWrapper"><div class="tableHeaders">';
-	tableViewHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
-	tableViewHtml += '</div>';
+	var tableHeaderHtml = '<div class="tableHeaders">';
+	tableHeaderHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
+	tableHeaderHtml += '</div>';
+	
+	this.tableHeader = _.template(tableHeaderHtml);
+	
+	var tableViewHtml = '<div class="tableWrapper"><%= tableHeader %>';
 	tableViewHtml += '<div class="rowContainer"></div></div>';
 	this.tableView = _.template(tableViewHtml);
-	
-	this.dataTable = _
-			.template('<table id="<%= tableId %>" class="display"></table>');
+
 
 	var mapToolBarHtml = '<div id="mapToolBar"><div id="ogpMapButtons">'
 			+ '</div>' + '</div>';
@@ -210,6 +212,27 @@ OpenGeoportal.Template = function() {
 	this.webServicesDialogContent = _.template(webServicesDialogContentHtml);
 	
 
-		
-
+	var infoBubbleHtml = '<div id="<%= elId %>" class="infoBubbleBackground triangle-isoscelesBackground '
+			+ '<%= arrowDirection %>Background"><div class="infoBubbleText triangle-isosceles '
+			+ '<%= arrowDirection %>">' + '<button class="closeBubble button"></button><%= content %>' + 
+			+ '<label><input type="checkbox"/>Do not show this screen again</label></div></div>';
+	this.infoBubble = _.template(infoBubbleHtml);
+	
+	var welcomeTextHtml = '<div id="welcomeText" class="welcomeText">'
+		+ '<h1>Welcome</h1>' + '<p>'
+		+ 'There are two ways to begin your search:' + '</p>' + '<ol>'
+		+ '<li>' + 'Enter information using one or both search fields.'
+		+ '</li>' + '<li>' + 'Zoom in on a location using the map.'
+		+ '</li>' + '</ol>' + '</div>';
+	
+	this.welcomeText = _.template(welcomeTextHtml);
+	
+	var directionsTextHtml = '<div id="directionsText" class="directionsText">'
+		+ '<p>'
+		+ "You can preview layers by clicking on the 'View' button."
+		+ '</p>'
+		+ '<p>'
+		+ "Layers can be added to the 'Cart' by clicking on the + button."
+		+ '</p>' + '</div>';
+	this.directionsText = _.template(directionsTextHtml);
 };

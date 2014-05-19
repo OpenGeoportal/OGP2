@@ -23,7 +23,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 
 	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
 	this.template = OpenGeoportal.ogp.template;
-	this.controls = OpenGeoportal.ogp.controls;
+	this.widgets = OpenGeoportal.ogp.widgets;
 
 	// an array of Backbone Models representing layers to export
 	this.layerModels = exportObj.layers;
@@ -65,7 +65,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 			}
 
 		};
-		this.controls.dialogTemplate(dialogDivId, dialogContent, dialogTitle,
+		this.widgets.dialogTemplate(dialogDivId, dialogContent, dialogTitle,
 				buttonsObj);
 		jQuery("#" + dialogDivId).dialog({
 			"width" : "375"

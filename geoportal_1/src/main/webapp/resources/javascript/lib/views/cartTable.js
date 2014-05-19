@@ -38,10 +38,6 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				model.set({
 					isChecked : true
 				});
-				// update search results table
-				/*jQuery(document).trigger("view.showInCart", {
-					layerId : layerId
-				});*/
 
 				this.updateSavedLayersNumber();
 				this.render();
@@ -49,10 +45,6 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			
 			removedFromCart : function(model) {
 				var layerId = model.get("LayerId");
-				// update search results table
-				/*jQuery(document).trigger("view.showNotInCart", {
-					layerId : layerId
-				});*/
 
 				this.updateSavedLayersNumber();
 				this.render();
@@ -125,7 +117,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 									width : 10,
 									modelRender : function(model) {
 										var showControls = model.get("showControls");
-										return that.controls
+										return that.tableControls
 												.renderExpandControl(showControls);
 									}
 
@@ -142,7 +134,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										width : 21,
 										modelRender : function(model) {
 											
-											return that.controls.renderDownloadControl(model.get("isChecked"));
+											return that.tableControls.renderDownloadControl(model.get("isChecked"));
 											
 										}
 									},
@@ -159,7 +151,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										width : 30,
 										modelRender : function(model) {
 											var dataType = model.get("DataType");
-											return that.controls.renderTypeIcon(dataType);
+											return that.tableControls.renderTypeIcon(dataType);
 										}
 
 									}, {
@@ -226,7 +218,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										columnClass : "colDate",
 										modelRender : function(model) {
 											var date = model.get("ContentDate");
-											return that.controls.renderDate(date);
+											return that.tableControls.renderDate(date);
 										}
 
 									}, {
@@ -242,7 +234,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										width : 24,
 										modelRender : function(model) {
 											var repository = model.get("Institution");
-											return that.controls.renderRepositoryIcon(repository);
+											return that.tableControls.renderRepositoryIcon(repository);
 
 										}
 
@@ -266,7 +258,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 									columnClass : "colMetadata",
 									width : 30,
 									modelRender : function(model) {
-										return that.controls.renderMetadataControl();
+										return that.tableControls.renderMetadataControl();
 									}
 								},
 								{
@@ -310,7 +302,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 											canLogin = loginModel.canLoginLogic(institution);
 										} 
 
-										return that.controls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
+										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
 									}
 								} ]);
 			}

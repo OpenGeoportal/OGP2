@@ -16,15 +16,18 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 
 			initialize : function() {
 				this.template = OpenGeoportal.ogp.template;
-				this.controls = OpenGeoportal.ogp.controls;
+				this.tableControls = OpenGeoportal.ogp.tableControls;
 				this.tableConfig = this.createTableConfig();
 
 				this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-				//this.previewViewHandler();
 				this.adjustColumnsHandler();
 				this.initSubClass();
 				this.render();
 				this.afterRender();
+				
+				var that = this;
+				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(){that.renderHeaders.apply(that, arguments); that.adjustColumnSizes.apply(that, arguments)});
+
 			},
 			initSubClass: function(){
 				//nop
@@ -42,13 +45,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 					that.adjustColumnSizes();
 				});
 			},
-
-			//renderedViews : {}, // keep a reference to rendered
-			// views...necessary?
-			  renderNested: function( view, selector ) {
-			        var $element = ( selector instanceof $ ) ? selector : this.$( selector );
-			        view.setElement( $element ).render();
-			    },
 			    
 			createNewRow: function(model){
 				var row = new OpenGeoportal.Views.LayerRow(
@@ -59,35 +55,48 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				return row;
 			},
 			
-			renderRow : function(model) {
-
-				var row = this.createNewRow(model);
-				this.$el.find(".rowContainer").append(row.el);
-				row.delegateEvents();
+			getTable: function(){
+				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo())}));
+			},
+			
+			renderHeaders: function(){
+				this.$el.children(".tableWrapper").children(".tableHeaders").html(this.template.tableHeader(this.getHeaderInfo()));
+				this.updateColWidths();
+				this.resizeColumns();
+			},
+			
+			handleEmptyTable: function(table$){
+				table$.append(this.template.emptyTable({message: this.emptyTableMessage}));
+			},
+			
+			shouldProcessRow: function(model){
+				return true;
 			},
 			
 			render : function() {
 
 				var that = this;
-				this.$el.html(this.template.tableView(this.getHeaderInfo()));
+				var template$ = this.getTable();
 				
 				
 				var rowcount = 0;
 				var rows = [];
-				//var rowContainer$ = 
+
 				this.collection.each(function(model) {
+					if (!that.shouldProcessRow(model)){return;}
 					var row = that.createNewRow(model);
 					rows.push(row.el);
-					//rowContainer$.append(row.el);
 					rowcount++;
 				});
 				
 				if (rowcount === 0){
-					this.$el.append(this.template.emptyTable({message: this.emptyTableMessage}));
+					this.handleEmptyTable(template$);
 					
 				} else {
-					this.$(".rowContainer").append(rows);
+					template$.find(".rowContainer").first().append(rows);
 				}
+				
+				this.$el.html(template$);
 				
 				this.updateColWidths();
 				this.resizeColumns();
@@ -434,7 +443,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 									width : 10,
 									modelRender : function(model) {
 										var showControls = model.get("showControls");
-										return that.controls
+										return that.tableControls
 												.renderExpandControl(showControls);
 									}
 
@@ -451,7 +460,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 										width : 21,
 										modelRender : function(model) {
 											
-											return that.controls.renderDownloadControl(model.get("isChecked"));
+											return that.tableControls.renderDownloadControl(model.get("isChecked"));
 											
 										}
 									},
@@ -468,7 +477,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 										width : 30,
 										modelRender : function(model) {
 											var dataType = model.get("DataType");
-											return that.controls.renderTypeIcon(dataType);
+											return that.tableControls.renderTypeIcon(dataType);
 										}
 
 									}, {
@@ -535,7 +544,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 										columnClass : "colDate",
 										modelRender : function(model) {
 											var date = model.get("ContentDate");
-											return that.controls.renderDate(date);
+											return that.tableControls.renderDate(date);
 										}
 
 									}, {
@@ -551,7 +560,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 										width : 24,
 										modelRender : function(model) {
 											var repository = model.get("Institution");
-											return that.controls.renderRepositoryIcon(repository);
+											return that.tableControls.renderRepositoryIcon(repository);
 
 										}
 
@@ -575,7 +584,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 									columnClass : "colMetadata",
 									width : 30,
 									modelRender : function(model) {
-										return that.controls.renderMetadataControl();
+										return that.tableControls.renderMetadataControl();
 									}
 								},
 								{
@@ -619,7 +628,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 											canLogin = loginModel.canLoginLogic(institution);
 										} 
 
-										return that.controls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
+										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
 									}
 								} ]);
 			},
@@ -629,7 +638,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				var that = this;
 				var tableConfigCollection = new OpenGeoportal.TableConfig();
 				this.addColumns(tableConfigCollection);
-				tableConfigCollection.listenTo(tableConfigCollection, "change:visible", function(){that.render(); that.adjustColumnSizes();});
 
 				return tableConfigCollection;
 			}

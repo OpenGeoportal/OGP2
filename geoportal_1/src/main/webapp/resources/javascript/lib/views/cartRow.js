@@ -26,8 +26,17 @@ OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 	subClassInit: function(){
 		this.listenTo(this.model, "change:isChecked", this.checkedView);
 		this.listenTo(this.model, "change:actionAvailable", this.showActionAvailable);
+		var that = this;
+		jQuery(document).on("previewLayerOn previewLayerOff", this.$el, function(){that.updateView.apply(that, arguments);});
+
 	},
 
+	cleanUp: function(){
+		console.log("row view destroyed");
+		jQuery(document).off("previewLayerOn previewLayerOff", this.$el);
+
+	},
+	
 	toggleCheck: function(){
 		this.model.set({isChecked : !this.model.get("isChecked")});
 	},

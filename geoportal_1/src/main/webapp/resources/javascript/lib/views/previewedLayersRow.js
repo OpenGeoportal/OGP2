@@ -10,7 +10,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
+OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 
 	events : {
 		"click .viewMetadataControl" : "viewMetadata",
@@ -19,24 +19,27 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		"click .colTitle" : "toggleExpand",
 		"mouseover" : "doMouseoverOn",
 		"mouseout" : "doMouseoverOff",
-		"click .saveControl" : "toggleSave",
-		"istop" : "broadcastModel"
-			
+		"click .saveControl" : "toggleSave"
 	},
 
 	subClassInit: function(){
 		//listen for saved items (in cart collection)
 		this.cart = OpenGeoportal.ogp.appState.get("cart");
-
-	},
-
-	broadcastModel: function(){
-		this.$el.closest(".rowContainer").trigger("topmodel", [this.model]);
+		this.listenTo(this.model, "change:preview", this.render);
+		
+		var that = this;
+		jQuery(document).on("cartUpdated", this.$el, function(){that.updateView.apply(that, arguments);});
 	},
 	
 	toggleSave: function(){
 		//if not in cart, add it.  if in cart, remove it.
 		this.cart.toggleCartState(this.model);
-		this.render();
+	},
+	
+	skipLayer: function(){
+		if (this.model.get("preview") === "off"){
+			return true;
+		}
+		return false;
 	}
 });

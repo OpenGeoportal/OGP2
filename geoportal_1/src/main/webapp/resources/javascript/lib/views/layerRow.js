@@ -30,12 +30,11 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		  
 	initialize : function() {
 		this.template = OpenGeoportal.ogp.template;
-		this.controls = OpenGeoportal.ogp.controls;
+		this.metadataViewer = new OpenGeoportal.MetadataViewer();
 		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-		// share config with the results table
-		//this.listenTo(this.previewed, "change:preview", this.render);
-		//this.previewed.listenTo(this.model, "change:preview", this.render);
+
 		var that = this;
+
 		this.options.tableConfig.listenTo(this.options.tableConfig, "change:visible",
 				function() {
 					that.render.apply(that, arguments);
@@ -66,19 +65,45 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 
 	viewMetadata : function() {
 		// console.log(arguments);
-		this.controls.viewMetadata(this.model);
+		this.metadataViewer.viewMetadata(this.model);
 	},
 
-	togglePreview : function() {
-		var model = this.getModelFromPreviewed();
-		var update = "";
-		if (model.get("preview") === "on") {
-			update = "off";		
-		} else {
-			update = "on";
+	updateView: function(e, data){
+		if (this.model.get("LayerId") === data.LayerId){
+			this.render();
 		}
-		model.set({preview: update});			
-		this.render();
+	},
+	
+	togglePreview : function() {
+		var layerId = this.model.get("LayerId");
+		var model = this.previewed.findWhere({
+			LayerId : layerId
+		});
+		if (typeof model === "undefined") {
+			var layerAttr = null;
+			try {
+
+				layerAttr = this.model.attributes;
+				layerAttr.preview = "on";
+			} catch (e) {
+				console.log(e);
+			}
+			// add them to the previewed collection. Add them as attributes
+			// since we
+			// are using different models in the previewed collection, and we
+			// want
+			// "model" to be called
+			this.previewed.add(_.clone(layerAttr));
+		} else {
+			var update = "";
+			if (model.get("preview") === "on") {
+				update = "off";		
+			} else {
+				update = "on";
+			}
+			model.set({preview: update});	
+		}
+	
 	},
 
 	getModelFromPreviewed: function(){
@@ -118,8 +143,19 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		});
 	},
 	
+	skipLayer: function(){
+		return false;
+	},
+	
 	render : function() {
 		//console.log("render row");
+		if (this.skipLayer()){
+			this.$el.html("");
+			this.$el.addClass("hiddenRow");
+			return this;
+		} else {
+			this.$el.removeClass("hiddenRow");
+		}
 		var html = "";
 		var that = this;
 		var model = this.model;
@@ -185,6 +221,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					var cclass = model.get("columnClass"); 
 					that.$el.find("." + cclass).width(width);
 					});
+		
+		this.$el.trigger("render.row");
 		return this;
 
 	},
@@ -200,7 +238,9 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	highlightRow : function(){
+		jQuery(".tableRow").removeClass("rowHover");
 		this.$el.addClass("rowHover");
+
 	},
 	
 	unHighlightRow: function(){

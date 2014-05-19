@@ -26,14 +26,10 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem,
 	initialize: function(){
 		if (this.searcher === null){
-			this.searcher = new OpenGeoportal.Views.Query({
-				model : OpenGeoportal.ogp.appState.get("queryTerms"),
-				el : "form#searchForm"
-			});
+			this.searcher = OpenGeoportal.ogp.appState.get("queryTerms"); 
 		}
-		var self = this;
 	},
-
+	
     fetchOn: false,
 	searcher: null,
 	url : function(){
@@ -140,11 +136,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	        });
 		},
 
-		fetchError: function(collection, response) {
-		      self.enableFetch();
 
-		      self.options.error(collection, response);
-		    },
 		fetchComplete: function(){
 			this.enableFetch();
 		}

@@ -285,6 +285,12 @@ OpenGeoportal.MapController = function() {
 	this.registerMapEvents = function() {
 		var that = this;
 		// register events
+		
+		jQuery(document).on("container.resize", function(e, height) {
+			jQuery(".olMap").height(height);
+		});
+;
+		
 		jQuery('#' + this.mapDiv).resize(function() {
 			that.updateSize();
 			if (parseInt(jQuery("#" + that.mapDiv).width()) >= 1024) {
@@ -423,7 +429,7 @@ OpenGeoportal.MapController = function() {
 		google.maps.event.addListener(bgMap.mapObject, "tilesloaded",
 				function() {
 					that.render(that.mapDiv);
-
+					
 					// let the application know that the map is ready
 					jQuery(document).trigger("mapReady");
 					// should only fire the first time (or should
@@ -441,7 +447,7 @@ OpenGeoportal.MapController = function() {
 							.addClass("googleLogo");
 
 					// display the map once the google tiles are loaded
-					jQuery("#geoportalMap").fadeTo("slow", 1);
+					jQuery("#" + that.containerDiv).fadeTo("slow", 1);
 
 				});
 	};
@@ -455,7 +461,7 @@ OpenGeoportal.MapController = function() {
 			that.render(that.mapDiv);
 			// really should only fire the first time
 			bgMap.events.unregister(bgMap.mapObject, "loadend");
-			jQuery("#geoportalMap").fadeTo("slow", 1);
+			jQuery("#" + that.containerDiv).fadeTo("slow", 1);
 		});
 	};
 

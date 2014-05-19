@@ -19,7 +19,6 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.CartActionView = Backbone.View.extend({
 	initialize : function() {
 		this.template = OpenGeoportal.ogp.template;
-		this.controls = OpenGeoportal.ogp.controls;
 		this.initView();
 	},
 	//defaut initView is a nop.  override if subclasses require additional initialization
