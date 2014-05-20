@@ -216,7 +216,7 @@ OpenGeoportal.MapController = function() {
 		} else {
 			initialHeight = jQuery("#" + this.containerDiv).parent().height();
 		}
-		jQuery('#' + this.mapDiv).height(initialHeight);
+		jQuery('#' + this.mapDiv).height(initialHeight).width(jQuery("#" + this.containerDiv).parent().width());
 		
 		// attempt to reload tile if load fails
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
@@ -292,19 +292,12 @@ OpenGeoportal.MapController = function() {
 		var that = this;
 		// register events
 		
-		jQuery(document).on("container.resize", function(e, height) {
-			jQuery(".olMap").height(height);
-		});
-;
-		
-		jQuery('#' + this.mapDiv).resize(function() {
+		jQuery(document).on("container.resize", function(e, data) {
+			jQuery(".olMap").height(Math.max(data.ht, data.minHt));
+			jQuery(".olMap").width(Math.max(data.wd, data.minWd));
 			that.updateSize();
-			if (parseInt(jQuery("#" + that.mapDiv).width()) >= 1024) {
-				if (that.zoom == 0) {
-					that.zoomTo(1);
-				}
-			}
 		});
+		
 
 		// OpenLayers event
 		this.events.register('zoomend', this, function() {

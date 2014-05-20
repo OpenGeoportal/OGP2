@@ -180,19 +180,22 @@ OpenGeoportal.Structure = function() {
 		var rollRightWidth = jQuery("#roll_right").width() + 1;// border
 
 		var minHeight = parseInt(jQuery("#container").css("min-height"));
+		var minWidth = parseInt(jQuery("#container").css("min-width"));
+		
 		var that = this;
 		var resizeElements = function() {
 			var headerHeight = jQuery("#header").height();
 			var footerHeight = jQuery("#footer").height();
 			var fixedHeights = headerHeight + footerHeight + 4;
-			jQuery("#map").width(jQuery("#container").width() - rollRightWidth);
+			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
+			//jQuery("#map").width(newContainerWidth);
 			// if left_col is visible. else other siblings width update map
 			// size...
 			var newContainerHeight = Math.max(jQuery(window).height()
 					- fixedHeights, minHeight);
-			// console.log(newContainerHeight);
-			jQuery("#container").height(newContainerHeight);
-			jQuery(document).trigger("container.resize");
+			jQuery("#container").height(newContainerHeight).width(newContainerWidth);
+			
+			jQuery(document).trigger("container.resize", {ht: newContainerHeight, wd: newContainerWidth, minHt: minHeight, minWd: minWidth});
 		};
 		resizeElements();
 		jQuery(window).resize(resizeElements);

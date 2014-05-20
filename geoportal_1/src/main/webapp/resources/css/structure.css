@@ -144,9 +144,10 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 #header {
 	height: 120px;
 	background-color: #ffffff;
-	border-right: #CCCCCC solid 1px;
-	border-left: #CCCCCC solid 1px;
+	/*border-right: #CCCCCC solid 1px;
+	border-left: #CCCCCC solid 1px;*/
 	border-bottom: #999999 solid 1px;
+	min-width: 1050px;
 }
 
 #logo {
@@ -264,10 +265,15 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 #container {
 	background-color: #fff;
 	overflow: hidden;
+	min-height: 512px;
+	min-width: 1050px;
+	position: relative;
 }
 
 #map {
 	opacity: 0;
+	min-width: 1050px;
+	
 }
 /* left column panel */
 #left_col {
@@ -512,6 +518,8 @@ textarea:focus {
 	top: 65px;
 	width: 100%;
 	z-index: 1500;
+	min-width: 1050px;
+	
 }
 
 .scrollFiller {
@@ -752,9 +760,9 @@ textarea:focus {
 	background: #FFF;
 	border: #CCCCCC solid 1px;
 	font-size: 13px;
-	position: fixed;
 	bottom: 0;
 	width: 100%;
+	min-width: 1050px;
 }
 
 #footerLogos {

@@ -151,8 +151,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					jQuery(".slideHorizontal").not(".corner").show();
 				}
 				var that = this;
-				var panelOffset = this.model.get("openWidth")
-						- jQuery("#roll_right").width();
+				var panelWidth = this.model.get("openWidth");
+				var panelOffset = panelWidth - jQuery("#roll_right").width();
 				
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '-=' + panelOffset
