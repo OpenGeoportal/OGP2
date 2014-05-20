@@ -105,6 +105,10 @@
 	display: block;
 }
 
+.ui-resizable-disabled.ui-state-disabled {
+    opacity: 1;
+}
+
 .ui-resizable-disabled .ui-resizable-handle,.ui-resizable-autohide .ui-resizable-handle
 	{
 	display: none;

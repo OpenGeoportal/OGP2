@@ -210,8 +210,14 @@ OpenGeoportal.MapController = function() {
 
 		// div defaults to 0 height for certain doc-types; we want the map to
 		// fill the parent container
-		jQuery('#' + this.mapDiv).height("512px");
-
+		var initialHeight;
+		if (initialZoom === 1){
+			initialHeight = 512;
+		} else {
+			initialHeight = jQuery("#" + this.containerDiv).parent().height();
+		}
+		jQuery('#' + this.mapDiv).height(initialHeight);
+		
 		// attempt to reload tile if load fails
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
 		OpenLayers.ImgPath = "resources/media/";
@@ -424,12 +430,10 @@ OpenGeoportal.MapController = function() {
 	 **************************************************************************/
 	this.googleMapsRenderCallback = function(type) {
 		var bgMap = this.getLayersBy("basemapType", type)[0];
-		// console.log(bgMap);
 		var that = this;
+		this.render(this.mapDiv);
 		google.maps.event.addListener(bgMap.mapObject, "tilesloaded",
 				function() {
-					that.render(that.mapDiv);
-					
 					// let the application know that the map is ready
 					jQuery(document).trigger("mapReady");
 					// should only fire the first time (or should
@@ -438,12 +442,11 @@ OpenGeoportal.MapController = function() {
 							"tilesloaded");
 
 					// Make sure Google logos, etc are displayed
-					jQuery("div.olLayerGooglePoweredBy").children().css(
-							"display", "block");
+					jQuery("div.olLayerGooglePoweredBy").children()
+						.css("display", "block");
 					// find the google logo and add class ".googleLogo",
 					// so we can make sure it always shows
-					jQuery("[id$=GMapContainer]").find(
-							'[title*="Click to see this area"]').parent()
+					jQuery("[id$=GMapContainer]").find('[title*="Click to see this area"]').parent()
 							.addClass("googleLogo");
 
 					// display the map once the google tiles are loaded
@@ -455,10 +458,13 @@ OpenGeoportal.MapController = function() {
 	this.initialRenderCallback = function(type) {
 		// console.log("osm initial render callback");
 		var that = this;
+		this.render(this.mapDiv);
+
 		var bgMap = this.getLayersBy("basemapType", type)[0];
 		bgMap.events.register(bgMap.mapObject, "loadend", function() {
 			// console.log("Tiles loaded");
-			that.render(that.mapDiv);
+			// let the application know that the map is ready
+			jQuery(document).trigger("mapReady");
 			// really should only fire the first time
 			bgMap.events.unregister(bgMap.mapObject, "loadend");
 			jQuery("#" + that.containerDiv).fadeTo("slow", 1);

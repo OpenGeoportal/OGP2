@@ -211,7 +211,7 @@ OpenGeoportal.Structure = function() {
 		var stepTime = 50;
 		var thisId = jQuery(thisObj).attr('id');
 		var hght = jQuery(".searchFormRow").height();
-		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #roll_right > .arrow_right").addClass("slideVertical");
+		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar").addClass("slideVertical");
 		
 		if (thisId === 'moreSearchOptions') {
 
