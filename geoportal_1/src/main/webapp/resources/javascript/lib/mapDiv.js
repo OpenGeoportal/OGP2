@@ -146,9 +146,7 @@ OpenGeoportal.MapController = function() {
 				panHand ]);
 
 		var zoomBar = new OpenLayers.Control.ModPanZoomBar();
-		var scaleLine = new OpenLayers.Control.ScaleLine({
-			geodesic : true
-		});
+		var scaleLine = new OpenLayers.Control.ScaleLine();
 
 		var attribution = new OpenLayers.Control.Attribution();
 		
