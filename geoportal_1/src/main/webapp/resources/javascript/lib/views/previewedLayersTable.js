@@ -43,7 +43,7 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: ""}));
+				return jQuery(this.template.tableView({tableHeader: "", tableFooter: ""}));
 			},
 			
 			shouldProcessRow: function(model){

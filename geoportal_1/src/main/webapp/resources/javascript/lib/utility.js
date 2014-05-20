@@ -30,7 +30,7 @@ OpenGeoportal.Utility.getImage = function(imageName) {
 };
 
 OpenGeoportal.Utility.CurrentTab = 0;
-OpenGeoportal.Utility.whichTab = function() {
+/*OpenGeoportal.Utility.whichTab = function() {
 	var tabInfo = {};
 	var tabIndex;
 	if (arguments.length > 0) {
@@ -61,8 +61,8 @@ OpenGeoportal.Utility.whichTab = function() {
 	}
 	return tabInfo;
 };
-
-OpenGeoportal.Utility.whichSearch = function() {
+*/
+/*OpenGeoportal.Utility.whichSearch = function() {
 	var activeSearchDiv = null;
 	jQuery(".searchBox > div").each(function() {
 		if (jQuery(this).css("display") == 'block') {
@@ -82,7 +82,7 @@ OpenGeoportal.Utility.whichSearch = function() {
 		// throw new Error('No tab is selected.');
 	}
 	return searchInfo;
-};
+};*/
 
 OpenGeoportal.Utility.rgb2hex = function(rgb) {
 	rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
@@ -102,9 +102,9 @@ OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	return hex.join('').toUpperCase();
 };
 
-OpenGeoportal.Utility.idEscape = function(domElementId) {
+/*OpenGeoportal.Utility.idEscape = function(domElementId) {
 	return domElementId.replace(/(:|\.)/g, '\\$1');
-};
+};*/
 
 /*
  * OpenGeoportal.Utility.getMetadata = function (layerId){ var params = { url:
@@ -281,9 +281,6 @@ OpenGeoportal.Utility.getScrollbarWidth = function() {
 OpenGeoportal.Utility.requiresScrollbarAdjustment = function() {
 	var userAgent = window.navigator.userAgent;
 	if (userAgent.indexOf("Macintosh") > 0) {
-		return false;
-	}
-	if (userAgent.indexOf("Chrome") > 0) {
 		return false;
 	}
 

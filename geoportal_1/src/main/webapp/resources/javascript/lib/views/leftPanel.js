@@ -125,7 +125,9 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			showPanelMidLeft : function() {
 
 				var panelWidth = this.model.get("openWidth");
+				var panelOffset = panelWidth - jQuery("#roll_right").width();
 				var that = this;
+				
 				this.$el.show().animate({
 					width : panelWidth
 				}, {
@@ -133,8 +135,9 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					duration : 500,
 					complete : function() {
 						jQuery(".slideHorizontal").css({
-							'margin-left' : panelWidth - jQuery("#roll_right").width()
+							'margin-left' : panelOffset
 						}).not(".corner").fadeIn();
+						
 						jQuery(this).trigger("adjustContents");
 						that.resizablePanel();
 					}
@@ -150,6 +153,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				var that = this;
 				var panelOffset = this.model.get("openWidth")
 						- jQuery("#roll_right").width();
+				
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '-=' + panelOffset
 				}, {
@@ -193,9 +197,11 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					start : function(event, ui) {
 						var margin = parseInt(jQuery(".slideHorizontal").css(
 								"margin-left"));
+
 						that.model.set({
 							alsoMovesMargin : margin
 						});
+						this.prevWidth = ui.originalSize.width;
 						ui.element.resizable("option", "minWidth", that.model
 								.get("panelMinWidth"));
 						var maxWidth = jQuery("#container").width()
@@ -207,12 +213,14 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 								"#container").height());
 
 					},
-					
+					prevWidth: null,
 					resize : function(event, ui) {
-						var delta = ui.size.width - ui.originalSize.width;
-						var newMargin = that.model.get("alsoMovesMargin") + delta;
+
+						var delta = ui.size.width - this.prevWidth;
+						this.prevWidth = ui.size.width;
+						//var newMargin = that.model.get("alsoMovesMargin") + delta;
 						jQuery(".slideHorizontal").css({
-							"margin-left" : newMargin + "px"
+							"margin-left" : "+=" + delta
 						});
 						jQuery(this).trigger("panelResizing");
 

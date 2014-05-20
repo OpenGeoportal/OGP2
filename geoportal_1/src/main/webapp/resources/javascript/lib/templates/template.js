@@ -18,7 +18,7 @@ OpenGeoportal.Template = function() {
 	this.tableHeader = _.template(tableHeaderHtml);
 	
 	var tableViewHtml = '<div class="tableWrapper"><%= tableHeader %>';
-	tableViewHtml += '<div class="rowContainer"></div></div>';
+	tableViewHtml += '<div class="rowContainer"><%= tableFooter %></div></div>';
 	this.tableView = _.template(tableViewHtml);
 
 
@@ -27,6 +27,10 @@ OpenGeoportal.Template = function() {
 
 	var genericDivHtml = '<div id="<%= elId %>" class="<%= elClass %>" ></div>';
 	this.genericDiv = _.template(genericDivHtml);
+	
+	var divNoIdHtml = '<div class="<%= elClass %>" ></div>';
+	this.divNoId = _.template(divNoIdHtml);
+	
 	var mapHtml = '<div id="<%= mapId %>OLMap">' + this.genericDiv({
 		elId : "nwCorner",
 		elClass : "corner slideHorizontal"

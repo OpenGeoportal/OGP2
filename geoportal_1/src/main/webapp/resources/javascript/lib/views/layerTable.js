@@ -56,7 +56,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			},
 			
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo())}));
+				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: this.template.divNoId({elClass: "bottomSpacer"})}));
 			},
 			
 			renderHeaders: function(){
@@ -93,7 +93,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 					this.handleEmptyTable(template$);
 					
 				} else {
-					template$.find(".rowContainer").first().append(rows);
+					template$.find(".rowContainer").first().prepend(rows);
 				}
 				
 				this.$el.html(template$);
@@ -158,7 +158,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 					fixedWidth += model.get("width") + extrawidth;
 				});
 				var remainingWidth = this.$el.parent().width()
-						- fixedWidth;
+						- fixedWidth - OpenGeoportal.Utility.getScrollbarWidth();
 
 				// at this point, remainingWidth must be a positive value. make sure
 				// minWidth of the panel is set to ensure this.

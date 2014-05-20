@@ -205,6 +205,10 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				return row;
 			},
 
+			getTable: function(){
+				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: ""}));
+			},
+			
 			render : function() {
 
 				var that = this;

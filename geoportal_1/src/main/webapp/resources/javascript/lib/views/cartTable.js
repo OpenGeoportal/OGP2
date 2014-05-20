@@ -67,7 +67,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 						});
 				return row;
 			},
-
+			
 			addSharedLayers: function() {
 				if (OpenGeoportal.Config.shareIds.length > 0) {
 					var solr = new OpenGeoportal.Solr();

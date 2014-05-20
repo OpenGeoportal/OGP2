@@ -275,11 +275,14 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	float: left;
 	cursor: default;
 	display: none;
-	z-index: 1010;
+	z-index: 1200;
 	position: relative;
 	background-color: #ffffff;
 }
 
+.contents {
+	height: 100%;
+}
 
 #tabs {
 	border-right: #999 solid 1px;
@@ -1274,14 +1277,17 @@ Backbone table view
 .tableHeaders {
     border-bottom: 1px solid #CCCCCC;
     width: 100%;
+    white-space: nowrap;
 }
 
 .rowContainer {
-	overflow: auto;	
+	overflow-y: auto;	
+	overflow-x: hidden;
+	white-space: nowrap;
 }
 
 #searchResults > .tableWrapper > .rowContainer {
-	overflow: scroll;
+	overflow-y: scroll;
 }
 
 .hiddenRow {
@@ -1377,6 +1383,10 @@ td.colTitle {
 	opacity: 1;
 	background-color: #CDE4FA;
 	border-color: #CDE4FA;
+}
+
+.bottomSpacer {
+	height: 25px;
 }
 
 /**********
