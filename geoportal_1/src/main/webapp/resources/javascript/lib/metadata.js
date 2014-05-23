@@ -230,7 +230,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 	this.downloadMetadata = function downloadMetadata(layerId) {
 		var iframeSource = "getMetadata/download?id=" + layerId;
-		OpenGeoportal.Utility.iframeDownload("metadataDownloadIframe", iframeSource);
+		OpenGeoportal.ogp.widgets.iframeDownload("metadataDownloadIframe", iframeSource);
 
 		// this.analytics.track("Metadata", "Download Metadata", layerId);
 	};

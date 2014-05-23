@@ -1387,28 +1387,15 @@ OpenGeoportal.MapController = function() {
 	 * @param {number}
 	 *            resolution
 	 */
-	this.saveImage = function(imageFormat, resolution) {
+	this.saveImage = function() {
 		// TODO: add html5 canvas stuff...may have to wait for OL3?
-		imageFormat = 'png';
-		var format;
-		switch (imageFormat) {
-		case 'jpeg':
-			format = "image/jpeg";
-			break;
-		case 'png':
-			format = "image/png";
-			break;
-		case 'bmp':
-			format = "image/bmp";
-			break;
-		default:
-			throw new Error("This image format (" + imageFormat
-					+ ") is unavailable.");
-		}
+		var request = this.createImageRequest();
+		this.requestQueue.add(request);
+	};
+	
+	this.createImageRequest = function(){
 
-		var requestObj = {
-			requestType : "image"
-		};
+		var requestObj = {};
 		requestObj.layers = [];
 
 		for ( var layer in this.layers) {
@@ -1457,19 +1444,16 @@ OpenGeoportal.MapController = function() {
 		var extent = this.getVisibleExtent();
 		var bbox = extent.toBBOX();
 
-		requestObj.format = format;
 		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:900913';
+		requestObj.srs = 'EPSG:3857';
 		var offset = this.getMapOffset();
 		var ar = this.getAspectRatio(extent);
-		// NOTE: this doesn't really work... should get appropriate width and
-		// height based on bbox NB (CB 2/1/2014): not sure what this note
-		// means...
+
 		var currSize = this.getCurrentSize();
 		requestObj.width = currSize.w - offset.x;
 		requestObj.height = parseInt(requestObj.width / ar);
 		// add the request to the queue
-		this.requestQueue.createRequest(requestObj);
+		return new OpenGeoportal.Models.ImageRequest(requestObj);
 	};
 
 	this.processMetadataSolrResponse = function(data) {

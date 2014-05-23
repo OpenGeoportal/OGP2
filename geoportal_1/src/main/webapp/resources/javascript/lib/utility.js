@@ -401,18 +401,4 @@ OpenGeoportal.Utility.anchorsToNiceScroll = function(affectedDiv, offsetHash) {
 	});
 };
 
-OpenGeoportal.Utility.iframeDownload = function(iframeClass, iframeSrc) {
-	var newIframe = template.iframeDownload({
-		iframeClass : iframeClass,
-		iframeSrc : iframeSrc
-	});
-	var iframe$ = jQuery(newIframe).appendTo('#iframes');
-	var timeout = 1 * 120 * 1000;// allow 2 minute for download before
-	// iframe
-	// is removed
-	jQuery(document).on("iframeload", iframe$, function() {
-		setTimeout(function() {
-			iframe$.remove();
-		}, timeout);
-	});
-};
+
