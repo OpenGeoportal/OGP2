@@ -31,9 +31,16 @@ OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 		jQuery(document).on("cartUpdated", this.$el, function(){that.updateView.apply(that, arguments);});
 	},
 	
-	toggleSave: function(){
+	toggleSave: function(e){
 		//if not in cart, add it.  if in cart, remove it.
-		this.cart.toggleCartState(this.model);
+		var match = this.cart.findWhere({LayerId: this.model.get("LayerId")});
+		if (typeof match === "undefined"){
+			var that = this;
+			jQuery(e.currentTarget).effect("transfer", { to: ".shoppingCartIcon", easing: "swing", className: "ui-effects-transfer inCart" }, 400, function(){that.cart.toggleCartState(that.model);});
+		} else {
+			this.cart.toggleCartState(this.model);
+		}
+		
 	},
 	
 	skipLayer: function(){

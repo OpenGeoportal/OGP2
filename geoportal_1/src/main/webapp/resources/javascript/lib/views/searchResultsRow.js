@@ -44,6 +44,52 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 
 	},
 	
+	togglePreview : function(e) {
+		var layerId = this.model.get("LayerId");
+		var model = this.previewed.findWhere({
+			LayerId : layerId
+		});
+		if (typeof model === "undefined") {
+			var layerAttr = null;
+			try {
+
+				layerAttr = this.model.attributes;
+				layerAttr.preview = "on";
+			} catch (err) {
+				console.log(err);
+			}
+			// add them to the previewed collection. Add them as attributes
+			// since we
+			// are using different models in the previewed collection, and we
+			// want
+			// "model" to be called
+			var that = this;
+			this.$el.css("opacity", ".5");
+			var to$ = jQuery(".previewedLayers").find(".tableRow").last();
+			if (to$.length === 0){
+				to$ = jQuery(".previewedLayers");
+			}
+			jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){that.previewed.add(_.clone(layerAttr)); that.$el.css("opacity", "1"); that.model.set({hidden: true}); });
+
+		} else {
+			var update = "";
+			if (model.get("preview") === "on") {
+				update = "off";		
+				model.set({preview: update});	
+
+			} else {
+				update = "on";
+				var that = this;
+				this.$el.css("opacity", ".5");
+				var to$ = jQuery(".previewedLayers").find(".tableRow").last();
+				if (to$.length === 0){
+					to$ = jQuery(".previewedLayers");
+				}
+				jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){model.set({preview: update}); that.$el.css("opacity", "1"); that.model.set({hidden: true});});
+			}
+		}
+	
+	},
 	
 	toggleExpand : function() {
 		// console.log("toggleExpand");
@@ -59,8 +105,22 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		this.$el.closest(".rowContainer").trigger("topmodel", [this.model]);
 	},
 	
-	toggleSave: function(){
+	skipLayer: function(){
+		if (this.model.has("hidden") && this.model.get("hidden")){
+			return true;
+		}
+		return false;
+	},
+	
+	toggleSave: function(e){
 		//if not in cart, add it.  if in cart, remove it.
-		this.cart.toggleCartState(this.model);
+		var match = this.cart.findWhere({LayerId: this.model.get("LayerId")});
+		if (typeof match === "undefined"){
+			var that = this;
+			jQuery(e.currentTarget).effect("transfer", { to: ".shoppingCartIcon", easing: "swing", className: "ui-effects-transfer inCart" }, 400, function(){that.cart.toggleCartState(that.model);});
+		} else {
+			this.cart.toggleCartState(this.model);
+		}
+		
 	}
 });

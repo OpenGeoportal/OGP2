@@ -45,8 +45,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			that.removeOnLogout(that, arguments);
 			that.render.apply(that, arguments);
 		});
-		this.listenTo(this.model, "change:showControls", this.render);
-		
+		this.listenTo(this.model, "change:showControls change:hidden", this.render);
 		this.subClassInit();
 		this.render();
 	},
@@ -69,12 +68,19 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 
 	updateView: function(e, data){
+
 		if (this.model.get("LayerId") === data.LayerId){
+			if (e.type === "previewLayerOff"){
+				if (this.model.has("hidden")){
+					this.model.set({hidden: false});
+					return;
+				}
+			}
 			this.render();
 		}
 	},
 	
-	togglePreview : function() {
+	togglePreview : function(e) {
 		var layerId = this.model.get("LayerId");
 		var model = this.previewed.findWhere({
 			LayerId : layerId
@@ -85,8 +91,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 
 				layerAttr = this.model.attributes;
 				layerAttr.preview = "on";
-			} catch (e) {
-				console.log(e);
+			} catch (err) {
+				console.log(err);
 			}
 			// add them to the previewed collection. Add them as attributes
 			// since we
@@ -94,14 +100,18 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			// want
 			// "model" to be called
 			this.previewed.add(_.clone(layerAttr));
+
 		} else {
 			var update = "";
 			if (model.get("preview") === "on") {
 				update = "off";		
+
 			} else {
 				update = "on";
 			}
+			
 			model.set({preview: update});	
+
 		}
 	
 	},

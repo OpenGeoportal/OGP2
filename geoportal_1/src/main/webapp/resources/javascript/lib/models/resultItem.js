@@ -46,13 +46,28 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			this.totalResults = dataObj.response.numFound;
 			var start = dataObj.response.start;
 			var solrLayers = dataObj.response.docs;
+			var ids = [];
+			var previewed = OpenGeoportal.ogp.appState.get("previewed").each(function(model){
+				if (model.get("preview") === "on"){
+					ids.push(model.get("LayerId"));
+				}
+			});
 
 			// solr docs holds an array of hashtables, each hashtable contains a
 			// layer
-
 			var arrModels = [];
 			
 			_.each(solrLayers, function(solrLayer){
+
+				solrLayer.resultNum = start;
+				start++;
+				
+				//filter out layers in the preview pane
+
+				if (_.contains(ids, solrLayer.LayerId)){
+					solrLayer.hidden = true;
+				}
+				
 				//just parse the json here, so we can use the results elsewhere
 				var locationParsed = {};
 				try {
@@ -60,18 +75,17 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 					if (rawVal.length > 2){
 						locationParsed = jQuery.parseJSON(rawVal);
 					}
-				} catch (e){
-					console.log([solrLayer["LayerId"], e]);
+				} catch (err){
+					console.log([solrLayer["LayerId"], err]);
 				}
 				solrLayer.Location = locationParsed;
 				
-				solrLayer.resultNum = start;
-				start++;
 				arrModels.push(solrLayer);
 			});
 			return arrModels;
 		},
 	    
+		
 		enableFetch: function() {
 		      this.fetchOn = true;
 		    },
