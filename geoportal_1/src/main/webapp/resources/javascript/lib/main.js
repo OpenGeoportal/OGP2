@@ -82,7 +82,7 @@ jQuery(document)
 										// The collection that holds search
 										// results
 										try{
-											new OpenGeoportal.Views.Query({
+											ogp.search = new OpenGeoportal.Views.Query({
 												model : OpenGeoportal.ogp.appState.get("queryTerms"),
 												el : "form#searchForm"
 											});

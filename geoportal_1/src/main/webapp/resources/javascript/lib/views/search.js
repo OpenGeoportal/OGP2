@@ -60,7 +60,7 @@ OpenGeoportal.Views.Query = Backbone.View
 							that.fireSearchWithZoom();
 						}).addClass("searchButton");
 				this.widgets.prependButton(advSearchButtons$,
-						"advancedSearchClear", "Clear", this.clearForm);
+						"advancedSearchClear", "Clear", function(){that.clearForm();});
 
 				this.listenTo(this.model, "change:mapExtent",
 						this.extentChanged);
@@ -381,16 +381,30 @@ OpenGeoportal.Views.Query = Backbone.View
 
 			},
 
-			clearForm : function() {
-				// TODO: a placeholder
+			clearForm : function(e) {
+								
+				//clear checkboxes
+				this.clearInput("restrictedCheck");
+				this.clearInput("mapFilterCheck");
+				//clear text fields
+				this.clearInput("advancedKeywordText");
+				this.clearInput("advancedOriginatorText");
+				this.clearInput("advancedDateFromText");
+				this.clearInput("advancedDateToText");
+				
+				//reset isotopic
+				this.topics.changeSelected("");
+				//reset datatype and repository dropdowns
+				this.dataTypes.selectAll();
+				this.repositories.selectAll();
 			},
 			
 			clearInput : function(divName) {
-				jQuery('#' + divName + ' :input').each(
+				jQuery('#' + divName + ':input').each(
 						function() {
 							var type = this.type;
 							var tag = this.tagName.toLowerCase();
-							if (type == 'text' || type == 'password'
+							if (type == 'text' || type == 'password' || type == 'search'
 									|| tag == 'textarea') {
 								this.value = '';
 							} else if (type == 'checkbox' || type == 'radio') {
@@ -398,19 +412,10 @@ OpenGeoportal.Views.Query = Backbone.View
 							} else if (tag == 'select') {
 								this.selectedIndex = 0;
 							}
+							jQuery(this).trigger("blur");
 						});
 			},
 
-			clearDefault : function(inputFieldName) {
-				var searchTextElement = document.getElementById(inputFieldName);
-
-				if (searchTextElement == null)
-					return;
-				var currentValue = searchTextElement.value;
-				if (currentValue.indexOf("Search") == 0)
-					searchTextElement.value = "";
-			},
-			
 			solrAutocomplete: function(textField$, solrField) {
 				textField$.autocomplete({
 					source : function(request, response) {

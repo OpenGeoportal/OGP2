@@ -186,20 +186,29 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		}
 	},
 	
-	selectCallback: function(event, ui, context){
+	changeSelected: function(newVal){
 		var valueAttr = this.getValueAttribute();
 		var selectAttr = this.getSelectionAttribute();
+
 		var prevSelected = this.collection.find(function(model) {
 			return model.get(selectAttr) == true;
 		});
-		var selValue = ui.item.find("input[type=hidden]").first().val();
-		var selModel = this.collection.find(function(model) {
-			return model.get(valueAttr) === selValue;
-		});
 		prevSelected.set(selectAttr, false);//, {silent: true});//just trigger the listener once
+		
+		var selModel = this.collection.find(function(model) {
+			return model.get(valueAttr) === newVal;
+		});
 		selModel.set(selectAttr, true);
+
+
 		this.setValue();
 		this.$el.find("ul.ui-menu").hide();
+	},
+	
+	selectCallback: function(event, ui, context){
+
+		var selValue = ui.item.find("input[type=hidden]").first().val();
+		this.changeSelected(selValue);
 	},
 	
 	render: function(){
@@ -273,6 +282,48 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		model.set(selectionAttr, newVal);
 		return newVal;
 	},
+	selectItem: function(itemVal){
+		var valueAttr = this.getValueAttribute();
+		var selectAttr = this.getSelectionAttribute();
+		
+		var selModel = this.collection.find(function(model) {
+			return model.get(valueAttr) === itemVal;
+		});
+		selModel.set(selectAttr, true);
+
+
+		this.setValue();
+	},
+	
+	unselectItem: function(newVal){
+		var valueAttr = this.getValueAttribute();
+		var selectAttr = this.getSelectionAttribute();
+		
+		var selModel = this.collection.find(function(model) {
+			return model.get(valueAttr) === itemVal;
+		});
+		selModel.set(selectAttr, false);
+
+
+		this.setValue();
+	},
+	
+	selectAll: function(){
+		var selectAttr = this.getSelectionAttribute();
+		this.collection.each(function(model){
+			model.set(selectAttr, true);
+		});
+		this.setValue();
+	},
+	
+	unselectAll: function(){
+		var selectAttr = this.getSelectionAttribute();
+		this.collection.each(function(model){
+			model.set(selectAttr, false);
+		});
+		this.setValue();
+	},
+	
 	setValue: function(){
 		var selectionAttr = this.getSelectionAttribute();
 		var valueAttr = this.getValueAttribute();
