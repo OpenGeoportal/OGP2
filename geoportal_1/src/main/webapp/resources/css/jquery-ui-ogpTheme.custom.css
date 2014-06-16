@@ -38,6 +38,12 @@
 	z-Index: 9999;
 }
 
+.ui-effects-transfer.saveControl {
+	border: none;
+	/*background: black;*/
+	z-Index: 9999;
+}
+
 .ui-helper-clearfix:before,.ui-helper-clearfix:after {
 	content: "";
 	display: table;

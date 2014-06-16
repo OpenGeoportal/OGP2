@@ -107,6 +107,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		
 		newSearch: function(){
 			if (!this.fetchOn && typeof this.fetchStatus !== "undefined" && this.fetchStatus !== null){
+				console.log("abort called");
 				this.fetchStatus.abort();
 			}
 			
@@ -114,15 +115,15 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	        this.pageParams.start = 0;
 	        var that = this;
 
-	        this.fetchStatus = this.fetch({
+	        var xhr = this.fetch({
 	          dataType: "jsonp",
 			  jsonp: "json.wrf",
-
-	          complete: function(){that.fetchComplete.apply(that, arguments);},
+	          complete: function(){that.fetchComplete.apply(that, arguments); jQuery(document).trigger("newResults");},
 	          reset: true,
 	          data: $.extend(this.pageParams, this.extraParams)
 	        });
-
+	        this.fetchStatus = xhr;
+	        return xhr;
 		},
 		
 		nextPage: function(){

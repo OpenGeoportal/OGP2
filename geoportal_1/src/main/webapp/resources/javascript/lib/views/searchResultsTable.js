@@ -122,7 +122,9 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			fireSearchHandler: function(){
 				var that = this;
 				jQuery(document).on("fireSearch", function(){
+					that.$el.fadeTo("fast", .5);
 					that.collection.newSearch();
+					jQuery(document).one("newResults", function(){that.$el.fadeTo("fast", 1)});
 				});
 			},
 			
