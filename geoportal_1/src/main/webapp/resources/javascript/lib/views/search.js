@@ -300,7 +300,8 @@ OpenGeoportal.Views.Query = Backbone.View
 								buttonLabel : "Select repositories",
 								itemClass : "repositoryMenuItem",
 								iconRenderer : iconRenderer,
-								controlClass : "repositoryCheck"
+								controlClass : "repositoryCheck",
+								showOnly: true
 							});
 					that.repositories = repositoryMenu;
 					that.model.set({
@@ -340,7 +341,8 @@ OpenGeoportal.Views.Query = Backbone.View
 							buttonLabel : "Select data types",
 							itemClass : "dataTypeMenuItem",
 							iconRenderer : iconRenderer,
-							controlClass : "dataTypeCheck"
+							controlClass : "dataTypeCheck",
+							showOnly: true
 						});
 
 				this.dataTypes = dataTypesMenu;

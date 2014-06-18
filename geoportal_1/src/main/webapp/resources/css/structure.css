@@ -115,6 +115,37 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	width: 70px;
 }
 
+#topicDropdown .select .ui-button-text {
+	width: 136px;	
+}
+
+.dropdown .ui-menu-item > a > div.showOnly {
+	font-size: 10px;
+    position: absolute;
+    right: 31px;
+    height: 20px;
+    display: none;
+}
+
+.dropdown .ui-menu-item > a.ui-state-focus > div.showOnly {
+	display: inline-block;	
+}
+
+.dropdown .ui-menu-item > a.ui-state-focus > div.showOnly:hover {
+	text-decoration: underline;
+}
+
+.dropdown .showAll {
+    display: inline-block;
+    font-size: 10px;
+    padding-left: 9px;
+    visibility: hidden;
+}
+
+.dropdown .showAll:hover {
+	text-decoration: underline;
+}
+
 .owsServicesButton {
 	width: 100%;
 	text-align: left;
@@ -224,7 +255,7 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 }
 
 .searchFormInput>.styledSelect {
-	width: 220px;
+	width: 255px;
 }
 
 .dropdown .ui-menu-item>a>div {
@@ -622,7 +653,7 @@ textarea:focus {
 
 .searchCol {
 	position: absolute;
-	width: 302px;
+	/*width: 340px;*/
 	margin-right: 42px;
 }
 
@@ -914,6 +945,11 @@ td div.repositoryIcon {
 .inCart {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -130px -13px
 		transparent;
+}
+
+.exampleControl {
+	display: inline-block;
+	padding: 0 2px;
 }
 
 .dialog {

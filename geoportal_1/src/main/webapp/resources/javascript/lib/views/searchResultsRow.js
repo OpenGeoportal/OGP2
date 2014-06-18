@@ -117,7 +117,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		var match = this.cart.findWhere({LayerId: this.model.get("LayerId")});
 		if (typeof match === "undefined"){
 			var that = this;
-			jQuery(e.currentTarget).effect("transfer", { to: ".shoppingCartIcon", easing: "swing", className: "ui-effects-transfer inCart" }, 400, function(){that.cart.toggleCartState(that.model);});
+			jQuery(e.currentTarget).effect("transfer", { to: ".shoppingCartIcon", easing: "swing", className: "ui-effects-transfer-to-cart inCart" }, 400, function(){that.cart.toggleCartState(that.model);});
 		} else {
 			this.cart.toggleCartState(this.model);
 		}

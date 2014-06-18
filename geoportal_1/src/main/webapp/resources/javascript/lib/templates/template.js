@@ -58,16 +58,23 @@ OpenGeoportal.Template = function() {
 	this.requestIndicator = _.template(requestIndicatorHtml);
 
 	var selectHtml = '<div class="styledSelect">' + "<div>"
-			+ '<button class="select"><%= buttonLabel %></button>' + "</div>"
-			+ "<ul><%= menuHtml%></ul>";// +
-	'</div>';
+			+ '<button class="select"><%= obj.buttonLabel %></button><%= obj.caption %>'
+			+ "</div>"
+			+ "<ul><%= obj.menuHtml %></ul>"
+		    + '</div>';
 
 	this.styledSelectBody = _.template(selectHtml);
+	
+	var selectAllHtml = '<div class="showAll offsetColor button">select all</div>';
+	this.selectAllCaption = _.template(selectAllHtml);
 
 	var simpleMenuHtml = '<li><a class="<%= className %>"><%= name %></a>'
 			+ '<input type="hidden" value="<%= value %>" /></li>';
 	this.simpleMenuItem = _.template(simpleMenuHtml);
 
+	var showOnlyHtml = '<div class="showOnly button offsetColor">only</div>';
+	this.showOnlyControl = _.template(showOnlyHtml);
+	
 	var controlMenuHtml = '<li><a class="<%= className %>"><%= icon %><div class="selectText"><%= name %></div><%= control %></a>';
 	controlMenuHtml += '<input type="hidden" value="<%= value %>" /></li>';
 	this.controlMenuItem = _.template(controlMenuHtml);
@@ -230,8 +237,8 @@ OpenGeoportal.Template = function() {
 	this.welcomeText = _.template(welcomeTextHtml);
 	
 	var directionsTextHtml = '<div id="directionsText" class="directionsText">'
-		+ "<p>You can preview layers by clicking on the 'View' button.</p>"
-		+ "<p>Layers can be added to the 'Cart' by clicking on the + button.</p></div>";
+		+ "<span>You can preview layers by clicking on the 'View' checkbox.</span><br/><br/>"
+		+ '<span>Layers can be added to the \'Cart\' by clicking on the </span><div class="saveControl notInCart exampleControl"></div><span> button.</span></div>';
 	
 	this.directionsText = _.template(directionsTextHtml);
 };
