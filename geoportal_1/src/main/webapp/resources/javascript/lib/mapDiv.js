@@ -285,6 +285,9 @@ OpenGeoportal.MapController = function() {
 	/**
 	 * register event handlers for the map
 	 */
+	
+	this.moveEndDelayId = null;
+
 	this.registerMapEvents = function() {
 		var that = this;
 		// register events
@@ -319,32 +322,37 @@ OpenGeoportal.MapController = function() {
 				that.setCenter(that.WGS84ToMercator(that.getSearchCenter().lon,
 						0));
 			}
-			/*
-			 * Translate the OpenLayers event to a jQuery event used by the
-			 * application
-			 * 
-			 * @fires "eventZoomEnd"
-			 */
-
-			//jQuery(document).trigger('eventZoomEnd');
+			
+			
 		});
 
 		// OpenLayers event
 		this.events.register('moveend', this, function() {
+			console.log("moveend");
 			var newExtent = that.getSearchExtent();
 			var newCenter = that.getSearchCenter();
 
 			/*
 			 * Translate the OpenLayers event to a jQuery event used by the
 			 * application. This is the event used to trigger a search on map
-			 * move.
+			 * move.;clusters the events to try to get actual end of movement
 			 * 
 			 * @fires "map.extentChanged"
 			 */
+			/*if (that.moveEndDelayId !== null){
+				clearTimeout(that.moveEndDelayId);
+				that.moveEndDelayId = null;
+			}
+			that.moveEndDelayId = setTimeout(function(){
+				console.log("listener fired"); 
+
+			}, 200);*/
+			
 			jQuery(document).trigger('map.extentChanged', {
 				mapExtent : newExtent,
 				mapCenter : newCenter
 			});
+
 		});
 
 		this.bboxHandler();

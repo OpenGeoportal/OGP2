@@ -528,7 +528,8 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 			}
 			
 			var value = currModel.get(valueAttr);
-			var name = currModel.get(displayAttr);
+			var name = currModel.get(displayAttr) + '<div class="sortArrows"></div>';
+			
 			var selected = "";
 
 			if (colName.toLowerCase() == value.toLowerCase()){
@@ -549,7 +550,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var that = this;
 		var menuHtml = "";	
 		var colName = this.model.get("column");	
-		var direction = this.model.get("direction"); //TODO: should render an arrow, up or down, for the selected column
+		var direction = this.model.get("direction"); //"asc" or "desc"
 		var currModel = this.headings.findWhere({columnName: colName});
 		var name = "";
 		if (currModel.has("displayName")){
@@ -559,8 +560,15 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		}
 		//this.$el.find(".select").first().button( "option", "label", name );
 		this.$el.find("li > a").each(function(){
+			var sort$ = jQuery(this).find(".sortArrows");
+			sort$.removeClass("sortDown sortUp");
 			if (jQuery(this).next().val() == colName){
 				that.uiItemSelected(this);
+				if (direction === "asc"){
+					sort$.addClass("sortUp");
+				} else if (direction === "desc"){
+					sort$.addClass("sortDown");
+				}
 			} else {
 				that.uiItemDeselected(this);
 			}

@@ -119,15 +119,24 @@ OpenGeoportal.Views.Query = Backbone.View
 				// map field to model attribute
 			},
 
+			
 			handleGeocodeResults: function(geocode, where$){
 
 				var bbox = geocode.bbox;
 				if (typeof bbox !== "undefined") {
+					this.stopListening(this.model, "change:mapExtent",
+							this.clearWhere);
+					
 					where$.val(geocode.name);
 					// no need to fire search since it will be triggered by
 					// extent change
-					this.listenToOnce(this.model, "change:mapExtent",
-							this.clearWhere);
+					var that = this;
+					//wait for zoom to end before attaching handler
+					jQuery(document).one("map.extentChanged", function(){
+						console.log("listener fired"); 
+						that.listenToOnce(that.model, "change:mapExtent",
+								that.clearWhere);
+					});
 					jQuery(document).trigger("map.zoomToLayerExtent", {
 						bbox : bbox
 					});
@@ -175,6 +184,9 @@ OpenGeoportal.Views.Query = Backbone.View
 
 			clearWhere : function() {
 				var where$ = jQuery("#whereField");
+				if (where$.text().trim().length === 0){
+					return;
+				}
 				where$.data().geocode = {};
 				if (where$.val().trim().length > 0) {
 					var currColor = where$.css("color");
@@ -186,7 +198,7 @@ OpenGeoportal.Views.Query = Backbone.View
 						color : "#0755AC"
 					}, 125).animate({
 						color : currColor
-					}, 125).delay(1500).animate({
+					}, 125).delay(300).animate({
 						color : "#FFFFFF"
 					}, 300, function() {
 						where$.val("").css({
@@ -202,7 +214,7 @@ OpenGeoportal.Views.Query = Backbone.View
 					if (ignoreSpatial) {
 						// console.log("firesearchWithZoom ignore spatial");
 						this.fireSearch();
-						this.clearWhere();
+						//this.clearWhere();
 						return;
 					}
 				}
@@ -258,7 +270,9 @@ OpenGeoportal.Views.Query = Backbone.View
 				jQuery("#restrictedCheck").on("change", function(event) {
 					var arrRestricted = [];
 					if (!this.checked) {
-						arrRestricted = [that.model.get("displayRestrictedBasic")];
+						arrRestricted = that.model.get("displayRestrictedBasic");
+					} else {
+						arrRestricted = that.model.get("repositoryList").pluck("shortName");
 					}
 					that.model.set({
 						displayRestrictedAdvanced : arrRestricted
@@ -410,7 +424,10 @@ OpenGeoportal.Views.Query = Backbone.View
 									|| tag == 'textarea') {
 								this.value = '';
 							} else if (type == 'checkbox' || type == 'radio') {
-								this.checked = false;
+								if (this.checked){
+									this.checked = false;
+									jQuery(this).trigger("change");
+								}
 							} else if (tag == 'select') {
 								this.selectedIndex = 0;
 							}

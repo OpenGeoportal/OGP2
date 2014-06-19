@@ -146,6 +146,29 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	text-decoration: underline;
 }
 
+.dropdown .ui-menu-item > a > div.sortArrows {
+	right: 0px;
+	position: absolute;
+	margin-top: 2px;
+	width: 10px;
+	height: 12px;
+}
+
+.dropdown .ui-menu-item > a.ui-state-focus > div.sortArrows {
+		background: url("../media/sorting.png") no-repeat scroll 0px
+		0px transparent;
+}
+		
+.dropdown .ui-menu-item > a.selected > div.sortArrows.sortDown {
+	background: url("../media/sorting.png") no-repeat scroll -22px
+		0px transparent;
+}
+
+.dropdown .ui-menu-item > a.selected > div.sortArrows.sortUp {
+	background: url("../media/sorting.png") no-repeat scroll -11px
+		0px transparent;
+}
+
 .owsServicesButton {
 	width: 100%;
 	text-align: left;
