@@ -286,8 +286,8 @@ OpenGeoportal.MapController = function() {
 	 * register event handlers for the map
 	 */
 	
-	this.moveEndDelayId = null;
-
+	this.moveEventId = null;
+	
 	this.registerMapEvents = function() {
 		var that = this;
 		// register events
@@ -317,41 +317,43 @@ OpenGeoportal.MapController = function() {
 				jQuery("#" + that.mapDiv).height(mapHeight);// calculate min and
 				// max sizes
 				that.updateSize();
+				//console.log("update map size");
 			}
-			if (zoomLevel == 0) {
+			if (zoomLevel == 1) {
 				that.setCenter(that.WGS84ToMercator(that.getSearchCenter().lon,
 						0));
 			}
 			
 			
 		});
-
+		
 		// OpenLayers event
 		this.events.register('moveend', this, function() {
-			console.log("moveend");
+			//var d = new Date();
+			//console.log("moveend: " + d.getTime());
 			var newExtent = that.getSearchExtent();
 			var newCenter = that.getSearchCenter();
 
 			/*
 			 * Translate the OpenLayers event to a jQuery event used by the
 			 * application. This is the event used to trigger a search on map
-			 * move.;clusters the events to try to get actual end of movement
+			 * move. cluster moveend events so that we don't fire too often
 			 * 
 			 * @fires "map.extentChanged"
 			 */
-			/*if (that.moveEndDelayId !== null){
-				clearTimeout(that.moveEndDelayId);
-				that.moveEndDelayId = null;
-			}
-			that.moveEndDelayId = setTimeout(function(){
-				console.log("listener fired"); 
-
-			}, 200);*/
 			
-			jQuery(document).trigger('map.extentChanged', {
-				mapExtent : newExtent,
-				mapCenter : newCenter
-			});
+			clearTimeout(this.moveEventId);
+			
+			var trigger = function(){
+				//console.log("extentChanged triggered");
+				jQuery(document).trigger('map.extentChanged', {
+					mapExtent : newExtent,
+					mapCenter : newCenter
+				});
+			};
+			
+			this.moveEventId = setTimeout(trigger, 100);
+
 
 		});
 

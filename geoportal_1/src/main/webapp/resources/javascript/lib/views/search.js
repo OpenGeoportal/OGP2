@@ -119,11 +119,22 @@ OpenGeoportal.Views.Query = Backbone.View
 				// map field to model attribute
 			},
 
+			geocodeBbox: null,
 			
 			handleGeocodeResults: function(geocode, where$){
-
 				var bbox = geocode.bbox;
 				if (typeof bbox !== "undefined") {
+					//console.log(bbox);
+					//console.log(this.geocodeBbox);
+					if (bbox == this.geocodeBbox){
+						//don't zoom if the geocode bbox doesn't change
+						this.fireSearch();
+						return;
+					} 
+						
+					this.geocodeBbox = bbox;	
+					
+					//clear left over listeners from last geocode
 					this.stopListening(this.model, "change:mapExtent",
 							this.clearWhere);
 					
@@ -131,9 +142,9 @@ OpenGeoportal.Views.Query = Backbone.View
 					// no need to fire search since it will be triggered by
 					// extent change
 					var that = this;
-					//wait for zoom to end before attaching handler
-					jQuery(document).one("map.extentChanged", function(){
-						console.log("listener fired"); 
+					//wait for move to end before attaching handler
+					this.listenToOnce(this.model, "change:mapExtent", function(){
+						//console.log("listener added"); 
 						that.listenToOnce(that.model, "change:mapExtent",
 								that.clearWhere);
 					});
@@ -141,18 +152,22 @@ OpenGeoportal.Views.Query = Backbone.View
 						bbox : bbox
 					});
 
+					//clear the geocode value
+					where$.data().geocode = {};
 				} else {
 					// console.log("zoomToWhere");
 					this.fireSearch();
 				}
+				
+
 			},
+			
 			zoomToWhere : function() {
 				var where$ = jQuery("#whereField");
 				var geocode = where$.data().geocode;
 				
 				if (typeof geocode !== "undefined" && _.size(geocode) > 0) {
-					// console.log("geocode value");
-					// console.log(geocode);
+
 					this.handleGeocodeResults(geocode, where$);
 					
 				} else if (where$.val().trim().length > 0) {
@@ -183,12 +198,14 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 
 			clearWhere : function() {
+				//console.log("clear where");
 				var where$ = jQuery("#whereField");
-				if (where$.text().trim().length === 0){
-					return;
-				}
+				//clear the geocode value
 				where$.data().geocode = {};
+				this.geocodeBbox = null;
+				
 				if (where$.val().trim().length > 0) {
+					
 					var currColor = where$.css("color");
 					where$.animate({
 						color : "#0755AC"
