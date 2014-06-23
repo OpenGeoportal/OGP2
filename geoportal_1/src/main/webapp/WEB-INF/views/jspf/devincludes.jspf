@@ -4,8 +4,6 @@
 <link rel="stylesheet" href="resources/css/structure.css"
 	type="text/css" />
 <link rel="stylesheet" href="resources/css/mapDiv.css" type="text/css" />
-<link rel="stylesheet" type="text/css" media="print"
-	href="resources/css/print.css" />
 <link rel="stylesheet" href="resources/css/localize.css"
 	type="text/css" />
 

@@ -55,6 +55,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 
 				layerAttr = this.model.attributes;
 				layerAttr.preview = "on";
+				layerAttr.showControls = true;
 			} catch (err) {
 				console.log(err);
 			}
@@ -72,20 +73,21 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 			jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){that.previewed.add(_.clone(layerAttr)); that.$el.css("opacity", "1"); that.model.set({hidden: true}); });
 
 		} else {
-			var update = "";
+			var update = {};
 			if (model.get("preview") === "on") {
-				update = "off";		
-				model.set({preview: update});	
+				update.preview = "off";		
+				model.set(update);	
 
 			} else {
-				update = "on";
+				update.preview = "on";
+				update.showControls = true;
 				var that = this;
 				this.$el.css("opacity", ".5");
 				var to$ = jQuery(".previewedLayers").find(".tableRow").last();
 				if (to$.length === 0){
 					to$ = jQuery(".previewedLayers");
 				}
-				jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){model.set({preview: update}); that.$el.css("opacity", "1"); that.model.set({hidden: true});});
+				jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){model.set(update); that.$el.css("opacity", "1"); that.model.set({hidden: true});});
 			}
 		}
 	
@@ -100,7 +102,52 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		
 		this.expandState.setExpandState(this.model.get("LayerId"), !controls);
 	},
+	
+	/*
+	 * functions to display the abstract from the metadata in the expanded row, rather than the preview controls 
+	 */
+	
+	/*
+	renderExpand: function(){
+		var expand$ = "";
+		if (this.model.get("showControls")) {
+			var description = "";
+			if (this.model.has("layerInfo")){
+				description = this.model.get("layerInfo");
+			} else {
+				this.getLayerInfoFromSolr();
+			}
+			expand$ = '<div class="layerInfo">' + description + '</div>';
+		}
+		
+		return expand$;
+	},
+		
 
+	infoColumn: "Abstract",
+	
+	getLayerInfoFromSolr: function() {
+		
+		// make an ajax call to retrieve data from solr
+		var solr = new OpenGeoportal.Solr();
+		var url = solr.getServerName() + "?"
+				+ jQuery.param(solr.getArbitraryParams(this.model.get("LayerId"), this.infoColumn));
+		var query = solr.sendToSolr(url, this.getInfoSuccess,
+				this.getInfoError, this);
+
+	},
+	
+	getInfoSuccess: function(data){
+		var description = data.response.docs[0][this.infoColumn];
+		this.model.set({layerInfo: description});
+		this.$el.find(".layerInfo").text(description);
+	},
+	
+	getInfoError: function(){
+		console.log("error getting info");
+	},
+	*/
+	
 	broadcastModel: function(){
 		this.$el.closest(".rowContainer").trigger("topmodel", [this.model]);
 	},

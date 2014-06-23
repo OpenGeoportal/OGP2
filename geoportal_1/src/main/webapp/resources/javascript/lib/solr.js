@@ -794,15 +794,22 @@ OpenGeoportal.Solr = function() {
 
 	// returns the solr query to obtain a layer's metadata document from the
 	// Solr server
-	this.getMetadataParams = function(layerId) {
-		var metadataParams = {
+	
+	
+	this.getArbitraryParams = function(layerId, request) {
+		var params = {
 			q : this.createFilter("LayerId", layerId),
-			fl : this.getReturnedColumns(this.MetadataRequest),
+			fl : this.getReturnedColumns(request),
 			wt : "json"
 		};
 
-		return metadataParams;
+		return params;
 	};
+	
+	this.getMetadataParams = function(layerId) {
+		return this.getArbitraryParams(layerId, this.MetadataRequest);
+	};
+	
 
 	// returns the solr query to obtain terms directly from the index for a
 	// field

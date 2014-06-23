@@ -1553,6 +1553,12 @@ preview controls
 	top: -1px;
 }
 
+.layerInfo {
+    border: 2px solid #CCCCCC;
+    font-size: 11px;
+    padding: 10px;
+    white-space: pre-wrap;
+}
 /**********
 icons
 ***********/

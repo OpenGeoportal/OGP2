@@ -194,29 +194,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			}
 		});
 		
-		var container$ = "";
-		var view;
-		if (this.model.get("showControls")) {
-			//if (!this.model.has("toolView")) {
-				container$ = jQuery(this.template.cartPreviewToolsContainer());
-				// a view that watches expand state
-				// Open this row
-				var tools$ = container$.find(".previewTools").first();
-				var previewModel = this.getModelFromPreviewed();
-				view = new OpenGeoportal.Views.PreviewTools({
-					model : previewModel,
-					el : tools$
-				});// render to the container
-				this.model.set({
-					toolView : view
-				});
-			//}
-		} else {
-			if (this.model.has("toolView")) {
-				this.model.get("toolView").remove();
-				this.model.unset("toolView");
-			}
-		}
+		var container$ = this.renderExpand();
 		
 		if (container$ !== ""){
 			this.$el.html(html).append(container$);
@@ -235,6 +213,32 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		this.$el.trigger("render.row");
 		return this;
 
+	},
+	
+	renderExpand: function(){
+		var expand$ = "";
+		
+		if (this.model.get("showControls")) {
+				expand$ = jQuery(this.template.cartPreviewToolsContainer());
+				// a view that watches expand state
+				// Open this row
+				var tools$ = expand$.find(".previewTools").first();
+				var previewModel = this.getModelFromPreviewed();
+				var view = new OpenGeoportal.Views.PreviewTools({
+					model : previewModel,
+					el : tools$
+				});// render to the container
+				this.model.set({
+					toolView : view
+				});
+		
+		} else {
+			if (this.model.has("toolView")) {
+				this.model.get("toolView").remove();
+				this.model.unset("toolView");
+			}
+		}
+		return expand$;
 	},
 	
 	doMouseoverOn : function(){
