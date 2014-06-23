@@ -12,16 +12,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 
-	events : {
-		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
-		"click .colExpand" : "toggleExpand",
-		"click .colTitle" : "toggleExpand",
-		"mouseover" : "doMouseoverOn",
-		"mouseout" : "doMouseoverOff",
+	subClassEvents: {
 		"click .saveControl" : "toggleSave"
 	},
-
 	subClassInit: function(){
 		//listen for saved items (in cart collection)
 		this.cart = OpenGeoportal.ogp.appState.get("cart");

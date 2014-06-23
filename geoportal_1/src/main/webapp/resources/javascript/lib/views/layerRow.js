@@ -16,6 +16,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	events : {
 		"click .viewMetadataControl" : "viewMetadata",
 		"click .previewControl" : "togglePreview",
+		"click .previewLink"	: "handlePreviewLink",
 		"click .colExpand" : "toggleExpand",
 		"click .colTitle" : "toggleExpand",
 		"mouseover" : "doMouseoverOn",
@@ -47,11 +48,17 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		});
 		this.listenTo(this.model, "change:showControls change:hidden", this.render);
 		this.subClassInit();
+		this.addSubClassEvents();
 		this.render();
 	},
 	
 	subClassInit: function(){
 		//nop
+	},
+	subClassEvents: {},
+	
+	addSubClassEvents: function(){
+		jQuery.extend(this.events, this.subClassEvents);
 	},
 	
 	removeOnLogout : function(loginView) {
@@ -65,6 +72,89 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	viewMetadata : function() {
 		// console.log(arguments);
 		this.metadataViewer.viewMetadata(this.model);
+	},
+	
+	handlePreviewLink: function(){
+		//if there is a previewLink, prefer it
+		var url = this.getPreviewLink();
+		
+		if (url === null){
+			//otherwise, try to form a link from the repository config info
+			url = this.getRepositoryLink();
+		}
+		
+			
+		//open the url in a new tab/window
+		var target = "_blank";
+		window.open(url, target);
+
+		
+	},
+	
+	getPreviewLink: function(){
+		var url = null;
+		if (this.model.has("Location")){
+			if (typeof this.model.get("Location").previewLink !== "undefined"){
+				//go to the previewLink url
+				url = this.model.get("Location").previewLink;
+			}
+		}
+		return url;
+	},
+	
+	getRepositoryLink: function(){
+		var url = null;
+		var model = this.model;
+		//try to assemble a link from the config
+		var rep = OpenGeoportal.Config.Repositories.findWhere({id: model.get("Institution").toLowerCase()});
+				
+		if (typeof rep == "undefined"){
+				throw new Error("Repository could not be found");
+		}
+				
+		
+		if (rep.has("nodeType")){
+			var nodeType = rep.get("nodeType");
+			var url = null;
+			if (rep.has("url")){
+				url = rep.get("url");
+			} else {
+				throw new Error("Repository definition must have the parameter 'url'");
+			}
+			
+			if (nodeType == "ogp1"){
+//http://calvert.hul.harvard.edu:8080/opengeoportal/openGeoPortalHome.jsp?layer=HARVARD.SDE.GLB_INWTRA&minX=-557.578125&minY=-85.051128779807&maxX=557.578125&maxY=85.051128779807
+				var params = {
+						layer: model.get("LayerId"),
+						minX: model.get("MinX"),
+						minY: model.get("MinY"),
+						maxX: model.get("MaxX"),
+						maxY: model.get("MaxY")
+						};
+				url += "/openGeoPortalHome.jsp?" + jQuery.param(params);
+				
+			} else if (nodeType == "ogp2"){
+//http://localhost:8080/ogp/?ogpids=HARVARD.SDE.GLB_BAILEY&bbox=-180%2C-85.051129%2C180%2C85.051129
+				var bbox = [ model.get("MinX"), model.get("MinY"),model.get("MaxX"), model.get("MaxY")].join();
+				var params = {
+						ogpids: model.get("LayerId"),
+						bbox: bbox
+						};
+				url += "/?" + jQuery.param(params);
+
+			} else if (nodeType == "geoweb"){
+
+					url += "/layer/" + model.get("LayerId");
+	
+			}
+			
+	
+		} else {
+			throw new Error("Repository type is not defined.");
+		}
+				
+		return url;
+			
 	},
 
 	updateView: function(e, data){

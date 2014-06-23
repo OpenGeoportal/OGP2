@@ -12,13 +12,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 
-	events : {
-		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
-		"click .colExpand" : "toggleExpand",
-		"click .colTitle" : "toggleExpand",
-		"mouseover" : "doMouseoverOn",
-		"mouseout" : "doMouseoverOff",
+	subClassEvents : {
 		"click .saveControl" : "toggleSave",
 		"istop" : "broadcastModel"
 	},

@@ -12,15 +12,8 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 
-	events : {
-		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
-		"click .colExpand" : "toggleExpand",
-		"click .colTitle" : "toggleExpand",
-		"mouseover" : "doMouseoverOn",
-		"mouseout" : "doMouseoverOff",
+	subClassEvents : {
 		"click .cartCheckBox" : "toggleCheck"
-
 	},
 
 	subClassInit: function(){

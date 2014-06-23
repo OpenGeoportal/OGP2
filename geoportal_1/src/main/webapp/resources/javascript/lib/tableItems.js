@@ -90,7 +90,6 @@ OpenGeoportal.TableItems = function TableItems() {
 		}
 	};
 	
-	// TODO: fix this
 
 	this.renderLinkControl = function() {
 		var params = {};
