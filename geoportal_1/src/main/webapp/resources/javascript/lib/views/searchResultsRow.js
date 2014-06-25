@@ -32,9 +32,9 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		jQuery(document).on("previewLayerOn previewLayerOff cartUpdated", this.$el, function(){that.updateView.apply(that, arguments);});
 	},
 	
-	cleanUp: function(){
-		console.log("row view destroyed");
-		jQuery(document).off("previewLayerOn previewLayerOff", this.$el);
+	onClose: function(){
+		//console.log("row view destroyed");
+		jQuery(document).off("previewLayerOn previewLayerOff cartUpdated", this.$el);
 
 	},
 	

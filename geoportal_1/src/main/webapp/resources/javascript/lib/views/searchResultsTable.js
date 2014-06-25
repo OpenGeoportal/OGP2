@@ -32,7 +32,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.newSearch();});
 				
 								
-				var columnMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
+				this.columnMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
 							{
 								collection : this.tableConfig,
 								el : "div#columnDropdown",
@@ -54,22 +54,27 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				
 				this.listenTo(this.collection, "add", this.appendRender);
 
+				this.listenTo(this.collection, "reset", this.closeAllSubview);
 				this.listenTo(this.collection, "reset", this.render);
 				this.listenTo(this.collection, "reset", this.updateResultsNumber);
 				//should call setFrameHeight whenever the search panel height changes or on render or render of previewPanel, or row render
+				jQuery(document).on("search.resize previewRow.expand",  function(){that.setFrameHeight.apply(that, arguments);});
 
-				jQuery(document).on("search.resize render.row",  function(){that.setFrameHeight.apply(that, arguments);});
-
+			
 				this.fireSearchHandler();
 
 			},
 
 			afterRender: function(){
+				var that = this;
 				var previewed$ = this.$(".previewedLayers");
 				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({el: previewed$[0], collection: this.previewed, tableConfig: this.tableConfig});
+				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
+					that.previewedLayersTable.render();that.adjustColumnSizes();});
+
 			},
 			
-			scrollOffset: 100,
+			scrollOffset: 200,
 			
 			attachEvents: function(){
 				this.collection.enableFetch();
@@ -96,7 +101,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 
 				} else if (scrollY < this.prevScrollY) {
 					if (jQuery(".topSpacer").length > 0){
-						if (jQuery(".topSpacer").position().top + jQuery(".topSpacer").height() > -200){
+						if (jQuery(".topSpacer").position().top + jQuery(".topSpacer").height() > - this.scrollOffset){
 							//add results to top
 							//console.log("add results to top");
 							this.$el.children(".tableWrapper").children(".rowContainer").children(".tableRow").first().trigger("istop");
@@ -130,26 +135,34 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			
 			emptyTableMessage: "No matching layers.",
 			
+
 			
 			renderPrevPage: function(event, model){
 				var that = this;
 				var pageSize = this.collection.pageParams.rows;
 				var topResultNum = model.get("resultNum");
-				var prevPage = model.collection.filter(function(currModel){
+				
+				var prevPage = this.collection.filter(function(currModel){
 					var num = currModel.get("resultNum");
 					return num < topResultNum && num >= Math.max(topResultNum - pageSize, 0);
 				});
 
 				var spacer$ = this.$(".topSpacer").first();;
 				spacer$.css("min-height", 0);
-				var rows$ = this.$el.children(".tableWrapper").children(".rowContainer").children(".tableRow");
-				var initialTop$ = rows$.first();
-				_.each(prevPage, function(currModel){
-					var newRow = that.createNewRow(currModel);
-					var ht = jQuery(newRow.el).insertBefore(initialTop$).height();
+				var container$ = this.$el.children(".tableWrapper").children(".rowContainer");
+				//add them to the top in reverse order
+				var revPrevPage = prevPage.reverse();
+				_.each(revPrevPage, function(currModel){
+
+					var newRow = that.createNewRow(currModel, true);
+					var top$ = container$.children(".tableRow").first();
+					var ht = jQuery(newRow.el).insertBefore(top$).height();
 					spacer$.css("height", "-=" + ht);
-					that.$el.children(".tableWrapper").children(".rowContainer").children(".tableRow").last().remove();
-					that.collection.remove(that.collection.last());
+
+					//remove rows from the end
+					that.closeLastSubview();
+					var last = that.collection.last();
+					that.collection.remove(last);
 				});
 			},
 			
@@ -178,6 +191,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					this.collection.nextPage();
 				}
 			},*/
+
 			
 			appendRender: function(model){
 				
@@ -187,23 +201,30 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				rows$.last().after(newRow.el);
 
 				if (model.get("resultNum") > 200){
-					var top$ = rows$.first();
+					var top$ = rowContainer$.children(".tableRow").first();
 					if (rowContainer$.children(".topSpacer").length === 0){
 						rowContainer$.first().prepend('<div class="topSpacer"></div>');
 					}
 					rowContainer$.children(".topSpacer").first().css("height", "+=" + top$.height());
-					top$.remove();
+					this.closeFirstSubview();
+					//as we add a new row, remove the last
+
 				}
 
 			},
-			
-			createNewRow: function(model){
 
+			createNewRow: function(model, toTop){
+				
 				var row = new OpenGeoportal.Views.SearchResultsRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
+				if (typeof toTop !== "undefined" && toTop){
+					this.prependSubview(row);
+				} else {
+					this.appendSubview(row);
+				}
 				return row;
 			},
 
@@ -212,7 +233,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			render : function() {
-
+				//console.log("full render");
 				var that = this;
 				var previewedTable = null;
 				if (this.$(".previewedLayers").length > 0){

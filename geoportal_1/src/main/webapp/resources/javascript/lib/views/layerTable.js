@@ -22,11 +22,9 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 				this.adjustColumnsHandler();
 				this.initSubClass();
+				this.subviewStorage();
 				this.render();
 				this.afterRender();
-				
-				var that = this;
-				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(){that.renderHeaders.apply(that, arguments); that.adjustColumnSizes.apply(that, arguments)});
 
 			},
 			initSubClass: function(){
@@ -52,6 +50,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 							model : model,
 							tableConfig: this.tableConfig
 						});
+				this.appendSubview(row);
 				return row;
 			},
 			
@@ -59,10 +58,54 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: this.template.divNoId({elClass: "bottomSpacer"})}));
 			},
 			
+			
+			subviewStorage: function(){
+				this.subviews = {rows: []};
+			},
+			
+			appendSubview: function(view){
+				this.subviews.rows.push(view);	
+				//console.log("adding to end:" + view.model.get("resultNum"));
+			},
+			
+			prependSubview: function(view){
+				this.subviews.rows.unshift(view);	
+				//console.log("adding to beginning:" + view.model.get("resultNum"));
+			},
+			
+			closeFirstSubview: function(){
+				var view = this.subviews.rows.shift();
+				//console.log("closing first:" + view.model.get("resultNum"));
+				view.close();
+			},
+			
+			closeLastSubview: function(){
+				var view = this.subviews.rows.pop();
+				//console.log("closing last:" + view.model.get("resultNum"));
+				view.close();
+			},
+			
+			closeAllSubview: function(){
+				_.each(this.subviews.rows, function(view){
+					//console.log("closing all");
+					view.close();
+				});
+				this.subviews.rows = [];
+			},
+			
+			updateSubviews: function(){
+				_.each(this.subviews.rows, function(view){
+					//console.log("update subviews");
+					view.render();
+				});
+				
+			},
+			
+			
 			renderHeaders: function(){
+
 				this.$el.children(".tableWrapper").children(".tableHeaders").html(this.template.tableHeader(this.getHeaderInfo()));
-				this.updateColWidths();
-				this.resizeColumns();
+
 			},
 			
 			handleEmptyTable: function(table$){
@@ -74,7 +117,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			},
 			
 			render : function() {
-
 				var that = this;
 				var template$ = this.getTable();
 				
@@ -133,6 +175,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			// dynamically size the table depending on visible columns & the width of
 			// the container
 			adjustColumnSizes: function() {
+
 				/*
 				 * determine which fields are showing, set widths from header object if
 				 * they add up to the total width, we're done. otherwise we need to
@@ -254,7 +297,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 
 				this.updateColWidths();
 				
-
 			},
 			
 			resizeColumns: function() {

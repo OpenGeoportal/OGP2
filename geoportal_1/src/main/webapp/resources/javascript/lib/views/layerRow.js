@@ -34,21 +34,21 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		this.metadataViewer = new OpenGeoportal.MetadataViewer();
 		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 
-		var that = this;
-
-		this.options.tableConfig.listenTo(this.options.tableConfig, "change:visible",
-				function() {
-					that.render.apply(that, arguments);
-				});
 		this.login = OpenGeoportal.ogp.appState.get("login").model;
 
+		var that = this;
 		this.login.listenTo(this.login, "change:authenticated", function() {
-			that.removeOnLogout(that, arguments);
+			that.removeOnLogout.apply(that, arguments);
 			that.render.apply(that, arguments);
 		});
-		this.listenTo(this.model, "change:showControls change:hidden", this.render);
+		this.listenTo(this.model, "change:showControls change:hidden", function(){
+			that.render.apply(that, arguments);
+		});
+		
 		this.subClassInit();
 		this.addSubClassEvents();
+		//console.log("init render");
+		this.subviewStorage();
 		this.render();
 	},
 	
@@ -59,6 +59,10 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	
 	addSubClassEvents: function(){
 		jQuery.extend(this.events, this.subClassEvents);
+	},
+	
+	subviewStorage: function(){
+		this.subviews = [];
 	},
 	
 	removeOnLogout : function(loginView) {
@@ -166,6 +170,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					return;
 				}
 			}
+			//console.log("update view");
 			this.render();
 		}
 	},
@@ -247,6 +252,19 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		return false;
 	},
 	
+	close: function(){
+		_.each(this.subviews, function(view){
+			view.remove();
+			view.stopListening();
+		});
+		this.remove();		
+		this.stopListening();
+		if (this.onClose){
+			this.onClose();
+		}
+		
+	},
+
 	render : function() {
 		//console.log("render row");
 		if (this.skipLayer()){
@@ -300,7 +318,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					that.$el.find("." + cclass).width(width);
 					});
 		
-		this.$el.trigger("render.row");
+		//this.$el.trigger("render.row");
 		return this;
 
 	},
@@ -318,6 +336,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					model : previewModel,
 					el : tools$
 				});// render to the container
+				this.subviews.push(view);
 				this.model.set({
 					toolView : view
 				});

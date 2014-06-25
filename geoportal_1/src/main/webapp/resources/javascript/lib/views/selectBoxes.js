@@ -328,8 +328,8 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		});
 
 		this.$el.attr("ogpValue", value);
+
 		this.$el.trigger("change");
-		//console.log("setValue called");
 	},
 	getValueAsArray: function(){
 		return this.getValue().split(",");
