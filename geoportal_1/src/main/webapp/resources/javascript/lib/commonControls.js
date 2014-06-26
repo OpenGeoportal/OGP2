@@ -69,8 +69,7 @@ OpenGeoportal.Widgets = function Widgets() {
 			autoOpen : false
 		});
 
-		jQuery('#' + divId).dialog('open');
-		return divId;
+		return jQuery('#' + divId).dialog('open');
 	};
 
 	// used in geoCommonsExport.js...anywhere else? *

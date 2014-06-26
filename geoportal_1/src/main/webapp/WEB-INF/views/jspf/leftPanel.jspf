@@ -31,7 +31,7 @@
 		</div>
 	</div>
 </div>
-<div id="roll_right">
+<div id="roll_right" class="slideVertical">
 	<button class="arrow_right button"></button>
 </div>
 

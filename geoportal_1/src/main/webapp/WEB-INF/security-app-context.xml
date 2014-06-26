@@ -29,11 +29,17 @@
   
   <beans:bean id="layerPermissionEvaluator" class="org.opengeoportal.security.LayerPermissionEvaluator" />
   
+  <!-- to enable ldap authentication, uncomment the following and comment out the default authentication-provider.  Also make sure 
+  		that the values ldap.admins, ldap.url, and ldap.userSearchFilter appear in ogp.properties -->
+  		
+  <!-- <beans:bean id="userDetailsService.ldap" class="org.opengeoportal.security.ldap.SimpleLdapUserDetailsMapper" >
+        <beans:property name="admins" value="${ldap.admins}" />
+   </beans:bean>-->
   
 	<!--<security:ldap-server url="${ldap.url}" /> -->
 	<security:authentication-manager alias="authenticationManager">
 		<!--<security:ldap-authentication-provider user-search-filter="${ldap.userSearchFilter}" 
-			user-context-mapper-ref="userDetailsMapper.custom" /> -->
+			user-context-mapper-ref="userDetailsService.ldap" /> -->
 		<security:authentication-provider>
 			<security:user-service>
 				<security:user name="admin" password="pachyderm" authorities="ROLE_ADMIN,ROLE_USER" />

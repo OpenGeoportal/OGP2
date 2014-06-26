@@ -231,7 +231,7 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.AbstractQueueItem.ex
 
 		if (text.length > 0){
 			var dialog$ = this.widgets.genericModalDialog(text, "Download Notice");
-			var buttonsObj = [{text: "OK", click: function(){jQuery(this).dialog.close();}}];
+			var buttonsObj = [{text: "OK", click: function(){jQuery(this).dialog('close');}}];
 			dialog$.dialog("option", "buttons", buttonsObj);
 		}
 	},
@@ -296,7 +296,7 @@ OpenGeoportal.Models.GeoCommonsRequest = OpenGeoportal.Models.AbstractQueueItem.
 	retrievalFailure: function(jqXHR, textStatus, errorThrown){
 		var text = "OGP failed to export your layers.  Reason: " + errorThrown;
 		var dialog$ = this.widgets.genericModalDialog(text, "Request Failed");
-		var buttonsObj = [{text: "OK", click: function(){jQuery(this).dialog.close();}}];
+		var buttonsObj = [{text: "OK", click: function(){jQuery(this).dialog('close');}}];
 		dialog$.dialog("option", "buttons", buttonsObj);
 	},
 	
@@ -422,12 +422,8 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 				var pending = that.where({
 					status : "PROCESSING"
 				});
-				var requestIds = [];
-				var i = null;
-				for (i in pending) {
-					requestIds.push(pending[i].get("requestId"));
-				}
-				that.checkStatus(requestIds);
+
+				that.checkStatus(pending);
 			}, that.poll.interval);
 
 			this.poll.isRunning = true;
@@ -454,22 +450,35 @@ OpenGeoportal.RequestQueue = Backbone.Collection
 	// {"requestId":"26fe6ae7-274b-4b2d-aa58-9da1ee438dac","type":"layer","status":"PROCESSING",
 	// "requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
 
-	checkStatus : function(arrIds) {
-		var requestIds = {
-				requestIds : arrIds.join()
+	checkStatus : function(arrPending) {
+		var requestIds = [];
+		_.each(arrPending, function(pending){
+			requestIds.push(pending.get("requestId"));
+		});
+
+		var arrIds = {
+				requestIds : requestIds.join()
 		};
 		var that = this;
 		var params = {
 				url : "requestStatus",
-				data : requestIds,
+				data : arrIds,
 				success : function(data) {
 					that.updateRequestQueue(data.requestStatus);
 				},
 				error : function() {
 					// if failure statuses, notify the user
 					// also stop the poll. change to failed?
-					that.stopPoll();
-					jQuery(document).trigger("requestStatus.failure");
+					console.log("error callback called");
+					console.log(arrPending);
+					_.each(arrPending, function(pending){
+						console.log(pending.get("status"));
+						pending.set({
+							status: "FAILED"
+						});
+					});
+
+					//jQuery(document).trigger("requestStatus.failure");
 				}
 		};
 		jQuery.ajax(params);

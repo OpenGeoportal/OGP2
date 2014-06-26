@@ -41,9 +41,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			that.removeOnLogout.apply(that, arguments);
 			that.render.apply(that, arguments);
 		});
-		this.listenTo(this.model, "change:showControls change:hidden", function(){
-			that.render.apply(that, arguments);
-		});
+		this.listenTo(this.model, "change:showControls change:hidden", this.render);
 		
 		this.subClassInit();
 		this.addSubClassEvents();
@@ -253,10 +251,9 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	close: function(){
-		_.each(this.subviews, function(view){
-			view.remove();
-			view.stopListening();
-		});
+		if (this.closeSubviews){
+			this.closeSubviews();
+		}
 		this.remove();		
 		this.stopListening();
 		if (this.onClose){
@@ -264,9 +261,21 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		}
 		
 	},
+	
+	closeSubviews: function(){
+		_.each(this.subviews, function(view){
+			if (view.close){
+				view.close();
+			} else {
+				view.remove();
+				view.stopListening();
+			}
+		});
+		this.subviews = [];
+	},
 
 	render : function() {
-		//console.log("render row");
+
 		if (this.skipLayer()){
 			this.$el.html("");
 			this.$el.addClass("hiddenRow");
@@ -283,7 +292,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			visible : true
 		});
 
-		var i = null;
 		_.each(visibleColumns, function(currCol){
 			
 			var contents = "";
@@ -318,15 +326,15 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					that.$el.find("." + cclass).width(width);
 					});
 		
-		//this.$el.trigger("render.row");
 		return this;
 
 	},
 	
 	renderExpand: function(){
 		var expand$ = "";
-		
+		this.closeSubviews();
 		if (this.model.get("showControls")) {
+
 				expand$ = jQuery(this.template.cartPreviewToolsContainer());
 				// a view that watches expand state
 				// Open this row
@@ -337,16 +345,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					el : tools$
 				});// render to the container
 				this.subviews.push(view);
-				this.model.set({
-					toolView : view
-				});
 		
-		} else {
-			if (this.model.has("toolView")) {
-				this.model.get("toolView").remove();
-				this.model.unset("toolView");
-			}
-		}
+		} 
 		return expand$;
 	},
 	
