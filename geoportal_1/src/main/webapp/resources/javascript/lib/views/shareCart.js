@@ -56,8 +56,30 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 
 			},
 
+			getShortenLinkPromise: function(longLink) {
+				var dfd = new jQuery.Deferred();
+
+				var request = {
+					"link" : longLink
+				};
+				var url = "shortenLink";
+				var ajaxArgs = {
+					url : url,
+					data : jQuery.param(request),
+					type : "GET",
+					dataType : "json",
+					success : function(data) {
+						// var shortLink = data["shortLink"];
+						dfd.resolve(data);
+					}
+				};
+
+				jQuery.ajax(ajaxArgs);
+				return dfd.promise();
+			},
+			
 			getShortLink : function(longLink) {
-				var promise = this.controls.getShortenLinkPromise(longLink);
+				var promise = this.getShortenLinkPromise(longLink);
 
 				promise.done(function(data) {
 					//console.log(data);

@@ -4,23 +4,25 @@
 <link rel="stylesheet" href="resources/css/structure.css"
 	type="text/css" />
 <link rel="stylesheet" href="resources/css/mapDiv.css" type="text/css" />
-<link rel="stylesheet" href="resources/css/dataTable.css"
-	type="text/css" />
-<link rel="stylesheet" type="text/css" media="print"
-	href="resources/css/print.css" />
 <link rel="stylesheet" href="resources/css/localize.css"
 	type="text/css" />
 
 
 <!-- ogp javascript library files -->
 
+<script type="text/javascript" src="resources/javascript/lib/models/config.js"></script>
 <script type="text/javascript" src="resources/javascript/lib/utility.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/templates/template.js"></script>
-<script type="text/javascript" src="resources/javascript/lib/config.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/analytics.js"></script>
 <script type="text/javascript"
+	src="resources/javascript/lib/geocoder.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/metadata.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/tableItems.js"></script>
+	<script type="text/javascript"
 	src="resources/javascript/lib/commonControls.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/models/resultItem.js"></script>
@@ -50,45 +52,45 @@
 <script type="text/javascript"
 	src="resources/javascript/lib/views/selectBoxes.js"></script>
 	<script type="text/javascript"
-	src="resources/javascript/lib/views/mapLoadIndicatorView.js"></script>
+	src="resources/javascript/lib/views/mapLoadIndicator.js"></script>
 		<script type="text/javascript"
-	src="resources/javascript/lib/views/layerRowView.js"></script>
+	src="resources/javascript/lib/views/layerRow.js"></script>
 		<script type="text/javascript"
-	src="resources/javascript/lib/views/layerTableView.js"></script>
+	src="resources/javascript/lib/views/layerTable.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/cartHeader.js"></script>
 		<script type="text/javascript"
-	src="resources/javascript/lib/views/cartRowView.js"></script>
+	src="resources/javascript/lib/views/cartRow.js"></script>
 	<script type="text/javascript"
-	src="resources/javascript/lib/views/cartView.js"></script>
+	src="resources/javascript/lib/views/cartTable.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/leftPanel.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/views/tableRowSettings.js"></script>
-<script type="text/javascript"
 	src="resources/javascript/lib/models/externalPreviewWindowsCollection.js"></script>
 	<script type="text/javascript"
-	src="resources/javascript/lib/views/cartActionView.js"></script>
+	src="resources/javascript/lib/views/abstractCartAction.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/views/downloadFlow.js"></script>
+	src="resources/javascript/lib/views/download.js"></script>
 	<script type="text/javascript"
-	src="resources/javascript/lib/views/shareCartView.js"></script>
+	src="resources/javascript/lib/views/shareCart.js"></script>
 	<script type="text/javascript"
-	src="resources/javascript/lib/views/mapItView.js"></script>
+	src="resources/javascript/lib/views/mapIt.js"></script>
 	<script type="text/javascript"
-	src="resources/javascript/lib/views/dynamicWebServicesView.js"></script>
+	src="resources/javascript/lib/views/dynamicWebServices.js"></script>
 	
 <script type="text/javascript"
 	src="resources/javascript/lib/views/search.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/lib/views/previewControls.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/views/previewedLayersPanel.js"></script>
+	src="resources/javascript/lib/views/previewedLayersRow.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/previewedLayersTable.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/views/searchResultsRowView.js"></script>
+	src="resources/javascript/lib/views/searchResultsRow.js"></script>
 <script type="text/javascript" src="resources/javascript/lib/solr.js"></script>
 <script type="text/javascript"
-	src="resources/javascript/lib/views/searchResultsView.js"></script>
+	src="resources/javascript/lib/views/searchResultsTable.js"></script>
 
 
 <script type="text/javascript"

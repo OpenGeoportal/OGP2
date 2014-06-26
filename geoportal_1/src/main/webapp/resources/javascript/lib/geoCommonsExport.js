@@ -23,7 +23,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 
 	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
 	this.template = OpenGeoportal.ogp.template;
-	this.controls = OpenGeoportal.ogp.controls;
+	this.widgets = OpenGeoportal.ogp.widgets;
 
 	// an array of Backbone Models representing layers to export
 	this.layerModels = exportObj.layers;
@@ -65,7 +65,7 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 			}
 
 		};
-		this.controls.dialogTemplate(dialogDivId, dialogContent, dialogTitle,
+		this.widgets.dialogTemplate(dialogDivId, dialogContent, dialogTitle,
 				buttonsObj);
 		jQuery("#" + dialogDivId).dialog({
 			"width" : "375"
@@ -196,30 +196,6 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 		return content;
 	};
 
-	// need code to create dialog
-	// code to send ajax request to export servlet
-	this.createExportRequest = function createExportRequest() {
-		// need a list of ogpids, basemap, username, password, extent
-		// title, description....most of these will be provided by a form
-		var descriptor = this.descriptor;
-		var requestObj = {};
-		requestObj.requestType = "exportTo";
-		requestObj.basemap = jQuery("#" + descriptor + "Basemap").val();
-		requestObj.username = jQuery("#" + descriptor + "Username").val();
-		requestObj.password = jQuery("#" + descriptor + "Password").val();
-		requestObj.extent = this.extentOptions["Layer Max"];// jQuery("#" +
-		// descriptor +
-		// "Extent").val();
-		requestObj.title = jQuery("#" + descriptor + "Title").val();
-		requestObj.description = jQuery("#" + descriptor + "Description").val();
-		this.ogpids = [];
-		for ( var i in this.layerModels) {
-			this.ogpids.push(this.layerModels[i].get("LayerId"));
-		}
-		requestObj.OGPIDS = this.ogpids;
-		return requestObj;
-	};
-
 	this.getBasemapId = function getBasemapId(basemapDescriptor) {
 		basemapDescriptor = basemapDescriptor.toLowerCase();
 		var basemapMap = this.exportBasemapOptions;
@@ -229,10 +205,34 @@ OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 			throw new Error('Basemap "' + basemapDescriptor + '" is undefined.');
 		}
 	};
+	// need code to create dialog
+	// code to send ajax request to export servlet
+	this.createExportRequest = function createExportRequest() {
+		// need a list of ogpids, basemap, username, password, extent
+		// title, description....most of these will be provided by a form
+		var descriptor = this.descriptor;
+		var requestObj = {};
+		requestObj.basemap = jQuery("#" + descriptor + "Basemap").val();
+		requestObj.username = jQuery("#" + descriptor + "Username").val();
+		requestObj.password = jQuery("#" + descriptor + "Password").val();
+		requestObj.bbox = this.extentOptions["Layer Max"];// jQuery("#" +
+		requestObj.title = jQuery("#" + descriptor + "Title").val();
+		requestObj.description = jQuery("#" + descriptor + "Description").val();
+		this.ogpids = [];
+		for ( var i in this.layerModels) {
+			this.ogpids.push(this.layerModels[i].get("LayerId"));
+		}
+		requestObj.layerIds = this.ogpids;
+		
+		return new OpenGeoportal.Models.GeoCommonsRequest(requestObj);
+
+	};
+
+
 
 	this.exportLayers = function exportLayers() {
-		var requestObj = this.createExportRequest();
-		this.requestQueue.createRequest(requestObj);
+		var request = this.createExportRequest();
+		this.requestQueue.add(request);
 
 	};
 

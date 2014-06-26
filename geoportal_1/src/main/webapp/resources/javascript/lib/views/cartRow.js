@@ -12,25 +12,28 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 
 OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 
-	events : {
-		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
-		"click .colExpand" : "toggleExpand",
-		"click .colTitle" : "toggleExpand",
-		"mouseover" : "doMouseoverOn",
-		"mouseout" : "doMouseoverOff",
+	subClassEvents : {
 		"click .cartCheckBox" : "toggleCheck"
-
 	},
 
 	subClassInit: function(){
 		this.listenTo(this.model, "change:isChecked", this.checkedView);
 		this.listenTo(this.model, "change:actionAvailable", this.showActionAvailable);
+		var that = this;
+		jQuery(document).on("previewLayerOn previewLayerOff", this.$el, function(){that.updateView.apply(that, arguments);});
+
 	},
 
+	cleanUp: function(){
+		console.log("row view destroyed");
+		jQuery(document).off("previewLayerOn previewLayerOff", this.$el);
+
+	},
+	
 	toggleCheck: function(){
 		this.model.set({isChecked : !this.model.get("isChecked")});
 	},
+	
 	checkedView: function(){
 		var isChecked = this.model.get("isChecked");
 

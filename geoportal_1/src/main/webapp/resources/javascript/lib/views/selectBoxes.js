@@ -68,7 +68,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		})
 		.parent()
 		.buttonset()
-		.next()
+		.next('ul')
 		.hide()
 		.menu( {
 			select: function(event, ui){that.selectCallback(event, ui, that);},
@@ -88,7 +88,8 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		menu$.slideDown({
 			duration: 100,
 			done: function(){
-					$( this ).focus();
+				menu$.menu("focus", null, menu$.find( ".ui-menu-item:first" ) );
+				menu$.find( ".ui-menu-item > a:first" ).focus();
 			}			
 		});
 	},
@@ -186,20 +187,29 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		}
 	},
 	
-	selectCallback: function(event, ui, context){
+	changeSelected: function(newVal){
 		var valueAttr = this.getValueAttribute();
 		var selectAttr = this.getSelectionAttribute();
+
 		var prevSelected = this.collection.find(function(model) {
 			return model.get(selectAttr) == true;
 		});
-		var selValue = ui.item.find("input[type=hidden]").first().val();
-		var selModel = this.collection.find(function(model) {
-			return model.get(valueAttr) === selValue;
-		});
 		prevSelected.set(selectAttr, false);//, {silent: true});//just trigger the listener once
+		
+		var selModel = this.collection.find(function(model) {
+			return model.get(valueAttr) === newVal;
+		});
 		selModel.set(selectAttr, true);
+
+
 		this.setValue();
 		this.$el.find("ul.ui-menu").hide();
+	},
+	
+	selectCallback: function(event, ui, context){
+
+		var selValue = ui.item.find("input[type=hidden]").first().val();
+		this.changeSelected(selValue);
 	},
 	
 	render: function(){
@@ -231,6 +241,12 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 });
 
 OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMenu.extend({
+	  events: {
+		  "click .select" : "toggleMenu",
+		  "blur .ui-menu" : "hideMenu",
+		  "click .showOnly": "showOnly",
+		  "click .showAll": "selectAll"
+	},
 	initialize: function() {
 		var selectionEvent = "change:" + this.getSelectionAttribute();
 		this.listenTo(this.collection, selectionEvent, this.setValue);
@@ -250,7 +266,6 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 			var name = currModel.get(displayAttr);
 			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: itemClass});
 		});
-
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
 	},
 	lastFocus: null,
@@ -273,6 +288,35 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		model.set(selectionAttr, newVal);
 		return newVal;
 	},
+	showOnly: function(e){
+		this.unselectAll();
+		var selValue = jQuery(e.target).closest(".ui-menu-item").find("input[type=hidden]").first().val();
+		this.selectItem(selValue);
+		
+	},
+	selectItem: function(itemVal){
+		var valueAttr = this.getValueAttribute();
+		var selectAttr = this.getSelectionAttribute();
+		
+		var selModel = this.collection.find(function(model) {
+			return model.get(valueAttr) === itemVal;
+		});
+		selModel.set(selectAttr, true);
+
+	},
+	
+	unselectItem: function(newVal){
+		var valueAttr = this.getValueAttribute();
+		var selectAttr = this.getSelectionAttribute();
+		
+		var selModel = this.collection.find(function(model) {
+			return model.get(valueAttr) === itemVal;
+		});
+		selModel.set(selectAttr, false);
+
+	},
+	
+	
 	setValue: function(){
 		var selectionAttr = this.getSelectionAttribute();
 		var valueAttr = this.getValueAttribute();
@@ -284,11 +328,14 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		});
 
 		this.$el.attr("ogpValue", value);
+
 		this.$el.trigger("change");
 	},
 	getValueAsArray: function(){
 		return this.getValue().split(",");
 	},
+
+
 	render: function(){
 		var selectionAttr = this.getSelectionAttribute();
 		var valueAttr = this.getValueAttribute();
@@ -316,6 +363,7 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 });
 
 OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.CollectionMultiSelect.extend({
+	//note: some inherited functions don't take the collectionFilter into account
 	getTemplateParams: function(){
 		var menuHtml = "";	
 		var buttonLabel = this.getButtonLabel();
@@ -325,7 +373,21 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		var iconRenderer = this.options.iconRenderer;
 		var controlClass = this.options.controlClass;
 		var selectionAttr = this.getSelectionAttribute();
+
+
 		var collectionFilter = this.options.collectionFilter;
+
+		var extraControl = "";
+		
+		if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
+			extraControl = this.template.showOnlyControl();
+			//make sure we start in the right state
+			this.checkSelected();
+			//if using 'only' and 'select all' controls, do a check on selection to see if all are selected
+			var selectionEvent = "change:" + selectionAttr;
+			this.listenTo(this.collection, selectionEvent, this.checkSelected);
+		}
+		
 		var that = this;
 		this.collection.each(function(currModel){
 			if (typeof  collectionFilter != "undefined"){
@@ -341,11 +403,95 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			if (currModel.get(selectionAttr)){
 				isSelected = "checkOn";
 			}
-			var control = that.template.genericControl({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
+
+			var control = extraControl + that.template.genericControl({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
 			menuHtml += that.template.controlMenuItem({icon: icon, control: control, name: name, value: value, className: itemClass});
 		});
 
-		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
+		var params = {menuHtml: menuHtml, buttonLabel: buttonLabel};
+		
+		if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
+			params.caption = this.template.selectAllCaption();
+		}
+		
+		return params;
+	},
+	selectAll: function(){
+		
+		var selectAttr = this.getSelectionAttribute();
+		var collectionFilter = this.options.collectionFilter;
+		this.collection.each(function(model){
+			if (typeof collectionFilter != "undefined"){
+				if(model.get(collectionFilter.attr) !== collectionFilter.val){
+					return;
+				}
+			}
+			model.set(selectAttr, true);
+		});
+		
+	},
+	
+	unselectAll: function(){
+		
+		var selectAttr = this.getSelectionAttribute();
+		var collectionFilter = this.options.collectionFilter;
+		
+		this.collection.each(function(model){
+			if (typeof collectionFilter != "undefined"){
+				if(model.get(collectionFilter.attr) !== collectionFilter.val){
+					return;
+				}
+			}
+			model.set(selectAttr, false);
+		});
+	},
+	allSelected: function(){
+		var selectAttr = this.getSelectionAttribute();
+		var collectionFilter = this.options.collectionFilter;
+
+		var all = true;
+		this.collection.each(function(model){
+			if (typeof collectionFilter != "undefined"){
+				if(model.get(collectionFilter.attr) !== collectionFilter.val){
+					return;
+				}
+			}
+			if (!model.get(selectAttr)){
+				all = false;
+				return;
+			}
+		});
+		
+		return all;
+	},
+	noneSelected: function(){
+		var selectAttr = this.getSelectionAttribute();
+		var collectionFilter = this.options.collectionFilter;
+
+		var all = true;
+		this.collection.each(function(model){
+			if (typeof collectionFilter != "undefined"){
+				if(model.get(collectionFilter.attr) !== collectionFilter.val){
+					return;
+				}
+			}
+			if (model.get(selectAttr)){
+				all = false;
+				return;
+			}
+		});
+		
+		return all;
+	},
+	checkSelected: function(){
+		//use visibility here so we don't disturb the formatting
+		if (this.allSelected()){
+			this.$el.find(".showAll").css("visibility", "hidden");
+			this.$el.prev('label').addClass("offsetColor");
+		} else {
+			this.$el.find(".showAll").css("visibility", "visible");
+			this.$el.prev('label').removeClass("offsetColor");
+		}
 	},
 	uiItemSelected: function(thisObj){
 		jQuery(thisObj).addClass("selected");
@@ -356,6 +502,8 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		jQuery(thisObj).find(".checkOn").removeClass("checkOn").addClass("checkOff");
 	}
 });
+
+
 
 OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	initialize: function() {
@@ -368,7 +516,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	getTemplateParams: function(){
 		var menuHtml = "";	
 		var colName = this.model.get("column");		
-		var buttonLabel = this.getButtonLabel();
+		var buttonLabel = "Sort Results";
 		var displayAttr  = "displayName";
 		var valueAttr = "columnName";
 		that = this;
@@ -380,7 +528,8 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 			}
 			
 			var value = currModel.get(valueAttr);
-			var name = currModel.get(displayAttr);
+			var name = currModel.get(displayAttr) + '<div class="sortArrows"></div>';
+			
 			var selected = "";
 
 			if (colName.toLowerCase() == value.toLowerCase()){
@@ -401,7 +550,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var that = this;
 		var menuHtml = "";	
 		var colName = this.model.get("column");	
-		var direction = this.model.get("direction"); //TODO: should render an arrow, up or down, for the selected column
+		var direction = this.model.get("direction"); //"asc" or "desc"
 		var currModel = this.headings.findWhere({columnName: colName});
 		var name = "";
 		if (currModel.has("displayName")){
@@ -409,10 +558,17 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		} else {
 			name = currModel.get("header");
 		}
-		this.$el.find(".select").first().button( "option", "label", name );
+		//this.$el.find(".select").first().button( "option", "label", name );
 		this.$el.find("li > a").each(function(){
+			var sort$ = jQuery(this).find(".sortArrows");
+			sort$.removeClass("sortDown sortUp");
 			if (jQuery(this).next().val() == colName){
 				that.uiItemSelected(this);
+				if (direction === "asc"){
+					sort$.addClass("sortUp");
+				} else if (direction === "desc"){
+					sort$.addClass("sortDown");
+				}
 			} else {
 				that.uiItemDeselected(this);
 			}

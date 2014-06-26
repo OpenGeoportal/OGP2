@@ -32,29 +32,24 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 					});
 				
 			},
+			
 			addedToCart : function(model) {
 				var layerId = model.get("LayerId");
 				model.set({
 					isChecked : true
 				});
-				// update search results table
-				jQuery(document).trigger("view.showInCart", {
-					layerId : layerId
-				});
 
 				this.updateSavedLayersNumber();
 				this.render();
 			},
+			
 			removedFromCart : function(model) {
 				var layerId = model.get("LayerId");
-				// update search results table
-				jQuery(document).trigger("view.showNotInCart", {
-					layerId : layerId
-				});
 
 				this.updateSavedLayersNumber();
 				this.render();
 			},
+			
 			updateSavedLayersNumber : function() {
 				var number$ = jQuery('.savedLayersNumber');
 
@@ -64,18 +59,15 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 
 			},
 
-			//renderedViews : {}, // keep a reference to rendered
-			// views...necessary?
-			renderRow : function(model) {
+			createNewRow: function(model){
 				var row = new OpenGeoportal.Views.CartRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
-				this.$el.find(".rowContainer").append(row.el);
+				return row;
 			},
-
-
+			
 			addSharedLayers: function() {
 				if (OpenGeoportal.Config.shareIds.length > 0) {
 					var solr = new OpenGeoportal.Solr();
@@ -101,7 +93,6 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				jQuery(document).trigger("map.zoomToLayerExtent", {
 					bbox : OpenGeoportal.Config.shareBbox
 				});
-				// jQuery("#tabs").tabs("option", "active", 1);
 
 			},
 
@@ -126,7 +117,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 									width : 10,
 									modelRender : function(model) {
 										var showControls = model.get("showControls");
-										return that.controls
+										return that.tableControls
 												.renderExpandControl(showControls);
 									}
 
@@ -143,7 +134,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										width : 21,
 										modelRender : function(model) {
 											
-											return that.controls.renderDownloadControl(model.get("isChecked"));
+											return that.tableControls.renderDownloadControl(model.get("isChecked"));
 											
 										}
 									},
@@ -160,7 +151,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										width : 30,
 										modelRender : function(model) {
 											var dataType = model.get("DataType");
-											return that.controls.renderTypeIcon(dataType);
+											return that.tableControls.renderTypeIcon(dataType);
 										}
 
 									}, {
@@ -227,7 +218,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										columnClass : "colDate",
 										modelRender : function(model) {
 											var date = model.get("ContentDate");
-											return that.controls.renderDate(date);
+											return that.tableControls.renderDate(date);
 										}
 
 									}, {
@@ -243,7 +234,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 										width : 24,
 										modelRender : function(model) {
 											var repository = model.get("Institution");
-											return that.controls.renderRepositoryIcon(repository);
+											return that.tableControls.renderRepositoryIcon(repository);
 
 										}
 
@@ -267,7 +258,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 									columnClass : "colMetadata",
 									width : 30,
 									modelRender : function(model) {
-										return that.controls.renderMetadataControl();
+										return that.tableControls.renderMetadataControl();
 									}
 								},
 								{
@@ -311,7 +302,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 											canLogin = loginModel.canLoginLogic(institution);
 										} 
 
-										return that.controls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
+										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
 									}
 								} ]);
 			}

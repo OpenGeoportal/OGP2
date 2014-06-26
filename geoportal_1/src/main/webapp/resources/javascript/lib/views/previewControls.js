@@ -28,10 +28,25 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		this.listenTo(this.model, "change:opacity", this.changeOpacity);
 		this.listenTo(this.model, "change:graphicWidth",
 				this.changeGraphicWidth);
-
-		this.initRender();
+		//console.log("created new");
+		this.render();
 	},
+	
+	close: function(){
+		//console.log("destroyed");
+		this.stopListening();
+		this.destroyWidgets();
+		this.remove();
+	},
+	
+	destroyWidgets: function(){
+		var size$ = this.$el.find(".sizeControlCell");
+		this.destroySlider(size$);
 
+		var opacity$ = this.$el.find(".opacityControlCell");
+		this.destroySlider(opacity$);
+	},
+	
 	setGetFeatureTitle : function(model) {
 		if (model.get("getFeature")) {
 			// console.log(model.get("LayerDisplayName"));
@@ -50,11 +65,9 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	updateSlider : function(controlClass, newValue) {
 		// update labels
 		this.$el.find("." + controlClass).find(".sliderValue").text(newValue);
-		// update slider value
-		this.$el.find("." + controlClass).find(".previewToolsSlider").slider(
-				"option", "value", newValue);
+
 	},
-	initRender : function() {
+	render : function() {
 		// render preview tools for a previewed layer
 		var markup = "";
 		var template = OpenGeoportal.ogp.template;
@@ -122,30 +135,29 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		this.$el.html(template.previewTools({
 			toolsMarkup : markup
 		}));
-		this.createOpacitySlider();
-		this.createSizeSlider();
+
 		return this;
 
 	},
 	createOpacitySlider : function() {
+		var opacity$ = this.$el.find(".opacityControlCell");
+		this.destroySlider(opacity$);
+		
 		var opacityVal = this.model.get("opacity");
 		// class = opacitySlider
 		var that = this;
-		this.$el.find(".opacityControlCell").find(".previewToolsSlider")
+		var slider = opacity$.find(".previewToolsSlider")
 				.slider(
 						{
 							min : 0,
 							max : 100,
 							step : 5,
-							value : opacityVal, // get value from Layer State
-							// object
+							value : opacityVal, 
 							slide : function(event, ui) {
 								that.model.set({
 									opacity : ui.value
 								});
-								var text$ = jQuery(this).parent().parent()
-										.find(".sliderValue");
-								text$.text(ui.value);
+
 							},
 							stop : function(event, ui) {
 								that.model.set({
@@ -153,9 +165,14 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 								});
 							}
 						});
+		this.opacitySlider = slider;
+		return slider;
 	},
 
 	createSizeSlider : function() {
+		var size$ = this.$el.find(".sizeControlCell");
+		this.destroySlider(size$);
+		
 		var minSize = 1;
 		var maxSize = 6;
 		if (this.model.get("DataType").toLowerCase() == "polygon") {
@@ -164,16 +181,14 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		}
 		var that = this;
 		var widthVal = this.model.get("graphicWidth");
-		this.$el.find(".sizeControlCell").find(".previewToolsSlider").slider(
+		var slider = size$.find(".previewToolsSlider").slider(
 				{
 					min : minSize,
 					max : maxSize,
 					step : 1,
-					value : widthVal, // get value from Layer State object
+					value : widthVal, 
 					slide : function(event, ui) {
-						var text$ = jQuery(this).parent().parent().find(
-								".sliderValue");
-						text$.text(ui.value);
+
 					},
 					stop : function(event, ui) {
 						that.model.set({
@@ -181,7 +196,39 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 						});
 					}
 				});
+		this.sizeSlider = slider;
+		return slider;
 	},
+	createSlider: function(control$){
+		if (control$.hasClass("sizeControlCell")){
+			this.createSizeSlider();
+		} else if (control$.hasClass("opacityControlCell")) {
+			this.createOpacitySlider();
+		}
+	},
+	
+	destroySlider: function(control$){
+		if (control$.hasClass("sizeControlCell")){
+			try {
+				if (typeof this.sizeSlider !== "undefined" && this.sizeSlider !== null){
+					this.sizeSlider.slider("destroy");
+					this.sizeSlider = null;
+				}
+			} catch (e){
+				console.log(e);
+			}
+		} else if (control$.hasClass("opacityControlCell")) {
+			try {
+				if (typeof this.opacitySlider !== "undefined" && this.opacitySlider !== null){
+					this.opacitySlider.slider("destroy");
+					this.opacitySlider = null;
+				}
+			} catch (e){
+				console.log(e);
+			}
+		}
+	},
+	
 	toggleSlider : function(event) {
 		var control$ = jQuery(event.target).siblings(".controlContainer");
 		if (control$.css("display") == "none") {
@@ -191,9 +238,12 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		}
 
 	},
+	
 	openSlider : function(event) {
-		// console.log("openSlider");
-		// console.log(event);
+		//create the jquery ui slider obj
+		var lbl$ = jQuery(event.target).parent().parent();
+		this.createSlider(lbl$);
+		
 		var control = jQuery(event.target).siblings(".controlContainer");
 		control.css("display", "block");
 	},
@@ -212,6 +262,11 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		}
 
 		control$.css("display", "none");
+		
+		//destroy the jquery ui object
+		var lbl$ = jQuery(event.target).parent().parent();
+		this.destroySlider(lbl$);
+
 	},
 
 	zoomToLayerExtent : function() {

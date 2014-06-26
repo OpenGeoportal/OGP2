@@ -44,6 +44,7 @@ OpenGeoportal.TableRowSettings = Backbone.Collection.extend({
 	model : OpenGeoportal.Models.RowSetting,
 
 	setExpandState : function(currentLayerId, state) {
+
 		var layerModel = this.findWhere({
 			LayerId : currentLayerId
 		});

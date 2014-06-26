@@ -162,3 +162,63 @@ showMetadata = function(thisObj){
   	    jQuery.ajax(ajaxParams);
 };
 */
+
+
+this.minimizeDialog = function(dialogId) {
+	// 1. collect current state of dialog before minimizing.
+	// 2. attach that info to the dialog element (jQuery.data)
+	// 3. also attach a flag that indicates minimized or not
+	// 4. minimize the dialog. (header bar only)
+	// 5. change position to lower right corner (fixed to bottom of window)
+	// 6. animate the movement
+	// can I just toggle a class?
+	// 7. animated message in toolbar that describes what's being done
+	if (!this.isDialogMinimized(dialogId)) {
+		jQuery("#" + dialogId).data({
+			"minimized" : true
+		});
+		var position = jQuery("#" + dialogId).dialog("option", "position");
+		jQuery("#" + dialogId).data({
+			"maxPosition" : position
+		});
+		jQuery("#" + dialogId).parent().children().each(function() {
+			if (!jQuery(this).hasClass("ui-dialog-titlebar")) {
+				jQuery(this).hide();
+			}
+		});
+		jQuery("#" + dialogId).dialog("option", "position",
+				[ "right", "bottom" ]);
+		jQuery("#" + dialogId).parent().css("position", "fixed");
+	}
+};
+
+this.isDialogMinimized = function(dialogId) {
+	var result;
+	if (jQuery("#" + dialogId).data().minimized) {
+		result = true;
+	} else {
+		result = false;
+	}
+	return result;
+};
+
+this.maximizeDialog = function(dialogId) {
+	// 1. check minimized flag
+	// 2. read stored state values
+	// 3. apply stored state values
+	// 4. animate the movement
+	// 5. turn off animated message (?)
+	if (this.isDialogMinimized(dialogId)) {
+		jQuery("#" + dialogId).parent().children().each(function() {
+			if (!jQuery(this).hasClass("ui-dialog-titlebar")) {
+				jQuery(this).show();
+			}
+		});
+		jQuery("#" + dialogId).data({
+			"minimized" : false
+		});
+		var position = jQuery("#" + dialogId).data().maxPosition;
+		jQuery("#" + dialogId).dialog("option", "position", position);
+		jQuery("#" + dialogId).parent().css("position", "absolute");
+	}
+};

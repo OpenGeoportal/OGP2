@@ -16,6 +16,9 @@ public class RepositoryConfigRetrieverFromProperties implements RepositoryConfig
 	public final String SHORT_NAME_KEY = "shortName";
 	public final String FULL_NAME_KEY = "fullName";
 	public final String ICON_CLASS_KEY = "sourceIconClass";
+	public final String NODE_TYPE_KEY = "nodeType";
+	public final String URL_KEY = "url";
+
 
 	@Autowired
 	SearchConfigRetriever searchConfigRetriever;
@@ -52,6 +55,9 @@ public class RepositoryConfigRetrieverFromProperties implements RepositoryConfig
 		configElements.add(SHORT_NAME_KEY);
 		configElements.add(FULL_NAME_KEY);
 		configElements.add(ICON_CLASS_KEY);
+		configElements.add(NODE_TYPE_KEY);
+		configElements.add(URL_KEY);
+
 		
 		repositoryConfig = new ArrayList<RepositoryConfig>();
 		
@@ -89,6 +95,10 @@ public class RepositoryConfigRetrieverFromProperties implements RepositoryConfig
 			repConf.setFullName(value);
 		} else if (key.contains(ICON_CLASS_KEY)){
 			repConf.setIconClass(value);
+		} else if (key.contains(NODE_TYPE_KEY)){
+			repConf.setNodeType(value);
+		} else if (key.contains(URL_KEY)){
+			repConf.setUrl(value);
 		} else {
 			logger.warn("Key ['" + key + "'] is unknown.");
 		}

@@ -38,6 +38,12 @@
 	z-Index: 9999;
 }
 
+.ui-effects-transfer-to-cart {
+	border: 0;
+	/*background: black;*/
+	z-Index: 9999;
+}
+
 .ui-helper-clearfix:before,.ui-helper-clearfix:after {
 	content: "";
 	display: table;
@@ -103,6 +109,10 @@
 	position: absolute;
 	font-size: 0.1px;
 	display: block;
+}
+
+.ui-resizable-disabled.ui-state-disabled {
+    opacity: 1;
 }
 
 .ui-resizable-disabled .ui-resizable-handle,.ui-resizable-autohide .ui-resizable-handle
@@ -263,12 +273,14 @@ button.ui-button-icons-only {
 }
 
 /* button text element */
+
 .ui-button .ui-button-text {
 	overflow: hidden;
 	display: block;
 	line-height: 13px;
 	height: 13px;
 	font-size: 12px;
+	white-space: nowrap;
 }
 
 .ui-button-text-only .ui-button-text {
