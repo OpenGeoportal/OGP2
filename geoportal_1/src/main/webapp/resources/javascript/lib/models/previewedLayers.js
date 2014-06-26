@@ -134,7 +134,11 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
 				locationObj, [ "arcgisrest" ])) {
 			previewType = "arcgisrest";
+		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+				locationObj, [ "externalLink" ])) {
+			previewType = "externalLink";
 		}
+
 
 		this.set({
 			previewType : previewType

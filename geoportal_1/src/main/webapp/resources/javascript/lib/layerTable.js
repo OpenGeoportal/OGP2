@@ -1460,6 +1460,10 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
 		};
 		
+		if (!canPreview(location) & OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["externallink"])){
+			return this.controls.renderLinkControl();
+		}
+			
 		var hasAccess = true;
 		var canLogin = true;
 		
@@ -1634,7 +1638,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 							// field,
 							// use it. Otherwise, try to generate a link to the
 							// Institution's ogp instance
-							var values = [ "previewLink" ];
+							var values = [ "externalLink" ];
 							var url = null;
 							if (OpenGeoportal.Utility.hasLocationValue(
 									location, values)) {
