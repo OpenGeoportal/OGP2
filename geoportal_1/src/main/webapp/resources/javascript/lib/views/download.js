@@ -44,36 +44,6 @@ OpenGeoportal.Models.DownloadPreferences = Backbone.Model.extend({
 	}
 });
 
-OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.QueueItem.extend({
-
-	initialize : function() {
-		this.set({
-			requestUrl: "requestDownload",
-			requestType : "layer",
-			bbox : new OpenLayers.Bounds(-180,-90,180,90)
-		});
-		
-		this.listenTo(this, "invalid", function(model, error) {
-
-			if (error === "email") {
-				var errMessage = "You must provide a valid email address.";
-				jQuery("#emailValidationError").html(errMessage);
-			} else {
-				console.log("validation error for property: " + error);
-			}
-		});
-	},
-	validate : function(attrs, options) {
-		var emailAddressProperty = "email";
-		var emailAddress = attrs[emailAddressProperty];
-
-		if (emailAddress !== null
-				&& !OpenGeoportal.Utility.checkAddress(emailAddress)) {
-			return emailAddressProperty;
-		}
-
-	}
-});
 
 OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 		.extend({
@@ -672,16 +642,16 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					var emailRequest = this.downloadRequest.clone();
 					emailRequest.set({layers: emailLayers});
 
-					requestQ.addToQueue(emailRequest);
+					requestQ.add(emailRequest);
 					
 					if (dlLayers.length > 0){
 						this.downloadRequest.set({layers: dlLayers});
 						//console.log(this.downloadRequest);
-						requestQ.addToQueue(this.downloadRequest);
+						requestQ.add(this.downloadRequest.clone());
 
 					}
 				} else {
-					requestQ.addToQueue(this.downloadRequest);
+					requestQ.add(this.downloadRequest.clone());
 				}
 
 				//this.deferred.resolve();

@@ -39,21 +39,21 @@ OpenGeoportal.Config.shareBbox="${shareBbox}";
 
 	<%@include file="jspf/header.jspf"%>
 	<%@include file="jspf/search.jspf"%>
+	
 	<div id="container">
-		<div id="roll_right" class="shadowRightOuter">
-			<button class="arrow_right button"></button>
-		</div>
 		<div id="left_col" class="shadowRightOuter">
 			<%@include file="jspf/leftPanel.jspf"%>
 		</div>
 		<div id="map"></div>
 	</div>
+	
 	<%@include file="jspf/footer.jspf"%>
 
 	<div id="dialogs" class="hiddenElements">
 		<%@include file="jspf/about.jspf"%>
 		<%@include file="jspf/contact.jspf"%>
 	</div>
+	
 	<div id="iframes" class="hiddenElements"></div>
 	<div id="infoBubbles"></div>
 </body>

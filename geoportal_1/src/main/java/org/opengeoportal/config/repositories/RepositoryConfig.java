@@ -1,5 +1,7 @@
 package org.opengeoportal.config.repositories;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class RepositoryConfig {
 	/*{"id": "harvard",
 		"shortName": "Harvard",
@@ -11,6 +13,8 @@ public class RepositoryConfig {
 	String shortName;
 	String fullName;
 	String iconClass;
+	String nodeType;
+	String url;
 	Boolean selected;
 
 	public String getId() {
@@ -43,5 +47,26 @@ public class RepositoryConfig {
 	public void setSelected(Boolean selected) {
 		this.selected = selected;
 	}
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	public String getNodeType() {
+		return nodeType;
+	}
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	public void setNodeType(String nodeType) {
+		this.nodeType = nodeType;
+	}
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	public String getUrl() {
+		return url;
+	}
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
 
 }

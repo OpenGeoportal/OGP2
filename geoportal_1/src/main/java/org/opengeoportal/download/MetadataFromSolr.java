@@ -247,9 +247,9 @@ public class MetadataFromSolr implements MetadataRetriever {
             //<metstdv>FGDC-STD-001-1998
         	NodeList rootNodes = document.getElementsByTagName("metadata");
         	if (rootNodes.getLength() > 0){ 
-        		if (document.getElementsByTagName("metstdn").item(0).getTextContent().toLowerCase().contains("fgdc")){
+        		//if (document.getElementsByTagName("metstdn").item(0).getTextContent().toLowerCase().contains("fgdc")){
         			metadataType = MetadataType.FGDC;
-        		}
+        		//}
         	}
         } catch (Exception e){/*ignore*/
             //document.getElementsByTagName("metstdn").item(0).getTextContent().toLowerCase();

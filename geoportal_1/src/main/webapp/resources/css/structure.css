@@ -123,6 +123,60 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	width: 70px;
 }
 
+#topicDropdown .select .ui-button-text {
+	width: 136px;	
+}
+
+.dropdown .ui-menu-item > a > div.showOnly {
+	font-size: 10px;
+    position: absolute;
+    right: 31px;
+    height: 20px;
+    display: none;
+}
+
+.dropdown .ui-menu-item > a.ui-state-focus > div.showOnly {
+	display: inline-block;	
+}
+
+.dropdown .ui-menu-item > a.ui-state-focus > div.showOnly:hover {
+	text-decoration: underline;
+}
+
+.dropdown .showAll {
+    display: inline-block;
+    font-size: 10px;
+    padding-left: 9px;
+    visibility: hidden;
+}
+
+.dropdown .showAll:hover {
+	text-decoration: underline;
+}
+
+.dropdown .ui-menu-item > a > div.sortArrows {
+	right: 0px;
+	position: absolute;
+	margin-top: 2px;
+	width: 10px;
+	height: 12px;
+}
+
+.dropdown .ui-menu-item > a.ui-state-focus > div.sortArrows {
+		background: url("../media/sorting.png") no-repeat scroll 0px
+		0px transparent;
+}
+		
+.dropdown .ui-menu-item > a.selected > div.sortArrows.sortDown {
+	background: url("../media/sorting.png") no-repeat scroll -22px
+		0px transparent;
+}
+
+.dropdown .ui-menu-item > a.selected > div.sortArrows.sortUp {
+	background: url("../media/sorting.png") no-repeat scroll -11px
+		0px transparent;
+}
+
 .owsServicesButton {
 	width: 100%;
 	text-align: left;
@@ -152,9 +206,10 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 #header {
 	height: 120px;
 	background-color: #ffffff;
-	border-right: #CCCCCC solid 1px;
-	border-left: #CCCCCC solid 1px;
+	/*border-right: #CCCCCC solid 1px;
+	border-left: #CCCCCC solid 1px;*/
 	border-bottom: #999999 solid 1px;
+	min-width: 1050px;
 }
 
 #logo {
@@ -231,7 +286,7 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 }
 
 .searchFormInput>.styledSelect {
-	width: 220px;
+	width: 255px;
 }
 
 .dropdown .ui-menu-item>a>div {
@@ -271,25 +326,29 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 /* Container */
 #container {
 	background-color: #fff;
-	/*border-right: #CCCCCC solid 1px;
-	border-left: #CCCCCC solid 1px; */
-	/*min-height:512px;*/
-	/*height: 100%;*/
 	overflow: hidden;
+	min-height: 512px;
+	min-width: 1050px;
+	position: relative;
 }
 
+#map {
+	opacity: 0;
+	min-width: 1050px;
+	
+}
 /* left column panel */
 #left_col {
 	height: 100%;
 	float: left;
 	cursor: default;
 	display: none;
-	z-index: 1010;
+	z-index: 1200;
+	position: relative;
+	background-color: #ffffff;
 }
 
-#left_tabs {
-	color: #666666;
-	font-size: 10px;
+.contents {
 	height: 100%;
 }
 
@@ -344,8 +403,14 @@ zoom: 1;
 	margin-right: 5px;
 }
 
-.previewPane {
-    border-bottom: 1px solid #CCCCCC !important;
+
+
+.previewedLayers {
+    background-color: #f8f8e4;
+}
+
+.previewedLayers > div {
+	border-bottom: 1px solid #CCCCCC !important;
 }
 
 .arrow_buttons {
@@ -438,12 +503,14 @@ zoom: 1;
 #roll_right {
 	min-height: 512px;
 	width: 25px;
-	border-right: 1px solid #999999;
 	background-color: #eeeeee;
 	vertical-align: top;
 	position: absolute;
 	padding: 0px;
+	padding-top: 4px;
 	height: 100%;
+	top: 0px;
+	right: 0px;
 	z-index: 1010;
 }
 
@@ -522,6 +589,8 @@ textarea:focus {
 	top: 65px;
 	width: 100%;
 	z-index: 1500;
+	min-width: 1050px;
+	
 }
 
 .scrollFiller {
@@ -534,9 +603,6 @@ textarea:focus {
 	right: 0;
 }
 
-.previewPane .colPreview, .previewPane .previewTools {
-	border-right: 1px solid #cccccc !important;
-}
 
 #leftColSpacer {
 	background-color: #FFFFFF;
@@ -627,7 +693,7 @@ textarea:focus {
 
 .searchCol {
 	position: absolute;
-	width: 302px;
+	/*width: 340px;*/
 	margin-right: 42px;
 }
 
@@ -765,9 +831,9 @@ textarea:focus {
 	background: #FFF;
 	border: #CCCCCC solid 1px;
 	font-size: 13px;
-	position: fixed;
 	bottom: 0;
 	width: 100%;
+	min-width: 1050px;
 }
 
 #footerLogos {
@@ -919,6 +985,11 @@ td div.repositoryIcon {
 .inCart {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -130px -13px
 		transparent;
+}
+
+.exampleControl {
+	display: inline-block;
+	padding: 0 2px;
 }
 
 .dialog {
@@ -1297,12 +1368,30 @@ Backbone table view
 .tableHeaders {
     border-bottom: 1px solid #CCCCCC;
     width: 100%;
+    white-space: nowrap;
 }
 
-/*.rowContainer {
-	height: 100%;
-	overflow: auto;	
-}*/
+.rowContainer {
+	overflow-y: auto;	
+	overflow-x: hidden;
+	white-space: nowrap;
+}
+
+#searchResults > .tableWrapper > .rowContainer {
+	overflow-y: scroll;
+}
+
+.hiddenRow {
+	display: none;
+}
+
+.hiddenTable {
+	display: none;
+}
+
+.previewedLayers .rowContainer {
+	overflow: visible;
+}
 
 .tableRow {
 	width: 100%;
@@ -1341,6 +1430,8 @@ Backbone table view
 	margin: auto;
 }
 
+/* text columns */
+
 .tableCell > .cellWrapper {
 	width: 100%;
 	margin-left: 2px;
@@ -1349,15 +1440,17 @@ Backbone table view
     font-size: 11px;
     height: 17px;
     line-height: 17px;
+    word-break: break-all;
 }
 
-
-.previewControls > div {
-    line-height: 15px;
+td.colTitle {
+	cursor: pointer;
+	color: #000000 !important;
 }
 
 .rowContainer .colTitle {
 	cursor: pointer;
+	color: #000000;
 }
 
 .tableRow.rowHover {
@@ -1382,6 +1475,178 @@ Backbone table view
 	background-color: #CDE4FA;
 	border-color: #CDE4FA;
 }
+
+.bottomSpacer {
+	height: 25px;
+}
+
+/**********
+preview controls
+***********/
+
+.previewControls {
+	font-size: 11px;
+}
+
+.previewControls > div {
+	line-height: 15px;
+	display: inline-block;
+	height: 17px;
+	position: relative;
+}
+
+.sliderControl>div {
+	color: #231F20;
+	background-color: #FFFFFF;
+	z-index: 10;
+}
+
+.sliderDisplay {
+	font-size: 10px;
+	border: 1px solid #aaaaaa;
+	border-radius: 3px 0 0 3px;
+	padding-left: 5px;
+	padding-right: 2px;
+	display: inline-block;
+}
+
+.sliderArrow {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -65px -64px
+		transparent;
+	border-bottom: 1px solid #aaaaaa;
+	border-radius: 0 3px 3px 0;
+	border-right: 1px solid #aaaaaa;
+	border-top: 1px solid #aaaaaa;
+	height: 15px;
+	vertical-align: top;
+	width: 14px;
+	display: inline-block;
+}
+
+.controlContainer {
+	position: absolute;
+	border: 1px solid #aaaaaa;
+	background: white;
+	height: 11px;
+	width: 71px;
+	padding: 5px 10px 5px 8px;
+	right: 0;
+	top: 100%;
+	display: none;
+}
+
+.controlText {
+	height: 13px;
+	display: inline-block;
+	font-size: 10px;
+	padding: 0px 1px;
+}
+
+
+.colorControl {
+	width: 12px;
+	height: 12px;
+	border: 1px solid #aaaaaa;
+	display: inline-block;
+	-moz-border-radius: 1px;
+}
+
+.sizeControlCell .sliderLabel {
+	display: inline-block;
+	width: 50px;
+}
+
+.opacityControlCell {
+	left: 71px;
+	top: -3px;
+}
+
+.opacityControlCell .sliderValue {
+	display: inline-block;
+	width: 19px;
+	text-align: right;
+}
+
+.sizeControlCell {
+	left: 83px;
+	top: -3px;
+}
+
+.colorControlCell {
+	left: 89px;
+	top: -1px;
+}
+
+.layerInfo {
+    border: 2px solid #CCCCCC;
+    font-size: 11px;
+    padding: 10px;
+    white-space: pre-wrap;
+}
+/**********
+icons
+***********/
+
+.expandControl {
+	height: 17px;
+	width: 11px;
+}
+
+.expanded {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -92px -115px
+		transparent;
+}
+
+.notExpanded {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -83px -63px
+		transparent;
+}
+
+.zoomToLayerControl {
+	left: 104px;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -9px -90px
+		transparent;
+	height: 17px;
+	width: 17px;
+	top: 1px;
+}
+
+.attributeInfoControl {
+	left: 110px;
+	height: 17px;
+	width: 17px;
+	top: 1px;
+}
+
+.attributeInfoControlOn {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -115px
+		-115px transparent;
+}
+
+.attributeInfoControlOff {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -36px -90px
+		transparent;
+}
+
+.cartIconTable {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -102px -62px
+		transparent;
+	height: 17px;
+	width: 17px;
+}
+
+.repositoryIcon {
+	height: 17px;
+	width: 17px;
+}
+
+.typeIcon {
+	height: 17px;
+	width: 17px;
+	vertical-align: middle;
+}
+
+
 
 /*************
 Info Bubble

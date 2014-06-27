@@ -100,7 +100,7 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
     /** 
      * APIProperty: zoomStopWidth
      */
-    zoomStopWidth: 18,
+    zoomStopWidth: 13,
 
     /** 
      * APIProperty: zoomStopHeight
@@ -323,24 +323,16 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
         
         var sz = new OpenLayers.Size();
         sz.h = this.zoomStopHeight * this.map.getNumZoomLevels();
-        sz.w = 13;//this.zoomStopWidth;
-        var div = null;
+        sz.w = this.zoomStopWidth;
         
-      //  if (OpenLayers.Util.alphaHack()) {
-            var id = this.id + "_" + this.map.id;
-            div = OpenLayers.Util.createBackgroundImage(id, centered.add(5,0),
+        var id = this.id + "_" + this.map.id;
+        var div = OpenLayers.Util.createBackgroundImage(id, centered.add(5,0),
                                       new OpenLayers.Size(sz.w, 
                                               this.zoomStopHeight),
                                       "zoomSlideBar", 
                                       "absolute", null, "crop");
-            div.style.height = sz.h + "px";
-        /*} else {
-            div = OpenLayers.Util.createDiv(
-                        'OpenLayers_Control_PanZoomBar_Zoombar' + this.map.id,
-                        centered.add(6,0),
-                        sz,
-                        this.imgLocation+"slider_bar.png");
-        }*/
+        div.style.height = sz.h + "px";
+
         
         this.zoombarDiv = div;
         
@@ -360,8 +352,7 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
 
         this.map.events.register("zoomend", this, this.moveZoomBar);
 
-        centered = centered.add(0, 
-            this.zoomStopHeight * this.map.getNumZoomLevels());
+        centered = centered.add(0, sz.h);
         return centered; 
     },
     

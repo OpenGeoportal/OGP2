@@ -11,20 +11,26 @@ OpenGeoportal.Template = function() {
 	
 	this.cartHeader = _.template(cartHeaderHtml);
 	
-	var cartTableHtml = '<div class="tableWrapper"><div class="tableHeaders">';
-	cartTableHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
-	cartTableHtml += '</div>';
-	cartTableHtml += '<div class="rowContainer"></div></div>';
-	this.cartTable = _.template(cartTableHtml);
+	var tableHeaderHtml = '<div class="tableHeaders">';
+	tableHeaderHtml += '<% _.each(headers, function(col) { %><div class="tableCell <%= col.columnClass %>"><%= col.header %></div><% }); %>';
+	tableHeaderHtml += '</div>';
 	
-	this.dataTable = _
-			.template('<table id="<%= tableId %>" class="display"></table>');
+	this.tableHeader = _.template(tableHeaderHtml);
+	
+	var tableViewHtml = '<div class="tableWrapper"><%= tableHeader %>';
+	tableViewHtml += '<div class="rowContainer"><%= tableFooter %></div></div>';
+	this.tableView = _.template(tableViewHtml);
+
 
 	var mapToolBarHtml = '<div id="mapToolBar"><div id="ogpMapButtons">'
 			+ '</div>' + '</div>';
 
 	var genericDivHtml = '<div id="<%= elId %>" class="<%= elClass %>" ></div>';
 	this.genericDiv = _.template(genericDivHtml);
+	
+	var divNoIdHtml = '<div class="<%= elClass %>" ></div>';
+	this.divNoId = _.template(divNoIdHtml);
+	
 	var mapHtml = '<div id="<%= mapId %>OLMap">' + this.genericDiv({
 		elId : "nwCorner",
 		elClass : "corner slideHorizontal"
@@ -52,16 +58,23 @@ OpenGeoportal.Template = function() {
 	this.requestIndicator = _.template(requestIndicatorHtml);
 
 	var selectHtml = '<div class="styledSelect">' + "<div>"
-			+ '<button class="select"><%= buttonLabel %></button>' + "</div>"
-			+ "<ul><%= menuHtml%></ul>";// +
-	'</div>';
+			+ '<button class="select"><%= obj.buttonLabel %></button><%= obj.caption %>'
+			+ "</div>"
+			+ "<ul><%= obj.menuHtml %></ul>"
+		    + '</div>';
 
 	this.styledSelectBody = _.template(selectHtml);
+	
+	var selectAllHtml = '<div class="showAll offsetColor button">select all</div>';
+	this.selectAllCaption = _.template(selectAllHtml);
 
 	var simpleMenuHtml = '<li><a class="<%= className %>"><%= name %></a>'
 			+ '<input type="hidden" value="<%= value %>" /></li>';
 	this.simpleMenuItem = _.template(simpleMenuHtml);
 
+	var showOnlyHtml = '<div class="showOnly button offsetColor">only</div>';
+	this.showOnlyControl = _.template(showOnlyHtml);
+	
 	var controlMenuHtml = '<li><a class="<%= className %>"><%= icon %><div class="selectText"><%= name %></div><%= control %></a>';
 	controlMenuHtml += '<input type="hidden" value="<%= value %>" /></li>';
 	this.controlMenuItem = _.template(controlMenuHtml);
@@ -201,7 +214,6 @@ OpenGeoportal.Template = function() {
     dynamicWSDialogContentHtml += '<br/><span><%= serviceInfo.caption %></span><div class="owsServicesLinkContainer">';
     dynamicWSDialogContentHtml += '<textarea class="shareServicesText linkText" ><%= serviceInfo.url %></textarea> <br /></div><br/><% }); %>';
 	
-	//var webServicesDialogContentHtml = '<p>Web Services are provided in multiple formats.</p>';
 	var webServicesDialogContentHtml = '<div id="owsServicesArea">';
 	webServicesDialogContentHtml += dynamicWSDialogContentHtml;
 	webServicesDialogContentHtml += wmcDialogContentHtml;
@@ -210,6 +222,23 @@ OpenGeoportal.Template = function() {
 	this.webServicesDialogContent = _.template(webServicesDialogContentHtml);
 	
 
-		
+	var infoBubbleHtml = '<div id="<%= elId %>" class="infoBubbleBackground triangle-isoscelesBackground '
+			+ '<%= arrowDirection %>Background"><div class="infoBubbleText triangle-isosceles '
+			+ '<%= arrowDirection %>"><button class="closeBubble button"></button><%= content %>' 
+			+ '<label><input type="checkbox"/>Do not show this screen again</label></div></div>';
+	this.infoBubble = _.template(infoBubbleHtml);
+	
+	var welcomeTextHtml = '<div id="welcomeText" class="welcomeText">'
+		+ '<h1>Welcome</h1>' 
+		+ '<p>There are two ways to begin your search:</p>'
+		+ '<ol><li>Enter information using one or both search fields.</li>'
+		+ '<li>Zoom in on a location using the map.</li></ol></div>';
 
+	this.welcomeText = _.template(welcomeTextHtml);
+	
+	var directionsTextHtml = '<div id="directionsText" class="directionsText">'
+		+ "<span>You can preview layers by clicking on the 'View' checkbox.</span><br/><br/>"
+		+ '<span>Layers can be added to the \'Cart\' by clicking on the </span><div class="saveControl notInCart exampleControl"></div><span> button.</span></div>';
+	
+	this.directionsText = _.template(directionsTextHtml);
 };

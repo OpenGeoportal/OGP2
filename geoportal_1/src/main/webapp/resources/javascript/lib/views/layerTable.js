@@ -11,62 +11,29 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 }
 
 
-OpenGeoportal.Views.CartTable = Backbone.View
+OpenGeoportal.Views.LayerTable = Backbone.View
 		.extend({
-			events : {
-				"click #downloadHeaderCheck" : "setChecks"
-			},
+
 			initialize : function() {
 				this.template = OpenGeoportal.ogp.template;
-				this.controls = OpenGeoportal.ogp.controls;
+				this.tableControls = OpenGeoportal.ogp.tableControls;
 				this.tableConfig = this.createTableConfig();
-				this.listenTo(this.collection, "add", this.addedToCart);
-				this.listenTo(this.collection, "remove", this.removedFromCart);
+
 				this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-				this.previewViewHandler();
 				this.adjustColumnsHandler();
+				this.initSubClass();
+				this.subviewStorage();
 				this.render();
-			},
-			
-			setChecks: function(e){
-				var isChecked = jQuery(e.target).is(':checked');
-				
-					this.collection.each(function(model){
-						model.set({isChecked: isChecked});
-					});
-				
-			},
-			addedToCart : function(model) {
-				var layerId = model.get("LayerId");
-				model.set({
-					isChecked : true
-				});
-				// update search results table
-				jQuery(document).trigger("view.showInCart", {
-					layerId : layerId
-				});
-
-				this.updateSavedLayersNumber();
-				this.render();
-			},
-			removedFromCart : function(model) {
-				var layerId = model.get("LayerId");
-				// update search results table
-				jQuery(document).trigger("view.showNotInCart", {
-					layerId : layerId
-				});
-
-				this.updateSavedLayersNumber();
-				this.render();
-			},
-			updateSavedLayersNumber : function() {
-				var number$ = jQuery('.savedLayersNumber');
-
-				number$.text('(' + this.collection.length + ')');
-
-				OpenGeoportal.Utility.elementFlash(number$.parent());
+				this.afterRender();
 
 			},
+			initSubClass: function(){
+				//nop
+			},
+			afterRender: function(){
+				//nop
+			},
+			emptyTableMessage: 	"No data layers have been added to the collection.",
 
 			adjustColumnsHandler: function() {
 				var that = this;
@@ -76,58 +43,111 @@ OpenGeoportal.Views.CartTable = Backbone.View
 					that.adjustColumnSizes();
 				});
 			},
-
-			previewControlShowOn: function(previewControl$) {
-				previewControl$.removeClass("checkOff").addClass("checkOn");
-				var hideLayerText = "Turn off layer preview on the map";
-				previewControl$.attr("title", hideLayerText);
-			},
-
-			previewControlShowOff: function(previewControl$) {
-				previewControl$.removeClass("checkOn").addClass("checkOff");
-				var showLayerText = "Preview layer on the map";
-				previewControl$.attr("title", showLayerText);
-			},
-
-			previewViewHandler: function() {
-				// this.listenTo(this.model, "change", this.render);
-				// change this to a backbone view
-				var that = this;
-				jQuery(document).on("view.previewOn", function(event, data) {
-					// console.log("view.previewOn fired by: " + that.getTableId());
-					var control$ = that.findPreviewControl(data.LayerId);
-					if (control$.length > 0) {
-						that.previewControlShowOn(control$);
-					}
-				});
-				jQuery(document).on("view.previewOff", function(event, data) {
-					// console.log("view.previewOff fired by:" + that.getTableId());
-					var control$ = that.findPreviewControl(data.LayerId);
-					if (control$.length > 0) {
-						that.previewControlShowOff(control$);
-					}
-				});
-			},
-			findPreviewControl: function(layerId){
-				for (var i in this.renderedViews){
-					var currentView = this.renderedViews[i];
-					if (currentView.model.get("LayerId") === layerId){
-						return currentView.$el.find(".previewControl");
-					}
-				}
-				return [];
-			},
-
-			//renderedViews : {}, // keep a reference to rendered
-			// views...necessary?
-			renderRow : function(model) {
-				var row = new OpenGeoportal.Views.CartRow(
+			    
+			createNewRow: function(model){
+				var row = new OpenGeoportal.Views.LayerRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
-				this.$el.find(".rowContainer").append(row.el);
+				this.appendSubview(row);
+				return row;
 			},
+			
+			getTable: function(){
+				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: this.template.divNoId({elClass: "bottomSpacer"})}));
+			},
+			
+			
+			subviewStorage: function(){
+				this.subviews = {rows: []};
+			},
+			
+			appendSubview: function(view){
+				this.subviews.rows.push(view);	
+				//console.log("adding to end:" + view.model.get("resultNum"));
+			},
+			
+			prependSubview: function(view){
+				this.subviews.rows.unshift(view);	
+				//console.log("adding to beginning:" + view.model.get("resultNum"));
+			},
+			
+			closeFirstSubview: function(){
+				var view = this.subviews.rows.shift();
+				//console.log("closing first:" + view.model.get("resultNum"));
+				view.close();
+			},
+			
+			closeLastSubview: function(){
+				var view = this.subviews.rows.pop();
+				//console.log("closing last:" + view.model.get("resultNum"));
+				view.close();
+			},
+			
+			closeAllSubview: function(){
+				_.each(this.subviews.rows, function(view){
+					//console.log("closing all");
+					view.close();
+				});
+				this.subviews.rows = [];
+			},
+			
+			updateSubviews: function(){
+				_.each(this.subviews.rows, function(view){
+					//console.log("update subviews");
+					view.render();
+				});
+				
+			},
+			
+			
+			renderHeaders: function(){
+
+				this.$el.children(".tableWrapper").children(".tableHeaders").html(this.template.tableHeader(this.getHeaderInfo()));
+
+			},
+			
+			handleEmptyTable: function(table$){
+				table$.append(this.template.emptyTable({message: this.emptyTableMessage}));
+			},
+			
+			shouldProcessRow: function(model){
+				return true;
+			},
+			
+			render : function() {
+				var that = this;
+				var template$ = this.getTable();
+				
+				
+				var rowcount = 0;
+				var rows = [];
+
+				this.collection.each(function(model) {
+					if (!that.shouldProcessRow(model)){return;}
+					var row = that.createNewRow(model);
+					rows.push(row.el);
+					rowcount++;
+				});
+				
+				if (rowcount === 0){
+					this.handleEmptyTable(template$);
+					
+				} else {
+					template$.find(".rowContainer").first().prepend(rows);
+				}
+				
+				this.$el.html(template$);
+				
+				this.updateColWidths();
+				this.resizeColumns();
+				
+				this.$el.trigger("render");
+				return this;
+
+			},
+			
 			getHeaderInfo: function(){
 				var headers = this.tableConfig.where({visible: true});
 				var arrHeaders = [];
@@ -142,30 +162,6 @@ OpenGeoportal.Views.CartTable = Backbone.View
 				return {headers: arrHeaders};
 			},
 			
-			render : function() {
-				var that = this;
-				this.$el.html(this.template.cartTable(this.getHeaderInfo()));
-				var rows = 0;
-				
-				
-				this.collection.each(function(model) {
-					
-					that.renderRow(model);
-					rows ++;
-
-				});
-				
-
-				if (rows === 0){
-					this.$el.append(this.template.emptyTable({message: "No data layers have been added to the cart."}));
-					
-				}
-				
-				this.updateColWidths();
-				this.resizeColumns();
-				return this;
-
-			},
 			updateColWidths: function(){
 				var that = this;
 				this.tableConfig.each(
@@ -179,6 +175,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 			// dynamically size the table depending on visible columns & the width of
 			// the container
 			adjustColumnSizes: function() {
+
 				/*
 				 * determine which fields are showing, set widths from header object if
 				 * they add up to the total width, we're done. otherwise we need to
@@ -204,7 +201,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 					fixedWidth += model.get("width") + extrawidth;
 				});
 				var remainingWidth = this.$el.parent().width()
-						- fixedWidth;
+						- fixedWidth - OpenGeoportal.Utility.getScrollbarWidth();
 
 				// at this point, remainingWidth must be a positive value. make sure
 				// minWidth of the panel is set to ensure this.
@@ -300,7 +297,6 @@ OpenGeoportal.Views.CartTable = Backbone.View
 
 				this.updateColWidths();
 				
-
 			},
 			
 			resizeColumns: function() {
@@ -443,39 +439,6 @@ OpenGeoportal.Views.CartTable = Backbone.View
 						});
 			},
 
-			addSharedLayers: function() {
-				if (OpenGeoportal.Config.shareIds.length > 0) {
-					var solr = new OpenGeoportal.Solr();
-					var that = this;
-					solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds,
-							function(){that.getLayerInfoSuccess.apply(that, arguments);}, 
-							function(){that.getLayerInfoError.apply(that, arguments);});
-					return true;
-				} else {
-					return false;
-				}
-			},
-
-			getLayerInfoSuccess: function(data) {
-
-				var arr = this.solrToCollection(data);
-				this.collection.add(arr);
-				this.previewed.add(arr);
-				this.previewed.each(function(model){
-					model.set({previewed: "on"});
-				});
-
-				jQuery(document).trigger("map.zoomToLayerExtent", {
-					bbox : OpenGeoportal.Config.shareBbox
-				});
-				// jQuery("#tabs").tabs("option", "active", 1);
-
-			},
-
-			getLayerInfoJsonpError:function() {
-				throw new Error(
-						"The attempt to retrieve layer information from layerIds failed.");
-			},
 			// converts solr response object to backbone models
 			solrToCollection: function(dataObj) {
 				// dataObj is a Javascript object (usually) returned by Solr
@@ -505,6 +468,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 				});
 				return arrModels;
 			},
+			
 			addColumns: function(tableConfigCollection) {
 				var that = this;
 				tableConfigCollection
@@ -521,7 +485,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 									width : 10,
 									modelRender : function(model) {
 										var showControls = model.get("showControls");
-										return that.controls
+										return that.tableControls
 												.renderExpandControl(showControls);
 									}
 
@@ -538,7 +502,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 										width : 21,
 										modelRender : function(model) {
 											
-											return that.controls.renderDownloadControl(model.get("isChecked"));
+											return that.tableControls.renderDownloadControl(model.get("isChecked"));
 											
 										}
 									},
@@ -555,7 +519,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 										width : 30,
 										modelRender : function(model) {
 											var dataType = model.get("DataType");
-											return that.controls.renderTypeIcon(dataType);
+											return that.tableControls.renderTypeIcon(dataType);
 										}
 
 									}, {
@@ -622,7 +586,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 										columnClass : "colDate",
 										modelRender : function(model) {
 											var date = model.get("ContentDate");
-											return that.controls.renderDate(date);
+											return that.tableControls.renderDate(date);
 										}
 
 									}, {
@@ -638,7 +602,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 										width : 24,
 										modelRender : function(model) {
 											var repository = model.get("Institution");
-											return that.controls.renderRepositoryIcon(repository);
+											return that.tableControls.renderRepositoryIcon(repository);
 
 										}
 
@@ -662,7 +626,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 									columnClass : "colMetadata",
 									width : 30,
 									modelRender : function(model) {
-										return that.controls.renderMetadataControl();
+										return that.tableControls.renderMetadataControl();
 									}
 								},
 								{
@@ -706,7 +670,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 											canLogin = loginModel.canLoginLogic(institution);
 										} 
 
-										return that.controls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
+										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
 									}
 								} ]);
 			},
@@ -716,14 +680,7 @@ OpenGeoportal.Views.CartTable = Backbone.View
 				var that = this;
 				var tableConfigCollection = new OpenGeoportal.TableConfig();
 				this.addColumns(tableConfigCollection);
-				tableConfigCollection.listenTo(tableConfigCollection, "change:visible",
-						function() {
-							that.toggleColumn.apply(that, arguments);
-						});
-				tableConfigCollection.listenTo(tableConfigCollection, "change:width",
-						function() {
-							//that.adjustColumnSizes.apply(that, arguments);
-						});
+
 				return tableConfigCollection;
 			}
 

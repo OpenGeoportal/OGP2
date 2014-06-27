@@ -146,9 +146,7 @@ OpenGeoportal.MapController = function() {
 				panHand ]);
 
 		var zoomBar = new OpenLayers.Control.ModPanZoomBar();
-		var scaleLine = new OpenLayers.Control.ScaleLine({
-			geodesic : true
-		});
+		var scaleLine = new OpenLayers.Control.ScaleLine();
 
 		var attribution = new OpenLayers.Control.Attribution();
 		
@@ -196,9 +194,7 @@ OpenGeoportal.MapController = function() {
 			projection : new OpenLayers.Projection("EPSG:3857"),
 			maxResolution : 2.8125,
 			maxExtent : mapBounds,
-			//minZoomLevel: 1,
-			//maxZoomLevel: 17,
-			//numZoomLevels: 16,
+			numZoomLevels: 19,
 			units : "m",
 			zoom : initialZoom,
 			controls : controls
@@ -210,8 +206,14 @@ OpenGeoportal.MapController = function() {
 
 		// div defaults to 0 height for certain doc-types; we want the map to
 		// fill the parent container
-		jQuery('#' + this.mapDiv).height("512px");
-
+		var initialHeight;
+		if (initialZoom === 1){
+			initialHeight = 512;
+		} else {
+			initialHeight = jQuery("#" + this.containerDiv).parent().height();
+		}
+		jQuery('#' + this.mapDiv).height(initialHeight).width(jQuery("#" + this.containerDiv).parent().width());
+		
 		// attempt to reload tile if load fails
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
 		OpenLayers.ImgPath = "resources/media/";
@@ -279,45 +281,31 @@ OpenGeoportal.MapController = function() {
 
 	};
 
+
 	/**
 	 * register event handlers for the map
 	 */
+	
+	this.moveEventId = null;
+	
 	this.registerMapEvents = function() {
 		var that = this;
 		// register events
-		jQuery('#' + this.mapDiv).resize(function() {
+		
+		jQuery(document).on("container.resize", function(e, data) {
+			jQuery(".olMap").height(Math.max(data.ht, data.minHt));
+			jQuery(".olMap").width(Math.max(data.wd, data.minWd));
 			that.updateSize();
-			if (parseInt(jQuery("#" + that.mapDiv).width()) >= 1024) {
-				if (that.zoom == 0) {
-					that.zoomTo(1);
-				}
-			}
 		});
+		
 
 		// OpenLayers event
+	
 		this.events.register('zoomend', this, function() {
-			var zoomLevel = that.getZoom();
-			// console.log(zoomLevel);
-			var maxZoom = that.basemaps.findWhere({
-				selected : true
-			}).get("zoomLevels");
+			var zoomLevel = that.getZoom();		
+			
+			that.basemaps.checkZoom(zoomLevel);
 
-			// need to add logic to go back to original basemap type when user
-			// zooms back out
-			if (zoomLevel >= (maxZoom - 1)) {
-				that.basemaps.findWhere({
-					name : "googleHybrid"
-				}).set({
-					selected : true
-				});
-				that.zoomTo(that.getZoom());
-			} else {
-				/*
-				 * if (that.getBackgroundType() !==
-				 * that.getCurrentBackgroundMap()){
-				 * that.changeBackgroundMap(that.getCurrentBackgroundMap()); }
-				 */
-			}
 			var mapHeight = Math.pow((zoomLevel + 1), 2) / 2 * 256;
 			var containerHeight = jQuery("#" + that.mapDiv).parent().parent()
 					.height();
@@ -329,37 +317,44 @@ OpenGeoportal.MapController = function() {
 				jQuery("#" + that.mapDiv).height(mapHeight);// calculate min and
 				// max sizes
 				that.updateSize();
+				//console.log("update map size");
 			}
-			if (zoomLevel == 0) {
+			if (zoomLevel == 1) {
 				that.setCenter(that.WGS84ToMercator(that.getSearchCenter().lon,
 						0));
 			}
-			/*
-			 * Translate the OpenLayers event to a jQuery event used by the
-			 * application
-			 * 
-			 * @fires "eventZoomEnd"
-			 */
-
-			jQuery(document).trigger('eventZoomEnd');
+			
+			
 		});
-
+		
 		// OpenLayers event
 		this.events.register('moveend', this, function() {
+			//var d = new Date();
+			//console.log("moveend: " + d.getTime());
 			var newExtent = that.getSearchExtent();
 			var newCenter = that.getSearchCenter();
 
 			/*
 			 * Translate the OpenLayers event to a jQuery event used by the
 			 * application. This is the event used to trigger a search on map
-			 * move.
+			 * move. cluster moveend events so that we don't fire too often
 			 * 
 			 * @fires "map.extentChanged"
 			 */
-			jQuery(document).trigger('map.extentChanged', {
-				mapExtent : newExtent,
-				mapCenter : newCenter
-			});
+			
+			clearTimeout(this.moveEventId);
+			
+			var trigger = function(){
+				//console.log("extentChanged triggered");
+				jQuery(document).trigger('map.extentChanged', {
+					mapExtent : newExtent,
+					mapCenter : newCenter
+				});
+			};
+			
+			this.moveEventId = setTimeout(trigger, 100);
+
+
 		});
 
 		this.bboxHandler();
@@ -418,12 +413,10 @@ OpenGeoportal.MapController = function() {
 	 **************************************************************************/
 	this.googleMapsRenderCallback = function(type) {
 		var bgMap = this.getLayersBy("basemapType", type)[0];
-		// console.log(bgMap);
 		var that = this;
+		this.render(this.mapDiv);
 		google.maps.event.addListener(bgMap.mapObject, "tilesloaded",
 				function() {
-					that.render(that.mapDiv);
-
 					// let the application know that the map is ready
 					jQuery(document).trigger("mapReady");
 					// should only fire the first time (or should
@@ -432,16 +425,15 @@ OpenGeoportal.MapController = function() {
 							"tilesloaded");
 
 					// Make sure Google logos, etc are displayed
-					jQuery("div.olLayerGooglePoweredBy").children().css(
-							"display", "block");
+					jQuery("div.olLayerGooglePoweredBy").children()
+						.css("display", "block");
 					// find the google logo and add class ".googleLogo",
 					// so we can make sure it always shows
-					jQuery("[id$=GMapContainer]").find(
-							'[title*="Click to see this area"]').parent()
+					jQuery("[id$=GMapContainer]").find('[title*="Click to see this area"]').parent()
 							.addClass("googleLogo");
 
 					// display the map once the google tiles are loaded
-					jQuery("#geoportalMap").fadeTo("slow", 1);
+					jQuery("#" + that.containerDiv).fadeTo("slow", 1);
 
 				});
 	};
@@ -449,13 +441,16 @@ OpenGeoportal.MapController = function() {
 	this.initialRenderCallback = function(type) {
 		// console.log("osm initial render callback");
 		var that = this;
+		this.render(this.mapDiv);
+
 		var bgMap = this.getLayersBy("basemapType", type)[0];
 		bgMap.events.register(bgMap.mapObject, "loadend", function() {
 			// console.log("Tiles loaded");
-			that.render(that.mapDiv);
+			// let the application know that the map is ready
+			jQuery(document).trigger("mapReady");
 			// really should only fire the first time
 			bgMap.events.unregister(bgMap.mapObject, "loadend");
-			jQuery("#geoportalMap").fadeTo("slow", 1);
+			jQuery("#" + that.containerDiv).fadeTo("slow", 1);
 		});
 	};
 
@@ -504,6 +499,10 @@ OpenGeoportal.MapController = function() {
 			layer.setVisibility(true);
 		}
 		jQuery("div.olLayerGooglePoweredBy").children().css("display", "block");
+		
+		if (model.has("secondaryZoomMap")){
+			model.collection.checkZoom(this.getZoom());
+		}
 	};
 
 	this.bingMapsShow = function(model) {
@@ -536,13 +535,14 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			subType : google.maps.MapTypeId.TERRAIN,
 			type : "Google",
-			zoomLevels : 22,
+			zoomLevels : 15,
+			secondaryZoomMap: "googleStreets",
 			getLayerDefinition : that.googleMapsLayerDefinition,
-			showOperations : function(model) {
-				that.googleMapsShow(model);
+			showOperations : function() {
+				that.googleMapsShow(this);
 			},
-			hideOperations : function(model) {
-				that.baseMapHide(model);
+			hideOperations : function() {
+				that.baseMapHide(this);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display",
 						"none");
 			},
@@ -555,13 +555,13 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			subType : google.maps.MapTypeId.HYBRID,
 			type : "Google",
-			zoomLevels : 22,
+			zoomLevels : 21,
 			getLayerDefinition : that.googleMapsLayerDefinition,
-			showOperations : function(model) {
-				that.googleMapsShow(model);
+			showOperations : function() {
+				that.googleMapsShow(this);
 			},
-			hideOperations : function(model) {
-				that.baseMapHide(model);
+			hideOperations : function() {
+				that.baseMapHide(this);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display",
 						"none");
 			},
@@ -574,13 +574,13 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			subType : google.maps.MapTypeId.SATELLITE,
 			type : "Google",
-			zoomLevels : 22,
+			zoomLevels : 21,
 			getLayerDefinition : that.googleMapsLayerDefinition,
-			showOperations : function(model) {
-				that.googleMapsShow(model);
+			showOperations : function() {
+				that.googleMapsShow(this);
 			},
-			hideOperations : function(model) {
-				that.baseMapHide(model);
+			hideOperations : function() {
+				that.baseMapHide(this);
 				jQuery("div.olLayerGooglePoweredBy").children().css("display",
 						"none");
 			},
@@ -593,13 +593,13 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			subType : google.maps.MapTypeId.ROADMAP,
 			type : "Google",
-			zoomLevels : 22,
+			zoomLevels : 21,
 			getLayerDefinition : that.googleMapsLayerDefinition,
-			showOperations : function(model) {
-				that.googleMapsShow(model);
+			showOperations : function() {
+				that.googleMapsShow(this);
 			},
-			hideOperations : function(model) {
-				that.baseMapHide(model);
+			hideOperations : function() {
+				that.baseMapHide(this);
 
 				jQuery("div.olLayerGooglePoweredBy").children().css("display",
 						"none");
@@ -613,7 +613,7 @@ OpenGeoportal.MapController = function() {
 			selected : false,
 			type : "osm",
 			subType : "osm",
-			zoomLevels : 22,
+			zoomLevels : 19,
 			getLayerDefinition : function() {
 				var attribution = "Tiles &copy; <a href='http://openstreetmap.org/'>OpenStreetMap</a> contributors, CC BY-SA &nbsp;";
 				attribution += "Data &copy; <a href='http://openstreetmap.org/'>OpenStreetMap</a> contributors, ODbL";
@@ -629,11 +629,11 @@ OpenGeoportal.MapController = function() {
 				return bgMap;
 			},
 
-			showOperations : function(model) {
+			showOperations : function() {
 				// see if there is a basemap layer of the specified type
-				if (that.getLayersBy("basemapType", model.get("type")).length === 0) {
+				if (that.getLayersBy("basemapType", this.get("type")).length === 0) {
 					// add the appropriate basemap layer
-					var newLayer = model.get("getLayerDefinition").call(model);
+					var newLayer = this.get("getLayerDefinition").call(this);
 					var displayLayers = that.layers; // getLayerIndex
 					var highestBasemap = 0;
 					for ( var i in displayLayers) {
@@ -648,14 +648,14 @@ OpenGeoportal.MapController = function() {
 					that.addLayer(newLayer);
 					that.setLayerIndex(newLayer, highestBasemap + 1);
 				} else {
-					var layer = that.getLayersBy("basemapType", model
+					var layer = that.getLayersBy("basemapType", this
 							.get("type"))[0];
 					layer.setVisibility(true);
 				}
 
 			},
-			hideOperations : function(model) {
-				that.baseMapHide(model);
+			hideOperations : function() {
+				that.baseMapHide(this);
 			},
 			initialRenderCallback : that.initialRenderCallback
 		};
@@ -720,7 +720,7 @@ OpenGeoportal.MapController = function() {
 		};
 
 		// Bing maps implementation isn't quite ready for prime time
-		var models = [ googlePhysical, googleHybrid, googleSat, osm ];
+		var models = [ googlePhysical, googleHybrid, googleStreets, googleSat, osm ];
 
 		// create an instance of the basemap collection
 		var collection = new OpenGeoportal.BasemapCollection(models);
@@ -1133,7 +1133,7 @@ OpenGeoportal.MapController = function() {
 		};
 
 		// check for a proxy here
-		var proxy = OpenGeoportal.Config.Proxies.getWMSProxy(layerModel
+		var proxy = OpenGeoportal.Config.getWMSProxy(layerModel
 				.get("Institution"), layerModel.get("Access"));
 		if (proxy) {
 			layerModel.set({
@@ -1397,28 +1397,15 @@ OpenGeoportal.MapController = function() {
 	 * @param {number}
 	 *            resolution
 	 */
-	this.saveImage = function(imageFormat, resolution) {
+	this.saveImage = function() {
 		// TODO: add html5 canvas stuff...may have to wait for OL3?
-		imageFormat = 'png';
-		var format;
-		switch (imageFormat) {
-		case 'jpeg':
-			format = "image/jpeg";
-			break;
-		case 'png':
-			format = "image/png";
-			break;
-		case 'bmp':
-			format = "image/bmp";
-			break;
-		default:
-			throw new Error("This image format (" + imageFormat
-					+ ") is unavailable.");
-		}
+		var request = this.createImageRequest();
+		this.requestQueue.add(request);
+	};
+	
+	this.createImageRequest = function(){
 
-		var requestObj = {
-			requestType : "image"
-		};
+		var requestObj = {};
 		requestObj.layers = [];
 
 		for ( var layer in this.layers) {
@@ -1467,19 +1454,16 @@ OpenGeoportal.MapController = function() {
 		var extent = this.getVisibleExtent();
 		var bbox = extent.toBBOX();
 
-		requestObj.format = format;
 		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:900913';
+		requestObj.srs = 'EPSG:3857';
 		var offset = this.getMapOffset();
 		var ar = this.getAspectRatio(extent);
-		// NOTE: this doesn't really work... should get appropriate width and
-		// height based on bbox NB (CB 2/1/2014): not sure what this note
-		// means...
+
 		var currSize = this.getCurrentSize();
 		requestObj.width = currSize.w - offset.x;
 		requestObj.height = parseInt(requestObj.width / ar);
 		// add the request to the queue
-		this.requestQueue.createRequest(requestObj);
+		return new OpenGeoportal.Models.ImageRequest(requestObj);
 	};
 
 	this.processMetadataSolrResponse = function(data) {
@@ -1535,15 +1519,16 @@ OpenGeoportal.MapController = function() {
 													jQuery(this)
 															.attr('title',
 																	attributeDescription);
-													layerAttrs
-															.findWhere(
+													var attr = layerAttrs.findWhere(
 																	{
 																		attributeName : attributeName
-																	})
-															.set(
+																	});
+													if (typeof attr != "undefined"){
+															attr.set(
 																	{
 																		description : attributeDescription
 																	});
+													}
 													return;
 												}
 											});

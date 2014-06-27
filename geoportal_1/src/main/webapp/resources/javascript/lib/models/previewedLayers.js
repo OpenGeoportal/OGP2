@@ -165,7 +165,7 @@ OpenGeoportal.Attributes = Backbone.Collection.extend({
 OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	model : OpenGeoportal.Models.PreviewLayer,
 	initialize : function() {
-		this.listenTo(this, "change:preview", this.changePreview);
+		this.listenTo(this, "change:preview add", this.changePreview);
 		this.listenTo(this, "change:graphicWidth change:color",
 				this.changeLayerStyle);
 		this.listenTo(this, "change:opacity", this.changeLayerOpacity);
@@ -213,16 +213,12 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		var preview = model.get("preview");
 		var layerId = model.get("LayerId");
 		if (preview === "on") {
-			jQuery(document).trigger("view.previewOn", {
-				LayerId : layerId
-			});// show correct state in table control
+
 			jQuery(document).trigger("previewLayerOn", {
 				LayerId : layerId
 			});// show layer on map
 		} else {
-			jQuery(document).trigger("view.previewOff", {
-				LayerId : layerId
-			});
+
 			jQuery(document).trigger("previewLayerOff", {
 				LayerId : layerId
 			});
