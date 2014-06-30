@@ -169,9 +169,31 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		this.listenTo(this, "change:graphicWidth change:color",
 				this.changeLayerStyle);
 		this.listenTo(this, "change:opacity", this.changeLayerOpacity);
+		this.listenTo(this, "change:zIndex", this.changeZIndex);
 		this.listenTo(this, "change:getFeature", this.changeGetFeatureState);
 
 	},
+	
+	comparator: function(model1, model2){
+		var getComparison = function(model){
+			var comp = 0;
+			if (model.has("zIndex")){
+				comp = model.get("zIndex");
+			}
+			return comp;
+		};
+		
+		var val1 = getComparison(model1);
+		var val2 = getComparison(model2);
+		if (val1 > val2){
+			return -1;
+		} else if (val2 > val1){
+			return 1;
+		} else {
+			return 0;
+		}	
+	},
+	
 	changeLayerStyle : function(model, val, options) {
 		var layerId = model.get("LayerId");
 		// tell map to change the linewidth/pointsize/borderwidth for this layer
@@ -181,6 +203,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 			LayerId : layerId
 		});
 	},
+	
 	changeLayerOpacity : function(model, val, options) {
 		var value = model.get("opacity");
 		var layerId = model.get("LayerId");
@@ -190,6 +213,19 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 			opacity : value
 		});
 	},
+	
+	changeZIndex : function(model, val, options) {
+		this.sort();
+
+		var value = model.get("zIndex");
+		var layerId = model.get("LayerId");
+		// tell map to change the zIndex for this layer
+		jQuery(document).trigger("map.zIndexChange", {
+			LayerId : layerId,
+			zIndex : value
+		});
+	},
+	
 	changeGetFeatureState : function(model, val, options) {
 		var value = model.get("getFeature");
 		var layerId = model.get("LayerId");
@@ -213,7 +249,6 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		var preview = model.get("preview");
 		var layerId = model.get("LayerId");
 		if (preview === "on") {
-
 			jQuery(document).trigger("previewLayerOn", {
 				LayerId : layerId
 			});// show layer on map
