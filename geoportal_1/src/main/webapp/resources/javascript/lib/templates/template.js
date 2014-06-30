@@ -221,11 +221,23 @@ OpenGeoportal.Template = function() {
 
 	this.webServicesDialogContent = _.template(webServicesDialogContentHtml);
 	
-
+	var doNotShowHtml = '<label><input type="checkbox" class="doNotShow" />Do not show again</label>';
+	
+	var restrictedWarningHtml = '<span>This layer is restricted by licensing agreement to the <%= repository %> community. </span><%= localeWarning %><br /><span class="ignoreWarning">' + doNotShowHtml + '</span>';
+	this.restrictedWarning = _.template(restrictedWarningHtml);
+	
+	var restrictedWarningLocalHtml = '<span class="notice">Restricted layers can be added to the Cart, but you must login before you can preview or download restricted layers.</span>';
+	this.restrictedWarningLocal = _.template(restrictedWarningLocalHtml);
+	
+	var restrictedWarningExternalHtml = '<span class="notice">Restricted layers can be added to the Cart here, but you must use <%= repository %>\'s site and login to preview or download restricted layers.</span>';
+	this.restrictedWarningExternal = _.template(restrictedWarningExternalHtml);
+	
+	
 	var infoBubbleHtml = '<div id="<%= elId %>" class="infoBubbleBackground triangle-isoscelesBackground '
 			+ '<%= arrowDirection %>Background"><div class="infoBubbleText triangle-isosceles '
 			+ '<%= arrowDirection %>"><button class="closeBubble button"></button><%= content %>' 
-			+ '<label><input type="checkbox"/>Do not show this screen again</label></div></div>';
+			+ doNotShowHtml
+			+ '</div></div>';
 	this.infoBubble = _.template(infoBubbleHtml);
 	
 	var welcomeTextHtml = '<div id="welcomeText" class="welcomeText">'
