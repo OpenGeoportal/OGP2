@@ -60,7 +60,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 			// "model" to be called
 			var that = this;
 			this.$el.css("opacity", ".5");
-			var to$ = jQuery(".previewedLayers").find(".tableRow").last();
+			var to$ = jQuery(".previewedLayers").find(".tableRow").first();
 			if (to$.length === 0){
 				to$ = jQuery(".previewedLayers");
 			}
@@ -77,7 +77,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 				update.showControls = true;
 				var that = this;
 				this.$el.css("opacity", ".5");
-				var to$ = jQuery(".previewedLayers").find(".tableRow").last();
+				var to$ = jQuery(".previewedLayers").find(".tableRow").first();
 				if (to$.length === 0){
 					to$ = jQuery(".previewedLayers");
 				}
