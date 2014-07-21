@@ -273,7 +273,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				} else {
 					// create the clip control
 					html += this.template.clipControl({
-						id : "downloadClipControl",
+						elId : "downloadClipControl",
 						isClipped : this.preferences.get("isClipped")
 					});
 
@@ -281,10 +281,9 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 					jQuery(document).on("change", "#downloadClipControl",
 							function() {
-								this.preferences.set({
+								that.preferences.set({
 									isClipped : jQuery(this).is(":checked")
 								});
-
 							});
 				}
 
