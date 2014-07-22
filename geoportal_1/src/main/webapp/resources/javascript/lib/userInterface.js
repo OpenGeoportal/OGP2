@@ -23,6 +23,11 @@ OpenGeoportal.Structure = function() {
 	 */
 
 	this.init = function() {
+		this.WelcomeBubbleAttr = "welcomeBubble";
+		this.DirectionsBubble1Attr = "directionsBubble";
+		
+		this.infoBubbleAttrs = [this.WelcomeBubbleAttr, this.DirectionsBubble1Attr];
+		
 		this.resizeWindowHandler();
 
 		this.searchToggleHandler();
@@ -45,20 +50,40 @@ OpenGeoportal.Structure = function() {
 	};
 
 	this.resetHandler = function() {
+		var that = this;
 		jQuery(".reset").on("click", function() {
 			analytics.track("Interface", "Reset Page");
+			
+			var cartAuthWarningArr = ["showAuthenticationWarningExternal", "showAuthenticationWarningLocal"];
+			OpenGeoportal.Utility.LocalStorage.resetItems(cartAuthWarningArr);
+			that.resetShowInfo();
+			
+			
 			window.location = window.location;
 		});
 
 	};
 
+	//clear info bubble prefs from local storage
+	this.resetShowInfo = function(){
+		OpenGeoportal.Utility.LocalStorage.resetItems(this.infoBubbleAttrs);
+	},
+	
+	this.doShowInfo = function(key){
+		return OpenGeoportal.Utility.LocalStorage.getBool(key, true);
+	},
+	
+
+	
 	this.introFlow = function(hasSharedLayers) {
-		if (!hasSharedLayers) {
-			this.showInfoBubble();
+		var bubble1 = "welcomeBubble";
+
+		if (this.doShowInfo(bubble1) && !hasSharedLayers) {
+			var $bubble1 = this.showInfoBubble(bubble1);
 
 			var that = this;
 			jQuery(document).one("fireSearch", function(event) {
-				jQuery("#welcomeBubble").hide({
+				$bubble1.hide({
 					effect : "drop",
 					duration : 250,
 					//queue : false,
@@ -67,10 +92,13 @@ OpenGeoportal.Structure = function() {
 							mode : "open"
 						});
 						jQuery(document).one("panelOpen", function() {
-							that.showDirectionsBubble();
-							jQuery(document).one("click focus", function() {
-								jQuery("#directionsBubble").hide("drop");
-							});
+							var bubble2 = "directionsBubble";
+							if (that.doShowInfo(bubble2)){
+								var $bubbleDir = that.showDirectionsBubble_1(bubble2);
+								jQuery(document).one("click focus", function() {
+									$bubbleDir.hide("drop");
+								});
+							}
 						});
 					}
 				});
@@ -78,21 +106,26 @@ OpenGeoportal.Structure = function() {
 			});
 
 		} else {
-			// if there are shared layers, don't show the infobubble intro
+			// if there are shared layers or user has selected "do not show again", don't show the infobubble intro
 			// open the left column panel
 			this.panelView.model.set({
 				mode : "open"
 			});
-			// set tab to the "cart" tab
-			jQuery("#tabs").tabs({
-				active : 1
-			});
+			
+			if (hasSharedLayers){
+				// set tab to the "cart" tab if there are shared layers
+				jQuery("#tabs").tabs({
+					active : 1
+				});
+			} else {
+				//fire a search
+				jQuery(document).trigger("fireSearch");
+			}
 
 		}
 	};
 
 	this.initializeTabs = function() {
-		var that = this;
 		jQuery("#tabs").tabs(
 				{
 					active : 0,
@@ -177,20 +210,16 @@ OpenGeoportal.Structure = function() {
 
 
 	this.resizeWindowHandler = function() {
-		var rollRightWidth = jQuery("#roll_right").width() + 1;// border
 
 		var minHeight = parseInt(jQuery("#container").css("min-height"));
 		var minWidth = parseInt(jQuery("#container").css("min-width"));
 		
-		var that = this;
 		var resizeElements = function() {
 			var headerHeight = jQuery("#header").height();
 			var footerHeight = jQuery("#footer").height();
 			var fixedHeights = headerHeight + footerHeight + 4;
 			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
-			//jQuery("#map").width(newContainerWidth);
-			// if left_col is visible. else other siblings width update map
-			// size...
+
 			var newContainerHeight = Math.max(jQuery(window).height()
 					- fixedHeights, minHeight);
 			jQuery("#container").height(newContainerHeight).width(newContainerWidth);
@@ -351,7 +380,7 @@ OpenGeoportal.Structure = function() {
 		}
 	};
 
-	this.showInfoBubble = function() {
+	this.showInfoBubble = function(elId) {
 		var params = {
 			"height" : 335,
 			"width" : 700,
@@ -359,10 +388,10 @@ OpenGeoportal.Structure = function() {
 			"left" : 269,
 			"arrow" : "top"
 		};
-		this.infoBubble("welcomeBubble", this.template.welcomeText(), params);
+		return this.infoBubble(elId, this.template.welcomeText(), params);
 	};
 
-	this.showDirectionsBubble = function() {
+	this.showDirectionsBubble_1 = function(elId) {
 
 		var params = {
 			"height" : 250,
@@ -371,7 +400,7 @@ OpenGeoportal.Structure = function() {
 			"left" : 520,
 			"arrow" : "left"
 		};
-		this.infoBubble("directionsBubble", this.template.directionsText(), params);
+		return this.infoBubble(elId, this.template.directionsText(), params);
 	};
 
 	this.showDowntimeNotice = function() {
@@ -412,6 +441,13 @@ OpenGeoportal.Structure = function() {
 			infoBubble$.fadeOut("slow");
 		}).fadeIn("slow");
 
+		infoBubble$.on("click", ".doNotShow", function(){
+			var show = true;
+			if (jQuery(this).is("input:checked")){
+				show = false;
+			}
+			OpenGeoportal.Utility.LocalStorage.setBool(bubbleId, show);
+		});
 		return infoBubble$;
 	};
 
