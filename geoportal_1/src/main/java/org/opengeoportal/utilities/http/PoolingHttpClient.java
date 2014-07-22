@@ -217,10 +217,10 @@ import org.apache.http.util.EntityUtils;
 	        			}
 	        		}
 	        		logger.info("credential info");
-	        		logger.info(username);
-	        		logger.info(password);
-	        		logger.info(domain);
-	        		logger.info(Integer.toString(port));
+	        		//logger.info(username);
+	        		//logger.info(password);
+	        		//logger.info(domain);
+	        		//logger.info(Integer.toString(port));
 	        		
 	        		credsProvider.setCredentials(
 	        				new AuthScope(domain, port),

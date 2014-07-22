@@ -59,7 +59,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 			model : OpenGeoportal.Models.CartLayer,
 			
 			initialize : function() {
-
+				this.template = OpenGeoportal.ogp.template;
 				this.listenTo(this, "invalid", function(model, error) {
 					console.log(error);
 				});
@@ -74,14 +74,17 @@ OpenGeoportal.CartCollection = Backbone.Collection
 			},
 			
 			addLayer : function(model, options) {
-
 				// check the login object
-				var hasAccess = OpenGeoportal.ogp.appState.get("login").model
-						.hasAccess(model);
+				var loginModel = OpenGeoportal.ogp.appState.get("login").model; 
+				var hasAccess = loginModel.hasAccess(model);
 
 				if (!hasAccess) {
-					this.addWithWarning(model);
-					// alert("Must log in to preview or download this layer.");
+					var canLogin = loginModel.canLogin(model);
+					if (this.showAuthWarning(model, canLogin)){
+						this.addWithWarning(model, canLogin);
+					} else {
+						this.add(model);
+					}
 
 				} else {
 					this.add(model);
@@ -107,62 +110,34 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				}
 			},
 
-			ignoreAuthenticationWarning : {
-				local : false,
-				external : false
+			ShowWarningId: "showAuthenticationWarning",
+			
+			getLocalProperty: function(){
+				return this.ShowWarningId + "Local";
+
+			},
+			
+			getExternalProperty: function(){
+				return this.ShowWarningId + "External";
+
+			},
+			
+			showAuthWarning: function(model, canLogin){
+				var showDialog = true;
+				if (canLogin) {
+					//check local storage for val;
+					showDialog = OpenGeoportal.Utility.LocalStorage.getBool(this.getLocalProperty(), true);
+				} else {
+					//check local storage for val;
+					showDialog = OpenGeoportal.Utility.LocalStorage.getBool(this.getExternalProperty(), true);
+				}
+
+				return showDialog;
 			},
 
-			addWithWarning : function(layerModel) {
-				var ignoreWarning = false;
-				if (typeof options !== "undefined"
-						&& typeof options.ignoreWarning != "undefined") {
-					ignoreWarning = options.ignoreWarning;
-				}
-				var canLogin = OpenGeoportal.ogp.appState.get("login").model
-						.canLogin(layerModel);
-
-				var institution = layerModel.get("Institution");
-				var ignoreWarningId = "ignoreAuthenticationWarning";
-				var disposition;
-				var warningMessage = '<span>This layer is restricted by licensing agreement to the '
-						+ institution + ' community. </span>';
+			
+			addWithWarning : function(layerModel, canLogin) {
 				var that = this;
-
-				if (canLogin) {
-					disposition = "local";
-
-					warningMessage += '<span class="notice">Restricted layers can be added to the Cart, but you must login before you can preview or download restricted layers.</span>';
-
-				} else {
-					disposition = "external";
-
-					warningMessage += '<span class="notice">Restricted layers can be added to the Cart here, but you must use '
-							+ institution;
-					warningMessage += "'s site and login to preview or download restricted layers.</span>";
-
-				}
-
-				warningMessage += "<br />";
-				warningMessage += '<span class="ignoreWarning"><input id="'
-						+ ignoreWarningId
-						+ '" type="checkbox" /><label for="ignoreAuthenticationWarning">Don\'t show this message again.</span>';
-
-				if (this.ignoreAuthenticationWarning[disposition]) {
-					this.add(layerModel);
-					return;
-				}
-
-				jQuery(document)
-						.on(
-								"change",
-								"#" + ignoreWarningId,
-								function() {
-									that.ignoreAuthenticationWarning[disposition] = jQuery(
-											this).is(":checked");
-								});
-
-				var dialog$ = OpenGeoportal.ogp.widgets.genericModalDialog(warningMessage, "Restricted Layer");
-
 				var addToCartFunction = function() {
 					that.add(layerModel);
 					jQuery(this).dialog('close');
@@ -202,22 +177,40 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				};
 
 				var cancelFunction = function() {
-					// that.IgnoreAuthenticationWarning[disposition] =
-					// jQuery("#" + ignoreWarningId).is(":checked");
+
 					jQuery(this).dialog('close');
 				};
 
+				var institution = layerModel.get("Institution");
+				var localeWarning = "";
 				var buttons = {};
+				var lsProperty = "";
+
 				if (canLogin) {
+					localeWarning = this.template.restrictedWarningLocal();
 					buttons["Login & Add"] = loginAndAddFunction;
 					buttons["Add Only"] = addToCartFunction;
 					buttons["Cancel"] = cancelFunction;
+					lsProperty = this.getLocalProperty();
 				} else {
+					localeWarning = this.template.restrictedWarningExternal({repository: institution});
 					buttons["Add"] = addToCartFunction;
 					buttons["Cancel"] = cancelFunction;
+					lsProperty = this.getExternalProperty();
 				}
+				
+				var warningMessage = this.template.restrictedWarning({repository: institution, localeWarning: localeWarning});
+				var dialog$ = OpenGeoportal.ogp.widgets.genericModalDialog(warningMessage, "Restricted Layer");
+				
+				dialog$.on("click", ".doNotShow", function(){
+					var show = true;
+					if (jQuery(this).is("input:checked")){
+						show = false;
+					}
 
-				//var dialog$ = jQuery('#' + divId);
+					OpenGeoportal.Utility.LocalStorage.setBool(lsProperty, show);
+				});
+		
 				dialog$.dialog({
 					width : 535,
 					buttons : buttons
