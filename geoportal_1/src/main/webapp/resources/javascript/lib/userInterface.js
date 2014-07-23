@@ -217,7 +217,7 @@ OpenGeoportal.Structure = function() {
 		var resizeElements = function() {
 			var headerHeight = jQuery("#header").height();
 			var footerHeight = jQuery("#footer").height();
-			var fixedHeights = headerHeight + footerHeight + 4;
+			var fixedHeights = headerHeight + footerHeight + 3;
 			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
 
 			var newContainerHeight = Math.max(jQuery(window).height()
@@ -243,7 +243,7 @@ OpenGeoportal.Structure = function() {
 		var stepTime = 50;
 		var thisId = jQuery(thisObj).attr('id');
 		var hght = jQuery(".searchFormRow").height();
-		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar").addClass("slideVertical");
+		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
 		
 		if (thisId === 'moreSearchOptions') {
 
