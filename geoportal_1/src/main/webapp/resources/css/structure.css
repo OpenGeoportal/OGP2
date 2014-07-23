@@ -10,11 +10,6 @@ This file has been heavily modified from the original template
 	outline: none;
 }
 
-/*html, body {
-    height: 100%;
-    margin: 0;
-    width: 100%;
-}*/
 body {
 	text-align: left;
 	margin: 0;
@@ -353,9 +348,11 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 }
 
 #tabs {
+	border: none;
 	border-right: #999 solid 1px;
 	z-index: 1001;
 	min-height: 100%;
+	border-radius: 0;
 }
 
 #tabs>.ui-resizable-e {
@@ -830,8 +827,9 @@ textarea:focus {
 	height: 30px;
 	background: #FFF;
 	border: #CCCCCC solid 1px;
+	border-left: none;
+	border-right: none;
 	font-size: 13px;
-	bottom: 0;
 	width: 100%;
 	min-width: 1050px;
 }
