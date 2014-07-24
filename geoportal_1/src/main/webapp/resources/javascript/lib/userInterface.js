@@ -215,16 +215,25 @@ OpenGeoportal.Structure = function() {
 		var minWidth = parseInt(jQuery("#container").css("min-width"));
 		
 		var resizeElements = function() {
+			
 			var headerHeight = jQuery("#header").height();
 			var footerHeight = jQuery("#footer").height();
 			var fixedHeights = headerHeight + footerHeight + 3;
+			var container$ = jQuery("#container");
+			
+			var oldContainerWidth = container$.width();
 			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
 
+			var oldContainerHeight = container$.height();
 			var newContainerHeight = Math.max(jQuery(window).height()
 					- fixedHeights, minHeight);
-			jQuery("#container").height(newContainerHeight).width(newContainerWidth);
 			
-			jQuery(document).trigger("container.resize", {ht: newContainerHeight, wd: newContainerWidth, minHt: minHeight, minWd: minWidth});
+			//resize the container if there is a change.
+			if ((newContainerWidth !== oldContainerWidth)||(newContainerHeight !== oldContainerHeight)){
+				container$.height(newContainerHeight).width(newContainerWidth);
+				jQuery(document).trigger("container.resize", {ht: newContainerHeight, wd: newContainerWidth, minHt: minHeight, minWd: minWidth});
+			}
+			
 		};
 		resizeElements();
 		jQuery(window).resize(resizeElements);

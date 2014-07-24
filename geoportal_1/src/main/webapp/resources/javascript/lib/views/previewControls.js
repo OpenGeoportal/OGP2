@@ -354,7 +354,6 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		var getFeature = model.get("getFeature");
 		if (getFeature) {
 			button$.removeClass(offClass).addClass(onClass);
-			jQuery(".olMap").trigger("attributeInfoOn");
 		} else {
 			button$.removeClass(onClass).addClass(offClass);
 		}
