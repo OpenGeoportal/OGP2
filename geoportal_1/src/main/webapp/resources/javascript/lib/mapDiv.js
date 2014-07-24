@@ -191,7 +191,8 @@ OpenGeoportal.MapController = function() {
 
 		var options = {
 			allOverlays : true,
-			projection : new OpenLayers.Projection("EPSG:3857"),
+			/* at least until we update our GeoServer instance */
+			projection : new OpenLayers.Projection("EPSG:900913"),
 			maxResolution : 2.8125,
 			maxExtent : mapBounds,
 			numZoomLevels: 19,
@@ -293,9 +294,21 @@ OpenGeoportal.MapController = function() {
 		// register events
 		
 		jQuery(document).on("container.resize", function(e, data) {
-			jQuery(".olMap").height(Math.max(data.ht, data.minHt));
-			jQuery(".olMap").width(Math.max(data.wd, data.minWd));
-			that.updateSize();
+
+			//update the size of the map if the container size actually changed.
+			var map$ = jQuery(".olMap");
+
+			var newHeight = Math.max(data.ht, data.minHt);
+			var oldHeight = map$.height();
+			
+			var newWidth = Math.max(data.wd, data.minWd);
+			var oldWidth = map$.width();
+			
+			if (newHeight !== oldHeight || newWidth !== oldWidth){
+				map$.height(newHeight).width(newWidth);
+				that.updateSize();
+			}
+			
 		});
 		
 
@@ -840,10 +853,9 @@ OpenGeoportal.MapController = function() {
 		var that = this;
 		jQuery(document)
 				.on(
-						"attributeInfoOn",
-						".olMap",
+						"map.attributeInfoOn",
 						function() {
-							jQuery(this).css('cursor', "crosshair");
+							jQuery(".olMap").css('cursor', "crosshair");
 							// also deactivate regular map controls
 							var zoomControl = that
 									.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
@@ -856,6 +868,20 @@ OpenGeoportal.MapController = function() {
 								panControl.deactivate();
 							}
 						});
+		jQuery(document)
+			.on(
+				"map.attributeInfoOff",
+				function() {
+					// if neither zoom or pan is active, activate pan control
+					var zoomControl = that
+							.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
+
+					var panControl = that
+							.getControlsByClass("OpenLayers.Control.Navigation")[0];
+					if (!panControl.active && !zoomControl.active) {
+						panControl.activate();
+					}
+				});
 	};
 
 	/**
@@ -1090,7 +1116,7 @@ OpenGeoportal.MapController = function() {
 
 	this.getGeodeticExtent = function() {
 		var mercatorExtent = this.getVisibleExtent();
-		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
+		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		return mercatorExtent.transform(sphericalMercator, geodetic);
 	};
@@ -1102,7 +1128,7 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.getSearchCenter = function() {
-		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
+		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		var topLeft = this.getMapOffset();
 		var width = jQuery(".olMap").width();
@@ -1471,7 +1497,7 @@ OpenGeoportal.MapController = function() {
 		var bbox = extent.toBBOX();
 
 		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:3857';
+		requestObj.srs = 'EPSG:900913';
 		var offset = this.getMapOffset();
 		var ar = this.getAspectRatio(extent);
 

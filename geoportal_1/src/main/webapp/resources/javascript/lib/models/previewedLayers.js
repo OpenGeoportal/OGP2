@@ -242,7 +242,28 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		jQuery(document).trigger(mapEvent, {
 			LayerId : layerId
 		});
+		
+		this.checkGetFeatureState();
 	},
+	
+	/**
+	 * check to see if getFeature is turned on for any layers and fire
+	 * appropriate event
+	 */
+	checkGetFeatureState : function(){
+		var gfEvent = "map.attributeInfoOff";
+		this.each(function(model){
+			if (model.get("getFeature")){
+				gfEvent = "map.attributeInfoOn";
+				return;
+			}
+		});
+
+		jQuery(document).trigger(gfEvent);
+
+
+	},
+
 
 	changePreview : function(model, val, options) {
 		// console.log(arguments);
