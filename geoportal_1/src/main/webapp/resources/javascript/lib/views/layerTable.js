@@ -142,7 +142,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				
 				this.updateColWidths();
 				this.resizeColumns();
-				
 				this.$el.trigger("render");
 				return this;
 
