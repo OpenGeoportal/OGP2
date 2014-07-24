@@ -104,7 +104,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			
 			renderHeaders: function(){
 
-				this.$el.children(".tableWrapper").children(".tableHeaders").html(this.template.tableHeader(this.getHeaderInfo()));
+				this.$el.children(".tableWrapper").children(".tableHeaders").first().replaceWith(this.template.tableHeader(this.getHeaderInfo()));
 
 			},
 			

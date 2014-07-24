@@ -1497,7 +1497,7 @@ OpenGeoportal.MapController = function() {
 		var bbox = extent.toBBOX();
 
 		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:3857';
+		requestObj.srs = 'EPSG:900913';
 		var offset = this.getMapOffset();
 		var ar = this.getAspectRatio(extent);
 
