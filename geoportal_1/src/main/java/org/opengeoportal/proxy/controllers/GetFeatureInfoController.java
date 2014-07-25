@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class GetFeatureInfoController {
 	private static final int NUMBER_OF_FEATURES = 1;
 	//private static final int BUFFER_MULTIPLIER = 5;
+	private static final String SRS_CODE = "EPSG:900913";
 
 	//unfortunately, not every source supports gml response
 	private static final String RESPONSE_FORMAT = "text/html";
@@ -77,7 +78,7 @@ public class GetFeatureInfoController {
 	String createWmsGetFeatureInfoQuery(String layerName, String xCoord, String yCoord, String bbox, String height, String width){
 	    //in caps to support ogc services through arcgis server 9.x
 	    String query = "SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&INFO_FORMAT=" + RESPONSE_FORMAT  
-				+ "&SRS=EPSG:3857&FEATURE_COUNT=" + NUMBER_OF_FEATURES + "&STYLES=&HEIGHT=" + height + "&WIDTH=" + width +"&BBOX=" + bbox 
+				+ "&SRS=" + SRS_CODE + "&FEATURE_COUNT=" + NUMBER_OF_FEATURES + "&STYLES=&HEIGHT=" + height + "&WIDTH=" + width +"&BBOX=" + bbox 
 				+ "&X=" + xCoord + "&Y=" + yCoord +"&QUERY_LAYERS=" + layerName + "&LAYERS=" + layerName + "&EXCEPTIONS=" + EXCEPTION_FORMAT;
 	    
 	    return query;
