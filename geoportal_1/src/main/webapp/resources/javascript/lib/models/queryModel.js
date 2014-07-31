@@ -144,10 +144,12 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		if ((what != null) && (what != "")) {
 			solr.setWhat(what);
 		}
-		/*
-		 * if ((whereField != null) && (whereField != "")){
-		 * solr.setWhere(whereField); }
-		 */
+		
+		var where = this.get("where");
+		if ((where != null) && (where != "")){
+			solr.setWhere(where); 
+		}
+		 
 
 		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedBasic")));
 

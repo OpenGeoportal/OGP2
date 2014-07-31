@@ -113,7 +113,12 @@ OpenGeoportal.Views.Query = Backbone.View
 			setTextValue : function(event) {
 				var target$ = jQuery(event.currentTarget);
 				var attr = target$.data().queryAttr;
-				var val = target$.val().trim();
+				var val = "";
+				if (_.has(target$.data(), "preferredValue") && target$.data().preferredValue.length > 0){
+					val = target$.data().preferredValue;
+				} else { 
+					val = target$.val().trim();
+				}
 				this.model.set(attr, val);
 
 				// map field to model attribute
@@ -139,6 +144,16 @@ OpenGeoportal.Views.Query = Backbone.View
 							this.clearWhere);
 					
 					where$.val(geocode.name);
+					
+					if (_.has(geocode, "fullResponse") && _.has(geocode.fullResponse, "address_components")){
+						var comp = geocode.fullResponse.address_components;
+						if (comp.length > 0 && _.has(comp[0], "long_name")){
+							var name = comp[0].long_name;
+							where$.data().preferredValue = name;
+							this.model.set({where: name});
+						}
+					}
+					
 					// no need to fire search since it will be triggered by
 					// extent change
 					var that = this;
@@ -148,10 +163,11 @@ OpenGeoportal.Views.Query = Backbone.View
 						that.listenToOnce(that.model, "change:mapExtent",
 								that.clearWhere);
 					});
+					
 					jQuery(document).trigger("map.zoomToLayerExtent", {
 						bbox : bbox
 					});
-
+					
 					//clear the geocode value
 					where$.data().geocode = {};
 				} else {
@@ -165,7 +181,6 @@ OpenGeoportal.Views.Query = Backbone.View
 			zoomToWhere : function() {
 				var where$ = jQuery("#whereField");
 				var geocode = where$.data().geocode;
-				
 				if (typeof geocode !== "undefined" && _.size(geocode) > 0) {
 
 					this.handleGeocodeResults(geocode, where$);
@@ -202,7 +217,9 @@ OpenGeoportal.Views.Query = Backbone.View
 				var where$ = jQuery("#whereField");
 				//clear the geocode value
 				where$.data().geocode = {};
+				where$.data().preferredValue = "";
 				this.geocodeBbox = null;
+				this.model.set({where: ""});
 				
 				if (where$.val().trim().length > 0) {
 					

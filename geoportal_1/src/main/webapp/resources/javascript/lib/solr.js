@@ -259,6 +259,9 @@ OpenGeoportal.Solr = function() {
 			fq : this.filters
 		};
 
+		if (this.where.length > 0){
+			params.bq = this.getWhereBoost();
+		}
 		return params;
 	};
 
@@ -289,10 +292,34 @@ OpenGeoportal.Solr = function() {
 		this.what = what;
 	};
 
+	this.where = "";
 	this.setWhere = function(where) {
 		this.where = where;
 	};
 
+	this.whereBoosts = [
+		 {
+			 term: "PlaceKeywordsSynonyms",
+			 boost: 15
+		 },
+		 {
+			 term: "LayerDisplayName",
+			 boost: 70
+		 }
+		 ];
+
+	
+	this.getWhereBoost = function(){
+		var bq = [];
+		var that = this;
+		_.each(this.whereBoosts, function(item){
+			var clause = item.term + ":\"" + that.where + "\"^" + item.boost;
+			bq.push(clause);
+		});
+
+		return bq;
+	};
+	
 	this.AdvancedKeywordString = null;
 
 	this.setAdvancedKeywords = function setAdvancedKeywords(keywordString) {
@@ -991,5 +1018,6 @@ OpenGeoportal.Solr = function() {
 		var areaClause = "{!frange u=15 l=0 incu=false incl=false cache=false} product(15,div($intx,$union))";
 		return areaClause;
 	};
+
 
 };
