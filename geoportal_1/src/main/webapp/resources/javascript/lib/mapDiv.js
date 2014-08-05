@@ -2437,12 +2437,17 @@ OpenGeoportal.MapController = function() {
 			offHandler : this.hideLayer
 		} ];
 
+		var method = null;
 		for ( var i in previewMethods) {
+			method = previewMethods[i][functionType];
+
 			if (previewMethods[i].type === previewType) {
-				return previewMethods[i][functionType];
+				break;
 			}
+			
 		}
-		return previewMethods["default"][functionType];
+
+		return method;
 	};
 
 	this.previewLayerOn = function(layerId) {

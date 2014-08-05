@@ -935,7 +935,19 @@ div.colorCell:hover {
 #metadataContent {
 	overflow: auto;
 	height: 100%;
+
 	/*word-wrap: break-word;*/
+}
+
+#metadataContent div.thumbnail {
+   display: inline-block;
+    left: 140px;
+    position: relative;
+    vertical-align: top;
+}
+
+#metadataContent #metadataTOC {
+	display: inline-block;
 }
 
 .metadataIframe {
@@ -1311,6 +1323,18 @@ DataTypes
 	height: 17px;
 }
 
+.tabularIcon {
+	background: url("../media/icon_table.gif") no-repeat transparent;
+	width: 17px;
+	height: 17px;
+}
+
+.documentIcon {
+	background: url("../media/documentIcon.gif") no-repeat transparent;
+	width: 17px;
+	height: 17px;
+}
+
 /*************
 Repositories
 *************/
@@ -1352,6 +1376,10 @@ Repositories
 .princetonIcon {
 	background: url("../media/ogp-institutions.png") no-repeat scroll -56px
 		-10px transparent;
+}
+
+.columbiaIcon {
+	background: url("../media/src_columbia.png") no-repeat transparent;
 }
 
 

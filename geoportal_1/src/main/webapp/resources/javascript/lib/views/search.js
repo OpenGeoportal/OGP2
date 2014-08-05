@@ -177,7 +177,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				
 
 			},
-			
+			//only zoom if the user has changed the entry.
 			zoomToWhere : function() {
 				var where$ = jQuery("#whereField");
 				var geocode = where$.data().geocode;

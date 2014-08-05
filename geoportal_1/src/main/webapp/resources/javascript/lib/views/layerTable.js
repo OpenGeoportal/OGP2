@@ -463,6 +463,16 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 						console.log([solrLayer["LayerId"], e]);
 					}
 					solrLayer.Location = locationParsed;
+					
+					try {
+						var dataType = solrLayer.DataType.toLowerCase();
+						dataType = dataType.replace(" ", "");
+						if (dataType == "papermap" || dataType == "scannedmap"){
+							solrLayer.DataType = "ScannedMap";
+						}
+					} catch (e1){
+						console.log(e1);
+					}
 					arrModels.push(solrLayer);
 				});
 				return arrModels;
@@ -659,15 +669,17 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
 										};
 										
-										var hasAccess = true;
-										var canLogin = true;
+										var hasAccess = false;
+										var canLogin = false;
 										
 										var previewable = canPreview(location);
 										if (previewable){
 											var loginModel = OpenGeoportal.ogp.appState.get("login").model;
 											hasAccess = loginModel.hasAccessLogic(access, institution);
 											canLogin = loginModel.canLoginLogic(institution);
-										} 
+										} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["externallink"])){
+											return that.tableControls.renderLinkControl();
+										}
 
 										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
 									}
