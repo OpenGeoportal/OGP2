@@ -104,7 +104,7 @@ OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 			},
 			isRaster : function() {
 				var attr = "DataType";
-				var attrVals = [ "raster", "paper map", "scanned map" ];
+				var attrVals = [ "raster", "paper map", "scanned map"];
 				return this.attributeIsOneOf(attr, attrVals);
 			},
 			hasOGCEndpoint : function(ogcProtocol) {

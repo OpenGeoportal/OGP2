@@ -260,7 +260,7 @@ OpenGeoportal.Solr = function() {
 		};
 
 		if (this.where.length > 0){
-			params.bq = this.getWhereBoost();
+			params.bf = this.getWhereBoost();
 		}
 		return params;
 	};
@@ -296,28 +296,42 @@ OpenGeoportal.Solr = function() {
 	this.setWhere = function(where) {
 		this.where = where;
 	};
-
+/*
+ * 		 
+ */
 	this.whereBoosts = [
+	     {
+	    	 term: "PlaceKeywordsSynonyms"
+	     },
 		 {
-			 term: "PlaceKeywordsSynonyms",
-			 boost: 15
-		 },
-		 {
-			 term: "LayerDisplayName",
-			 boost: 70
+			 term: "LayerDisplayName"
 		 }
 		 ];
+	
 
 	
 	this.getWhereBoost = function(){
-		var bq = [];
-		var that = this;
-		_.each(this.whereBoosts, function(item){
-			var clause = item.term + ":\"" + that.where + "\"^" + item.boost;
-			bq.push(clause);
+		var temp = [];
+		//bf=exists(query({!v='LayerDisplayName:India'}))^1
+		var arrTerm = this.where.split(" ");
+		var term = "";
+		_.each(arrTerm, function(currTerm){
+			if (currTerm.length > term.length){
+				term = currTerm;
+			}
 		});
+		
+		
+		_.each(this.whereBoosts, function(item){
 
-		return bq;
+			var clause = "exists(query({!v='" + item.term + ":\"" + term + "\"'}))";
+			temp.push(clause);
+		});
+		
+		
+		var bf = temp.join(",");
+		var fullClause = "or(" + bf + ")^70"; 
+		return [fullClause, "exists(query({!v='LayerDisplayName:\"" + term + "\"'}))^5"];
 	};
 	
 	this.AdvancedKeywordString = null;
@@ -370,7 +384,7 @@ OpenGeoportal.Solr = function() {
 	// Terms that will be searched in a basic search against the what field
 	// contents
 	// Search Title, theme keywords, place keywords, publisher, and originator
-	this.BasicKeywordTerms = [ this.LayerDisplayNameTerm, this.IsoTopicTerm,
+	this.BasicKeywordTerms = [ this.LayerDisplayNameTerm, 
 			this.ThemeKeywordsTerm, this.PlaceKeywordsTerm, this.PublisherTerm,
 			this.OriginatorTerm ];
 

@@ -37,7 +37,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 			var url = OpenGeoportal.Utility.getLocationValue(location, values);
 			this.viewExternalMetadata(layerId, url);
 		} else {
-			this.viewMetadataFromOgp(layerId);
+				this.viewMetadataFromOgp(layerId);
 		}
 	};
 	
