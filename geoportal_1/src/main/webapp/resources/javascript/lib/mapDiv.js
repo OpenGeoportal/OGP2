@@ -192,7 +192,7 @@ OpenGeoportal.MapController = function() {
 		var options = {
 			allOverlays : true,
 			/* at least until we update our GeoServer instance */
-			projection : new OpenLayers.Projection("EPSG:900913"),
+			projection : new OpenLayers.Projection("EPSG:3857"),
 			maxResolution : 2.8125,
 			maxExtent : mapBounds,
 			numZoomLevels: 19,
@@ -1160,7 +1160,9 @@ OpenGeoportal.MapController = function() {
 	this.getPreviewUrlArray = function(layerModel, useTilecache) {
 		// is layer public or private? is this a request that can be handled by
 		// a tilecache?
-
+		var isTilecache = false;
+		var isProxy = false;
+		
 		var urlArraySize = 1; // this seems to be a good size for OpenLayers performance
 		var urlArray = [];
 		var populateUrlArray = function(addressArray) {
@@ -1185,15 +1187,22 @@ OpenGeoportal.MapController = function() {
 
 		if (layerModel.has("wmsProxy")) {
 			populateUrlArray([ layerModel.get("wmsProxy") ]);
+			isProxy = true;
 		} else if ((typeof layerModel.get("Location").tilecache !== "undefined")
 				&& useTilecache) {
 			populateUrlArray(layerModel.get("Location").tilecache);
+			isTilecache = true;
 		} else {
 			populateUrlArray(layerModel.get("Location").wms);
 		}
 
 		// console.log(urlArray);
-		return urlArray;
+		var response = {
+				urls: urlArray,
+				isTilecache: isTilecache,
+				isProxy: isProxy
+		};
+		return response;
 	};
 
 	/***************************************************************************
@@ -1497,7 +1506,7 @@ OpenGeoportal.MapController = function() {
 		var bbox = extent.toBBOX();
 
 		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:900913';
+		requestObj.srs = 'EPSG:3857';
 		var offset = this.getMapOffset();
 		var ar = this.getAspectRatio(extent);
 
@@ -1522,8 +1531,6 @@ OpenGeoportal.MapController = function() {
 
 	this.getAttributeDescriptionJsonpSuccess = function(data) {
 		jQuery(".attributeName").css("cursor", "default");
-
-		var that = this;
 
 		var solrdoc = this.processMetadataSolrResponse(data);
 		var xmlDoc = jQuery.parseXML(solrdoc.FgdcText); // text was escaped on
@@ -1974,7 +1981,8 @@ OpenGeoportal.MapController = function() {
 		// layers is different for Harvard layers
 		var wmsName = layerModel.get("qualifiedName");
 		// don't use a tilecache
-		layer.url = this.getPreviewUrlArray(layerModel, false);
+		layer.url = this.getPreviewUrlArray(layerModel, false).urls;
+		//if the url array is still from a tilecache, we should throw an error or notify the user.
 		var userColor = layerModel.get("color");
 		var userWidth = layerModel.get("graphicWidth");
 		switch (dataType) {
@@ -2226,12 +2234,13 @@ OpenGeoportal.MapController = function() {
 
 		// use a tilecache if we are aware of it
 
-		var wmsArray = this.getPreviewUrlArray(layerModel, true);
+		var previewObj = this.getPreviewUrlArray(layerModel, true);
 	
-
+		var wmsArray = previewObj.urls;
+		var isTilecache = previewObj.isTilecache;
 		// won't actually do anything, since noMagic is true and transparent is
 		// true
-		var format;
+		var format; 
 		if (layerModel.isVector) {
 			format = "image/png";
 		} else {
@@ -2245,7 +2254,12 @@ OpenGeoportal.MapController = function() {
 					// if this is a raster layer, we should use jpeg format, png for vector
 					// (per geoserver docs)
 					var layerName = that.getLayerName(layerModel, wmsArray[0]);
-						
+					var version = "1.3.0";
+					if (isTilecache){
+						//geowebcache doesn't support wms 1.3.0 
+						version = "1.1.1";
+					}
+					
 					var newLayer = new OpenLayers.Layer.WMS(
 							layerModel.get("LayerDisplayName"), 
 							wmsArray, 
@@ -2255,7 +2269,7 @@ OpenGeoportal.MapController = function() {
 							tiled : true,
 							exceptions : "application/vnd.ogc.se_xml",
 							transparent : true,
-							version : "1.3.0"
+							version : version
 						}, {
 							transitionEffect : 'resize',
 							opacity : opacitySetting * .01,

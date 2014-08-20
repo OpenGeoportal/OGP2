@@ -74,7 +74,8 @@ OpenGeoportal.Geocoder = function Geocoder() {
 				extent.push(viewPort.getSouthWest().lat());
 				extent.push(viewPort.getNorthEast().lng());
 				extent.push(viewPort.getNorthEast().lat());
-
+				//uncomment to show geocoded bounding box on the map
+				//OpenGeoportal.ogp.map.addMapBBox({bbox:extent.join()});
 				var bbox = extent.join();
 				var currentAddress = results[i].formatted_address;
 				var currentResponse = {};

@@ -82,14 +82,23 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	hideMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");
 		menu$.slideUp({duration: 100});
+		jQuery(document).off("focusin.dropdown click.dropdown");
 	},
 	showMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");
+		var that = this;
+
 		menu$.slideDown({
 			duration: 100,
 			done: function(){
 				menu$.menu("focus", null, menu$.find( ".ui-menu-item:first" ) );
 				menu$.find( ".ui-menu-item > a:first" ).focus();
+				jQuery(document).on("focusin.dropdown click.dropdown", function(e){
+					if (!$(e.target).parents(menu$).is(menu$) && !$(e.target).is(menu$) 
+							&& !$(e.target).parent().siblings(menu$).is(menu$)){
+						that.hideMenu();
+					}
+				});
 			}			
 		});
 	},
@@ -166,7 +175,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		var valueAttr = this.getValueAttribute();
 		var displayAttr = this.getDisplayAttribute();
 		var itemClass = this.getItemClass();
-		that = this;
+		var that = this;
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
@@ -243,9 +252,10 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	  events: {
 		  "click .select" : "toggleMenu",
-		  "blur .ui-menu" : "hideMenu",
+		  //"focusout .ui-menu" : "hideMenu",
 		  "click .showOnly": "showOnly",
-		  "click .showAll": "selectAll"
+		  "click .showAll": "selectAll",
+		  "focus .select" : "toggleMenu"
 	},
 	initialize: function() {
 		var selectionEvent = "change:" + this.getSelectionAttribute();
@@ -363,6 +373,7 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 });
 
 OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.CollectionMultiSelect.extend({
+
 	//note: some inherited functions don't take the collectionFilter into account
 	getTemplateParams: function(){
 		var menuHtml = "";	
@@ -519,7 +530,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var buttonLabel = "Sort Results";
 		var displayAttr  = "displayName";
 		var valueAttr = "columnName";
-		that = this;
+		var that = this;
 
 		this.headings.each(function(currModel){
 

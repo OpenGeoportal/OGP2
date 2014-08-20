@@ -260,7 +260,8 @@ OpenGeoportal.Solr = function() {
 		};
 
 		if (this.where.length > 0){
-			params.bf = this.getWhereBoost();
+			var whereParams = this.getWhereBoost();
+			params = this.combineParams(params,whereParams);
 		}
 		return params;
 	};
@@ -299,39 +300,23 @@ OpenGeoportal.Solr = function() {
 /*
  * 		 
  */
-	this.whereBoosts = [
-	     {
-	    	 term: "PlaceKeywordsSynonyms"
-	     },
-		 {
-			 term: "LayerDisplayName"
-		 }
-		 ];
+	this.whereBoosts = {
+	    	 titleBoost: 2,
+	    	 titleSynonymsBoost: 1,
+	    	 boost: 20
+	     };
+
 	
 
 	
 	this.getWhereBoost = function(){
-		var temp = [];
-		//bf=exists(query({!v='LayerDisplayName:India'}))^1
-		var arrTerm = this.where.split(" ");
-		var term = "";
-		_.each(arrTerm, function(currTerm){
-			if (currTerm.length > term.length){
-				term = currTerm;
-			}
-		});
-		
-		
-		_.each(this.whereBoosts, function(item){
+		var params = {};
+		var term = this.where.trim();
 
-			var clause = "exists(query({!v='" + item.term + ":\"" + term + "\"'}))";
-			temp.push(clause);
-		});
+		params.where='{!query}LayerDisplayNameSynonyms:' + term + '^' + this.whereBoosts.titleSynonymsBoost + ' LayerDisplayName:"'+ term + '"^' + this.whereBoosts.titleBoost;
+		params.bf="map($where,.5,1000,1,0)^" +  + this.whereBoosts.boost;
 		
-		
-		var bf = temp.join(",");
-		var fullClause = "or(" + bf + ")^70"; 
-		return [fullClause, "exists(query({!v='LayerDisplayName:\"" + term + "\"'}))^5"];
+		return params;
 	};
 	
 	this.AdvancedKeywordString = null;
@@ -345,53 +330,64 @@ OpenGeoportal.Solr = function() {
 	};
 
 	// you can specify different solr fields and boosts for basic and advanced.
-	this.LayerDisplayNameTerm = {
+	this.LayerDisplayNameSynonymsTerm = {
 		basic : {
 			term : "LayerDisplayNameSynonyms",
-			boost : .2
+			boost : 2
 		},
 		advanced : {
 			term : "LayerDisplayNameSynonyms",
-			boost : .2
+			boost : 2
 		}
 	};
 
+	this.LayerDisplayNameTerm = {
+			term : "LayerDisplayName",
+			boost : 4
+	};
+	
 	this.ThemeKeywordsTerm = {
 		term : "ThemeKeywordsSynonymsLcsh",
-		boost : .1
+		boost : 2
 	};
 
 	this.PlaceKeywordsTerm = {
-		term : "PlaceKeywordsSynonyms",
-		boost : .1
+			basic: {
+				term : "PlaceKeywordsSynonyms",
+				boost : .3
+			},
+			advanced: {
+				term : "PlaceKeywordsSynonyms",
+				boost : .5	
+			}
 	};
 
 	this.PublisherTerm = {
 		term : "Publisher",
-		boost : .1
+		boost : 1
 	};
 
 	this.OriginatorTerm = {
 		term : "Originator",
-		boost : .1
+		boost : 1.2
 	};
 
 	this.IsoTopicTerm = {
 		term : "ThemeKeywordsSynonymsIso",
-		boost : .1
+		boost : 5
 	};
 
 	// Terms that will be searched in a basic search against the what field
 	// contents
 	// Search Title, theme keywords, place keywords, publisher, and originator
-	this.BasicKeywordTerms = [ this.LayerDisplayNameTerm, 
+	this.BasicKeywordTerms = [ this.LayerDisplayNameSynonymsTerm, this.LayerDisplayNameTerm,
 			this.ThemeKeywordsTerm, this.PlaceKeywordsTerm, this.PublisherTerm,
 			this.OriginatorTerm ];
 
 	// Terms that will be searched in an advanced search against the keyword
 	// field contents
 	// Search Title, theme keywords, and place keywords
-	this.AdvancedKeywordTerms = [ this.LayerDisplayNameTerm,
+	this.AdvancedKeywordTerms = [ this.LayerDisplayNameSynonymsTerm, this.LayerDisplayNameTerm,
 			this.ThemeKeywordsTerm, this.PlaceKeywordsTerm ];
 
 	this.getKeywordTerms = function(termArr, termType) {
@@ -548,12 +544,12 @@ OpenGeoportal.Solr = function() {
 	};
 	this.LayerMatchesCenter = {
 		term : "LayerMatchesCenter",
-		boost : 15.0
+		boost : 10.0
 	};
 
 	this.LayerAreaIntersection = {
 		term : "LayerAreaIntersection",
-		boost : 30.0
+		boost : 35.0
 	};
 
 	// all we need is "bounds", which in the application is the map extent
@@ -651,7 +647,7 @@ OpenGeoportal.Solr = function() {
 
 	/**
 	 * return a search element to boost the scores of layers whose scale matches
-	 * the displayed map scale specifically, it compares their area
+	 * the displayed map scale. specifically, it compares their area
 	 */
 	this.classicLayerMatchesArea = function(bounds) {
 		var mapDeltaX = Math.abs(bounds.maxX - bounds.minX);
@@ -671,6 +667,7 @@ OpenGeoportal.Solr = function() {
 	 * does not include points on the edge of the map. for example, for a 3x3
 	 * grid we use 9 points spaced at 1/4, 1/2 and 3/4 x and y each point in the
 	 * grid is weighted evenly
+	 * 
 	 */
 	this.classicLayerAreaIntersectionScore = function(bounds) {
 		var mapMaxX = bounds.maxX;
@@ -732,6 +729,25 @@ OpenGeoportal.Solr = function() {
 		return clause;
 	};
 
+	this.boundTrim = function(val, min, max){
+		if (val <= min){
+			return min;
+		} else if (val >= max){
+			return max;
+		} else {
+			return val;
+		}
+	};
+	
+	this.xTrim = function(x){
+		return this.boundTrim(x, -180, 180);
+	};
+	
+	this.yTrim = function(y){
+		return this.boundTrim(y, -90, 90);
+	};
+	
+	
 	/**
 	 * compute a score for layers within the current map the layer's MinX and
 	 * MaxX must be within the map extent in X and the layer's MinY and MaxY
@@ -743,11 +759,40 @@ OpenGeoportal.Solr = function() {
 	 * Finally, the product converts the 1 to LayerWithinMapBoost
 	 */
 	this.classicLayerWithinMap = function(bounds) {
-		var mapMinX = bounds.minX;
-		var mapMaxX = bounds.maxX;
-		var mapMinY = bounds.minY;
-		var mapMaxY = bounds.maxY;
-
+		var margin = .2; 
+		var getDelta = function(min, max){
+			var delta = Math.abs(max - min);
+			return delta;
+		};		
+		//bounds from the map extent
+		//console.log(bounds);
+		
+		var xDelta = getDelta(bounds.minX, bounds.maxX, margin);
+		var yDelta = getDelta(bounds.minY, bounds.maxY, margin);
+		
+		var bufferX = false;
+		if (yDelta > xDelta){
+			bufferX = true;
+		}
+		 
+		//only buffer the y values, because of the way zoom to extent works; actually...buffer the short side
+		var mapMinX;
+		var mapMaxX; 
+		var mapMinY; 
+		var mapMaxY; 
+		if (bufferX){
+			mapMinX = this.xTrim(bounds.minX - xDelta * margin);
+			mapMaxX = this.xTrim(bounds.maxX - xDelta * margin);
+			mapMinY = bounds.minY;
+			mapMaxY = bounds.maxY;
+		} else {
+			
+			mapMinX = bounds.minX;
+			mapMaxX = bounds.maxX;
+			mapMinY = this.yTrim(bounds.minY - yDelta * margin);
+			mapMaxY = this.yTrim(bounds.maxY + yDelta * margin);
+		}
+		
 		var layerWithinMap = "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY)),";
 
 		layerWithinMap += "map(sum(";

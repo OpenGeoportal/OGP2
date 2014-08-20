@@ -302,7 +302,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			mapFilterHandler : function() {
 				var that = this;
 				jQuery("#mapFilterCheck").on("change", function(event) {
-					that.noteSearchChanged()
+					that.noteSearchChanged();
 					that.model.set({
 						ignoreSpatial : this.checked
 					});
