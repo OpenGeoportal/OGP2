@@ -796,11 +796,8 @@ OpenGeoportal.MapController = function() {
 				.on(
 						"map.getFeatureInfoOn",
 						function(event, data) {
-							// console.log("map.getFeatureInfoOn");
 							var layerId = data.LayerId;
-							// console.log(layerId);
-							var layers = that
-									.getLayersBy("ogpLayerId", layerId);
+							var layers = that.getLayersBy("ogpLayerId", layerId);
 							if (layers.length == 0) {
 								// layer is not in OpenLayers...
 								throw new Error(
@@ -1598,12 +1595,14 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.getFeatureAttributes = function(e) {
+		console.log(arguments);
+		console.log(this);
 		// console.log("getFeatureAttributes");
 		if (typeof this.map !== "undefined") {
-			var mapObject = this.map;// since this is an event handler, the
+			var mapObject = this.map;
+			// since this is an event handler, the
 			// context isn't the MapController
-			// Object, it's the map layer. Should it
-			// be?
+			// Object, it's the map layer.
 
 			// generate the query string
 			var layerId = this.ogpLayerId;
