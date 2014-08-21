@@ -52,7 +52,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 				sld : ""
 			},
 
-			"paper map" : {
+			scannedmap : {
 				opacity : 100
 			},
 			// it's understood that point, line, polygon, are vector types

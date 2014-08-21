@@ -103,9 +103,15 @@ public class SolrRecord {
 		this.access = access;
 	}
 	public String getDataType() {
+		if (dataType.equalsIgnoreCase("Paper Map")||dataType.equalsIgnoreCase("Scanned Map")){
+			dataType = "ScannedMap";
+		}
 		return dataType;
 	}
 	public void setDataType(String dataType) {
+		if (dataType.equalsIgnoreCase("Paper Map")||dataType.equalsIgnoreCase("Scanned Map")){
+			dataType = "ScannedMap";
+		}
 		this.dataType = dataType;
 	}
 

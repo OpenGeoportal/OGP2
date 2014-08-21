@@ -79,7 +79,10 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 					console.log([solrLayer["LayerId"], err]);
 				}
 				solrLayer.Location = locationParsed;
-				
+				var dType = solrLayer.DataType;
+				if (dType === "Paper Map" || dType === "Scanned Map"){
+					solrLayer.DataType = "ScannedMap";
+				}
 				arrModels.push(solrLayer);
 			});
 			return arrModels;
