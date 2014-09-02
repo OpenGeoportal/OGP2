@@ -39,7 +39,7 @@ public class OgpXmlUtils {
 	 * @throws IOException
 	 * @throws ParserConfigurationException
 	 */
-	public static Document getDocument(InputStream inputStream) throws SAXException, IOException, ParserConfigurationException{
+	public static Document getDocument(InputStream inputStream) throws SAXException, IOException, ParserConfigurationException {
 		try{
 			// Create a factory
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -209,7 +209,7 @@ public class OgpXmlUtils {
 	 * @return child Node with the given tag name
 	 * @throws Exception	if no child with the given tag name is found
 	 */
-	public static Node getChildNode(Node parent, String tagName) throws Exception{
+	public static Node getFirstChild(Node parent, String tagName) throws Exception{
 		NodeList children = parent.getChildNodes();
 		
 		for (int i = 0 ; i < children.getLength(); i++){

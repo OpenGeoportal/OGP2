@@ -22,12 +22,6 @@ if (typeof OpenGeoportal.Views == 'undefined'){
  * @param paramObj .text is the displayed text, .menuHtml is the Html for the dropdown menu
  */
 
-/**
- * creates html and behaviours for a css styled dropdown 
- * 
- * @param divId the id of the div element to turn into a styled dropdown
- * @param paramObj .text is the displayed text, .menuHtml is the Html for the dropdown menu
- */
 
 var originalVal = $.fn.val;
 $.fn.val = function(value) {
@@ -89,7 +83,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 			duration: 100,
 			done: function(){
 				menu$.menu("focus", null, menu$.find( ".ui-menu-item:first" ) );
-				menu$.find( ".ui-menu-item > a:first" ).focus();
+				menu$.find( ".ui-menu-item:first" ).focus();
 			}			
 		});
 	},
@@ -166,7 +160,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		var valueAttr = this.getValueAttribute();
 		var displayAttr = this.getDisplayAttribute();
 		var itemClass = this.getItemClass();
-		that = this;
+		var that = this;
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
@@ -227,8 +221,8 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		}
 		
 		var that = this;
-		this.$el.find("li > a").each(function(){
-			if (jQuery(this).next().val() === value){
+		this.$el.find("li").each(function(){
+			if (jQuery(this).find("input[type=hidden]").first().val() === value){
 				that.uiItemSelected(this);
 			} else {
 				that.uiItemDeselected(this);
@@ -340,22 +334,22 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		var selectionAttr = this.getSelectionAttribute();
 		var valueAttr = this.getValueAttribute();
 		var that = this;
-		this.$el.find("li > a").each(function(){
-			var anchor$ = jQuery(this);
+		this.$el.find("li").each(function(){
+			var li$ = jQuery(this);
 			that.collection.each(function(model){
 				var value = model.get(valueAttr);
 
-				if (anchor$.next().val() === value){
+				if (li$.find("input[type=hidden]").first().val() === value){
 					if (model.get(selectionAttr)){
-						that.uiItemSelected(anchor$[0]);
+						that.uiItemSelected(li$[0]);
 					} else {
-						that.uiItemDeselected(anchor$[0]);
+						that.uiItemDeselected(li$[0]);
 					}
 				}
 			});
 		});
 		if (this.lastFocus !== null){
-			$(".ui-menu" ).menu( "focus", null, this.lastFocus );
+			this.$el.find(".ui-menu").menu( "focus", null, this.lastFocus );
 		}
 		return this;
 	}
@@ -461,7 +455,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 				return;
 			}
 		});
-		
+
 		return all;
 	},
 	noneSelected: function(){
@@ -519,7 +513,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var buttonLabel = "Sort Results";
 		var displayAttr  = "displayName";
 		var valueAttr = "columnName";
-		that = this;
+		var that = this;
 
 		this.headings.each(function(currModel){
 
@@ -559,10 +553,10 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 			name = currModel.get("header");
 		}
 		//this.$el.find(".select").first().button( "option", "label", name );
-		this.$el.find("li > a").each(function(){
+		this.$el.find("li").each(function(){
 			var sort$ = jQuery(this).find(".sortArrows");
 			sort$.removeClass("sortDown sortUp");
-			if (jQuery(this).next().val() == colName){
+			if (jQuery(this).find("input[type=hidden]").first().val() == colName){
 				that.uiItemSelected(this);
 				if (direction === "asc"){
 					sort$.addClass("sortUp");

@@ -365,9 +365,9 @@ OpenGeoportal.MapController = function() {
 		this.previewLayerHandler();
 		this.getFeatureInfoHandler();
 		this.clearLayersHandler();
-		this.attributeDescriptionHandler();
 		this.mouseCursorHandler();
 		this.loadIndicatorHandler();
+		
 	};
 
 	/**
@@ -819,6 +819,17 @@ OpenGeoportal.MapController = function() {
 								that.getFeatureAttributes);
 					}
 				});
+		
+		jQuery(document).tooltip({
+			show: 100, 
+			hide: false, 
+			items: "td.attributeName",
+			position: {
+				my: "right top",
+				at: "left-5 top-7"
+				}
+			});
+
 	};
 
 	this.zoomToLayerExtentHandler = function() {
@@ -1479,355 +1490,71 @@ OpenGeoportal.MapController = function() {
 		return new OpenGeoportal.Models.ImageRequest(requestObj);
 	};
 
-	this.processMetadataSolrResponse = function(data) {
-		var solrResponse = data.response;
-		var totalResults = solrResponse.numFound;
-		if (totalResults != 1) {
-			throw new Error("Request for Metadata returned " + totalResults
-					+ ".  Exactly 1 was expected.");
-			return;
-		}
-		var doc = solrResponse.docs[0]; // get the first layer object
-		return doc;
-	};
 
-	this.getAttributeDescriptionJsonpSuccess = function(data) {
-		jQuery(".attributeName").css("cursor", "default");
-
-		var that = this;
-
-		var solrdoc = this.processMetadataSolrResponse(data);
-		var xmlDoc = jQuery.parseXML(solrdoc.FgdcText); // text was escaped on
-		// ingest into Solr
-
-		var layerId = jQuery("td.attributeName").first().closest("table").find(
-				"caption").attr("title");
-		var layerAttrs = this.previewed.findWhere({
-			LayerId : layerId
-		}).get("layerAttributes");
-
-		jQuery(xmlDoc)
-				.find("attrlabl")
-				.each(
-						function() {
-							var currentXmlAttribute$ = jQuery(this);
-							jQuery("td.attributeName")
-									.each(
-											function() {
-												var attributeName = jQuery(this)
-														.text().trim();
-												if (currentXmlAttribute$.text()
-														.trim().toLowerCase() == attributeName
-														.toLowerCase()) {
-													var attributeDescription = currentXmlAttribute$
-															.siblings("attrdef")
-															.first();
-													attributeDescription = OpenGeoportal.Utility
-															.stripExtraSpaces(attributeDescription
-																	.text()
-																	.trim());
-													if (attributeDescription.length === 0) {
-														attributeDescription = "No description available";
-													}
-													jQuery(this)
-															.attr('title',
-																	attributeDescription);
-													var attr = layerAttrs.findWhere(
-																	{
-																		attributeName : attributeName
-																	});
-													if (typeof attr != "undefined"){
-															attr.set(
-																	{
-																		description : attributeDescription
-																	});
-													}
-													return;
-												}
-											});
-						});
-	};
-
-	this.getAttributeDescriptionJsonpError = function() {
-		jQuery(".attributeName").css("cursor", "default");
-		throw new Error("The attribute description could not be retrieved.");
-	};
-
-	this.attributeDescriptionHandler = function() {
-		// mouseover to display attribute descriptions
-		var that = this;
-		jQuery(document)
-				.on(
-						'mouseenter',
-						"td.attributeName",
-						function() {
-							var layerId = jQuery(this).closest("table").find(
-									"caption").attr("title");
-							var layerAttrs = that.previewed.findWhere({
-								LayerId : layerId
-							}).get("layerAttributes");
-
-							var attrModel = layerAttrs.findWhere({
-								attributeName : jQuery(this).text().trim()
-							});
-
-							if (typeof attrModel !== "undefined"
-									&& attrModel.has("description")) {
-								jQuery(this).attr('title',
-										attrModel.get("description"));
-								// short circuit if attributes have already been
-								// looked up
-							} else {
-								var solr = new OpenGeoportal.Solr();
-								var query = solr.getServerName()
-										+ "?"
-										+ jQuery.param(solr
-												.getMetadataParams(layerId));
-								jQuery(".attributeName").css("cursor", "wait");
-								solr
-										.sendToSolr(
-												query,
-												that.getAttributeDescriptionJsonpSuccess,
-												that.getAttributeDescriptionJsonpError,
-												that);
-							}
-						});
-	};
-
+	/**
+	 * convert the click on layer event into a param object to request feature info
+	 */
 	this.getFeatureAttributes = function(e) {
-		console.log(arguments);
-		console.log(this);
-		// console.log("getFeatureAttributes");
-		if (typeof this.map !== "undefined") {
-			var mapObject = this.map;
-			// since this is an event handler, the
-			// context isn't the MapController
-			// Object, it's the map layer.
+			// console.log("getFeatureAttributes");
+			if (typeof this.map !== "undefined") {
+				var mapObject = this.map;// since this is an event handler, the
+				// context isn't the MapController
+				// Object, it's the map layer. 
 
-			// generate the query string
-			var layerId = this.ogpLayerId;
-			var searchString = "ogpid=" + layerId;
+				// generate the query params
+				var layerId = this.ogpLayerId;
+				
+				var layerModel = mapObject.previewed.findWhere({
+					LayerId : layerId
+				});
+				
+				var institution = layerModel.get("Institution");
+				
+				var mapExtent = mapObject.getExtent();
+				var pixel = e.xy;
+				// geoserver doesn't like fractional pixel values
 
-			var mapExtent = mapObject.getExtent();
-			searchString += "&bbox=" + mapExtent.toBBOX();
+				var params = {
+						ogpid: layerId,
+						bbox: mapExtent.toBBOX(),
+						x: Math.round(pixel.x),
+						y: Math.round(pixel.y),
+						height: mapObject.size.h,
+						width: mapObject.size.w
+				};
+				
 
-			var pixel = e.xy;
-			// geoserver doesn't like fractional pixel values
-			searchString += "&x=" + Math.round(pixel.x) + "&y="
-					+ Math.round(pixel.y);
-			searchString += "&height=" + mapObject.size.h + "&width="
-					+ mapObject.size.w;
+				
+				//destroy any existing attribute views & collections, abort ongoing requests if possible
+				var attributes = new OpenGeoportal.LayerAttributeCollection();
+				var attributeView = new OpenGeoportal.Views.LayerAttributeView({collection: attributes});
 
-			var params = {
-					ogpid: layerId,
-					bbox: mapExtent.toBBOX(),
-					x: Math.round(pixel.x),
-					y: Math.round(pixel.y),
-					height: mapObject.size.h,
-					width: mapObject.size.w
-			};
-			
-			var layerModel = mapObject.previewed.findWhere({
-				LayerId : layerId
-			});
-			var dialogTitle = layerModel.get("LayerDisplayName");
-			var institution = layerModel.get("Institution");
-
-			var ajaxParams = {
-				type : "GET",
-				url : 'featureInfo',
-				data : params,
-				dataType : 'html',
-				beforeSend : function() {
-					if (mapObject.currentAttributeRequests.length > 0) {
-						// abort any outstanding requests before submitting a
-						// new one
-						for ( var i in mapObject.currentAttributeRequests) {
-							var request = mapObject.currentAttributeRequests.splice(i, 1)[0];
-							request.featureRequest.abort();
+				attributes.fetch({
+					data: params, 
+					reset: true,
+					beforeSend: function(){
+						jQuery(document).trigger({type: "showLoadIndicator", loadType: "getFeature", layerId: layerId});
+						//close any open attribute dialogs
+						while (mapObject.currentAttributeRequests.length > 0){
+							mapObject.currentAttributeRequests.pop().close();
 						}
-					}
 
-					jQuery(document).trigger({type: "showLoadIndicator", loadType: "getFeature", layerId: layerId});
-				},
-				success : function(data, textStatus, XMLHttpRequest) {
+					},
+					complete: function(){
+						jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature", layerId: layerId});
+					}});
+				
+				mapObject.currentAttributeRequests.push(attributeView);
 
-					mapObject.getFeatureAttributesSuccessCallback(layerId,
-							dialogTitle, data);
-				},
-				error : function(jqXHR, textStatus, errorThrown) {
-					if ((jqXHR.status != 401) && (textStatus != 'abort')) {
-						throw new Error("Error retrieving Feature Information.");
-							
-					}
-				},
-				complete : function(jqXHR) {
-					for ( var i in mapObject.currentAttributeRequests) {
-						if (mapObject.currentAttributeRequests[i].featureRequest === jqXHR) {
-							mapObject.currentAttributeRequests.splice(i, 1);
-
-						}
-					}
-					jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature", layerId: layerId});
-				}
-			};
-
-			mapObject.currentAttributeRequests.push({layerId: layerId, featureRequest: jQuery.ajax(ajaxParams)});
-
-			analytics.track("Layer Attributes Viewed", institution, layerId);
-		} else {
-			new OpenGeoportal.ErrorObject(
-					new Error(),
-					"This layer has not been previewed. <br/>You must preview it before getting attribute information.");
-		}
-	};
+				analytics.track("Layer Attributes Viewed", institution, layerId);
+			} else {
+				new OpenGeoportal.ErrorObject(
+						new Error(),
+						"This layer has not been previewed. <br/>You must preview it before getting attribute information.");
+			}
+		};
 
 	this.currentAttributeRequests = [];
-
-	this.registerAttributes = function(layerId, attrNames) {
-		var layerModel = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (!layerModel.has("layerAttributes")) {
-			var attributes = new OpenGeoportal.Attributes();
-			for ( var i in attrNames) {
-				if (attrNames.hasOwnProperty(i)){
-					var attrModel = new OpenGeoportal.Models.Attribute({
-						attributeName : attrNames[i]
-					});
-					attributes.add(attrModel);
-				}
-			}
-			layerModel.set({
-				layerAttributes : attributes
-			});
-		}
-	};
-
-	this.getFeatureAttributesSuccessCallback = function(layerId, dialogTitle,
-			data) {
-		// grab the html table from the response
-		var responseTable$ = jQuery(data).filter(function() {
-			return jQuery(this).is('table');
-		});
-
-		var template = this.template;
-		var tableText = "";
-
-		if ((responseTable$.length === 0)
-				|| (jQuery(data).find("tr").length === 0)) {
-			// what should happen here? returned content is empty or otherwise
-			// unexpected
-			tableText = '<p>There is no data for "' + dialogTitle
-					+ '" at this point.</p>';
-		} else {
-			responseTable$ = responseTable$.first();
-			// process the html table returned from wms getfeature request
-			var rows = this.processAttributeTable(responseTable$);
-
-			tableText = template.attributeTable({
-				layerId : layerId,
-				title : dialogTitle,
-				tableContent : rows
-			});
-
-			var attrNames = [];
-			for ( var i in rows) {
-				attrNames.push(rows[i].header);
-			}
-			this.registerAttributes(layerId, attrNames);
-
-		}
-
-		// create a new dialog instance, or just open the dialog if it already
-		// exists
-
-		if (typeof jQuery('#featureInfo')[0] === 'undefined') {
-			var infoDiv = template.genericDialogShell({
-				elId : "featureInfo"
-			});
-			jQuery("#dialogs").append(infoDiv);
-			jQuery("#featureInfo").dialog({
-				zIndex : 2999,
-				title : "Feature Attributes",
-				width : 'auto',
-				autoOpen : false
-			});
-
-		}
-		jQuery("#featureInfo").fadeOut(200, function() {
-			jQuery("#featureInfo").html(tableText);
-			// limit the height of the dialog. some layers will have hundreds of
-			// attributes
-			var containerHeight = jQuery("#container").height();
-			var linecount = jQuery("#featureInfo tr").length;
-			var dataHeight = linecount * 20;
-			if (dataHeight > containerHeight) {
-				dataHeight = containerHeight;
-			} else {
-				dataHeight = "auto";
-			}
-			jQuery("#featureInfo").dialog("option", "height", dataHeight);
-
-			jQuery("#featureInfo").dialog('open');
-			jQuery("#featureInfo").fadeIn(200);
-		});
-
-	};
-
-	this.processAttributeTable = function(responseTable$) {
-		var tableArr = [];
-		if (responseTable$.find("tr").length === 2) {
-			// horizontal table returned
-			responseTable$.find("tr").each(
-					function() {
-
-						if (jQuery(this).find("th").length > 0) {
-							// this is the header row
-							var cells$ = jQuery(this).find("th");
-
-						} else {
-							var cells$ = jQuery(this).find("td");
-						}
-						var rowArr = [];
-						cells$.each(function() {
-							var cellText = jQuery(this).text().trim();
-							if (cellText.indexOf('http') === 0) {
-								cellText = '<a href="' + cellText + '">'
-										+ cellText + '</a>';
-							}
-							rowArr.push(cellText);
-						});
-						tableArr.push(rowArr);
-					});
-
-		} else {
-			// vertical table returned
-			// TODO: handle vertical table case
-		}
-
-		// iterate over headers
-		var rows = [];
-		if (tableArr.length > 0) {
-
-			for (var i = 0; i < tableArr[0].length; i++) {
-				var newRowObj = {};
-				newRowObj.values = [];
-				for (var j = 0; j < tableArr.length; j++) {
-					if (j === 0) {
-						newRowObj.header = tableArr[j][i];
-					} else {
-						newRowObj.values.push(tableArr[j][i]);
-					}
-
-				}
-				rows.push(newRowObj);
-			}
-
-		}
-
-		return rows;
-	};
 
 	this.startService = function(layerModel) {
 		// if layer has a startService value in the location field, try to start

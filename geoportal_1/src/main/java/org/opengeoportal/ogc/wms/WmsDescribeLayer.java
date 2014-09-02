@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.OwsInfo.OwsProtocol;

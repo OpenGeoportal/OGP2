@@ -71,7 +71,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.Formatter;

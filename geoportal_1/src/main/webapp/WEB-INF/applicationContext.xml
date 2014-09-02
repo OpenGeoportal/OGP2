@@ -65,6 +65,10 @@
 
 	<beans:bean id="imageDownloader" class="org.opengeoportal.proxy.ImageDownloaderImpl" scope="prototype" lazy-init="true" />
 
+	<beans:bean id="getFeatureInfoFactory.wms" class="org.opengeoportal.ogc.wms.WmsGetFeatureInfoFactory" />
+
+	<beans:bean id="getFeatureInfo.wmms" class="org.opengeoportal.ogc.wms.WmsGetFeatureInfoImpl" scope="prototype" lazy-init="true" />
+	
 	<beans:bean id="exportHandlerFactory.geocommons"
 		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerFactory" />
 		
@@ -92,6 +96,16 @@
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
+	<beans:bean id="transformerProvider" class="org.opengeoportal.metadata.CachingTransformerProvider" />
+
+	<beans:bean id="xmlParserFactory" class="org.opengeoportal.metadata.XmlParserFactory" />
+	
+	<beans:bean id="xmlParser" factory-bean="xmlParserFactory" factory-method="getParser" 
+		class="org.opengeoportal.metadata.XmlParserImpl" scope="prototype"/>
+	
+	<beans:bean id="fgdcParser" class="org.opengeoportal.metadata.FgdcMetadataParser" scope="prototype" />
+	
+
 	<beans:bean id="layerInfoRetriever.solr"
 		class="org.opengeoportal.metadata.SolrLayerInfoRetriever" />
 
@@ -114,7 +128,6 @@
 	
 	<beans:bean id="downloadPackager"
 		class="org.opengeoportal.download.DownloadPackagerImpl" scope="prototype" />
-
 
 	<beans:bean id="downloadHandlerFactory" class="org.opengeoportal.download.DownloadHandlerFactory" />
 	

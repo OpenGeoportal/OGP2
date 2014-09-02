@@ -95,6 +95,10 @@
 <script type="text/javascript"
 	src="resources/javascript/lib/views/searchResultsTable.js"></script>
 
+<script type="text/javascript"
+	src="resources/javascript/lib/models/featureInfoModel.js"></script>
+	<script type="text/javascript"
+	src="resources/javascript/lib/views/featureInfoView.js"></script>
 
 <script type="text/javascript"
 	src="resources/javascript/lib/geoCommonsExport.js"></script>
