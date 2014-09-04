@@ -1539,12 +1539,13 @@ OpenGeoportal.MapController = function() {
 							mapObject.currentAttributeRequests.pop().close();
 						}
 
+						mapObject.currentAttributeRequests.push(attributeView);
+
 					},
 					complete: function(){
 						jQuery(document).trigger({type: "hideLoadIndicator", loadType: "getFeature", layerId: layerId});
 					}});
 				
-				mapObject.currentAttributeRequests.push(attributeView);
 
 				analytics.track("Layer Attributes Viewed", institution, layerId);
 			} else {

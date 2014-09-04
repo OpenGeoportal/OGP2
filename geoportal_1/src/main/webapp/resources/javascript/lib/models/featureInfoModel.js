@@ -23,23 +23,27 @@ OpenGeoportal.LayerAttributeCollection = Backbone.Collection.extend({
 	
 	parse: function(response){
 
-		this.title = response.title;
-		this.layerId = response.layerId;
-		if (!_.has(response.attrDictionary, "fid")){
-			response.attrDictionary.fid = "feature identifier";
+		if (_.has(response, "title")){
+			this.title = response.title;
 		}
-		this.dictionary = new OpenGeoportal.Models.Attribute(response.attrDictionary);
+		
+		if (_.has(response, "layerId")){
+			this.layerId = response.layerId;
+		}		
+		
+		if (_.has(response, "attrDictionary")){
+
+			if (!_.has(response.attrDictionary, "fid")){
+				response.attrDictionary.fid = "feature identifier";
+			}
+			this.dictionary = new OpenGeoportal.Models.Attribute(response.attrDictionary);
+		}
 		
 		if (_.has(response, "error")){
 			return {error: response.error};
 		}
 		
 		return response.features;
-	},
-	
-	abort: function(){
-		this.fetchStatus.abort();
-		this.destroy();
 	}
 });
 
