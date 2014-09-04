@@ -59,7 +59,7 @@ public class MetadataDownloadController {
 	private String getMetadataString(String layerId, String format) throws Exception{
 		String metadataString = "";
 		if (format.equalsIgnoreCase("xml")){
-			metadataString = this.metadataRetriever.getXMLStringFromId(layerId, "fgdc");
+			metadataString = this.metadataRetriever.getXMLStringFromId(layerId);
 
 		} else if (format.equalsIgnoreCase("html")){
 			metadataString = this.metadataRetriever.getMetadataAsHtml(layerId);

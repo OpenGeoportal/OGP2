@@ -52,6 +52,8 @@
 		<js>/resources/javascript/lib/views/previewedLayersTable.js</js>
 		<js>/resources/javascript/lib/views/searchResultsRow.js</js>
 		<js>/resources/javascript/lib/views/searchResultsTable.js</js>
+		<js>/resources/javascript/lib/models/featureInfoModel.js</js>
+		<js>/resources/javascript/lib/views/featureInfoView.js</js>
 		<js>/resources/javascript/lib/geoCommonsExport.js</js>
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>

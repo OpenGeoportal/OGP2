@@ -228,8 +228,8 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 			} else if (nodeName.equalsIgnoreCase("keywords")){
 				coverageOffering.setKeywords(parseKeywords(currentDetail));
 			} else if (nodeName.equalsIgnoreCase("domainSet")){
-				Node sdNode = OgpXmlUtils.getChildNode(currentDetail, "spatialDomain");
-				Node rgNode = OgpXmlUtils.getChildNode(sdNode, "RectifiedGrid");
+				Node sdNode = OgpXmlUtils.getFirstChild(currentDetail, "spatialDomain");
+				Node rgNode = OgpXmlUtils.getFirstChild(sdNode, "RectifiedGrid");
 				coverageOffering.setRectifiedGrid(parseRectifiedGrid(rgNode));
 			} else if (nodeName.equalsIgnoreCase("rangeSet")){
 				// 

@@ -68,14 +68,14 @@ OpenGeoportal.Template = function() {
 	var selectAllHtml = '<div class="showAll offsetColor button">select all</div>';
 	this.selectAllCaption = _.template(selectAllHtml);
 
-	var simpleMenuHtml = '<li><a class="<%= className %>"><%= name %></a>'
+	var simpleMenuHtml = '<li class="<%= className %>"><%= name %>'
 			+ '<input type="hidden" value="<%= value %>" /></li>';
 	this.simpleMenuItem = _.template(simpleMenuHtml);
 
 	var showOnlyHtml = '<div class="showOnly button offsetColor">only</div>';
 	this.showOnlyControl = _.template(showOnlyHtml);
 	
-	var controlMenuHtml = '<li><a class="<%= className %>"><%= icon %><div class="selectText"><%= name %></div><%= control %></a>';
+	var controlMenuHtml = '<li class="<%= className %>"><%= icon %><div class="selectText"><%= name %></div><%= control %>';
 	controlMenuHtml += '<input type="hidden" value="<%= value %>" /></li>';
 	this.controlMenuItem = _.template(controlMenuHtml);
 
@@ -152,12 +152,16 @@ OpenGeoportal.Template = function() {
 	this.emptyTable = _.template(emptyTableHtml);
 	// var list = "<% _.each(people, function(name) { %> <li><%= name %></li> <%
 	// }); %>";
-	var attributeTableHtml = '<table class="attributeInfo">'
-			+ '<caption class="getFeatureTitle offsetColor" title="<%= layerId %>"><%= title %></caption>'
-			+ "<% _.each(tableContent, "
-			+ "function(rowObj) { %><tr><td class=\"attributeName\" ><%= rowObj.header %></td><%  _.each(rowObj.values, "
-			+ "function(value) { %><td><%= value %></td> <% }); %></tr><% }); %>"
-			+ "</table>";
+	var attributeTableHtml = '<div class="attrHeader">'
+			+ '<h3 class="getFeatureTitle offsetColor" title="<%= title %>"><%= title %></h3>'
+			+ '<% if (totalPages > 1){ %>'
+			+ '<div class="featurePage"><button class="button prev offsetColor<% if (page == 1){ %> inactive<% } %>">&lt;</button>'
+			+ '<%= page %> of <%= totalPages %><button class="button next offsetColor<% if (page == totalPages){ %> inactive<% } %>">&gt;</button></div>'
+			+ "<% } %></div>"
+			+ '<div class="attrContainer"><table class="attributeInfo"><%_.each(tableContent, '
+			+ "function(value, key, list) { %><tr><td class=\"attributeName\" ><%= key %></td>"
+			+ "<td><%= value %></td></tr><% }); %>"
+			+ "</table></div>";
 	this.attributeTable = _.template(attributeTableHtml);
 
 	var tableCellHtml = '<td class="<%= colClass %>"><div class="cellWrapper"><%= contents %></div></td>';
