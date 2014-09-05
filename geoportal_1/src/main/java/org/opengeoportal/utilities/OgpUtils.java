@@ -105,7 +105,10 @@ public class OgpUtils {
 	 * @return the layer name with workspace name (fully qualified)
 	 * @throws Exception
 	 */
-	public static String getLayerNameNS(String workspaceName, String layerName) throws Exception{
+	public static String getLayerNameNS(String workspaceName, String layerName) throws Exception {
+		if (workspaceName == null){
+			workspaceName = "";
+		}
 		workspaceName = workspaceName.trim();
 		layerName = layerName.trim();
 		
@@ -118,7 +121,7 @@ public class OgpUtils {
 			embeddedWSName = layerNameArr[0];
 			layerName = layerNameArr[1];
 		}
-		if (!workspaceName.isEmpty()){
+		if (workspaceName != null && !workspaceName.isEmpty()){
 			//prefer the explicit workspaceName?
 			return workspaceName + ":" + layerName;
 		} else {
@@ -183,8 +186,13 @@ public class OgpUtils {
 			throw new MalformedURLException("This path is problematic: ['" + path + "']");
 		}
 
-
-		String combined = path + "?" + requestString;
+		String combined = null;
+		if (!requestString.isEmpty()){
+			combined = path + "?" + requestString;
+		} else {
+			combined = path;
+		}
+		
 		logger.info("Combined URL: " + combined);
 		return combined;
 	}

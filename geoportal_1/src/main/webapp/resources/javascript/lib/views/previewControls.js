@@ -46,14 +46,14 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		var opacity$ = this.$el.find(".opacityControlCell");
 		this.destroySlider(opacity$);
 	},
-	
+	/*
 	setGetFeatureTitle : function(model) {
 		if (model.get("getFeature")) {
 			// console.log(model.get("LayerDisplayName"));
 			this.getFeatureTitle = model.get("LayerDisplayName");
 		}
 	},
-
+*/
 	changeOpacity : function(model, val, options) {
 		var value = model.get("opacity");
 		this.updateSlider("opacityControlCell", value);
@@ -354,11 +354,10 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		var getFeature = model.get("getFeature");
 		if (getFeature) {
 			button$.removeClass(offClass).addClass(onClass);
-			jQuery(".olMap").trigger("attributeInfoOn");
 		} else {
 			button$.removeClass(onClass).addClass(offClass);
 		}
-		this.setGetFeatureTitle(model);
+		//this.setGetFeatureTitle(model);
 	}
 });
 

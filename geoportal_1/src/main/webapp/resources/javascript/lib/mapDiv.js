@@ -293,9 +293,21 @@ OpenGeoportal.MapController = function() {
 		// register events
 		
 		jQuery(document).on("container.resize", function(e, data) {
-			jQuery(".olMap").height(Math.max(data.ht, data.minHt));
-			jQuery(".olMap").width(Math.max(data.wd, data.minWd));
-			that.updateSize();
+
+			//update the size of the map if the container size actually changed.
+			var map$ = jQuery(".olMap");
+
+			var newHeight = Math.max(data.ht, data.minHt);
+			var oldHeight = map$.height();
+			
+			var newWidth = Math.max(data.wd, data.minWd);
+			var oldWidth = map$.width();
+			
+			if (newHeight !== oldHeight || newWidth !== oldWidth){
+				map$.height(newHeight).width(newWidth);
+				that.updateSize();
+			}
+			
 		});
 		
 
@@ -848,10 +860,9 @@ OpenGeoportal.MapController = function() {
 		var that = this;
 		jQuery(document)
 				.on(
-						"attributeInfoOn",
-						".olMap",
+						"map.attributeInfoOn",
 						function() {
-							jQuery(this).css('cursor', "crosshair");
+							jQuery(".olMap").css('cursor', "crosshair");
 							// also deactivate regular map controls
 							var zoomControl = that
 									.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
@@ -864,6 +875,23 @@ OpenGeoportal.MapController = function() {
 								panControl.deactivate();
 							}
 						});
+		jQuery(document)
+		.on(
+				"map.attributeInfoOff",
+				function() {
+					var zoomControl = that
+							.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
+					if (zoomControl.active) {
+						zoomControl.deactivate();
+					}
+					var panControl = that
+							.getControlsByClass("OpenLayers.Control.Navigation")[0];
+					if (!panControl.active) {
+						panControl.activate();
+					}
+				});
+		
+		
 	};
 
 	/**
@@ -1098,7 +1126,7 @@ OpenGeoportal.MapController = function() {
 
 	this.getGeodeticExtent = function() {
 		var mercatorExtent = this.getVisibleExtent();
-		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
+		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		return mercatorExtent.transform(sphericalMercator, geodetic);
 	};
@@ -1110,7 +1138,7 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.getSearchCenter = function() {
-		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
+		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		var topLeft = this.getMapOffset();
 		var width = jQuery(".olMap").width();
@@ -1142,7 +1170,9 @@ OpenGeoportal.MapController = function() {
 	this.getPreviewUrlArray = function(layerModel, useTilecache) {
 		// is layer public or private? is this a request that can be handled by
 		// a tilecache?
-
+		var isTilecache = false;
+		var isProxy = false;
+		
 		var urlArraySize = 1; // this seems to be a good size for OpenLayers performance
 		var urlArray = [];
 		var populateUrlArray = function(addressArray) {
@@ -1167,15 +1197,22 @@ OpenGeoportal.MapController = function() {
 
 		if (layerModel.has("wmsProxy")) {
 			populateUrlArray([ layerModel.get("wmsProxy") ]);
+			isProxy = true;
 		} else if ((typeof layerModel.get("Location").tilecache !== "undefined")
 				&& useTilecache) {
 			populateUrlArray(layerModel.get("Location").tilecache);
+			isTilecache = true;
 		} else {
 			populateUrlArray(layerModel.get("Location").wms);
 		}
 
 		// console.log(urlArray);
-		return urlArray;
+		var response = {
+				urls: urlArray,
+				isTilecache: isTilecache,
+				isProxy: isProxy
+		};
+		return response;
 	};
 
 	/***************************************************************************
@@ -1675,7 +1712,8 @@ OpenGeoportal.MapController = function() {
 		// layers is different for Harvard layers
 		var wmsName = layerModel.get("qualifiedName");
 		// don't use a tilecache
-		layer.url = this.getPreviewUrlArray(layerModel, false);
+		layer.url = this.getPreviewUrlArray(layerModel, false).urls;
+		//if the url array is still from a tilecache, we should throw an error or notify the user.
 		var userColor = layerModel.get("color");
 		var userWidth = layerModel.get("graphicWidth");
 		switch (dataType) {
@@ -1889,17 +1927,6 @@ OpenGeoportal.MapController = function() {
 	
 	
 	this.addWMSLayer = function(layerModel) {
-		// mapObj requires institution, layerName, title, datatype, access
-		/*
-		 * var bottomLeft = this.WGS84ToMercator(mapObj.west, mapObj.south); var
-		 * topRight = this.WGS84ToMercator(mapObj.east, mapObj.north); var
-		 * bounds = new OpenLayers.Bounds(); bounds.extend(new
-		 * OpenLayers.LonLat(bottomLeft.lon, bottomLeft.lat)); bounds.extend(new
-		 * OpenLayers.LonLat(topRight.lon, topRight.lat)); console.log(bounds);
-		 * var box = new OpenLayers.Feature.Vector(bounds.toGeometry()); var
-		 * featureLayer = new OpenLayers.Layer.Vector("BBoxTest");
-		 * featureLayer.addFeatures([box]); this.addLayer(featureLayer);
-		 */
 
 		var layerId = layerModel.get("LayerId");
 		// check to see if layer is on openlayers map, if so, show layer
@@ -1923,13 +1950,12 @@ OpenGeoportal.MapController = function() {
 			return;
 		}
 
-
-
 		// use a tilecache if we are aware of it
 
-		var wmsArray = this.getPreviewUrlArray(layerModel, true);
+		var previewObj = this.getPreviewUrlArray(layerModel, true);
 	
-
+		var wmsArray = previewObj.urls;
+		var isTilecache = previewObj.isTilecache;
 		// won't actually do anything, since noMagic is true and transparent is
 		// true
 		var format;
@@ -1946,7 +1972,12 @@ OpenGeoportal.MapController = function() {
 					// if this is a raster layer, we should use jpeg format, png for vector
 					// (per geoserver docs)
 					var layerName = that.getLayerName(layerModel, wmsArray[0]);
-						
+					var version = "1.3.0";
+					if (isTilecache){
+						//geowebcache doesn't support wms 1.3.0 
+						version = "1.1.1";
+					}
+					
 					var newLayer = new OpenLayers.Layer.WMS(
 							layerModel.get("LayerDisplayName"), 
 							wmsArray, 
@@ -1956,7 +1987,7 @@ OpenGeoportal.MapController = function() {
 							tiled : true,
 							exceptions : "application/vnd.ogc.se_xml",
 							transparent : true,
-							version : "1.3.0"
+							version : version
 						}, {
 							transitionEffect : 'resize',
 							opacity : opacitySetting * .01,
@@ -1991,7 +2022,10 @@ OpenGeoportal.MapController = function() {
 
 	};
 
-	// thanks to Allen Lin, U of MN
+	/**
+	 * @author Allen Lin, U of MN
+	 * 
+	 */ 
 	this.addArcGISRestLayer = function(layerModel) {
 		var layerId = layerModel.get("LayerId");
 		// check to see if layer is on openlayers map, if so, show layer
@@ -2013,15 +2047,6 @@ OpenGeoportal.MapController = function() {
 			
 			});
 			return;
-		}
-		
-		// won't actually do anything, since noMagic is true and transparent is
-		// true
-		var format;
-		if (layerModel.isVector) {
-			format = "image/png";
-		} else {
-			format = "image/jpeg";
 		}
 
 		// if this is a raster layer, we should use jpeg format, png for vector
@@ -2138,12 +2163,17 @@ OpenGeoportal.MapController = function() {
 			offHandler : this.hideLayer
 		} ];
 
+		var method = null;
 		for ( var i in previewMethods) {
+			method = previewMethods[i][functionType];
+
 			if (previewMethods[i].type === previewType) {
-				return previewMethods[i][functionType];
+				break;
 			}
+			
 		}
-		return previewMethods["default"][functionType];
+
+		return method;
 	};
 
 	this.previewLayerOn = function(layerId) {
@@ -2203,11 +2233,7 @@ OpenGeoportal.MapController = function() {
 					'Unable to remove Previewed layer "'
 							+ previewModel.get("LayerDisplayName") + '"');
 		}
-		// if no errors, set state for the layer
 
-		// previewModel.set({preview: "off"});
-		// this.addToPreviewedLayers(rowData.node);//this should happen in the
-		// datatable
 		// analytics.track("Layer Unpreviewed", dataObj["Institution"],
 		// layerId);
 

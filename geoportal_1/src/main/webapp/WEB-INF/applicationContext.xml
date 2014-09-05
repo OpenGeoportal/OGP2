@@ -152,7 +152,7 @@
 	</beans:bean>
 
 	<beans:bean id="httpClient.pooling"
-		class="org.opengeoportal.utilities.http.PoolingHttpClient" >
+		class="org.opengeoportal.utilities.http.PoolingHttpClient" init-method="init">
 		<beans:property name="maxConnections" value="${connectionPool.maxTotal}" />
 		<beans:property name="maxConnectionsRt" value="${connectionPool.maxPerRoute}" />
 	</beans:bean>

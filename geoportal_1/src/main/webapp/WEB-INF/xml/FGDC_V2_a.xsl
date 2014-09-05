@@ -14,8 +14,9 @@
 		<H1>
 			<xsl:value-of select="metadata/idinfo/citation/citeinfo/title" />
 		</H1>
+		<div id="metadataHeader">
 		<H2>Metadata:</H2>
-		<UL>
+		<UL id="metadataTOC">
 			<xsl:for-each select="metadata/idinfo">
 				<LI>
 					<A HREF="#Identification_Information">Identification_Information</A>
@@ -83,8 +84,25 @@
 					<A HREF="#Metadata_Reference_Information">Metadata_Reference_Information</A>
 				</LI>
 			</xsl:for-each>
+			
+
 		</UL>
 
+					<xsl:for-each select="metadata/idinfo">
+			<xsl:for-each select="browse">
+				<xsl:for-each select="browsen">
+				       <xsl:if test=". != ''">
+					<div><xsl:attribute name="class">thumbnail</xsl:attribute>
+					<img>
+					<xsl:attribute name="SRC"> <xsl:value-of select="." /> </xsl:attribute>
+											
+					</img></div>
+					</xsl:if>
+					</xsl:for-each>
+					
+					</xsl:for-each>
+					</xsl:for-each>
+		</div>
 		<xsl:apply-templates select="metadata/idinfo" />
 		<xsl:apply-templates select="metadata/dataqual" />
 		<xsl:apply-templates select="metadata/spdoinfo" />

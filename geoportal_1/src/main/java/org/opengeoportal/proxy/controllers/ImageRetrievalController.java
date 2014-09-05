@@ -45,7 +45,8 @@ public class ImageRetrievalController {
 		logger.info(downloadPackage.getName());
 		logger.info(downloadPackage.getAbsolutePath());
 		response.setContentLength((int) downloadPackage.length());
-		response.setContentType("application/octet-stream");
+		//response.setContentType("application/octet-stream");
+		response.setContentType("image/png");
 		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());
 		FileUtils.copyFile(downloadPackage, response.getOutputStream());
 	}

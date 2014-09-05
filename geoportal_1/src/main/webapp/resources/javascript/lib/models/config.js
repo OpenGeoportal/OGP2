@@ -107,7 +107,19 @@ OpenGeoportal.Config.DataTypes = new OpenGeoportal.Config.DataTypeCollection([
 			displayName : "Scanned Map",
 			uiClass : "mapIcon",
 			selected : true
-		} ]);
+		}/*,
+		{
+			value: "Tabular",
+			displayName: "Tabular Data",
+			uiClass : "tabularIcon",
+			selected: true
+		},
+		{
+			value: "Document",
+			displayName: "Document",
+			uiClass : "documentIcon",
+			selected: true
+		}*/]);
 
 //Do I even need to extend this?
 OpenGeoportal.Config.TopicCollection = Backbone.Collection.extend({});

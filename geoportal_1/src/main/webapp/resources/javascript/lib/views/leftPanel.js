@@ -178,7 +178,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				jQuery(".slideHorizontal").fadeOut();
 
 				this.$el.animate({
-					'width' : jQuery('#container').width() - 2
+					'width' : jQuery('#container').width()
 				}, {
 					queue : false,
 					duration : 500,

@@ -105,6 +105,7 @@ OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 			isRaster : function() {
 				var attr = "DataType";
 				var attrVals = [ "raster", "scannedmap"];
+
 				return this.attributeIsOneOf(attr, attrVals);
 			},
 			hasOGCEndpoint : function(ogcProtocol) {

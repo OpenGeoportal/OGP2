@@ -30,6 +30,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		ignoreSpatial: false,
 		displayRestrictedAdvanced: [],
 
+		geocodedBbox: null,
 		isoTopicList: null,
 		dataTypeList: null,
 		repositoryList: null,
@@ -48,6 +49,16 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 			isoTopicList: OpenGeoportal.Config.IsoTopics,
 			dataTypeList: OpenGeoportal.Config.DataTypes,
 			repositoryList: OpenGeoportal.Config.Repositories});
+		
+		this.listenTo(this, "change:geocodedBbox", function(){
+			//console.log("geocoder map zoom");
+			var geoBbox = this.get("geocodedBbox");
+			if (geoBbox !== null){
+				jQuery(document).trigger("map.zoomToLayerExtent", {
+					bbox : geoBbox
+				});
+			}
+		});
 	},
 	
 	/*
@@ -144,10 +155,12 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		if ((what != null) && (what != "")) {
 			solr.setWhat(what);
 		}
-		/*
-		 * if ((whereField != null) && (whereField != "")){
-		 * solr.setWhere(whereField); }
-		 */
+		
+		var where = this.get("where");
+		if ((where != null) && (where != "")){
+			solr.setWhere(where); 
+		}
+		 
 
 		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedBasic")));
 

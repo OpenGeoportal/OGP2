@@ -186,7 +186,7 @@ OpenGeoportal.Template = function() {
 	formatControlHtml += '</select><br/>';
 	this.formatSelectionControl = _.template(formatControlHtml);
 
-	var clipControlHtml = '<input id="checkClip" type="checkbox" checked="checked" /><label for="checkClip" id="checkClipLabel">Clip data to map extent</label><br/> \n';
+	var clipControlHtml = '<input id="<%= elId %>" type="checkbox" <% if (isClipped){ %>checked="checked" <% } %>/><label for="<%= elId %>">Clip data to map extent</label><br/> \n';
 	this.clipControl = _.template(clipControlHtml);
 
 	var addEmailHtml = '<div><label for="emailAddress">You have selected some layers that require an email address. Please enter your email to receive a download link:</label><br />\n';

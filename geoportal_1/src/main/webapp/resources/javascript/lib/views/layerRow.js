@@ -99,6 +99,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			if (typeof this.model.get("Location").previewLink !== "undefined"){
 				//go to the previewLink url
 				url = this.model.get("Location").previewLink;
+			} else if (typeof this.model.get("Location").externalLink !== "undefined"){
+				url = this.model.get("Location").externalLink;
 			}
 		}
 		return url;
