@@ -432,8 +432,8 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.topics = new OpenGeoportal.Views.CollectionSelect({
 					collection : isoTopics,
 					el : "div#topicDropdown",
-					valueAttribute : "topic",
-					displayAttribute : "label",
+					valueAttribute : "value",
+					displayAttribute : "displayName",
 					buttonLabel : "Select a topic",
 					itemClass : "isoTopicMenuItem"
 				});

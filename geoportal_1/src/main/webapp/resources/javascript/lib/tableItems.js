@@ -47,7 +47,7 @@ OpenGeoportal.TableItems = function TableItems() {
 				params.tooltip = "Unspecified";
 				params.text = "?";
 			} else {
-				params.displayClass = iconModel.get("uiClass");
+				params.displayClass = iconModel.get("iconClass");
 				params.tooltip = iconModel.get("displayName");
 				params.text = "";
 			}

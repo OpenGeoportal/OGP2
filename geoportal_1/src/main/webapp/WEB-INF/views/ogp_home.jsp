@@ -17,8 +17,13 @@ OpenGeoportal.Config.loginRepository="${loginRepository}";
 OpenGeoportal.Config.loginType="${loginType}";
 OpenGeoportal.Config.loginUrl="${loginUrl}";
 OpenGeoportal.Config.sd="${secureDomain}";
-OpenGeoportal.Config.shareIds=${shareIds} ;
+OpenGeoportal.Config.LoginState=${loginStatus};
+OpenGeoportal.Config.shareIds=${shareIds};
 OpenGeoportal.Config.shareBbox="${shareBbox}";
+OpenGeoportal.Config.TopicsBootstrap = ${topics};
+OpenGeoportal.Config.DataTypesBootstrap = ${dataTypes};
+OpenGeoportal.Config.ProxyCollectionBootstrap = ${proxies};
+OpenGeoportal.Config.RepositoriesBootstrap = ${repositories};
 
 	</script>
 	

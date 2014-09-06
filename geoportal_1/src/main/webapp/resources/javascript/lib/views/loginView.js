@@ -27,7 +27,7 @@ OpenGeoportal.Views.Login = Backbone.View
 			model : OpenGeoportal.Models.User,
 
 			initialize : function() {
-				this.model.fetch();
+				this.model.set(OpenGeoportal.Config.LoginState);
 				// we could put this on setInterval, so that when the user's
 				// session expires, they get properly logged out
 				// or will this just keep the session open?

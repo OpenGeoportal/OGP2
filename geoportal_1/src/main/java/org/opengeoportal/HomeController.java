@@ -1,10 +1,16 @@
 package org.opengeoportal;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.opengeoportal.config.datatypes.DatatypesConfigRetriever;
 import org.opengeoportal.config.ogp.OgpConfig;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
+import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
+import org.opengeoportal.config.topics.TopicsConfigRetriever;
+import org.opengeoportal.security.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +20,29 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Controller
 public class HomeController {
 	@Autowired
 	private OgpConfigRetriever ogpConfigRetriever;
+	
+	@Autowired
+	private TopicsConfigRetriever topicsConfigRetriever;
+	
+	@Autowired
+	private DatatypesConfigRetriever dataTypesConfigRetriever;
+	
+	@Autowired
+	private ProxyConfigRetriever proxyConfigRetriever;
+	
+	@Autowired
+	private LoginService loginService;
+	
+	@Autowired
+	private RepositoryConfigRetriever repositoryConfigRetriever;
+
 	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -76,7 +101,7 @@ public class HomeController {
 		return quotedSet;
 	}
 	
-	private void addConfig(ModelAndView mav){
+	private void addConfig(ModelAndView mav) throws IOException{
 		OgpConfig conf = ogpConfigRetriever.getConfig();
 		
 		mav.addObject("titlePrimary", conf.getPageTitlePrimary());
@@ -92,6 +117,18 @@ public class HomeController {
 		mav.addObject("loginType", conf.getLoginConfig().getType());
 		mav.addObject("loginUrl", conf.getLoginConfig().getUrl());
 		mav.addObject("secureDomain", conf.getLoginConfig().getSecureDomain());
+		mav.addObject("loginStatus", toJsonString(loginService.getStatus()));
+		mav.addObject("topics", toJsonString(topicsConfigRetriever.getConfig()));
 		
+		mav.addObject("dataTypes", toJsonString(dataTypesConfigRetriever.getConfig()));
+		mav.addObject("proxies", toJsonString(proxyConfigRetriever.getPublicConfig()));
+		
+		mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
 	}
+	
+	private String toJsonString(Object obj) throws JsonProcessingException{
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(obj);
+	}
+	
 }

@@ -245,8 +245,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 
 OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	  events: {
-		  //"click .select" : "toggleMenu",
-		  //"focusout .ui-menu" : "hideMenu",
+		  "click .select" : "showMenu",
 		  "click .showOnly": "showOnly",
 		  "click .showAll": "selectAll",
 		  "focus .select" : "showMenu"

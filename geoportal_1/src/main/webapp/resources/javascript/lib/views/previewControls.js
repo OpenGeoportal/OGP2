@@ -28,12 +28,11 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		this.listenTo(this.model, "change:opacity", this.changeOpacity);
 		this.listenTo(this.model, "change:graphicWidth",
 				this.changeGraphicWidth);
-		//console.log("created new");
+		this.listenTo(this.model, "change:preview", this.toggleControls);
 		this.render();
 	},
 	
 	close: function(){
-		//console.log("destroyed");
 		this.stopListening();
 		this.destroyWidgets();
 		this.remove();
@@ -46,14 +45,34 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		var opacity$ = this.$el.find(".opacityControlCell");
 		this.destroySlider(opacity$);
 	},
-	/*
-	setGetFeatureTitle : function(model) {
-		if (model.get("getFeature")) {
-			// console.log(model.get("LayerDisplayName"));
-			this.getFeatureTitle = model.get("LayerDisplayName");
+	
+	toggleControls: function(model, val, options) {
+		if (val === "on"){
+			this.enableControls(model, val, options)
+		} else {
+			this.disableControls();
 		}
 	},
-*/
+	
+	enableControls: function() {
+		this.delegateEvents();
+		this.$el.css({
+			opacity: 1
+		}).find(".button").css({
+			cursor: "pointer"
+			});
+	},
+	
+	disableControls: function() {
+		this.delegateEvents({"click .zoomToLayerControl" : "zoomToLayerExtent"});
+		
+		this.$(".previewControls").children().not(".zoomToLayerControl").css({
+			opacity:.4
+			}).find(".button").css({
+				cursor: "default"
+			})
+
+	},
 	changeOpacity : function(model, val, options) {
 		var value = model.get("opacity");
 		this.updateSlider("opacityControlCell", value);
@@ -136,6 +155,9 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			toolsMarkup : markup
 		}));
 
+		if (this.model.get("preview") === "off"){
+			this.disableControls();
+		}
 		return this;
 
 	},
