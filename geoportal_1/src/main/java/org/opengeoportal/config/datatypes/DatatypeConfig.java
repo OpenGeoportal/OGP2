@@ -1,5 +1,11 @@
 package org.opengeoportal.config.datatypes;
 
+/**
+ * object to contain info about datatypes needed by the client
+ * 
+ * @author cbarne02
+ *
+ */
 public class DatatypeConfig {
 /*	<datatype selected="true">
 	<value>

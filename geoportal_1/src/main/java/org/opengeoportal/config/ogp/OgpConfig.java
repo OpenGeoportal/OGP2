@@ -2,12 +2,13 @@ package org.opengeoportal.config.ogp;
 
 import java.net.URL;
 
-public class OgpConfig {
-/*
- * really a catch-all for the other stuff the web app needs.
- * 
- * 
+/**
+ * really a catch-all container for the other stuff the web app needs from config
+ * @author cbarne02
+ *
  */
+public class OgpConfig {
+
 
 	String pageTitlePrimary;
 	String pageTitleOffset;

@@ -1,5 +1,11 @@
 package org.opengeoportal.config.topics;
 
+/**
+ *  object to contain info about iso topics needed by the client
+ *  
+ * @author cbarne02
+ *
+ */
 public class TopicsConfig {
 /*			<topic>
 			<value>

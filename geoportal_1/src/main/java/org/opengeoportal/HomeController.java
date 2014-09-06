@@ -23,6 +23,14 @@ import org.springframework.web.servlet.ModelAndView;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * The Controller for the main OGP page.
+ * 
+ * Bootstraps config info. Also passes info from the "Share Cart" url.
+ * 
+ * @author cbarne02
+ *
+ */
 @Controller
 public class HomeController {
 	@Autowired

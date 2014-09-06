@@ -16,7 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-@Controller
+/**
+ * Not currently used, but might be needed if we determine that any config needs to be changed in vivo
+ * 
+ * @author cbarne02
+ *
+ */
+//commenting out the controller annotation should prevent this controller from being loaded
+//@Controller
 @RequestMapping("/config")
 public class ConfigController {
 
@@ -49,4 +56,5 @@ public class ConfigController {
 		return proxyConfigRetriever.getPublicConfig();
 
 	}
+	
 }

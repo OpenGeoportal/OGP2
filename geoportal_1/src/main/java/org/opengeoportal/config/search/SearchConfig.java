@@ -3,6 +3,12 @@ package org.opengeoportal.config.search;
 import java.net.URL;
 import java.util.List;
 
+/**
+ * POJO that holds info about search needed by both client and server from properties file
+ * 
+ * @author cbarne02
+ *
+ */
 public class SearchConfig {
 /*
  * 

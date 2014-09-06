@@ -6,6 +6,12 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 
+/**
+ * Class for dealing with xml config file using Apache Commons Configuration
+ * 
+ * @author cbarne02
+ *
+ */
 public class XmlProperties {
 	XMLConfiguration config;
 
@@ -13,6 +19,7 @@ public class XmlProperties {
 	
 	private void load() throws ConfigurationException {
 		config = new XMLConfiguration();
+		//allows us to use xpath expressions to find config info
 		config.setExpressionEngine(new XPathExpressionEngine());
 		config.load(config_file);
 	}

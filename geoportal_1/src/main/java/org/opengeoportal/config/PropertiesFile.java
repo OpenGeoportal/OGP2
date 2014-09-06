@@ -9,6 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 
+/**
+ * Class for dealing with properties files
+ * 
+ * @author cbarne02
+ *
+ */
 public class PropertiesFile {
 	Properties properties;
 	Resource resource;//	<beans:property name="resource" value="WEB-INF/repositories.properties"/> ogp.properties

@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+/**
+ * Not currently used.  Could be developed into a more user friendly interface for setting config.
+ * 
+ * @author cbarne02
+ *
+ */
 @Controller
 @RequestMapping("/admin")
 public class AdminController {

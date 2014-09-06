@@ -12,6 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
  
+/**
+ * Retrieves Datatype info from an xml file and marshalls into a List of POJOs
+ * 
+ * @author cbarne02
+ *
+ */
 public class DatatypesConfigRetriever implements ConfigRetriever {
 
 	@Autowired
