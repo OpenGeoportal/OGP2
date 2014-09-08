@@ -881,12 +881,9 @@ OpenGeoportal.MapController = function() {
 				function() {
 					var zoomControl = that
 							.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
-					if (zoomControl.active) {
-						zoomControl.deactivate();
-					}
 					var panControl = that
 							.getControlsByClass("OpenLayers.Control.Navigation")[0];
-					if (!panControl.active) {
+					if (!panControl.active && !zoomControl.active) {
 						panControl.activate();
 					}
 				});
