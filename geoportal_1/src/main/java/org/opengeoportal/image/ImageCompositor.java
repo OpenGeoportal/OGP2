@@ -1,6 +1,5 @@
-package org.opengeoportal.proxy;
+package org.opengeoportal.image;
 
-import org.opengeoportal.proxy.controllers.ImageRequest;
 
 public interface ImageCompositor {
 

@@ -1,7 +1,5 @@
-package org.opengeoportal.proxy.controllers;
+package org.opengeoportal.featureinfo;
 
-import org.opengeoportal.ogc.wms.WmsGetFeatureInfo;
-import org.opengeoportal.ogc.wms.WmsGetFeatureInfoFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,28 +19,38 @@ import org.springframework.web.bind.annotation.ResponseBody;
  *         {layerId: xxx, title: xxx, features: [{xxx: xxx} ...],
  *            attrDictionary: [{xxx: xxx} ...] }
  * </pre>
+ * 				var params = {
+						ogpid: layerId,
+						coord: latLon.lon + "," + latLon.lat,
+						bbox: mapExtent.toBBOX(),
+						srs: "EPSG:3857",
+						pixel: Math.round(pixel.x) + "," + Math.round(pixel.y),
+						size: mapObject.size.w + "," + mapObject.size.h,
+				};
  */
 @Controller
 @RequestMapping("/featureInfo")
 public class GetFeatureInfoController {
 
 	@Autowired
-	private WmsGetFeatureInfoFactory wmsGetFeatureInfoFactory;
+	private FeatureInfoFactory featureInfoFactory;
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
 	public ModelMap getFeatureInfo(@RequestParam("ogpid") String layerId,
-			@RequestParam("bbox") String bbox,
-			@RequestParam("x") String xCoord, @RequestParam("y") String yCoord,
-			@RequestParam("width") String width,
-			@RequestParam("height") String height) throws Exception {
+			@RequestParam("coord") Double[] coord, 
+			@RequestParam("bbox") Double[] bbox,
+			@RequestParam("srs") String srs,
+			@RequestParam("pixel") Integer[] pixel,
+			@RequestParam("size") Integer[] size) throws Exception {
 
-		WmsGetFeatureInfo gfi = wmsGetFeatureInfoFactory.getObject();
+		FeatureInfo gfi = featureInfoFactory.getObject(layerId);
 		int maxFeatures = 20;
-		return gfi.getFeatureInformation(layerId, xCoord, yCoord, bbox, height,
-				width, maxFeatures);
+
+		return gfi.getFeatureInformation(coord, bbox, srs, pixel,
+				size, maxFeatures);
 
 	}
 

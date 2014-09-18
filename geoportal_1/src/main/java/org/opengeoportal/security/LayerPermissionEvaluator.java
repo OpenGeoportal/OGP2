@@ -26,7 +26,7 @@ public class LayerPermissionEvaluator implements PermissionEvaluator {
 	
 	@Override
 	public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission){
-		logger.info("checking permission...");
+		logger.debug("checking permission...");
 		  boolean hasPermission = false;
 		  
 		  if (targetDomainObject instanceof SolrRecord){

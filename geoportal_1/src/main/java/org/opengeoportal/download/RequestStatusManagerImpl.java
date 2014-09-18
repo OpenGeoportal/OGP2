@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.opengeoportal.export.geocommons.GeoCommonsExportRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest;
+import org.opengeoportal.image.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

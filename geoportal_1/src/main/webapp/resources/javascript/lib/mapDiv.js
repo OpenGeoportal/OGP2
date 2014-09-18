@@ -1547,14 +1547,15 @@ OpenGeoportal.MapController = function() {
 				var mapExtent = mapObject.getExtent();
 				var pixel = e.xy;
 				// geoserver doesn't like fractional pixel values
-
+				var latLon = mapObject.getLonLatFromPixel(pixel);
+				
 				var params = {
 						ogpid: layerId,
+						coord: latLon.lon + "," + latLon.lat,
 						bbox: mapExtent.toBBOX(),
-						x: Math.round(pixel.x),
-						y: Math.round(pixel.y),
-						height: mapObject.size.h,
-						width: mapObject.size.w
+						srs: "EPSG:3857",
+						pixel: Math.round(pixel.x) + "," + Math.round(pixel.y),
+						size: mapObject.size.w + "," + mapObject.size.h
 				};
 				
 
@@ -2009,7 +2010,7 @@ OpenGeoportal.MapController = function() {
 					
 					that.addLayer(newLayer);
 					try {
-					layerModel.set({zIndex: newLayer.getZIndex()});
+						layerModel.set({zIndex: newLayer.getZIndex()});
 					} catch (e){
 						console.log(e);
 						console.log(newLayer.getZIndex());
@@ -2046,11 +2047,13 @@ OpenGeoportal.MapController = function() {
 			return;
 		}
 
-		// if this is a raster layer, we should use jpeg format, png for vector
-		// (per geoserver docs)
+		//throws an error if the location key is not found, but should never get here
+		//since the key is used to pick this preview method
+		var url = OpenGeoportal.Utility.getLocationValueIgnoreCase(layerModel.get("Location"), "ArcGISRest");
+				
 		var newLayer = new OpenLayers.Layer.ArcGIS93Rest(
 				layerModel.get("LayerDisplayName"),
-				layerModel.get("Location").ArcGISRest, 
+				url, 
 				{
 					layers : "show:" + layerModel.get("Name"),
 					transparent : true

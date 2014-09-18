@@ -1,8 +1,6 @@
-package org.opengeoportal.proxy;
+package org.opengeoportal.image;
 
 import java.util.UUID;
-
-import org.opengeoportal.proxy.controllers.ImageRequest;
 
 public interface ImageHandler {
 

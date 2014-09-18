@@ -1,8 +1,9 @@
-package org.opengeoportal.ogc.wms;
+package org.opengeoportal.featureinfo;
 
+import org.opengeoportal.solr.SolrRecord;
 import org.springframework.ui.ModelMap;
 
-public interface WmsGetFeatureInfo {
+public interface FeatureInfo {
 
 	/**
 	 * Retrieve feature information from a wms source.
@@ -18,9 +19,14 @@ public interface WmsGetFeatureInfo {
 	 *         feature info. The feature info value is an array of models. Keys
 	 *         are feature attribute labels and values are the attribute values
 	 * @throws Exception
-	 */
-	ModelMap getFeatureInformation(String layerId, String xCoord,
-			String yCoord, String bbox, String height, String width,
+	 */		
+	ModelMap getFeatureInformation(Double[] coord,
+			Double[] bbox, String srs, Integer[] pixel, Integer[] size,
 			int maxFeatures) throws Exception;
 
+	boolean hasInfoUrl();
+	
+	String getInfoUrl() throws Exception;
+	
+	void setSolrRecord(SolrRecord solrRecord);
 }

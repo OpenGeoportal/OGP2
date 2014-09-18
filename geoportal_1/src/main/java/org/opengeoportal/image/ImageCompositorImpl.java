@@ -1,4 +1,4 @@
-package org.opengeoportal.proxy;
+package org.opengeoportal.image;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -14,9 +14,8 @@ import java.util.concurrent.TimeoutException;
 
 import javax.imageio.ImageIO;
 
-import org.opengeoportal.proxy.controllers.ImageRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
-import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
+import org.opengeoportal.image.ImageRequest.ImageStatus;
+import org.opengeoportal.image.ImageRequest.LayerImage;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

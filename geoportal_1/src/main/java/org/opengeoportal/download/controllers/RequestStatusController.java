@@ -10,7 +10,7 @@ import org.opengeoportal.download.MethodLevelDownloadRequest;
 import org.opengeoportal.download.RequestStatusManager;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.export.geocommons.GeoCommonsExportRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest;
+import org.opengeoportal.image.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

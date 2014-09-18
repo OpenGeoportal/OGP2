@@ -98,6 +98,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 	}, {
 		type : "arcgisrest",
 		attributes : {
+			getFeature : false,
 			opacity : 100
 		}
 	} ],
@@ -132,9 +133,6 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 			// "http://www.lib.berkeley.edu/EART/mapviewer/collections/histoposf"}}
 			previewType = "imagecollection";
 		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
-				locationObj, [ "arcgisrest" ])) {
-			previewType = "arcgisrest";
-		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
 				locationObj, [ "externalLink" ])) {
 			previewType = "externalLink";
 		}
@@ -142,7 +140,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 		this.set({
 			previewType : previewType
-		});
+		}, {silent: true});
 
 		return previewType;
 	},
@@ -151,7 +149,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 		// do some categorization
 		var previewType = this.setPreviewType();
 		var attr = this.getAttributesByType(previewType);
-		this.set(attr);
+		this.set(attr, {silent: true});
 	}
 });
 
@@ -165,7 +163,8 @@ OpenGeoportal.Attributes = Backbone.Collection.extend({
 OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	model : OpenGeoportal.Models.PreviewLayer,
 	initialize : function() {
-		this.listenTo(this, "change:preview add", this.changePreview);
+		this.listenTo(this, "change:preview", this.changePreview);
+		this.listenTo(this, "add", this.addPreview);
 		this.listenTo(this, "change:graphicWidth change:color",
 				this.changeLayerStyle);
 		this.listenTo(this, "change:opacity", this.changeLayerOpacity);
@@ -274,10 +273,11 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 				LayerId : layerId
 			});// show layer on map
 		} else {
-
+			
 			jQuery(document).trigger("previewLayerOff", {
 				LayerId : layerId
 			});
+			
 			// also set getFeature state to off.
 			if (model.has("getFeature")) {
 				model.set({
@@ -286,6 +286,17 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 			}
 		}
 		// console.log(model.get("LayerId") + " changed preview to " + preview);
+	},
+	
+	addPreview : function(model, val, options) {
+		// console.log(arguments);
+		var preview = model.get("preview");
+		var layerId = model.get("LayerId");
+		if (preview === "on") {
+			jQuery(document).trigger("previewLayerOn", {
+				LayerId : layerId
+			});// show layer on map
+		} 
 	},
 
 	isPreviewed : function(layerId) {
@@ -303,16 +314,17 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 
 	getLayerModel : function(resultModel) {
+
 		var layerId = resultModel.get("LayerId");
 		var arrModel = this.where({LayerId: layerId});
 		var layerModel;
 		if (arrModel.length > 1){
-			throw new Error("There are " + arrModel.length + " layers in the previewed layers collection.  This should never happen.");
+			throw new Error("There are " + arrModel.length + " layers in the previewed layers collection with the same LayerId.  This should never happen.");
 		}
 		if (arrModel.length > 0){
 			layerModel = arrModel[0];
 		} else {
-			this.add(resultModel.attributes);
+			this.add(_.clone(resultModel.attributes));
 			layerModel = this.findWhere({
 				LayerId : layerId
 			});

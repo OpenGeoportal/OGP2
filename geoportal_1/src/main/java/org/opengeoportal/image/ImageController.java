@@ -1,12 +1,9 @@
-package org.opengeoportal.proxy.controllers;
+package org.opengeoportal.image;
 
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
-import org.opengeoportal.proxy.ImageHandler;
-import org.opengeoportal.proxy.ImageHandlerFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

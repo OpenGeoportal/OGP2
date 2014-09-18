@@ -1,4 +1,4 @@
-package org.opengeoportal.proxy;
+package org.opengeoportal.image;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -10,10 +10,9 @@ import java.util.concurrent.Future;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
+import org.opengeoportal.image.ImageRequest.ImageStatus;
+import org.opengeoportal.image.ImageRequest.LayerImage;
 import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.proxy.controllers.ImageRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
-import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
 import org.opengeoportal.solr.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

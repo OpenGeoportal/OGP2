@@ -3,7 +3,7 @@ package org.opengeoportal.download;
 import java.util.UUID;
 
 import org.opengeoportal.export.geocommons.GeoCommonsExportRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest;
+import org.opengeoportal.image.ImageRequest;
 
 public interface RequestStatusManager {
 

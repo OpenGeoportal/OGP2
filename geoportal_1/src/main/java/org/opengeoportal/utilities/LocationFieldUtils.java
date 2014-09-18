@@ -268,11 +268,7 @@ public final class LocationFieldUtils {
 	//Added by Allen Lin on Jan, 24, 2014
 
 	public static String getArcGISRestUrl(String locationField) throws JsonParseException{
-
 		return parseLocationFromKey(locationField, "ArcGISRest").get(0);
-
-
-
 	}
 	
 	/**
@@ -292,6 +288,8 @@ public final class LocationFieldUtils {
 		locationField = locationField.replaceAll("(?i)\"download\"", "\"fileDownload\"");
 		locationField = locationField.replaceAll("(?i)\"fileDownload\"", "\"fileDownload\"");
 		locationField = locationField.replaceAll("(?i)\"tilecache\"", "\"tilecache\"");
+		locationField = locationField.replaceAll("(?i)\"arcgisrest\"", "\"ArcGISRest\"");
+
 
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = null;

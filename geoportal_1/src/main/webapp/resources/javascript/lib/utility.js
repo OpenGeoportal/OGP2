@@ -355,6 +355,20 @@ OpenGeoportal.Utility.hasLocationValueIgnoreCase = function(location, keyArr) {
 	return hasKey;
 };
 
+OpenGeoportal.Utility.getLocationValueIgnoreCase = function(location, key) {
+	var locKeys = _.keys(location);
+	var locKeysLower = OpenGeoportal.Utility.getArrayToLower(locKeys);
+	
+	var keyLower = key.toLowerCase();
+
+	var j = _.indexOf(locKeysLower, keyLower);
+	if (j >= 0) {
+		return location[locKeys[j]];
+	}
+
+	throw new Error("Location key not found!");
+};
+
 OpenGeoportal.Utility.hasLocationValue = function(location, keyArr) {
 	return !_.isNull(OpenGeoportal.Utility.getLocationValue(location, keyArr));
 };
