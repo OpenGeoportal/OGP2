@@ -47,7 +47,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 			var layerAttr = null;
 			try {
 
-				layerAttr = this.model.attributes;
+				layerAttr = _.clone(this.model.attributes);
 				layerAttr.preview = "on";
 				layerAttr.showControls = true;
 			} catch (err) {
@@ -64,7 +64,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 			if (to$.length === 0){
 				to$ = jQuery(".previewedLayers");
 			}
-			jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){that.previewed.add(_.clone(layerAttr)); that.$el.css("opacity", "1"); that.model.set({hidden: true}); });
+			jQuery(e.delegateTarget).effect("transfer", { to: to$, easing: "swing", className: "ui-effects-transfer" }, 400, function(){that.previewed.add(layerAttr); that.$el.css("opacity", "1"); that.model.set({hidden: true}); });
 
 		} else {
 			var update = {};
@@ -88,7 +88,6 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 	},
 	
 	toggleExpand : function() {
-		// console.log("toggleExpand");
 		var controls = this.model.get("showControls");
 		this.model.set({
 			showControls : !controls
@@ -96,7 +95,9 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		
 		this.expandState.setExpandState(this.model.get("LayerId"), !controls);
 	},
-	
+
+	expandView: null,
+	renderingExpand: false,
 	/*
 	 * functions to display the abstract from the metadata in the expanded row, rather than the preview controls 
 	 */

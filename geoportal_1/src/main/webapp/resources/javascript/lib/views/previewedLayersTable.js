@@ -21,7 +21,7 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 					
 			initSubClass: function(){
 				this.tableConfig = this.options.tableConfig;
-				this.listenTo(this.collection, "add remove change:preview", this.render);
+				this.listenTo(this.collection, "change:preview remove", this.render);
 				var that = this;
 				this.tableConfig.listenTo(this.collection, "change:visible", function(model){ that.updateSubviews.call(that);});
 				this.listenTo(this.collection, "change:showControls", function(){jQuery(document).trigger("previewRow.expand");});
@@ -38,11 +38,14 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			createNewRow: function(model){
+
 				var row = new OpenGeoportal.Views.PreviewedLayersRow(
 						{
 							model : model,
 							tableConfig: this.tableConfig
 						});
+				this.appendSubview(row);
+
 				return row;
 			},
 			

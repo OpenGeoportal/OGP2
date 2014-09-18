@@ -87,7 +87,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			
 			closeAllSubview: function(){
 				_.each(this.subviews.rows, function(view){
-					//console.log("closing all");
 					view.close();
 				});
 				this.subviews.rows = [];
@@ -99,6 +98,23 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 					view.render();
 				});
 				
+			},
+			
+			createAllRows: function(){
+				var that = this;
+				var rows = [];
+				
+				this.closeAllSubview();
+
+				this.collection.each(function(model) {
+					if (!that.shouldProcessRow(model)){return;}
+						
+					var newRow = that.createNewRow(model);
+					rows.push(newRow.el);
+
+				});
+				
+				return rows;
 			},
 			
 			
@@ -116,22 +132,12 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				return true;
 			},
 			
-			render : function() {
-				var that = this;
+			render : function(model) {
+				
+				var rows = this.createAllRows();
 				var template$ = this.getTable();
-				
-				
-				var rowcount = 0;
-				var rows = [];
 
-				this.collection.each(function(model) {
-					if (!that.shouldProcessRow(model)){return;}
-					var row = that.createNewRow(model);
-					rows.push(row.el);
-					rowcount++;
-				});
-				
-				if (rowcount === 0){
+				if (rows.length === 0){
 					this.handleEmptyTable(template$);
 					
 				} else {
@@ -307,18 +313,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				if (columns.length < 2) {
 					return;
 				}
-
-				/*var that = this;
-				try{
-				_.each(columns, function(model){
-					var colClass = model.get("columnClass");
-					var sel = that.$el.find(".tableHeaders ." + colClass).first()[0];					
-					model.set({headerEl: sel});
-				});
-				} catch (e){
-					console.log("error");
-					console.log(e);
-				}*/
 				
 				//don't apply resizable to the last resizable column
 				for (var i = 0; i < (columns.length - 1); i++) {

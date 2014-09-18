@@ -65,6 +65,8 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 							model : model,
 							tableConfig: this.tableConfig
 						});
+				this.appendSubview(row);
+
 				return row;
 			},
 			

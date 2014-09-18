@@ -31,7 +31,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		  
 	initialize : function() {
 		this.template = OpenGeoportal.ogp.template;
-		this.metadataViewer = new OpenGeoportal.MetadataViewer();
 		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 
 		this.login = OpenGeoportal.ogp.appState.get("login").model;
@@ -42,7 +41,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			that.render.apply(that, arguments);
 		});
 		this.listenTo(this.model, "change:showControls change:hidden", this.render);
-		
+
 		this.subClassInit();
 		this.addSubClassEvents();
 		//console.log("init render");
@@ -71,9 +70,16 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		}
 	},
 
+	getMetadataViewer: function(){
+		if (typeof this.metadataViewer === "undefined"){
+			this.metadataViewer = new OpenGeoportal.MetadataViewer();	
+		}
+		return this.metadataViewer;
+	},
+	
 	viewMetadata : function() {
 		// console.log(arguments);
-		this.metadataViewer.viewMetadata(this.model);
+		this.getMetadataViewer().viewMetadata(this.model);
 	},
 	
 	handlePreviewLink: function(){
@@ -162,7 +168,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 
 	updateView: function(e, data){
-
 		if (this.model.get("LayerId") === data.LayerId){
 			if (e.type === "previewLayerOff"){
 				if (this.model.has("hidden")){
@@ -170,33 +175,14 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 					return;
 				}
 			}
-			//console.log("update view");
 			this.render();
 		}
 	},
 	
 	togglePreview : function(e) {
-		var layerId = this.model.get("LayerId");
-		var model = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (typeof model === "undefined") {
-			var layerAttr = null;
-			try {
 
-				layerAttr = this.model.attributes;
-				layerAttr.preview = "on";
-			} catch (err) {
-				console.log(err);
-			}
-			// add them to the previewed collection. Add them as attributes
-			// since we
-			// are using different models in the previewed collection, and we
-			// want
-			// "model" to be called
-			this.previewed.add(_.clone(layerAttr));
+		var model = this.previewed.getLayerModel(this.model);
 
-		} else {
 			var update = "";
 			if (model.get("preview") === "on") {
 				update = "off";		
@@ -206,42 +192,11 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			}
 			
 			model.set({preview: update});	
-
-		}
 	
 	},
 
-	getModelFromPreviewed: function(){
-		var layerId = this.model.get("LayerId");
-		var model = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (typeof model === "undefined") {
-			// get the attributes for the layer retrieved from solr
-			var layerAttr = null;
-			try {
-
-				layerAttr = this.model.attributes;
-			} catch (e) {
-				console.log(e);
-			}
-			// add them to the previewed collection. Add them as attributes
-			// since we
-			// are using different models in the previewed collection, and we
-			// want
-			// "model" to be called
-			this.previewed.add(_.clone(layerAttr));
-			var newmodel = this.previewed.findWhere({
-				LayerId : layerId
-			});
-			return newmodel;
-		} else {
-			return model;
-		}
-	},
 	
 	toggleExpand : function() {
-		// console.log("toggleExpand");
 		var controls = this.model.get("showControls");
 		this.model.set({
 			showControls : !controls
@@ -253,6 +208,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	close: function(){
+
 		if (this.closeSubviews){
 			this.closeSubviews();
 		}
@@ -273,6 +229,9 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 				view.stopListening();
 			}
 		});
+		if (this.expandView !== null){
+			this.expandView.close();
+		}
 		this.subviews = [];
 	},
 
@@ -332,23 +291,33 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 
 	},
 	
+	expandView: null,
+	
 	renderExpand: function(){
+
 		var expand$ = "";
-		this.closeSubviews();
 		if (this.model.get("showControls")) {
 
 				expand$ = jQuery(this.template.cartPreviewToolsContainer());
 				// a view that watches expand state
 				// Open this row
 				var tools$ = expand$.find(".previewTools").first();
-				var previewModel = this.getModelFromPreviewed();
-				var view = new OpenGeoportal.Views.PreviewTools({
+
+				var previewModel = this.previewed.getLayerModel(this.model);
+
+
+				this.expandView = new OpenGeoportal.Views.PreviewTools({
 					model : previewModel,
 					el : tools$
 				});// render to the container
-				this.subviews.push(view);
-		
-		} 
+
+		} else {
+			if (this.expandView !== null){
+
+				this.expandView.close();
+			}
+		}
+
 		return expand$;
 	},
 	

@@ -18,10 +18,12 @@ OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 	subClassInit: function(){
 		//listen for saved items (in cart collection)
 		this.cart = OpenGeoportal.ogp.appState.get("cart");
-		this.listenTo(this.model, "change:preview", this.render);
 		
 		var that = this;
 		jQuery(document).on("cartUpdated", this.$el, function(){that.updateView.apply(that, arguments);});
+		
+		//don't think I need this listener
+		//this.listenTo(this.model, "change:preview", this.render);
 	},
 	
 	toggleSave: function(e){

@@ -11,8 +11,12 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 }
 
 OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
-	// should be subviews for each control?
-	events : {
+	
+	disabledEvents : {
+		"click .zoomToLayerControl" : "zoomToLayerExtent"
+	},
+	
+	activeEvents : {
 		"click .zoomToLayerControl" : "zoomToLayerExtent",
 		"click .colorControl" : "colorPickerToggle",
 		"click .attributeInfoControl" : "toggleFeatureInfo",
@@ -20,6 +24,15 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		"mouseleave .controlContainer" : "closeSlider"
 	},
 
+	events: function(){
+		var preview = this.model.get("preview");
+		if (preview === "on"){
+			return this.activeEvents;
+		} else {
+			return this.disabledEvents;
+		}
+	},
+	
 	initialize : function() {
 		this.listenTo(this.model, "change:colorPickerOn", this.colorPicker);
 		this.listenTo(this.model, "change:color", this.updateColorControl);
@@ -48,14 +61,13 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	
 	toggleControls: function(model, val, options) {
 		if (val === "on"){
-			this.enableControls(model, val, options)
+			this.enableControls(model, val, options);
 		} else {
 			this.disableControls();
 		}
 	},
-	
+
 	enableControls: function() {
-		this.delegateEvents();
 		this.$el.css({
 			opacity: 1
 		}).find(".button").css({
@@ -64,13 +76,12 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	},
 	
 	disableControls: function() {
-		this.delegateEvents({"click .zoomToLayerControl" : "zoomToLayerExtent"});
 		
 		this.$(".previewControls").children().not(".zoomToLayerControl").css({
 			opacity:.4
-			}).find(".button").css({
+			}).find(".button").addBack(".button").css({
 				cursor: "default"
-			})
+			});
 
 	},
 	changeOpacity : function(model, val, options) {
@@ -354,7 +365,6 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	},
 	// toggle the attribute info button & functionality
 	toggleFeatureInfo : function(event) {
-
 		var getFeature = this.model.get("getFeature");
 		if (!getFeature) {
 			// update layer state
@@ -370,6 +380,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 
 	},
 	featureInfoButtonState : function(model) {
+
 		var button$ = this.$el.find(".attributeInfoControl");
 		var onClass = "attributeInfoControlOn";
 		var offClass = "attributeInfoControlOff";
