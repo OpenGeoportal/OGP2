@@ -76,7 +76,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	},
 	
 	disableControls: function() {
-		
+		this.model.set({colorPickerOn: false});
 		this.$(".previewControls").children().not(".zoomToLayerControl").css({
 			opacity:.4
 			}).find(".button").addBack(".button").css({
@@ -314,15 +314,16 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			bbox : bbox
 		});
 	},
+	
 	colorPickerToggle : function(model) {
 		var val = this.model.get("colorPickerOn");
 		this.model.set({
 			colorPickerOn : !val
 		});
 	},
+	
 	colorPicker : function(model) {
-		// TODO: make sure colorDialogs are staggered, so that one doesn't get
-		// hidden behind the others
+
 		var dialogDiv$ = null;
 		if (!model.has("colorDialog")) {
 			var dialogDiv = '<div class="dialog colorDialog"></div>';
@@ -357,12 +358,14 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			dialogDiv$.dialog("close");
 		}
 	},
+	
 	updateColorControl : function() {
 		var paletteColor = this.model.get("color");
 		this.$el.find(".colorControl").css("background-color", paletteColor);
 		// trigger map sld update from here, or is there another view watching
 		// these models in the map?
 	},
+	
 	// toggle the attribute info button & functionality
 	toggleFeatureInfo : function(event) {
 		var getFeature = this.model.get("getFeature");
@@ -379,6 +382,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		}
 
 	},
+	
 	featureInfoButtonState : function(model) {
 
 		var button$ = this.$el.find(".attributeInfoControl");
