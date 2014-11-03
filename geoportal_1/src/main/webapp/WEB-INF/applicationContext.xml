@@ -170,6 +170,9 @@
 	<beans:bean id="httpClient.pooling.allTrusting"
 		class="org.opengeoportal.utilities.http.AllTrustingCertPoolingHttpClient" />
 
+	<!-- Download methods -->
+		
+
 	<beans:bean id="featureSourceRetriever.wfs" class="org.opengeoportal.download.methods.WfsFeatureSourceRetriever" scope="prototype"/>
 
 	<beans:bean id="featureSourceToShape.wfs" class="org.opengeoportal.download.methods.FeatureSourceToShapeImpl"
@@ -177,7 +180,9 @@
 		<beans:property name="featureSourceRetriever" ref="featureSourceRetriever.wfs"/>
 	</beans:bean>
 	
-	<!-- Download methods -->
+	<beans:bean id="downloadMethod.ftpFile"
+		class="org.opengeoportal.download.methods.FtpFileDownloadMethod" scope="prototype" />
+
 	<beans:bean id="downloadMethod.wms"
 		class="org.opengeoportal.download.methods.WmsDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
@@ -260,6 +265,10 @@
 	<beans:bean id="layerDownloader.file"
 		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.file" />
+	</beans:bean>
+	<beans:bean id="layerDownloader.ftpFile"
+		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">
+		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.ftpFile" />
 	</beans:bean>
 	<beans:bean id="layerDownloader.geotools.wfs"
 		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">

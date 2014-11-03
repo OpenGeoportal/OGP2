@@ -14,7 +14,7 @@ import org.opengeoportal.solr.SolrRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
+public class Wfs1_1DownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
 	private static final String METHOD = "GET";
 

@@ -236,7 +236,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 
 	render : function() {
-
 		if (this.skipLayer()){
 			this.$el.html("");
 			this.$el.addClass("hiddenRow");

@@ -19,7 +19,7 @@ import org.springframework.scheduling.annotation.AsyncResult;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class GeoToolsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {
+public class GeoToolsDownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {
 	private static final Boolean INCLUDES_METADATA = false;
 	private static final String METHOD = "GET";
 	

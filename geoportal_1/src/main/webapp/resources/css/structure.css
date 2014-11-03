@@ -1138,8 +1138,7 @@ td.attributeName:hover {
 
 .featurePage {
     display: inline-block;
-    position: absolute;
-    right: 14px;
+	padding: 5px;
 }
 
 .featurePage button {
@@ -1413,6 +1412,14 @@ Repositories
 
 .columbiaIcon {
 	background: url("../media/src_columbia.png") no-repeat transparent;
+}
+
+.ctdeepIcon {
+	background: url("../media/ctdeep_icon.png") no-repeat transparent;
+}
+
+.pasdaIcon {
+	background: url("../media/pasda_icon.png") no-repeat transparent;
 }
 
 

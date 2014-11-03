@@ -17,7 +17,7 @@ import org.opengeoportal.utilities.OgpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class Wcs1_1_1DownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
+public class Wcs1_1_1DownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
 	private static final String METHOD = "POST";
 

@@ -328,6 +328,11 @@
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-net</groupId>
+			<artifactId>commons-net</artifactId>
+			<version>3.3</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${warFile.name}</finalName>

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
+public class WfsDownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@Autowired

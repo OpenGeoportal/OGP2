@@ -93,14 +93,62 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 	}, {
 		type : "tilecache",
 		attributes : {
-			opacity : 100
+			opacity : 80
 		}
 	}, {
 		type : "arcgisrest",
-		attributes : {
-			getFeature : false,
-			opacity : 100
+		attributes: {
+			getFeature: false,
+			opacity: 80
 		}
+		
+//changing styles only works for arcgis server 10.1 +
+/*		discriminator: "DataType",
+		attributes : {
+			raster : {
+				getFeature : false,
+				opacity : 100,
+				sld : ""
+			},
+
+			scannedmap : {
+				opacity : 100
+			},
+			// it's understood that point, line, polygon, are vector types
+			point : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				drawingInfo : "",
+				color : "#ff0000",
+				graphicWidth : 2
+			},
+			line : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				drawingInfo : "",
+				color : "#0000ff",
+				graphicWidth : 1
+			},
+			polygon : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				drawingInfo : "",
+				opacity : 80,
+				color : "#aaaaaa",
+				graphicWidth : 1
+			},
+			"undefined" : {
+				getFeature : false,
+				opacity : 100,
+				colorPickerOn : false,
+				drawingInfo : "",
+				color : "#aaaaaa",
+				graphicWidth : 1
+			}
+		}*/
 	} ],
 
 	setPreviewType : function() {

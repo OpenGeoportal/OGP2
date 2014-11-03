@@ -12,7 +12,7 @@ import org.opengeoportal.utilities.OgpUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 
-public class KmlDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {
+public class KmlDownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {
 	private static final Boolean INCLUDES_METADATA = false;
 	private static final String METHOD = "GET";
 	

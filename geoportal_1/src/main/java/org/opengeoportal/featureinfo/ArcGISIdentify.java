@@ -63,12 +63,18 @@ public class ArcGISIdentify extends AbstractFeatureInfo implements FeatureInfo {
 			srs = srs.substring(5);
 		}
 		query.put("sr", srs);
-		query.put("imageDisplay", StringUtils.join(size, ",") + ",90.7");
+		query.put("imageDisplay", StringUtils.join(size, ",") + ",72");
 		query.put("mapExtent", StringUtils.join(bbox, ","));
 		query.put("returnGeometry", "false");
+		String layerFilter = "";
+		if (StringUtils.isNumeric(layerName.substring(0, 1))){
+			layerFilter = ":" + layerName;
+		}
+		query.put("layers", "all" + layerFilter);
 		
 		return query;
 	}
+
 
 
 	@Override

@@ -1,25 +1,18 @@
 package org.opengeoportal.download.methods;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.DirectoryRetriever;
-import org.opengeoportal.utilities.OgpFileUtils;
-import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,19 +21,11 @@ import org.springframework.scheduling.annotation.AsyncResult;
 
 public abstract class AbstractDownloadMethod {
 	protected LayerRequest currentLayer;
-	protected HttpRequester httpRequester;
+	
 	@Autowired
 	protected DirectoryRetriever directoryRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	
-	public HttpRequester getHttpRequester() {
-		return httpRequester;
-	}
-
-	public void setHttpRequester(HttpRequester httpRequester) {
-		this.httpRequester = httpRequester;
-	}
 
 	public abstract Set<String> getExpectedContentType();
 	
@@ -57,6 +42,9 @@ public abstract class AbstractDownloadMethod {
 		return false;
 	}
 	
+	public abstract File getFileFromUrl(String link, String query) throws Exception;
+			
+	
 	@Async
 	public Future<Set<File>> download(LayerRequest currentLayer) throws Exception {
 		this.currentLayer = currentLayer;
@@ -70,62 +58,12 @@ public abstract class AbstractDownloadMethod {
 			throw new Exception("Problem creating download request");
 		}
 
-		File directory = getDirectory();
 		Set<File> fileSet = new HashSet<File>();
 		List<String> urls = this.getUrls(currentLayer);
-		for (String url: urls){
-			InputStream inputStream = null;
-			
-			try{
-				inputStream = this.httpRequester.sendRequest(url, requestString, getMethod());	
-				int status = httpRequester.getStatus();
-				if (status != 200){
-					throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
-				}
-				String contentType = httpRequester.getContentType().toLowerCase();
-				Boolean contentMatch = expectedContentTypeMatched(contentType);
-				if (!contentMatch){
-					logger.error("Unexpected content type: " + contentType);
-					//If their is a mismatch with the expected content, but the response is text, we want to at least log the response
-					if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
-						logger.error("Returned text: " + IOUtils.toString(inputStream));
-					} 
-					
-					throw new Exception("Unexpected content type");
+		for (String link: urls){
+			File outputFile = this.getFileFromUrl(link, requestString);			
+			fileSet.add(outputFile);
 
-				}
-				//Content-Disposition	attachment;filename="middle_east_dams.xls"
-				String fileName = null;
-
-				String contentDisp = ""; 
-				try{		
-					contentDisp = httpRequester.getHeaderValue("Content-Disposition");
-				} catch (Exception e){
-					//ignore
-				}
-				if (contentDisp.toLowerCase().contains("filename")){
-					contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("filename="));
-					contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("=") + 1);
-					fileName = contentDisp.replaceAll("\"", "");
-				} else {
-					fileName = currentLayer.getLayerInfo().getName();
-				}
-
-
-				File outputFile = OgpFileUtils.createNewFileFromDownload(fileName, contentType, directory);
-				//FileUtils with a BufferedInputStream seems to be the fastest method with a small sample size.  requires more testing
-				BufferedInputStream bufferedIn = null;
-				try {
-					bufferedIn = new BufferedInputStream(inputStream);
-					FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
-					fileSet.add(outputFile);
-				} finally {
-					IOUtils.closeQuietly(bufferedIn);
-				}
-			} finally {
-				IOUtils.closeQuietly(inputStream);
-				
-			}
 		}
 		return new AsyncResult<Set<File>>(fileSet);
 	}
@@ -143,7 +81,7 @@ public abstract class AbstractDownloadMethod {
 	}
 
 
-	private File getDirectory() throws IOException{
+	protected File getDirectory() throws IOException{
 		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
 		File newDir = File.createTempFile("OGP", "", downloadDirectory);
 		newDir.delete();
@@ -157,18 +95,8 @@ public abstract class AbstractDownloadMethod {
 	public abstract String createDownloadRequest() throws Exception;
 	
 	
-	public String checkUrl(String url) throws MalformedURLException{
-		try{
-			new URL(url);
-		} catch (MalformedURLException e){
-			logger.error("URL is malformed: '" + url + "'");
-			throw new MalformedURLException();
-		}
+	public abstract String checkUrl(String url) throws MalformedURLException;
 	
-		return url;
-	}
-	
-	public abstract String getMethod();
 	
 	public BoundingBox getClipBounds() throws Exception{
 		SolrRecord layerInfo = this.currentLayer.getLayerInfo(); 

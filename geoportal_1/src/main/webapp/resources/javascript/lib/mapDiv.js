@@ -218,7 +218,7 @@ OpenGeoportal.MapController = function() {
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
 		OpenLayers.ImgPath = "resources/media/";
 		// make OL compute scale according to WMS spec
-		OpenLayers.DOTS_PER_INCH = 90.71428571428572;
+		OpenLayers.DOTS_PER_INCH = 91;//0.71428571428572;
 		OpenLayers.Util.onImageLoadErrorColor = 'transparent';
 
 		// call OpenLayers.Map with function arguments
@@ -1468,10 +1468,10 @@ OpenGeoportal.MapController = function() {
 
 		for ( var layer in this.layers) {
 			var currentLayer = this.layers[layer];
-			if (currentLayer.CLASS_NAME != "OpenLayers.Layer.WMS") {
+			if (!(currentLayer.CLASS_NAME === "OpenLayers.Layer.WMS" || currentLayer.CLASS_NAME === "OpenLayers.Layer.ArcGIS93Rest")) {
 				continue;
 			}
-			if (currentLayer.visibility == false) {
+			if (currentLayer.visibility === false) {
 				continue;
 			}
 			var layerModel = this.previewed.findWhere({
@@ -1483,7 +1483,11 @@ OpenGeoportal.MapController = function() {
 								+ currentLayer.ogpLayerId
 								+ "'] could not be found in the PreviewedLayers collection.");
 			}
-			var sld = layerModel.get("sld");
+			var sld = "";
+			if (layerModel.has("sld")) {
+				sld = layerModel.get("sld");
+			}
+			
 			var opacity = layerModel.get("opacity");
 			if (opacity == 0) {
 				continue;
@@ -1703,15 +1707,31 @@ OpenGeoportal.MapController = function() {
 			throw new Error(
 					"This layer can't be found in the PreviewedLayers collection.");
 		}
+
+		// don't use a tilecache
+		layer.url = this.getPreviewUrlArray(layerModel, false).urls;
+		//if the url array is still from a tilecache, we should throw an error or notify the user.
+		
+		var style = {};
+		var typ = layerModel.get("previewType")
+		if (typ === "wms"){
+			style = this.styleWMS(layerModel);
+		} else if (typ === "arcgisrest"){
+			style = this.styleArcGISRest(layerModel);
+		}
+		
+		layer.mergeNewParams(style);
+
+	};
+
+	this.styleWMS = function(layerModel){
 		// console.log(layerModel);
 		var dataType = layerModel.get("DataType").toLowerCase();
 		var userSLD = {};
 		// we need this for now, since the tilecache name and geoserver name for
 		// layers is different for Harvard layers
 		var wmsName = layerModel.get("qualifiedName");
-		// don't use a tilecache
-		layer.url = this.getPreviewUrlArray(layerModel, false).urls;
-		//if the url array is still from a tilecache, we should throw an error or notify the user.
+
 		var userColor = layerModel.get("color");
 		var userWidth = layerModel.get("graphicWidth");
 		switch (dataType) {
@@ -1759,39 +1779,130 @@ OpenGeoportal.MapController = function() {
 			layers : wmsName,
 			sld_body : this.createSLDFromParams(arrSLD)
 		};
-		layer.mergeNewParams(newSLD);
+
 		layerModel.set({
 			sld : layerUniqueInfo
 		});
+		
+		return newSLD;
 	};
+	
+	this.styleArcGISRest = function(layerModel){
+		var dataType = layerModel.get("DataType").toLowerCase();
 
-	this.getBorderColor = function(fillColor) {
+		var layerIds = layerModel.get("Name");
+		var userColor = layerModel.get("color"); //convert to rgba
+		var userWidth = layerModel.get("graphicWidth");
+		
+		var style = {};
+
+		switch (dataType) {
+		case "polygon":
+			// for polygons
+			style = {
+			  "type": "esriSFS",
+			  "style": "esriSFSSolid",
+			  "color": this.hexToRgba(userColor),
+			    "outline": {
+			     "type": "esriSLS",
+			     "style": "esriSLSSolid",
+			     "color": this.hexToRgba(this.getBorderColor(userColor, true)),
+			     "width": userWidth
+				 }
+			};
+
+			break;
+		case "point":
+			// for points
+			style = {
+				"type": "esriSMS",
+				"style": "esriSMSCircle",
+				"color": this.hexToRgba(userColor),
+				"size": userWidth
+			};
+
+			break;
+		case "line":
+			// for lines
+			style = {
+				"type": "esriSLS",
+				"style": "esriSLSSolid",
+				"color": this.hexToRgba(userColor),
+				"width": userWidth
+				};
+
+			break;
+		default:
+			return;
+		}
+		//do you have to submit a separate dynamic layer for each layer Id?
+		var arrLayerIds = [0];
+		if (layerIds.length > 0){
+			arrLayerIds = layerIds.split(",");
+		}
+		
+		var dynamicLayers = [];
+
+		for (var i = 0; i < arrLayerIds.length; i++){
+			var info = {
+				"id":arrLayerIds[i],
+				"source":{"type":"mapLayer","mapLayerId":arrLayerIds[i]},
+				"drawingInfo":{"renderer":{"type": "simple", "symbol": style, "transparency":0,"labelingInfo" : null}}
+			};
+			dynamicLayers.push(info);
+		}
+		
+		layerModel.set({
+			drawingInfo : dynamicLayers
+		});
+		
+		return {"dynamicLayers": JSON.stringify(dynamicLayers)};
+	};
+	
+	this.hexToRgba = function(hexColor){
+		hexColor = hexColor.substring(1,7);
+		var hexTo = function(h,from,to) {return parseInt(h.substring(from,to),16);};
+		return [hexTo(hexColor, 0, 2), hexTo(hexColor, 2, 4), hexTo(hexColor, 4, 6), 255];
+
+	};
+	
+	this.getBorderColor = function(fillColor, asRGB) {
 		// calculate an appropriate border color
 		var borderColor = {};
 		borderColor.red = fillColor.slice(1, 3);
 		borderColor.green = fillColor.slice(3, 5);
 		borderColor.blue = fillColor.slice(5);
+		
 		for ( var color in borderColor) {
 			// make the border color darker than the fill
 			var tempColor = parseInt(borderColor[color], 16) - parseInt(0x50);
 			if (tempColor < 0) {
 				// so we don't get any negative values for color
-				tempColor = "00";
-			} else {
-				// convert to hex
-				tempColor = tempColor.toString(16);
+				tempColor = 0;
 			}
-			// check length; the string should be 2 characters
-			if (tempColor.length == 2) {
-				borderColor[color] = tempColor;
-			} else if (tempColor.length == 1) {
-				borderColor[color] = '0' + tempColor;
-			} else {
-				borderColor[color] = '00';
-			}
+			
+			color = tempColor;
 		}
+		
+		if (typeof asRGB !== "undefined" && asRGB){
+			return [borderColor.red, borderColor.green, borderColor.blue, 255];
+		} else {
+			// convert to hex
+			for ( var color in borderColor) {
+				tempColor = color.toString(16);
+			    // check length; the string should be 2 characters
+			    if (tempColor.length == 2) {
+			    	borderColor[color] = tempColor;
+			    } else if (tempColor.length == 1) {
+			    	borderColor[color] = '0' + tempColor;
+			    } else {
+			    	borderColor[color] = '00';
+			    }
+			}
 		// reassemble the color string
-		return "#" + borderColor.red + borderColor.green + borderColor.blue;
+
+			return "#" + borderColor.red + borderColor.green + borderColor.blue;
+		}
 	};
 
 	this.createSLDFromParams = function(arrUserParams) {
@@ -1923,15 +2034,11 @@ OpenGeoportal.MapController = function() {
 		return this.getMaxZ() + 5;
 	},
 	
-	
-	this.addWMSLayer = function(layerModel) {
-
+	this.handleExisting = function(layerModel){
 		var layerId = layerModel.get("LayerId");
-		// check to see if layer is on openlayers map, if so, show layer
-		var opacitySetting = layerModel.get("opacity");
-		var that = this;
-		
+		var opacity = layerModel.get("opacity");
 		var matchingLayers = this.getLayersBy("ogpLayerId", layerId);
+		var that = this;
 
 		if (matchingLayers.length > 1) {
 			throw new Error("ERROR: There should never be more than one copy of the layer on the map");
@@ -1942,11 +2049,22 @@ OpenGeoportal.MapController = function() {
 				layerModel.set({zIndex: nextZ});
 			
 				that.showLayer(layerId);
-				layer.setOpacity(opacitySetting * .01);
+				layer.setOpacity(opacity * .01);
 			
 			});
 			return;
 		}
+		
+	};
+	
+	this.addWMSLayer = function(layerModel) {
+		this.handleExisting(layerModel);
+
+		var layerId = layerModel.get("LayerId");
+		// check to see if layer is on openlayers map, if so, show layer
+		var opacitySetting = layerModel.get("opacity");
+		var that = this;
+		
 
 		// use a tilecache if we are aware of it
 
@@ -2010,7 +2128,7 @@ OpenGeoportal.MapController = function() {
 					
 					that.addLayer(newLayer);
 					try {
-						layerModel.set({zIndex: newLayer.getZIndex()});
+						layerModel.set({zIndex: newLayer.getZIndex()}, {silent: true});
 					} catch (e){
 						console.log(e);
 						console.log(newLayer.getZIndex());
@@ -2025,45 +2143,47 @@ OpenGeoportal.MapController = function() {
 	 * 
 	 */ 
 	this.addArcGISRestLayer = function(layerModel) {
+		this.handleExisting(layerModel);
+
 		var layerId = layerModel.get("LayerId");
 		// check to see if layer is on openlayers map, if so, show layer
 		var opacitySetting = layerModel.get("opacity");
-		var that = this;
 		
-		var matchingLayers = this.getLayersBy("ogpLayerId", layerId);
-
-		if (matchingLayers.length > 1) {
-			throw new Error("ERROR: There should never be more than one copy of the layer on the map");
-		} else if (matchingLayers.length === 1){
-		
-			_.each(matchingLayers, function(layer){
-				var nextZ = that.getNextZ();
-				layerModel.set({zIndex: nextZ});
-			
-				that.showLayer(layerId);
-				layer.setOpacity(opacitySetting * .01);
-			
-			});
-			return;
-		}
 
 		//throws an error if the location key is not found, but should never get here
 		//since the key is used to pick this preview method
 		var url = OpenGeoportal.Utility.getLocationValueIgnoreCase(layerModel.get("Location"), "ArcGISRest");
-				
+		url = this.filterAGSLink(url);
+
+		var layername = layerModel.get("Name");
+		layers = "";
+		if (layername.length > 0 && !isNaN(parseFloat(layername[0])) && isFinite(layername[0])){
+			layers = "show:" + layername;
+		} else {
+			layers = "hide:99"; //this assumes that we want to show ALL layers (and that there are less than 100)
+		}
+		var agsParams = 				{
+				transparent : true,
+				dpi: 91	//match what we set OpenLayers DPI to be
+			};
+		
+		if (layers.length > 0){
+			agsParams.layers = layers;
+		}
+		
 		var newLayer = new OpenLayers.Layer.ArcGIS93Rest(
 				layerModel.get("LayerDisplayName"),
 				url, 
+				agsParams,
 				{
-					layers : "show:" + layerModel.get("Name"),
-					transparent : true
-				}, {
-					buffer : 0,
 					transitionEffect : 'resize',
-					opacity : opacitySetting,
-					ogpLayerId : layerId
+					opacity : opacitySetting * .01,
+					ogpLayerId : layerModel.get("LayerId"),
+					ogpLayerRole : "LayerPreview"
 				});
+		
 		newLayer.projection = new OpenLayers.Projection("EPSG:3857");
+
 		// how should this change? trigger custom events with jQuery
 		newLayer.events.register('loadstart', newLayer, function() {
 			jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad", layerId: layerId});
@@ -2073,12 +2193,29 @@ OpenGeoportal.MapController = function() {
 		});
 		var that = this;
 		// we do a cursory check to see if the layer exists before we add it
+
 		jQuery("body").bind(newLayer.ogpLayerId + 'Exists', function() {
 			that.addLayer(newLayer);
+			try {
+				layerModel.set({zIndex: newLayer.getZIndex()}, {silent: true});
+			} catch (e){
+				console.log(e);
+				console.log(newLayer.getZIndex());
+			}
 		});
 		this.layerExists(layerModel);
 	};
 
+	this.filterAGSLink = function(link){
+		if (link.indexOf("export") === -1){
+			var msIdx = link.indexOf("MapServer");
+			link = link.substr(0, msIdx - 1);
+			link += "/MapServer/export";
+		}
+		
+		return link;
+	};
+	
 	this.previewBrowseGraphic = function(layerModel) {
 		var dialogHtml = '<img src="'
 				+ layerModel.get("Location").browseGraphic + '"/>';
@@ -2191,7 +2328,6 @@ OpenGeoportal.MapController = function() {
 			var type = currModel.get("previewType");
 			var previewOnFunction = this.getPreviewMethod(type, "onHandler");
 
-			// var previewObj = this.previewOnDispatcher(location);
 			try {
 				previewOnFunction.call(this, currModel);
 			} catch (e) {

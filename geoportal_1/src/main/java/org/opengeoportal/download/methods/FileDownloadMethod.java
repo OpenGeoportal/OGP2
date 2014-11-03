@@ -9,7 +9,7 @@ import org.opengeoportal.download.types.LayerRequest;
 
 import com.fasterxml.jackson.core.JsonParseException;
 
-public class FileDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
+public class FileDownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
 	private static final String METHOD = "GET";
 	
@@ -46,11 +46,8 @@ public class FileDownloadMethod extends AbstractDownloadMethod implements PerLay
 		List<String> urls = layer.getDownloadUrl();
 		for (String currentUrl: urls){
 			logger.info("download url:" + currentUrl);
-			try {
-				this.checkUrl(currentUrl);
-			} catch (MalformedURLException e){
-				
-			}
+			this.checkUrl(currentUrl);
+
 		}
 		return urls;
 	};

@@ -7,14 +7,23 @@ import java.util.Map;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.GeoTools;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.spatial.BBOX;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 public class WfsFeatureSourceRetriever implements FeatureSourceRetriever {
 	SimpleFeatureSource featureSource = null;
@@ -76,8 +85,12 @@ Optional default of true. WFS implementations are terrible for actually obeying 
 		
 		// Step 4 - target
 		logger.info(typeName);
+		
 		featureSource = data.getFeatureSource( typeName );
 	}
+	
+	
+
 
 	@Override
 	public SimpleFeatureSource getFeatureSource()

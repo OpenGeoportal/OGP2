@@ -11,7 +11,7 @@ import org.opengeoportal.layer.BoundingBox;
 import com.fasterxml.jackson.core.JsonParseException;
 
 @Deprecated
-public class MITDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
+public class MITDownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = true;
 	private static final String METHOD = "GET";
 	

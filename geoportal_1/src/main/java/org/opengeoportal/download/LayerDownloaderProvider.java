@@ -201,6 +201,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 			Boolean outputFormatMatch = matchNode(currentNode, "outputFormats", layer.getRequestedFormat().toLowerCase());
 			if (outputFormatMatch){
 				String classKey = currentNode.path("classKey").textValue();
+				logger.info(classKey);
 				Integer preference = currentNode.path("preference").intValue();
 				logger.debug("Matched classKey: " + classKey);
 				if (hasRequirements(classKey, layer)){

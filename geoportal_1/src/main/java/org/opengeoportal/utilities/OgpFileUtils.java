@@ -52,19 +52,32 @@ public class OgpFileUtils {
 		
 		if (fileNameArr.length > 1){
 			String temp = fileNameArr[fileNameArr.length -1];
+			//some file extensions are just 2 characters
 			if (temp.length() == 3){
 				//assume this is a file extension
 				fileExtension = "." + temp;
 				fileName = fileName.substring(0, fileName.indexOf(fileExtension));
+			} else if (temp.length() == 2){
+				//check for .tar.gz
+				if (temp.equalsIgnoreCase("gz")){
+					if (fileNameArr.length > 2 && fileNameArr[fileNameArr.length - 2].equalsIgnoreCase("tar")){
+						fileExtension = ".tar.gz";
+						fileName = fileName.substring(0, fileName.toLowerCase().indexOf(fileExtension));
+					}
+				}
 			}
 		}
+		
+		fileName = OgpFileUtils.filterName(fileName);
 		logger.debug(fileName);
 
 		if (fileExtension.isEmpty()){
-			//try to get it from the mime type
+			//try to get it from the mime type if there is no file extension
 			fileExtension = getFileExtensionFromMimeType(mimeType);
 		}
-		fileName = OgpFileUtils.filterName(fileName);
+		
+		
+		
 		directory.mkdirs();
 		directory.mkdir();
 		File newFile = new File(directory, fileName + fileExtension);
@@ -98,6 +111,8 @@ public class OgpFileUtils {
 			fileExtension = ".html";
 		} else if (responseContentType.contains("application/zip")){
 			fileExtension = ".zip";
+		} else if (responseContentType.contains("application/x-zip-compressed")){
+			fileExtension = ".zip";
 		} else if (responseContentType.contains("tiff")||responseContentType.contains("geotiff")){ 
 			fileExtension = ".tif";
 		} else if (responseContentType.contains("image/jpeg")){ 
@@ -106,8 +121,10 @@ public class OgpFileUtils {
 			fileExtension = ".kmz";
 		} else if (responseContentType.contains("application/vnd.ogc.se_xml")){ 
 			fileExtension = "_error.xml";
+		} else if (responseContentType.contains("application/x-tar")){ 
+			fileExtension = ".tar.gz";
 		} else {
-			fileExtension = ".unk";
+			fileExtension = "";
 		}
 		return fileExtension;
 	}

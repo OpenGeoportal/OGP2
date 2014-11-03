@@ -9,19 +9,14 @@ import org.opengeoportal.download.types.LayerRequest;
 
 import com.fasterxml.jackson.core.JsonParseException;
 
-public class UsgsTopoDownloadMethod extends AbstractHttpDownloadMethod implements PerLayerDownloadMethod {	
+public class FtpFileDownloadMethod extends AbstractFtpDownloadMethod implements PerLayerDownloadMethod {	
 	private static final Boolean INCLUDES_METADATA = false;
-	private static final String METHOD = "GET";
 	
 	@Override
 	public Boolean includesMetadata() {
 		return INCLUDES_METADATA;
 	}
 
-	@Override
-	public String getMethod(){
-		return METHOD;
-	}
 	
 	@Override
 	public Set<String> getExpectedContentType(){
@@ -46,11 +41,7 @@ public class UsgsTopoDownloadMethod extends AbstractHttpDownloadMethod implement
 		List<String> urls = layer.getDownloadUrl();
 		for (String currentUrl: urls){
 			logger.info("download url:" + currentUrl);
-			try {
-				this.checkUrl(currentUrl);
-			} catch (MalformedURLException e){
-				
-			}
+			this.checkUrl(currentUrl);
 		}
 		return urls;
 	};
