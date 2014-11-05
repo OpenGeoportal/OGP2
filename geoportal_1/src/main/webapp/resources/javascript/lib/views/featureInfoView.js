@@ -53,7 +53,12 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 
 		var pageData = this.collection.at(this.page);
 		
+		var img_keys = this.handleImages(pageData.attributes);
+		var download_keys = this.handleDownloads(pageData.attributes);
+		
 		content = template.attributeTable({
+			previews: img_keys,
+			downloads: download_keys,
 			page: this.page + 1, //0 based index
 			totalPages: this.collection.length,
 			title : this.collection.title,
@@ -62,6 +67,81 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 		
 		return content;
 		
+	},
+	
+	handleImages: function(attrs){
+		// http://ims.er.usgs.gov/gda_services/download?item_id=5636170&response_type=jpeg
+		var that = this;
+		var lst = [];
+		_.each(attrs, function(value, key, list){
+			value = value.trim().toLowerCase();
+			if (that.isLink(value) && that.containsAny(value, [".png", ".gif", ".jpg", "response_type=jpeg"])){
+				// store the raw value
+				lst.push(that.getHref(value));
+				// update the attribute list with link
+				attrs[key] = that.renderLink(value);
+			}
+		});
+		return lst;
+	},
+	
+	handleDownloads: function(attrs){
+		// http://ims.er.usgs.gov/gda_services/download?item_id=5636169
+
+		var lst = [];
+		var that = this;
+		_.each(attrs, function(value, key, list){
+			value = value.trim().toLowerCase();
+			if (that.isLink(value) && that.containsAny(value, [".zip", ".gz.tar", "download?"])){
+				//filter out the preview image from usgs topos
+				if (value.indexOf('response_type=jpeg') !== -1){
+					return;
+				}
+				// store the raw value
+				lst.push(that.getHref(value));
+				// update the attribute list with link
+				attrs[key] = that.renderLink(value);
+			}
+		});
+		
+		return lst;
+	},
+	
+	isLink: function(str){
+		if (str.indexOf("http") === 0 || str.indexOf("href") !== -1){
+			return true;
+		} else {
+			return false;
+		}
+	},
+	
+	getHref: function(str){
+		if (str.indexOf("href") !== -1){
+			return jQuery(str).attr("href");
+		} else {
+			return str
+		}
+	},
+	
+	containsAny: function(str, arr){
+		var contains = false;
+		_.each(arr, function(i){
+			if (str.indexOf(i) !== -1){
+				contains = true;
+				return;
+			}
+		});
+		return contains;
+	},
+	
+	renderLink: function(ref){
+		var link = "";
+		if (ref.indexOf('href') !== -1){
+			link = ref;
+		} else {
+			link = '<a href="' + ref + '" download>' + ref + '</a>';
+		}
+		return link;
 	},
 	
 	dialogInitialized: false,
@@ -104,6 +184,9 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 			show: { duration: 200 },
 			close: function( event, ui ) {
 				that.close();
+			},
+			resize: function( event, ui ) {
+				that.adjustTableHeight();
 			}
 		});
 		
@@ -119,6 +202,13 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 		this.remove();
 	},
 	
+	adjustTableHeight: function(){
+		var header = this.$el.find(".attrHeader");
+		var others = header.height() + parseInt(header.css("padding-top")) + parseInt(header.css("padding-bottom"));
+		var hgt = this.$el.height() - others;
+		this.$el.find(".attrContainer").height(hgt);	
+	},
+	
 	renderAttributeDialog: function(dialogContent){
 
 		if (!this.dialogInitialized){
@@ -126,6 +216,9 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 		}
 
 		this.$el.html(dialogContent);
+		this.adjustTableHeight();
+		this.$el.find(".attrExtrasContainer .button").button();
+		this.startSpinner();
 
 	},
 	
@@ -143,6 +236,33 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 		}
 		jQuery(e.currentTarget).attr('title', def);
 
+	},
+	
+	onImageLoad : function(){
+		var that = this;
+		this.$el.find('.attrPreview img').on('load', function(){
+			if (that.$el.find('.loading').is(":visible")){
+				that.$el.find('.loading').hide();
+				that.stopSpinner();				 
+			}	
+		});
+
+	},
+
+	
+	startSpinner : function(){
+		this.onImageLoad();
+		Spinners.create(this.$el.find('.loading'), {
+			radius: 5,
+			height : 5,
+			width : 5,
+			dashes : 8,
+			color : '#4E4E4F'
+			}).play();
+	},
+	
+	stopSpinner : function(){
+		Spinners.get(this.$el.find('.loading')).remove();
 	}
 
 });

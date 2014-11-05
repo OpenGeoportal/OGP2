@@ -1159,6 +1159,24 @@ td.attributeName:hover {
     overflow: auto;
 }
 
+.attrExtrasContainer {
+	float: right;
+	padding: 5px;
+}
+
+.attrPreview {
+	border: 1px solid #417dc1;
+}
+
+.attrPreview .loading {
+	text-align: center;
+	margin-top: 20px;
+}
+
+.attrDownload {
+	padding: 5px;
+}
+
 .columnSort {
 	width: 19px;
 	height: 19px;
@@ -1420,6 +1438,14 @@ Repositories
 
 .pasdaIcon {
 	background: url("../media/pasda_icon.png") no-repeat transparent;
+}
+
+.nygisIcon {
+	background: url("../media/nygis_icon.png") no-repeat transparent;
+}
+
+.usgsIcon {
+	background: url("../media/usgs_icon.png") no-repeat transparent;
 }
 
 

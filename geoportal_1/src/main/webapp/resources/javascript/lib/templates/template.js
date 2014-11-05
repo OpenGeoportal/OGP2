@@ -158,6 +158,14 @@ OpenGeoportal.Template = function() {
 			+ '<div class="featurePage"><button class="button prev offsetColor<% if (page == 1){ %> inactive<% } %>">&lt;</button>'
 			+ '<%= page %> of <%= totalPages %><button class="button next offsetColor<% if (page == totalPages){ %> inactive<% } %>">&gt;</button></div>'
 			+ "<% } %></div>"
+			+ '<% if (previews.length > 0 || downloads.length > 0) { %><div class="attrExtrasContainer">'
+			+ "<% if (previews.length > 0){ _.each(previews, function(value) {%>"
+			+ '<div class="attrPreview"><div class="loading"></div><img src="<%= value %>" alt="Retrieving preview..." /></div>' 
+			+ "<% });} %>"
+			+ "<% if (downloads.length > 0){ _.each(downloads, function(value) {%>"
+			+ '<div class="attrDownload"><a class="attrDownloadButton button" href="<%= value %>" download>Download</a></div>'
+			+ "<% });} %>"
+			+ "</div><% } %>"
 			+ '<div class="attrContainer"><table class="attributeInfo"><%_.each(tableContent, '
 			+ "function(value, key, list) { %><tr><td class=\"attributeName\" ><%= key %></td>"
 			+ "<td><%= value %></td></tr><% }); %>"

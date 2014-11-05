@@ -1614,7 +1614,7 @@ OpenGeoportal.MapController = function() {
 			},
 			statusCode : {
 				200 : function() {
-					jQuery("body").trigger(
+					jQuery(document).trigger(
 							layerModel.get("LayerId") + 'Exists');
 				},
 				500 : function() {
@@ -1664,7 +1664,7 @@ OpenGeoportal.MapController = function() {
 		};
 		jQuery.ajax(ajaxParams);
 		//for now, don't wait for wmsinfo response to start loading the layer; perhaps only call if there is an error
-		jQuery("body").trigger(model.get("LayerId") + 'Exists');
+		jQuery(document).trigger(model.get("LayerId") + 'Exists');
 
 		jQuery(document).trigger({type: "showLoadIndicator", loadType: "getWmsInfo", layerId: model.get("LayerId")});
 
@@ -1684,7 +1684,7 @@ OpenGeoportal.MapController = function() {
 			this.setWmsLayerInfo(layerModel);
 		} else {
 			// assume it exists
-			jQuery("body").trigger(layerModel.get("LayerId") + 'Exists');
+			jQuery(document).trigger(layerModel.get("LayerId") + 'Exists');
 		}
 	};
 
@@ -1989,7 +1989,10 @@ OpenGeoportal.MapController = function() {
 	
 	this.getLayerName = function(layerModel, url) {
 		var layerName = layerModel.get("Name");
-		var wmsNamespace = layerModel.get("WorkspaceName");
+		var wmsNamespace = "";
+		if (layerModel.has("WorkspaceName")){
+			wmsNamespace = layerModel.get("WorkspaceName");
+		}
 		//if there is a workspace name listed and the layername doesn't already contain one, prepend it
 		var qualifiedName = layerName;
 		if ((wmsNamespace.length > 0) && (layerName.indexOf(":") == -1)) {
@@ -2067,7 +2070,6 @@ OpenGeoportal.MapController = function() {
 		
 
 		// use a tilecache if we are aware of it
-
 		var previewObj = this.getPreviewUrlArray(layerModel, true);
 	
 		var wmsArray = previewObj.urls;
@@ -2083,7 +2085,7 @@ OpenGeoportal.MapController = function() {
 
 		
 		// we do a check to see if the layer exists before we add it
-		jQuery("body").bind(layerModel.get("LayerId") + 'Exists',
+		jQuery(document).bind(layerModel.get("LayerId") + 'Exists',
 				function() {
 					// if this is a raster layer, we should use jpeg format, png for vector
 					// (per geoserver docs)
@@ -2194,7 +2196,7 @@ OpenGeoportal.MapController = function() {
 		var that = this;
 		// we do a cursory check to see if the layer exists before we add it
 
-		jQuery("body").bind(newLayer.ogpLayerId + 'Exists', function() {
+		jQuery(document).bind(newLayer.ogpLayerId + 'Exists', function() {
 			that.addLayer(newLayer);
 			try {
 				layerModel.set({zIndex: newLayer.getZIndex()}, {silent: true});

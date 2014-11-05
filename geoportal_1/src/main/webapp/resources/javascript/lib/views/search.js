@@ -80,7 +80,8 @@ OpenGeoportal.Views.Query = Backbone.View
 				"change #whereField": "doGeocode",
 				"keypress #whereField": "noteWhereChanged",
 				"change #whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged",
-				"search #whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged"
+				"search #whereField,#whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged"
+
 			},
 
 			/*******************************************************************
@@ -280,19 +281,18 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 
 			fireSearch : function() {
-
 				jQuery(document).trigger("fireSearch");
 			},
 
 			searchTypeHandler : function() {
 				var that = this;
-				jQuery(document).on("search.setBasic", function() {
+				jQuery(document).on("searchform.setBasic", function() {
 					that.noteSearchChanged();
 					that.model.set({
 						searchType : "basic"
 					});
 				});
-				jQuery(document).on("search.setAdvanced", function() {
+				jQuery(document).on("searchform.setAdvanced", function() {
 					that.noteSearchChanged();
 					that.model.set({
 						searchType : "advanced"

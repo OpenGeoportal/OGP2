@@ -292,7 +292,7 @@ OpenGeoportal.Structure = function() {
 																				complete : function() {
 																					jQuery("#searchForm .advancedSearch.searchRow4").show();
 																					jQuery("#lessSearchOptions").focus();
-																					jQuery(document).trigger("search.setAdvanced");
+																					jQuery(document).trigger("searchform.setAdvanced");
 
 																				}
 																			});
@@ -309,7 +309,7 @@ OpenGeoportal.Structure = function() {
 						duration : stepTime * 3,
 						easing : "linear",
 						done : function() {
-							jQuery(document).trigger("search.resize");
+							jQuery(document).trigger("searchform.resize");
 						}
 			});
 
@@ -323,7 +323,7 @@ OpenGeoportal.Structure = function() {
 						duration : stepTime * 3,
 						easing : "linear",
 						done : function() {
-							jQuery(document).trigger("search.resize");
+							jQuery(document).trigger("searchform.resize");
 						}
 			});
 
@@ -377,7 +377,7 @@ OpenGeoportal.Structure = function() {
 																					jQuery("#searchForm .advancedSearch.searchRow1").hide();
 																					jQuery("#searchForm .basicSearch").show();
 																					jQuery("#moreSearchOptions").focus();
-																					jQuery(document).trigger("search.setBasic");
+																					jQuery(document).trigger("searchform.setBasic");
 
 																				}
 																			});

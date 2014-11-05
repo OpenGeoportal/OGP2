@@ -47,7 +47,7 @@ public class GetFeatureInfoController {
 			@RequestParam("size") Integer[] size) throws Exception {
 
 		FeatureInfo gfi = featureInfoFactory.getObject(layerId);
-		int maxFeatures = 20;
+		int maxFeatures = 50;
 
 		return gfi.getFeatureInformation(coord, bbox, srs, pixel,
 				size, maxFeatures);
