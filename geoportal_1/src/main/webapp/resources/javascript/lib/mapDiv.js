@@ -191,8 +191,7 @@ OpenGeoportal.MapController = function() {
 
 		var options = {
 			allOverlays : true,
-			/* at least until we update our GeoServer instance */
-			projection : new OpenLayers.Projection("EPSG:900913"),
+			projection : new OpenLayers.Projection("EPSG:3857"),
 			maxResolution : 2.8125,
 			maxExtent : mapBounds,
 			numZoomLevels: 19,
@@ -294,21 +293,9 @@ OpenGeoportal.MapController = function() {
 		// register events
 		
 		jQuery(document).on("container.resize", function(e, data) {
-
-			//update the size of the map if the container size actually changed.
-			var map$ = jQuery(".olMap");
-
-			var newHeight = Math.max(data.ht, data.minHt);
-			var oldHeight = map$.height();
-			
-			var newWidth = Math.max(data.wd, data.minWd);
-			var oldWidth = map$.width();
-			
-			if (newHeight !== oldHeight || newWidth !== oldWidth){
-				map$.height(newHeight).width(newWidth);
-				that.updateSize();
-			}
-			
+			jQuery(".olMap").height(Math.max(data.ht, data.minHt));
+			jQuery(".olMap").width(Math.max(data.wd, data.minWd));
+			that.updateSize();
 		});
 		
 
@@ -373,7 +360,6 @@ OpenGeoportal.MapController = function() {
 		this.bboxHandler();
 		this.styleChangeHandler();
 		this.opacityHandler();
-		this.zIndexHandler();
 		this.zoomToLayerExtentHandler();
 		this.previewLayerHandler();
 		this.getFeatureInfoHandler();
@@ -759,21 +745,6 @@ OpenGeoportal.MapController = function() {
 							}
 						});
 	};
-	
-	this.zIndexHandler = function() {
-		var that = this;
-		jQuery(document)
-				.on(
-						"map.zIndexChange",
-						function(event, data) {
-							// console.log(data);
-							for ( var i in that.getLayersBy("ogpLayerId",
-									data.LayerId)) {
-								that.getLayersBy("ogpLayerId", data.LayerId)[0]
-										.setZIndex(data.zIndex);
-							}
-						});
-	};
 
 	this.previewLayerHandler = function() {
 		var that = this;
@@ -853,9 +824,10 @@ OpenGeoportal.MapController = function() {
 		var that = this;
 		jQuery(document)
 				.on(
-						"map.attributeInfoOn",
+						"attributeInfoOn",
+						".olMap",
 						function() {
-							jQuery(".olMap").css('cursor', "crosshair");
+							jQuery(this).css('cursor', "crosshair");
 							// also deactivate regular map controls
 							var zoomControl = that
 									.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
@@ -868,20 +840,6 @@ OpenGeoportal.MapController = function() {
 								panControl.deactivate();
 							}
 						});
-		jQuery(document)
-			.on(
-				"map.attributeInfoOff",
-				function() {
-					// if neither zoom or pan is active, activate pan control
-					var zoomControl = that
-							.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
-
-					var panControl = that
-							.getControlsByClass("OpenLayers.Control.Navigation")[0];
-					if (!panControl.active && !zoomControl.active) {
-						panControl.activate();
-					}
-				});
 	};
 
 	/**
@@ -1116,7 +1074,7 @@ OpenGeoportal.MapController = function() {
 
 	this.getGeodeticExtent = function() {
 		var mercatorExtent = this.getVisibleExtent();
-		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
+		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		return mercatorExtent.transform(sphericalMercator, geodetic);
 	};
@@ -1128,7 +1086,7 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.getSearchCenter = function() {
-		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
+		var sphericalMercator = new OpenLayers.Projection('EPSG:900913');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		var topLeft = this.getMapOffset();
 		var width = jQuery(".olMap").width();
@@ -1497,7 +1455,7 @@ OpenGeoportal.MapController = function() {
 		var bbox = extent.toBBOX();
 
 		requestObj.bbox = bbox;
-		requestObj.srs = 'EPSG:900913';
+		requestObj.srs = 'EPSG:3857';
 		var offset = this.getMapOffset();
 		var ar = this.getAspectRatio(extent);
 
@@ -2174,19 +2132,6 @@ OpenGeoportal.MapController = function() {
 		return layerName;
 	};
 	
-	this.getMaxZ = function(){
-		var arrZ = [];
-		_.each(this.layers, function(layer){
-				arrZ.push(layer.getZIndex());
-			});
-		return _.max(arrZ);
-	},
-	
-	this.getNextZ = function(){
-		return this.getMaxZ() + 5;
-	},
-	
-	
 	this.addWMSLayer = function(layerModel) {
 		// mapObj requires institution, layerName, title, datatype, access
 		/*
@@ -2203,26 +2148,18 @@ OpenGeoportal.MapController = function() {
 		var layerId = layerModel.get("LayerId");
 		// check to see if layer is on openlayers map, if so, show layer
 		var opacitySetting = layerModel.get("opacity");
-		var that = this;
-		
-		var matchingLayers = this.getLayersBy("ogpLayerId", layerId);
 
-		if (matchingLayers.length > 1) {
-			throw new Error("ERROR: There should never be more than one copy of the layer on the map");
-		} else if (matchingLayers.length === 1){
-		
-			_.each(matchingLayers, function(layer){
-				var nextZ = that.getNextZ();
-				layerModel.set({zIndex: nextZ});
-			
-				that.showLayer(layerId);
-				layer.setOpacity(opacitySetting * .01);
-			
-			});
+		var matchingLayers = this.getLayersBy("ogpLayerId", layerId);
+		for ( var i in matchingLayers) {
+			this.showLayer(layerId);
+			matchingLayers[i].setOpacity(opacitySetting * .01);
 			return;
 		}
 
-
+		if (matchingLayers.length > 1) {
+			console
+					.log("ERROR: There should never be more than one copy of the layer on the map");
+		}
 
 		// use a tilecache if we are aware of it
 
@@ -2232,11 +2169,15 @@ OpenGeoportal.MapController = function() {
 		// won't actually do anything, since noMagic is true and transparent is
 		// true
 		var format;
-		if (layerModel.isVector) {
-			format = "image/png";
-		} else {
+		var dataType = layerModel.get("DataType");
+		if ((dataType == "Raster") || (dataType == "Paper Map")) {
 			format = "image/jpeg";
+		} else {
+			format = "image/png";
 		}
+
+
+		var that = this;
 
 		
 		// we do a check to see if the layer exists before we add it
@@ -2279,41 +2220,19 @@ OpenGeoportal.MapController = function() {
 					//console.log(newLayer);
 					
 					that.addLayer(newLayer);
-					try {
-					layerModel.set({zIndex: newLayer.getZIndex()});
-					} catch (e){
-						console.log(e);
-						console.log(newLayer.getZIndex());
-					}
 				});
 		this.layerExists(layerModel);
 
 	};
-
+	
+	this.openExternalWindow = function(layerModel){
+		var newWindowURL = layerModel.get("Location").externalLink;
+		window.open(newWindowURL, "_blank","toolbar=yes, scrollbars=yes, resizable=yes, top=500, left=500, width=400, height=400");
+	};
+	
+	
 	// thanks to Allen Lin, U of MN
 	this.addArcGISRestLayer = function(layerModel) {
-		var layerId = layerModel.get("LayerId");
-		// check to see if layer is on openlayers map, if so, show layer
-		var opacitySetting = layerModel.get("opacity");
-		var that = this;
-		
-		var matchingLayers = this.getLayersBy("ogpLayerId", layerId);
-
-		if (matchingLayers.length > 1) {
-			throw new Error("ERROR: There should never be more than one copy of the layer on the map");
-		} else if (matchingLayers.length === 1){
-		
-			_.each(matchingLayers, function(layer){
-				var nextZ = that.getNextZ();
-				layerModel.set({zIndex: nextZ});
-			
-				that.showLayer(layerId);
-				layer.setOpacity(opacitySetting * .01);
-			
-			});
-			return;
-		}
-		
 		// won't actually do anything, since noMagic is true and transparent is
 		// true
 		var format;
@@ -2327,23 +2246,23 @@ OpenGeoportal.MapController = function() {
 		// (per geoserver docs)
 		var newLayer = new OpenLayers.Layer.ArcGIS93Rest(
 				layerModel.get("LayerDisplayName"),
-				layerModel.get("Location").ArcGISRest, 
+				layerModel.get("Location").ArcGISRest + "/export", 
 				{
-					layers : "show:" + layerModel.get("Name"),
+					layers : "show:" + layerModel.get("Location").layerId,
 					transparent : true
 				}, {
 					buffer : 0,
 					transitionEffect : 'resize',
-					opacity : opacitySetting,
-					ogpLayerId : layerId
+					opacity : layerModel.get("opacity"),
+					ogpLayerId : layerModel.get("LayerId")
 				});
 		newLayer.projection = new OpenLayers.Projection("EPSG:3857");
 		// how should this change? trigger custom events with jQuery
 		newLayer.events.register('loadstart', newLayer, function() {
-			jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad", layerId: layerId});
+			jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
 		});
 		newLayer.events.register('loadend', newLayer, function() {
-			jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad", layerId: layerId});
+			jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
 		});
 		var that = this;
 		// we do a cursory check to see if the layer exists before we add it
@@ -2435,7 +2354,11 @@ OpenGeoportal.MapController = function() {
 			type : "default",
 			onHandler : this.addMapBBox,
 			offHandler : this.hideLayer
-		} ];
+		}, {
+			type : "externalLink",
+			onHandler : this.openExternalWindow,
+			offHandler : this.hideLayer
+		}];
 
 		for ( var i in previewMethods) {
 			if (previewMethods[i].type === previewType) {
