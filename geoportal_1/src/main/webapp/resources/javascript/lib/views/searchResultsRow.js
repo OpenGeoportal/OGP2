@@ -154,7 +154,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 	},
 	
 	toggleSave: function(e){
-		//if not in cart, add it.  if in cart, remove it.
+		//First check if it's externalDownload, if yes. Open don't add it to cart
 		if (this.model.get("Location").externalDownload){
 			var dialogText = "To download this layer, please visit this <a href='" + this.model.get("Location").externalDownload + "' target='_blank'>link</a>.<br/>";
 			var dialogDiv = "<div id='no-preview-dialog'><p>" + dialogText + "</p></div>";
@@ -172,6 +172,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 			});
 		}
 		else{
+		    //if not in cart, add it.  if in cart, remove it.
 			var match = this.cart.findWhere({LayerId: this.model.get("LayerId")});
 			if (typeof match === "undefined"){
 				var that = this;
