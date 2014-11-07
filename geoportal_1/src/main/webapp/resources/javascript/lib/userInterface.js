@@ -353,8 +353,8 @@ OpenGeoportal.Structure = function() {
 
 	this.showInfoBubble = function() {
 		var params = {
-			"height" : 335,
-			"width" : 700,
+			"height" : 265,
+			"width" : 400,
 			"top" : 259,
 			"left" : 269,
 			"arrow" : "top"
@@ -365,8 +365,8 @@ OpenGeoportal.Structure = function() {
 	this.showDirectionsBubble = function() {
 
 		var params = {
-			"height" : 250,
-			"width" : 600,
+			"height" : 200,
+			"width" : 350,
 			"top" : 259,
 			"left" : 520,
 			"arrow" : "left"

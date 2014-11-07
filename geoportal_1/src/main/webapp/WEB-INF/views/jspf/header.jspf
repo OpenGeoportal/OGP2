@@ -1,7 +1,7 @@
 <div id="header">
 
 	<div id="logo" onclick="location.href=location.href">
-		<div id="logoGraphic"></div><div class="logoText">${titlePrimary}</div> <div class="logoText offsetColor">${titleOffset}</div>
+		<div id="logoGraphic"></div><div class="logoText">${titlePrimary}</div>
 	</div>
 	<div id="top_menu">
 		<button class="reset button headerButton">Reset</button> 
@@ -9,7 +9,9 @@
 		<button id="userGuideLink" class="infoLinks button headerButton">Help</button>
 		<span class="separator">|</span> 
 		<button id="highlightsLink" class="infoLinks button headerButton">About</button> 
-		<span class="separator">|</span> 
+		<!--
+        <span class="separator">|</span> 
 		<button id="headerLogin" class="infoLinks login button headerButton">Login</button>
+        -->
 	</div>
 </div>

@@ -2,25 +2,15 @@
 
 
 #logoGraphic {
-		background: url("../media/OGP_logo.png") repeat scroll 0 -5px rgba(0, 0, 0, 0);
-		height: 50px;
-		width: 50px;
-		padding: 2px;
+		/*background: url("../media/globe_ffffff_45.png") no-repeat 0 0 rgba(0, 0, 0, 0);*/
+		background: url("../media/mn-icon-10000m.png") no-repeat 0 0 rgba(0, 0, 0, 0);
+		height: 45px;
+		width: 45px;
+		padding-right: 5px;
 }
 
 #logo > div {
     display: inline-block;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
-#logo > div.logoText {
-	margin-left: -9px;
-}
-/*
-#footerLogos .institutionLogo {
-	background: url("../media/ogp-institutions.png") no-repeat scroll -9px
-		-59px transparent;
-	height: 30px;
-	width: 66px;
-}
-*/

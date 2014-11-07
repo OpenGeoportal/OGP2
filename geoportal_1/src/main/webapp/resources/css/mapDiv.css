@@ -27,8 +27,7 @@
 #neCorner {
     border-color: rgba(0, 0, 0, 0) #1D6EEF rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);
     border-width: 0 30px 30px 0;
-	right: 10px;
-	top: 10px;
+	right: 0px;
 }
 
 
@@ -36,29 +35,27 @@
     border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #1D6EEF rgba(0, 0, 0, 0);
     border-width: 0 0 30px 30px;
     bottom: 0;
-    right: 10px;
+    right: 0;
 }
 
 
 #nwCorner {
     border-color: #1D6EEF rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0);
     border-width: 30px 30px 0 0;
-    left: 35px;
-    top: 10px;
+    left: 25px;
 }
 
 #swCorner {
     border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #1D6EEF;
     border-width: 30px 0 0 30px;
     bottom: 0;
-    left: 35px;
+    left: 25px;
 }
 
 .corner {
     border-style: solid;
     height: 0;
-	margin: 0;
-	margin-bottom: 10px;
+    margin: 10px;
     position: absolute;
     width: 0;
     z-index: 1001;

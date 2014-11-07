@@ -22,9 +22,6 @@ if (!Object.create) {
 };
 </script>
 
-<%@include file="devincludes.jspf"%>
-
-<!--
 <c:choose>
       <c:when test="${dev}" >
       <%@include file="devincludes.jspf"%>
@@ -36,9 +33,6 @@ if (!Object.create) {
       <script type="text/javascript" src="resources/javascript/ogp.js"></script>
       </c:otherwise>
 </c:choose>
-
--->
-
 
 
 
