@@ -143,7 +143,7 @@ public abstract class AbstractDownloadMethod {
 	}
 
 
-	private File getDirectory() throws IOException{
+	protected File getDirectory() throws IOException{
 		File downloadDirectory = this.directoryRetriever.getDownloadDirectory();
 		File newDir = File.createTempFile("OGP", "", downloadDirectory);
 		newDir.delete();

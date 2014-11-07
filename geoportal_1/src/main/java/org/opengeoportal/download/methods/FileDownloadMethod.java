@@ -2,6 +2,7 @@ package org.opengeoportal.download.methods;
 
 import java.net.MalformedURLException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -44,13 +45,24 @@ public class FileDownloadMethod extends AbstractDownloadMethod implements PerLay
 	@Override
 	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
 		List<String> urls = layer.getDownloadUrl();
-		for (String currentUrl: urls){
-			logger.info("download url:" + currentUrl);
-			try {
-				this.checkUrl(currentUrl);
-			} catch (MalformedURLException e){
-				
+		
+		Iterator<String> iter = urls.iterator();
+		
+		while(iter.hasNext()){			
+			//TODO: expedient way logic to check if its http download.
+			//Should be more elegant in future.	
+			String currentUrl = iter.next();
+			if(currentUrl.contains("http")){
+				logger.info("download url:" + currentUrl);
+				try {
+					this.checkUrl(currentUrl);
+				} catch (MalformedURLException e){
+					
+				}
 			}
+			else{
+				iter.remove();
+			}			
 		}
 		return urls;
 	};
