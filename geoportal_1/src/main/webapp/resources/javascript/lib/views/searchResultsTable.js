@@ -475,7 +475,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 										
 										var canPreview = function(location){
 											//where is a good place to centralize this?
-											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection","download"]);
+											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection","externalLink"]);
 										};
 										
 										var hasAccess = true;

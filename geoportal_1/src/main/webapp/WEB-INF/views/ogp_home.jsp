@@ -5,7 +5,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>${pageTitle.primary} ${pageTitle.offset}</title>
+	<title>${titlePrimary} ${titleOffset}</title>
 	<!-- add analyticsId, searchUrl, login info here -->
 	<script>
 	
