@@ -137,7 +137,10 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
 				locationObj, [ "externalLink" ])) {
 			previewType = "externalLink";
-		}
+		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
+				locationObj, [ "download" ])) {
+			previewType = "externalLink";
+		} //TODO: this is a expedient elseif, will ultimately be deleted.
 
 
 		this.set({
