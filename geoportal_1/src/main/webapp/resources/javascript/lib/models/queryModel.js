@@ -35,7 +35,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		repositoryList: null,
 		displayRestrictedBasic: [],
 		whatExample: "(Example: buildings)",
-		whereExample:"(Example: Minneapolis, MN)",
+		whereExample:"(Example: Boston, MA)",
 		searchType: "basic",
 		history: []
 	}, 
