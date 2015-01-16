@@ -55,10 +55,7 @@
         <beans:property name="key" value="${cas.authProviderId}"/>
     </beans:bean>
  
-
-    <beans:bean id="userDetailsService" class="org.opengeoportal.security.cas.SimpleCasUserService" >
+	<beans:bean id="userDetailsService" class="org.opengeoportal.security.cas.SimpleCasUserService" >
         <beans:property name="admins" value="${cas.admins}" />
     </beans:bean>
-
-
 </beans:beans>
