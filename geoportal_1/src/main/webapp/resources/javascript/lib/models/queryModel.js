@@ -42,7 +42,10 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	}, 
 	
 	initialize: function(){
-		var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
+		//var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
+		//show restricted layers from all repositories
+		var restricted = OpenGeoportal.Config.Repositories.pluck("shortName");
+
 
 		this.set({displayRestrictedBasic: [restricted],
 			displayRestrictedAdvanced:  [restricted],
@@ -162,7 +165,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		}
 		 
 
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedBasic")));
+		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedAdvanced")));
 
 		/*
 		 * var institutionConfig =

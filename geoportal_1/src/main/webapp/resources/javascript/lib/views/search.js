@@ -319,7 +319,8 @@ OpenGeoportal.Views.Query = Backbone.View
 					that.noteSearchChanged();
 					var arrRestricted = [];
 					if (!this.checked) {
-						arrRestricted = that.model.get("displayRestrictedBasic");
+						//this shows restricted results for the institutions in the "displayRestrictedBasic" array
+						//arrRestricted = that.model.get("displayRestrictedBasic");
 					} else {
 						arrRestricted = that.model.get("repositoryList").pluck("shortName");
 					}
