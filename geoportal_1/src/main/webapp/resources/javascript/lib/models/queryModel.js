@@ -117,7 +117,6 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * @return Solr URL
 	 */
 	getSearchRequest : function() {
-
 		var solr = null;
 
 		var searchType = this.get("searchType");
@@ -152,6 +151,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		solr.setCenter(this.get("mapCenter"));
 
 		var what = this.get("what");
+
 		if ((what != null) && (what != "")) {
 			solr.setWhat(what);
 		}

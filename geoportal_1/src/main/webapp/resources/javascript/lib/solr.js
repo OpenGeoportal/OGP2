@@ -617,7 +617,6 @@ OpenGeoportal.Solr = function() {
 	 * @return {string} Query string to calculate intersection
 	 */
 	this.getIntersectionFunction = function(bounds) {
-		// TODO: this needs work. have to account for dateline crossing properly
 		// this filter gets all results where MinX is greater than Maxx {!frange u=0 incu=false}sub(MaxX,MinX),
 		//which indicates crossing the dateline
 		

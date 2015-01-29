@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
  * 
  * This should be the page that your external auth system protects.  Accessing this page authenticates you as an OGP user.  Since you can't get to this page without 
  * authenticating to your external system, OGP is protected from non-authorized users.  
- * If you can provide authentication with deeper Spring Security integrations,it is recommeneded.
+ * If you can provide authentication with deeper Spring Security integrations,it is recommended.
  * 
  * @author cbarne02
  *
