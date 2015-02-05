@@ -24,13 +24,21 @@ if (!Object.create) {
 
 <c:choose>
       <c:when test="${dev}" >
-      <%@include file="devincludes.jspf"%>
+      
+		<c:forEach var="style" items="${devCss}">
+			<link rel="stylesheet" href="${style}" type="text/css" />
+		</c:forEach>
+		
+		<c:forEach var="code" items="${devJs}">
+			<script type="text/javascript" src="${code}"></script>
+		</c:forEach>
+
       </c:when>
 
       <c:otherwise>
-      <link rel="stylesheet" href="resources/css/ogp.css" type="text/css" />
+      	<link rel="stylesheet" href="resources/css/ogp.css" type="text/css" />
      
-      <script type="text/javascript" src="resources/javascript/ogp.js"></script>
+      	<script type="text/javascript" src="resources/javascript/ogp.js"></script>
       </c:otherwise>
 </c:choose>
 
