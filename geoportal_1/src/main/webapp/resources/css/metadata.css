@@ -1,0 +1,119 @@
+.metadataDialogContent div.thumbnail {
+   display: inline-block;
+    left: 140px;
+    position: relative;
+    vertical-align: top;
+}
+
+.metadataDialogContent #metadataTOC {
+	display: inline-block;
+}
+
+.metadataDescription {
+    color: #444444;
+    font-size: 14px;
+    padding: 0 12px 12px;
+    line-height: 1.5em;
+}
+
+.metadataContainer {
+	margin: 2.5em 4em;
+}
+
+.metadataContainer .inline {
+	display: inline;
+}
+
+.metadataContainer h2.sectionHeader {
+    background-color: #edf4fa;
+    color: #333333;
+    padding: 9px;
+}
+
+.metadataContent .sectionContent {
+    margin-left: 8px;
+    margin-right: 40px;
+}
+
+.metadataContent h3.subSectionHeader {
+    color: #333333;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.metadataContent .subSectionContent {
+    margin-left: 16px;
+}
+
+.metadataContent .subSectionContent > h4 {
+    border-bottom: 1px solid;
+    color: #105eb5;
+}
+
+.metadataContent .subSectionContent h5 {
+    color: #444444;
+    display: inline-block;
+    font-size: 12px;
+    margin: 9px 0;
+    text-transform: capitalize;
+}
+
+.subSectionContent div > h4 {
+    display: inline-block;
+    margin: 0.75em 0;
+    text-transform: capitalize;
+}
+
+.metadataContent .contactInfo {
+    line-height: 1em;
+    margin-left: 48px;
+    font-style: italic;
+}
+
+.metadataContent .contactInfo h6,h5 {
+    display: inline-block;
+    margin: 1em 0;
+}
+
+.metadataContent .contactInfo a {
+    line-height: 2em;
+}
+
+.metadataContent .address {
+    margin-bottom: .5em;
+}
+
+.metadataContent .phone {
+    margin-bottom: 1em;
+}
+
+.metadataContent .thesaurusCitation div {
+    margin-left: 1em;
+}
+
+.metadataContent .thesaurusCitation h6 {
+    color: #444444;
+    font-size: 1em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+}
+
+.metadataContent .bounds > div {
+    display: inline;
+}
+
+.metadataTOC li {
+    line-height: 1.5em;
+}
+
+.metadataTOC a {
+    text-decoration: none;
+}
+
+.metadataTitle {
+	padding: 5px 5px 0;
+}
+
+.metadataTitle > h1 {
+    font-size: 16px;
+}

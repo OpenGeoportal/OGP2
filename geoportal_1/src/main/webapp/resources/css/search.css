@@ -1,0 +1,168 @@
+
+.searchButton {
+    	background: #6B91D5;
+background: -webkit-gradient(linear, left top, left bottom, from(#6B91D5), to(#577CBE));
+background: -webkit-linear-gradient(#6B91D5, #577CBE);
+background: -moz-linear-gradient(top, #6B91D5, #577CBE);
+background: -ms-linear-gradient(#6B91D5, #577CBE);
+background: -o-linear-gradient(#6B91D5, #577CBE);
+background: linear-gradient(#6B91D5, #577CBE);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
+zoom: 1;
+    border: 1px solid #6B91D5;
+    color: #FFFFFF;
+}
+
+.advancedSearchButtons>div {
+	display: inline-block;
+}
+
+.basicSearchButtons {
+	margin-left: -32px;
+}
+
+.basicSearchButtons>div {
+	display: inline-block;
+}
+
+.searchBox {
+	background: none repeat scroll 0 0 white;
+	border-bottom: 1px solid #CCCCCC;
+	font-family: arial, sans-serif;
+	font-size: 12px;
+	height: 30px;
+	padding-bottom: 23px;
+	padding-top: 2px;
+	position: absolute;
+	top: 65px;
+	width: 100%;
+	z-index: 1500;
+	min-width: 1050px;	
+}
+
+.advancedSearchButtons {
+	margin-left: 80px;
+	margin-top: 25px;
+}
+
+.basicSearch {
+	display: inline-block;
+	line-height: 22px;
+	padding-right: 6px;
+	width: 306px;
+}
+
+.labelText {
+	padding-right: 5px;
+}
+
+.basicSearch input[type="search"] {
+	width: 220px;
+	-webkit-appearance: textfield;
+}
+
+.advancedSearch {
+	display: none;
+}
+
+.whereBox.basicSearch > label {
+    width: 55px;
+}
+
+.basicSearch.whatBox.searchFormRow > label {
+    width: 51px;
+}
+
+.basicSearch.whatBox.searchFormRow {
+    margin-left: -46px;
+}
+
+.basicSearch.basicSearchButtons.searchFormRow {
+    margin-left: -105px;
+}
+
+#basicSearchBox {
+	display: block;
+}
+
+#basicSearchMapFilterContainer {
+	display: none;
+	margin-top: 5px;
+	display: inline-block;
+	visibility: hidden;
+}
+
+.searchFormRow {
+	line-height: 27px;
+}
+
+.searchFormRow > label {
+	display: inline-block;
+	width: 76px;
+    font-family: arial;
+    font-size: 14px;
+}
+
+.searchFormRow.advancedSearch>label {
+	width: 77px;
+}
+
+.searchFormRow.advancedSearch>input[type="search"] {
+	width: 192px;
+	-webkit-appearance: textfield;
+}
+
+.searchFormRow .styledSelectText {
+	min-width: 190px;
+}
+
+#searchForm {
+	display: inline-block;
+}
+
+.searchCol {
+	position: absolute;
+	/*width: 340px;*/
+	margin-right: 42px;
+}
+
+#searchCol1 {
+	left: 50px;
+}
+
+#searchCol2 {
+	left: 400px;
+}
+
+#searchCol3 {
+	left: 750px;
+}
+
+.searchToggle {
+	background: none;
+    border: none;
+	text-decoration: underline;
+	white-space: nowrap;
+	font-size: 11px;
+	display: inline-block;
+}
+
+.searchToggle span:hover {
+	color: yellow;
+}
+
+.whereBox {
+	color: #0755AC;
+	font-weight: bold;
+}
+
+.whatBox {
+	color: #0755AC;
+	font-weight: bold;
+}
+
+.formCheckbox {
+	padding-left: 76px;
+	display: inline-block;
+	width: 228px;
+}

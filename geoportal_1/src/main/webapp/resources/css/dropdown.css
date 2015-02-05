@@ -1,0 +1,114 @@
+/* dropdown styling */
+li.searchAttribution.ui-widget-content.ui-menu-divider {
+    border: medium none;
+    margin: 0;
+}
+
+
+
+#sortDropdown {
+	margin-left: 12px;
+}
+
+#sortDropdown .select .ui-button-text {
+	width: 70px;
+}
+
+#topicDropdown .select .ui-button-text {
+	width: 136px;	
+}
+
+.dropdown .ui-menu-item > div.showOnly {
+	font-size: 10px;
+    position: absolute;
+    right: 31px;
+    height: 20px;
+    display: none;
+}
+
+.dropdown .ui-menu-item.ui-state-focus > div.showOnly {
+	display: inline-block;	
+}
+
+.dropdown .ui-menu-item.ui-state-focus > div.showOnly:hover {
+	text-decoration: underline;
+}
+
+.dropdown .showAll {
+    display: inline-block;
+    font-size: 10px;
+    padding-left: 9px;
+    visibility: hidden;
+}
+
+.dropdown .showAll:hover {
+	text-decoration: underline;
+}
+
+.dropdown .ui-menu-item  > div.sortArrows {
+	right: 0px;
+	position: absolute;
+	margin-top: 2px;
+	width: 10px;
+	height: 12px;
+}
+
+.dropdown .ui-menu-item.ui-state-focus > div.sortArrows {
+		background: url("../media/sorting.png") no-repeat scroll 0px
+		0px transparent;
+}
+		
+.dropdown .ui-menu-item.selected > div.sortArrows.sortDown {
+	background: url("../media/sorting.png") no-repeat scroll -22px
+		0px transparent;
+}
+
+.dropdown .ui-menu-item.selected > div.sortArrows.sortUp {
+	background: url("../media/sorting.png") no-repeat scroll -11px
+		0px transparent;
+}
+
+.styledSelect > ul {
+	max-height: 160px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	position: absolute;
+	z-index: 1500;
+}
+
+.searchFormInput.dropdown {
+	display: inline-block;
+}
+
+.searchFormInput.dropdown .select.ui-button {
+	width: 198px;
+}
+
+.searchFormInput.dropdown ul {
+	min-width: 196px;
+}
+
+.searchFormInput>.styledSelect {
+	width: 255px;
+}
+
+.dropdown .ui-menu-item > div {
+	display: inline-block;
+	margin-right: 9px;
+}
+
+.dropdown .ui-menu-item > div.checkOff {
+	float: right;
+	position: absolute;
+	right: 5px;
+}
+
+.dropdown .ui-menu-item > div.checkOn {
+	float: right;
+	position: absolute;
+	right: 5px;
+}
+
+.selectText {
+	vertical-align: top;
+}

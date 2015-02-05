@@ -1,0 +1,222 @@
+
+/********
+layer view
+*********/
+
+
+.expandControl {
+	height: 17px;
+	width: 11px;
+}
+
+.expanded {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -92px -115px
+		transparent;
+}
+
+.notExpanded {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -83px -63px
+		transparent;
+}
+
+
+
+.saveControl {
+	height: 17px;
+	width: 17px;
+}
+
+.notInCart {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -102px -13px
+		transparent;
+}
+
+.inCart {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -130px -13px
+		transparent;
+}
+
+.viewLibraryRecordControl {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -131px -35px
+		transparent;
+	height: 17px;
+	width: 17px;
+}
+
+.viewMetadataControl {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -131px -35px
+		transparent;
+	height: 17px;
+	width: 17px;
+}
+
+.checkOff {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -89px
+		transparent;
+	width: 25px;
+	height: 17px;
+}
+
+.checkOn {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -84px -89px
+		transparent;
+	width: 25px;
+	height: 17px;
+}
+
+.loginButton {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -67px -12px
+		transparent;
+	width: 25px;
+	height: 17px;
+}
+
+.previewLink {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -110px -89px rgba(0, 0, 0, 0);
+    height: 17px;
+    width: 25px;
+}
+
+.previewedLayers {
+    background-color: #f8f8e4;
+}
+
+.previewedLayers > div {
+	border-bottom: 1px solid #CCCCCC !important;
+}
+
+.highlight_row {
+	background-color: #edf4fa;
+}
+
+
+
+/**************
+Backbone table view
+***************/
+
+.cartIconTable {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -102px -62px
+		transparent;
+	height: 17px;
+	width: 17px;
+}
+
+.tableWrapper {
+	font-family: Verdana,Geneva,sans-serif;
+}
+
+.tableHeaders {
+    border-bottom: 1px solid #CCCCCC;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.rowContainer {
+	overflow-y: auto;	
+	overflow-x: hidden;
+	white-space: nowrap;
+}
+
+#searchResults > .tableWrapper > .rowContainer {
+	overflow-y: scroll;
+}
+
+.hiddenRow {
+	display: none;
+}
+
+.hiddenTable {
+	display: none;
+}
+
+.previewedLayers .rowContainer {
+	overflow: visible;
+}
+
+.tableRow {
+	width: 100%;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+
+.tableCell {
+    display: inline-block;
+}
+
+.tableHeaders > .tableCell {
+    border-color: #CCCCCC;
+    border-style: none none none solid;
+    border-width: 0 0 0 1px;
+    color: #000000;
+    font-size: 12px;
+    font-weight: normal;
+    margin: 0;
+    padding: 3px;
+    position: relative;
+    text-align: center;
+    height: 18px;
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.rowContainer .tableCell {
+	    height: 17px;
+	    color: #4E4E4E;
+	    overflow: hidden;
+    	padding: 2px 4px 2px 3px;
+}
+
+.tableCell > div {
+	margin: auto;
+}
+
+/* text columns */
+
+.tableCell > .cellWrapper {
+	width: 100%;
+	margin-left: 2px;
+    margin-right: 2px;
+    overflow: hidden;
+    font-size: 11px;
+    height: 17px;
+    line-height: 17px;
+    word-break: break-all;
+}
+
+td.colTitle {
+	cursor: pointer;
+	color: #000000 !important;
+}
+
+.rowContainer .colTitle {
+	cursor: pointer;
+	color: #000000;
+}
+
+.tableRow.rowHover {
+	background-color: #ebf6ff;
+	border-bottom: #d8e8fa 1px solid !important;
+	border-top: #d8e8fa 1px solid !important;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.emptyTable {
+    padding: 5px;
+    text-align: center;
+}
+
+.tableRow.cartAction  {
+	opacity: .6;
+}
+
+.tableRow.cartAction.cartSelected {
+	opacity: 1;
+	background-color: #CDE4FA;
+	border-color: #CDE4FA;
+}
+
+.bottomSpacer {
+	height: 25px;
+}

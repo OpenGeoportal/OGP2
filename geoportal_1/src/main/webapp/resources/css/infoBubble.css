@@ -1,0 +1,188 @@
+
+.welcomeText {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
+.directionsText {
+	padding: 20px;
+	margin-top: 30px;
+}
+
+/*************
+Info Bubble
+*************/
+.closeBubble {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -66px -114px
+		transparent;
+	width: 20px;
+	height: 20px;
+	float: right;
+}
+
+button.closeBubble {
+	border: none;
+}
+
+.infoBubbleText {
+	padding: 10px 20px;
+	left: 2px;
+	top: 2px;
+	color: white;
+	font: 24px "Univers", Sans-Serif;
+	z-index: 2147483647;
+	text-align: left;
+}
+
+.infoBubbleText h1 {
+	color: white;
+	font: 55px "Univers", Sans-Serif;
+	font-style: oblique;
+}
+
+.infoBubbleText label {
+	color: white;
+	font: 12px "Univers", Sans-Serif;
+}
+
+.triangle-isosceles.top-arrow:after {
+	border-color: #6B91D5 transparent;
+	border-width: 0 15px 155px;
+	bottom: auto;
+	left: 24px;
+	right: auto;
+	top: -155px;
+	transform: scale(1.01);
+}
+
+.triangle-isosceles.left-arrow:after {
+	border-color: #648ACE transparent;
+	border-width: 0 0 27px 56px;
+	bottom: auto;
+	left: -51px;
+	top: 125px;
+	transform: rotate(14deg);
+}
+
+.triangle-isosceles:after {
+	border-color: #6B91D5 transparent;
+	border-style: solid;
+	border-width: 15px 15px 0;
+	bottom: -15px;
+	content: "";
+	display: block;
+	left: 50px;
+	position: absolute;
+	width: 0;
+}
+
+.triangle-isosceles.top-arrow {
+	
+	background: #6B91D5;
+background: -webkit-gradient(linear, top, bottom, from(#6B91D5), to(#577CBE));
+background: -webkit-linear-gradient(#6B91D5, #577CBE);
+background: -moz-linear-gradient(top, #6B91D5, #577CBE);
+background: -ms-linear-gradient(#6B91D5, #577CBE);
+background: -o-linear-gradient(#6B91D5, #577CBE);
+background: linear-gradient(#6B91D5, #577CBE);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
+zoom: 1;
+}
+
+.triangle-isosceles.left-arrow {
+	background: #6B91D5;
+background: -webkit-gradient(linear, top, bottom, from(#6B91D5), to(#577CBE));
+background: -webkit-linear-gradient(#6B91D5, #577CBE);
+background: -moz-linear-gradient(top, #6B91D5, #577CBE);
+background: -ms-linear-gradient(#6B91D5, #577CBE);
+background: -o-linear-gradient(#6B91D5, #577CBE);
+background: linear-gradient(#6B91D5, #577CBE);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
+zoom: 1;
+}
+
+.triangle-isosceles {
+	background: #6B91D5;
+background: -webkit-gradient(linear, top, bottom, from(#6B91D5), to(#577CBE));
+background: -webkit-linear-gradient(#6B91D5, #577CBE);
+background: -moz-linear-gradient(top, #6B91D5, #577CBE);
+background: -ms-linear-gradient(#6B91D5, #577CBE);
+background: -o-linear-gradient(#6B91D5, #577CBE);
+background: linear-gradient(#6B91D5, #577CBE);
+filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
+zoom: 1;
+	border-radius: 15px;
+	position: absolute;
+}
+
+.infoBubbleBackground {
+	padding: 10px 20px;
+	color: white;
+	box-shadow: 0 0 7px black;
+	display: none;
+	z-index: 9999;
+}
+
+.triangle-isoscelesBackground.top-arrowBackground:after {
+	border-color: #61729E transparent;
+	border-width: 0 17px 154px;
+	bottom: auto;
+	left: 24px;
+	right: auto;
+	top: -154px;
+	transform: scale(1.01);
+}
+
+.triangle-isoscelesBackground.left-arrowBackground:after {
+	border-width: 0 0 31px 59px;
+	bottom: auto;
+	left: -55px;
+	top: 124px;
+	transform: rotate(14deg);
+}
+
+.triangle-isoscelesBackground:after {
+	border-color: #61729E transparent;
+	border-style: solid;
+	border-width: 15px 15px 0;
+	bottom: -15px;
+	content: "";
+	display: block;
+	left: 50px;
+	position: absolute;
+	width: 0;
+}
+
+.triangle-isoscelesBackground.top-arrowBackground {
+	background-color: #61729E;
+}
+
+.triangle-isoscelesBackground.left-arrowBackground {
+	background-color: #61729E;
+}
+
+.triangle-isoscelesBackground {
+	background-color: #61729E;
+	border-radius: 15px;
+	position: absolute;
+}
+
+.detailsBottom:after {
+	content: "";
+	position: absolute;
+	left: 47%;
+	width: 10px;
+	height: 10px;
+	/* box-shadow: 6px 5px 9px -9px black;*/
+	-webkit-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-o-transform: rotate(45deg);
+	tranform: rotate(45deg);
+	background-color: #4B8ACF;
+	/*border-bottom: 8px solid #4B8ACF;*/
+	top: -11px;
+	z-index: 999;
+}
