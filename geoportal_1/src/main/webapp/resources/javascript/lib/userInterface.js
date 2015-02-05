@@ -30,8 +30,6 @@ OpenGeoportal.Structure = function() {
 		
 		this.resizeWindowHandler();
 
-		this.searchToggleHandler();
-
 		var model = new OpenGeoportal.Models.LeftPanel();
 		this.panelView = new OpenGeoportal.Views.LeftPanel({
 			model : model,
@@ -73,7 +71,40 @@ OpenGeoportal.Structure = function() {
 		return OpenGeoportal.Utility.LocalStorage.getBool(key, true);
 	},
 	
+	/**
+	 * should register event handlers that should interrupt the flow and initiate a search. If one of them is triggered, they should all be unregistered
+	 */
 
+
+	this.triggerInitialSearch = function(){
+		//trigger a search if a user clicks on the expand button, etc.
+		var initSearchEvents = [
+			             			{selector: ".arrow_right",
+			            				event: "click"},
+			            			{selector: "#moreSearchOptions",
+			            					event: "click"},
+					            	{selector: ".olControlPanel > div",
+				            				event: "click"}
+			            		];
+		
+		
+		
+		var deregisterAll = function(){
+			_.each(initSearchEvents, function(item){
+				$(item.selector).off(item.event + ".initial");
+			});	
+		};
+		
+		_.each(initSearchEvents, function(item){
+			$(item.selector).on(item.event + ".initial", function(){
+				jQuery(document).trigger("fireSearch");
+				deregisterAll();
+			});	
+		});
+
+		
+	};
+	
 	
 	this.introFlow = function(hasSharedLayers) {
 		var bubble1 = "welcomeBubble";
@@ -81,6 +112,8 @@ OpenGeoportal.Structure = function() {
 		if (this.doShowInfo(bubble1) && !hasSharedLayers) {
 			var $bubble1 = this.showInfoBubble(bubble1);
 
+			this.triggerInitialSearch();
+			
 			var that = this;
 			jQuery(document).one("fireSearch", function(event) {
 				$bubble1.hide({
@@ -240,154 +273,6 @@ OpenGeoportal.Structure = function() {
 	};
 
 
-	this.searchToggleHandler = function() {
-		var that = this;
-		jQuery(".searchToggle").on("click", function() {
-			that.toggleSearch(this);
-		});
-	};
-	
-	//this should move to the search view
-	this.toggleSearch = function(thisObj) {
-		var stepTime = 50;
-		var thisId = jQuery(thisObj).attr('id');
-		var hght = jQuery(".searchFormRow").height();
-		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
-		
-		if (thisId === 'moreSearchOptions') {
-
-			jQuery("#searchForm .basicSearch").hide();
-			jQuery("#geosearchDiv").removeClass("basicSearch").addClass(
-					"advancedSearch");
-			jQuery("#searchForm .advancedSearch.searchRow1").show();
-
-			jQuery('#searchBox').animate(
-							{
-								height : "+=" + hght
-							},
-							{
-								queue : false,
-								duration : stepTime,
-								easing : "linear",
-								complete : function() {
-									jQuery("#searchForm .advancedSearch.searchRow2").show();
-									jQuery('#searchBox').animate(
-													{
-														height : "+=" + hght
-													},
-													{
-														queue : false,
-														duration : stepTime,
-														easing : "linear",
-														complete : function() {
-															jQuery("#searchForm .advancedSearch.searchRow3").show();
-															jQuery('#searchBox').animate(
-																			{
-																				height : "+=" + hght
-																			},
-																			{
-																				queue : false,
-																				duration : stepTime,
-																				easing : "linear",
-																				complete : function() {
-																					jQuery("#searchForm .advancedSearch.searchRow4").show();
-																					jQuery("#lessSearchOptions").focus();
-																					jQuery(document).trigger("searchform.setAdvanced");
-
-																				}
-																			});
-														}
-													});
-								}
-							});
-
-			jQuery(".slideVertical").animate(
-					{
-						"margin-top" : "+=" + hght * 3
-					},
-					{
-						duration : stepTime * 3,
-						easing : "linear",
-						done : function() {
-							jQuery(document).trigger("searchform.resize");
-						}
-			});
-
-		} else if (thisId === 'lessSearchOptions') {
-			jQuery(".slideVertical").animate(
-					{
-						"margin-top" : "-=" + hght * 3
-					},
-					{
-						queue : false,
-						duration : stepTime * 3,
-						easing : "linear",
-						done : function() {
-							jQuery(document).trigger("searchform.resize");
-						}
-			});
-
-			jQuery("#searchForm .advancedSearch.searchRow4").hide();
-			jQuery('#searchBox')
-					.animate(
-							{
-								height : "-=" + hght
-							},
-							{
-								queue : false,
-								duration : stepTime,
-								easing : "linear",
-								complete : function() {
-									// jQuery(".slideVertical").animate({"margin-top":
-									// "-=" + hght, queue: false, duration: 100,
-									// easing: "linear"});
-									jQuery("#searchForm .advancedSearch.searchRow3").hide();
-									jQuery('#searchBox').animate(
-													{
-														height : "-=" + hght
-													},
-													{
-														queue : false,
-														duration : stepTime,
-														easing : "linear",
-														complete : function() {
-															jQuery("#searchForm .advancedSearch.searchRow2").hide();
-															jQuery('#searchBox').animate(
-																			{
-																				height : "-="
-																						+ hght
-																			},
-																			{
-																				queue : false,
-																				duration : stepTime,
-																				easing : "linear",
-																				complete : function() {
-																					// jQuery(".slideVertical").animate({"margin-top":
-																					// "-="
-																					// +
-																					// hght,
-																					// queue:
-																					// false,
-																					// duration:
-																					// 100,
-																					// easing:
-																					// "linear"});
-																					jQuery("#geosearchDiv").removeClass("advancedSearch")
-																							.addClass("basicSearch");
-																					jQuery("#searchForm .advancedSearch.searchRow1").hide();
-																					jQuery("#searchForm .basicSearch").show();
-																					jQuery("#moreSearchOptions").focus();
-																					jQuery(document).trigger("searchform.setBasic");
-
-																				}
-																			});
-														}
-													});
-								}
-							});
-
-		}
-	};
 
 	this.showInfoBubble = function(elId) {
 		var params = {

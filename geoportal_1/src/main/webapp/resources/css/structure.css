@@ -145,6 +145,14 @@ iframe.download {
 	filter: Alpha(Opacity = 50);
 }
 
+.introMask {
+    background: none repeat scroll 0 0 white;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: 10000;
+}
+
 /* Header */
 #header {
 	height: 120px;
@@ -154,12 +162,14 @@ iframe.download {
 }
 
 #logo {
-	cursor: pointer;
-	color: #492318;
-	font-size: 35px;
-	padding-left: 49px;
-	padding-top: 25px;
-	display: inline-block;
+    color: #492318;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 35px;
+    left: 49px;
+    position: absolute;
+    top: 25px;
+    z-index: 15000;
 }
 
 
@@ -304,15 +314,22 @@ resize arrows
 	display: inline-block;
 }
 
-.arrow_buttons .arrow_right {
+
+.arrow_right {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -39px -58px
 		transparent;
 	width: 27px;
 	height: 26px;
+	display: block;
+	border: none;
+}
+
+.arrow_buttons .arrow_right {
+	background: url("../media/ogp-sprite.png") no-repeat scroll -39px -58px
+		transparent;
 	display: inline-block;
 	margin-top: 1px;
     vertical-align: top;
-    border: none;
 }
 
 #roll_right {

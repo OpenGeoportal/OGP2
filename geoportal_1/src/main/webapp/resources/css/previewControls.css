@@ -36,9 +36,11 @@ preview controls
 	border-right: 1px solid #aaaaaa;
 	border-top: 1px solid #aaaaaa;
 	height: 15px;
-	vertical-align: top;
 	width: 14px;
 	display: inline-block;
+	position: relative;
+    top: 4px;
+    left: -4px;
 }
 
 .controlContainer {
@@ -48,8 +50,7 @@ preview controls
 	height: 11px;
 	width: 71px;
 	padding: 5px 10px 5px 8px;
-	right: 0;
-	top: 100%;
+	right: 4px;
 	display: none;
 }
 

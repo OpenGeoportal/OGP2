@@ -1,16 +1,17 @@
-
 .searchButton {
-    	background: #6B91D5;
-background: -webkit-gradient(linear, left top, left bottom, from(#6B91D5), to(#577CBE));
-background: -webkit-linear-gradient(#6B91D5, #577CBE);
-background: -moz-linear-gradient(top, #6B91D5, #577CBE);
-background: -ms-linear-gradient(#6B91D5, #577CBE);
-background: -o-linear-gradient(#6B91D5, #577CBE);
-background: linear-gradient(#6B91D5, #577CBE);
-filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
-zoom: 1;
-    border: 1px solid #6B91D5;
-    color: #FFFFFF;
+	background: #6B91D5;
+	background: -webkit-gradient(linear, left top, left bottom, from(#6B91D5),
+		to(#577CBE));
+	background: -webkit-linear-gradient(#6B91D5, #577CBE);
+	background: -moz-linear-gradient(top, #6B91D5, #577CBE);
+	background: -ms-linear-gradient(#6B91D5, #577CBE);
+	background: -o-linear-gradient(#6B91D5, #577CBE);
+	background: linear-gradient(#6B91D5, #577CBE);
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5',
+		endColorstr='#577CBE');
+	zoom: 1;
+	border: 1px solid #6B91D5;
+	color: #FFFFFF;
 }
 
 .advancedSearchButtons>div {
@@ -37,12 +38,12 @@ zoom: 1;
 	top: 65px;
 	width: 100%;
 	z-index: 1500;
-	min-width: 1050px;	
+	min-width: 1050px;
 }
 
 .advancedSearchButtons {
 	margin-left: 80px;
-	margin-top: 25px;
+	margin-top: -3px;
 }
 
 .basicSearch {
@@ -65,20 +66,20 @@ zoom: 1;
 	display: none;
 }
 
-.whereBox.basicSearch > label {
-    width: 55px;
+.whereBox.basicSearch>label {
+	width: 55px;
 }
 
-.basicSearch.whatBox.searchFormRow > label {
-    width: 51px;
+.basicSearch.whatBox.searchFormRow>label {
+	width: 51px;
 }
 
 .basicSearch.whatBox.searchFormRow {
-    margin-left: -46px;
+	margin-left: -46px;
 }
 
 .basicSearch.basicSearchButtons.searchFormRow {
-    margin-left: -105px;
+	margin-left: -105px;
 }
 
 #basicSearchBox {
@@ -96,11 +97,11 @@ zoom: 1;
 	line-height: 27px;
 }
 
-.searchFormRow > label {
+.searchFormRow>label {
 	display: inline-block;
 	width: 76px;
-    font-family: arial;
-    font-size: 14px;
+	font-family: arial;
+	font-size: 14px;
 }
 
 .searchFormRow.advancedSearch>label {
@@ -122,25 +123,35 @@ zoom: 1;
 
 .searchCol {
 	position: absolute;
-	/*width: 340px;*/
-	margin-right: 42px;
 }
 
-#searchCol1 {
+.searchCol1 {
 	left: 50px;
 }
 
-#searchCol2 {
+.searchCol2 {
 	left: 400px;
 }
 
-#searchCol3 {
+.searchCol3 {
 	left: 750px;
+}
+
+.searchRow2 {
+	top: 40px;
+}
+
+.searchRow3 {
+	top: 68px;
+}
+
+.searchRow4 {
+	top: 97px;
 }
 
 .searchToggle {
 	background: none;
-    border: none;
+	border: none;
 	text-decoration: underline;
 	white-space: nowrap;
 	font-size: 11px;

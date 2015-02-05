@@ -82,6 +82,9 @@ jQuery(document)
 										} catch (e){
 											console.log(e);
 										}
+										
+										$(".introMask").fadeOut('fast');
+										
 										// The search results table
 										
 										ogp.resultsTableObj = new OpenGeoportal.Views.SearchResultsTable(

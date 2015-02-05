@@ -74,12 +74,14 @@ OpenGeoportal.Views.Query = Backbone.View
 				});
 			},
 			
+
 			events : {
 				"blur input" : "setTextValue",
 				"change #whereField": "doGeocode",
 				"keypress #whereField": "noteWhereChanged",
 				"change #whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged",
-				"search #whereField,#whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged"
+				"search #whereField,#whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged",
+				"click .searchToggle": "toggleSearch"
 
 			},
 
@@ -534,5 +536,164 @@ OpenGeoportal.Views.Query = Backbone.View
 								"ui-corner-all");
 					}
 				});
+			},
+			
+
+			
+			expandSearchBox: function(hght, stepTime){
+				jQuery("#searchForm .basicSearch").hide();
+				jQuery("#geosearchDiv").removeClass("basicSearch").addClass(
+						"advancedSearch");
+				jQuery("#searchForm .advancedSearch.searchRow1").show();
+
+				jQuery('#searchBox').animate(
+								{
+									height : "+=" + hght
+								},
+								{
+									queue : false,
+									duration : stepTime,
+									easing : "linear",
+									complete : function() {
+										jQuery("#searchForm .advancedSearch.searchRow2").show();
+										jQuery('#searchBox').animate(
+														{
+															height : "+=" + hght
+														},
+														{
+															queue : false,
+															duration : stepTime,
+															easing : "linear",
+															complete : function() {
+																jQuery("#searchForm .advancedSearch.searchRow3").show();
+																jQuery('#searchBox').animate(
+																				{
+																					height : "+=" + hght
+																				},
+																				{
+																					queue : false,
+																					duration : stepTime,
+																					easing : "linear",
+																					complete : function() {
+																						jQuery("#searchForm .advancedSearch.searchRow4").show();
+																						jQuery("#lessSearchOptions").focus();
+																						jQuery(document).trigger("searchform.setAdvanced");
+
+																					}
+																				});
+															}
+														});
+									}
+								});
+
+				jQuery(".slideVertical").animate(
+						{
+							"margin-top" : "+=" + hght * 3
+						},
+						{
+							duration : stepTime * 3,
+							easing : "linear",
+							done : function() {
+								jQuery(document).trigger("searchform.resize");
+							}
+				});
+
+				
+			},
+			
+			shrinkSearchBox: function(hght, stepTime){
+				jQuery(".slideVertical").animate(
+						{
+							"margin-top" : "-=" + hght * 3
+						},
+						{
+							queue : false,
+							duration : stepTime * 3,
+							easing : "linear",
+							done : function() {
+								jQuery(document).trigger("searchform.resize");
+							}
+				});
+
+				jQuery("#searchForm .advancedSearch.searchRow4").hide();
+				jQuery('#searchBox')
+						.animate(
+								{
+									height : "-=" + hght
+								},
+								{
+									queue : false,
+									duration : stepTime,
+									easing : "linear",
+									complete : function() {
+										// jQuery(".slideVertical").animate({"margin-top":
+										// "-=" + hght, queue: false, duration: 100,
+										// easing: "linear"});
+										jQuery("#searchForm .advancedSearch.searchRow3").hide();
+										jQuery('#searchBox').animate(
+														{
+															height : "-=" + hght
+														},
+														{
+															queue : false,
+															duration : stepTime,
+															easing : "linear",
+															complete : function() {
+																jQuery("#searchForm .advancedSearch.searchRow2").hide();
+																jQuery('#searchBox').animate(
+																				{
+																					height : "-="
+																							+ hght
+																				},
+																				{
+																					queue : false,
+																					duration : stepTime,
+																					easing : "linear",
+																					complete : function() {
+																						// jQuery(".slideVertical").animate({"margin-top":
+																						// "-="
+																						// +
+																						// hght,
+																						// queue:
+																						// false,
+																						// duration:
+																						// 100,
+																						// easing:
+																						// "linear"});
+																						jQuery("#geosearchDiv").removeClass("advancedSearch")
+																								.addClass("basicSearch");
+																						jQuery("#searchForm .advancedSearch.searchRow1").hide();
+																						jQuery("#searchForm .basicSearch").show();
+																						jQuery("#moreSearchOptions").focus();
+																						jQuery(document).trigger("searchform.setBasic");
+
+																					}
+																				});
+															}
+														});
+									}
+								});
+			
+			},
+			
+			toggleSearch: function(e) {
+
+				var stepTime = 50;
+				var thisId = jQuery(e.target).attr('id');
+				var hght = jQuery(".searchFormRow").height();
+				jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
+				
+				if (thisId === 'moreSearchOptions') {
+					this.expandSearchBox(hght, stepTime);
+
+				} else if (thisId === 'lessSearchOptions') {
+					this.shrinkSearchBox(hght, stepTime);
+				}
 			}
+
+			
+			
+			
+			
+			
 		});

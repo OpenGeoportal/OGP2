@@ -41,6 +41,7 @@ OpenGeoportal.Config.RepositoriesBootstrap = ${repositories};
 </head>
 
 <body>
+	<div class="introMask"></div>
 
 	<%@include file="jspf/header.jspf"%>
 	<%@include file="jspf/search.jspf"%>
