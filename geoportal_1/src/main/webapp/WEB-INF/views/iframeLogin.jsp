@@ -14,7 +14,7 @@
 			parent.postMessage(jsonString,"${sendingPage}");
 		} catch (e) {
 			//if there's an error, we should catch it, close the iframe, and notify the user that something is amiss
-			alert("blah");
+			//alert("blah");
 			throw new Error("Problem logging in.  Please contact your system administrator.");
 		}
 	});

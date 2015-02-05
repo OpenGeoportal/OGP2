@@ -481,12 +481,17 @@ OpenGeoportal.Solr = function() {
 	 * Specialized Filters
 	 */
 	this.createAccessFilter = function(arrDisplayRestricted) {
-
-		var accessFilter = this.createFilter("Institution",
-				arrDisplayRestricted);
-		if (accessFilter.length > 0) {
-			accessFilter += " OR Access:Public";
+		
+		arrDisplayRestricted = arrDisplayRestricted | [];
+		
+		var accessFilter = this.createFilter("Access", "Public");
+		
+		if (arrDisplayRestricted.length > 0) {
+			accessFilter += " OR ";
+			accessFilter += this.createFilter("Institution",
+					arrDisplayRestricted);
 		}
+		
 		return accessFilter;
 	};
 

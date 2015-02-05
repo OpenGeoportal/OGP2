@@ -15,7 +15,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 		.extend({
 
 			initialize : function() {
-				this.template = OpenGeoportal.ogp.template;
+				this.template = OpenGeoportal.Template;
 				this.tableControls = OpenGeoportal.ogp.tableControls;
 				this.tableConfig = this.createTableConfig();
 
@@ -55,7 +55,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			},
 			
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: this.template.divNoId({elClass: "bottomSpacer"})}));
+				return jQuery(this.template.get('tableView')({tableHeader: this.template.get('tableHeader')(this.getHeaderInfo()), tableFooter: this.template.get('divNoId')({elClass: "bottomSpacer"})}));
 			},
 			
 			
@@ -120,12 +120,12 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			
 			renderHeaders: function(){
 
-				this.$el.children(".tableWrapper").children(".tableHeaders").first().replaceWith(this.template.tableHeader(this.getHeaderInfo()));
+				this.$el.children(".tableWrapper").children(".tableHeaders").first().replaceWith(this.template.get('tableHeader')(this.getHeaderInfo()));
 
 			},
 			
 			handleEmptyTable: function(table$){
-				table$.append(this.template.emptyTable({message: this.emptyTableMessage}));
+				table$.append(this.template.get('emptyTable')({message: this.emptyTableMessage}));
 			},
 			
 			shouldProcessRow: function(model){

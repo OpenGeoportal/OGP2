@@ -18,7 +18,7 @@ if (typeof OpenGeoportal === 'undefined') {
  */
 OpenGeoportal.TableItems = function TableItems() {
 	
-	var template = OpenGeoportal.ogp.template;
+	var template = OpenGeoportal.Template;
 
 	/***************************************************************************
 	 * 
@@ -52,7 +52,7 @@ OpenGeoportal.TableItems = function TableItems() {
 				params.text = "";
 			}
 		}
-		var icon = template.genericIcon(params);
+		var icon = template.get('genericIcon')(params);
 
 		return icon;
 	};
@@ -68,7 +68,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.displayClass = "notExpanded";
 			params.tooltip = "Show preview controls";
 		}
-		return template.genericControl(params);
+		return template.get('genericControl')(params);
 	};
 
 	this.renderPreviewControl = function(canPreview, hasAccess, canLogin, stateVal){
@@ -96,7 +96,7 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.tooltip = "Preview layer at external site.";
 		params.displayClass = "";
 
-		return template.genericControl(params);
+		return template.get('genericControl')(params);
 	};
 
 	this.renderLoginPreviewControl = function() {
@@ -106,7 +106,7 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.tooltip = "Login to access this layer";
 		params.displayClass = "login";
 
-		return template.genericControl(params);
+		return template.get('genericControl')(params);
 
 	};
 
@@ -132,7 +132,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			break;
 		}
 
-		return template.genericControl(params);
+		return template.get('genericControl')(params);
 	};
 
 	this.renderDate = function(date) {
@@ -171,7 +171,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.displayClass = repositoryModel.get("iconClass");
 			params.text = "";
 		}
-		return template.genericIcon(params);
+		return template.get('genericIcon')(params);
 	};
 
 
@@ -188,7 +188,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.tooltip = "Add this layer to your cart for download.";
 			params.displayClass = "notInCart";
 		}
-		return template.genericControl(params);
+		return template.get('genericControl')(params);
 	};
 
 	this.renderMetadataControl = function() {
@@ -200,11 +200,11 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.displayClass = "viewMetadataControl";
 		params.tooltip = "Show metadata";
 
-		return template.genericControl(params);
+		return template.get('genericControl')(params);
 	};
 
 	this.renderDownloadControl = function(isChecked) {
-		return template.defaultDownloadCheckbox({isChecked: isChecked});
+		return template.get('defaultDownloadCheckbox')({isChecked: isChecked});
 	};
 
 };

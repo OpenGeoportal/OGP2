@@ -7,19 +7,19 @@
 	<div id="tabs">
 		<ul>
 			<li><a href="#searchTab">
-					<div id="searchTabText" class="tabText">
-						<div>
+					<span id="searchTabText" class="tabText">
+						<span>
 							<span id="resultsNumber" class="resultsNumber"> 0 </span> Results
-						</div>
-					</div>
+						</span>
+					</span>
 			</a></li>
 			<li><a href="#cartTab">
-					<div id="cartTabText" class="tabText">
-						<div class="shoppingCartIcon"></div>
-						<div id="cartTabTextInner">
+					<span id="cartTabText" class="tabText">
+						<span class="shoppingCartIcon"></span>
+						<span id="cartTabTextInner">
 							Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span>
-						</div>
-					</div>
+						</span>
+					</span>
 			</a></li>
 		</ul>
 		<div id="searchTab">

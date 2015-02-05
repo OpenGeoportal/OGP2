@@ -17,18 +17,16 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		where: "",
 		keyword: "",
 		originator: "",
-		dataType: [],
-		repository: [],
 		dateFrom: null,
 		dateTo: null,
-		isoTopic: "",
 		facets: "",
 		sortBy: "score",
 		sortDir: "asc",
 		mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
 		mapCenter: {centerX: 0, centerY: 0},
 		ignoreSpatial: false,
-		displayRestrictedAdvanced: [],
+		includeRestricted: true,
+		alwaysIncludeRestrictedFrom: [],
 
 		geocodedBbox: null,
 		isoTopicList: null,
@@ -44,14 +42,15 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	initialize: function(){
 		//var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
 		//show restricted layers from all repositories
-		var restricted = OpenGeoportal.Config.Repositories.pluck("shortName");
+		//var repositories = OpenGeoportal.Config.Repositories.pluck("shortName")[0];
 
+		this.set({
 
-		this.set({displayRestrictedBasic: [restricted],
-			displayRestrictedAdvanced:  [restricted],
 			isoTopicList: OpenGeoportal.Config.IsoTopics,
 			dataTypeList: OpenGeoportal.Config.DataTypes,
-			repositoryList: OpenGeoportal.Config.Repositories});
+			repositoryList: OpenGeoportal.Config.Repositories
+			
+		});
 		
 		this.listenTo(this, "change:geocodedBbox", function(){
 			//console.log("geocoder map zoom");
@@ -64,6 +63,28 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		});
 	},
 	
+	
+	getSelected: function(list){
+		var selected = [];
+		this.get(list).each(function(item){
+			if (item.has('selected') && item.get('selected')){
+				selected.push(item.get('value'));
+			}
+		});
+		return selected;
+	},
+	
+	getSelectedRepositories: function(list){
+		var selected = [];
+		this.get("repositoryList").each(function(item){
+			if (item.has('selected') && item.get('selected')){
+				selected.push(item.get('shortName'));
+			}
+		});
+		return selected;
+	},
+	
+
 	/*
 	 * adds spatial search params to solr object if pertinent
 	 */
@@ -164,8 +185,17 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 			solr.setWhere(where); 
 		}
 		 
+		var showRestricted = this.get("includeRestricted");
+		
+		if (!showRestricted){
 
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedAdvanced")));
+			//add filter for which restricted data to show by default (maybe for local layers)
+			var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+			if (alwaysInclude.length  > 0){
+				solr.addFilter(solr.createAccessFilter(alwaysInclude));
+			}
+			
+		}
 
 		/*
 		 * var institutionConfig =
@@ -202,7 +232,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		solr.addFilter(solr.createDateRangeFilter("ContentDate",
 				dateFrom, dateTo));
 
-		var dataTypes = this.get("dataType");// columnName,
+		var dataTypes = this.getSelected("dataTypeList");// columnName,
 		// values, joiner,
 		// prefix //expand "Paper Map" filter
 		if (_.contains(dataTypes, "ScannedMap")){
@@ -212,21 +242,37 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		solr.addFilter(solr.createFilter("DataType", dataTypes,
 				"{!tag=dt}"));
 
-		var repositories = this.get("repository");
+		var repositories = this.getSelectedRepositories();
 		//console.log(repositories);
 		solr.addFilter(solr.createFilter("Institution", repositories,
 				"{!tag=insf}"));
+		
+		var showRestricted = this.get("includeRestricted");
+		
+		if (!showRestricted){
 
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedAdvanced")));
+			//add filter for which restricted data to show by default (maybe for local layers)
+			var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+			var filter = "";
+			if (alwaysInclude.length  > 0){
+				filter = solr.createAccessFilter(alwaysInclude);
+			} else {
+				filter = solr.createAccessFilter();
+			}
+			solr.addFilter(filter);
+		}
 
 		var originator = this.get("originator");
 		// TODO: should this be a filter?
 		solr.addFilter(solr.createFilter("Originator", originator,
 				null, "AND"));
 
-		var isoTopic = this.get("isoTopic");
-		solr.addFilter(solr.createFilter("ThemeKeywordsSynonymsIso",
-				isoTopic));
+		var isoTopic = this.getSelected("isoTopicList")[0];
+		
+		if (isoTopic !== null && isoTopic.length > 0){
+			solr.addFilter(solr.createFilter("ThemeKeywordsSynonymsIso",
+					isoTopic));
+		}
 
 		return solr;
 	},

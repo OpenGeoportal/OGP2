@@ -36,10 +36,10 @@
 		<org.springframework.version>4.0.3.RELEASE</org.springframework.version>
 		<org.springframework.security.version>3.2.3.RELEASE</org.springframework.security.version>
 		<geotools.version>10-SNAPSHOT</geotools.version>
-		<jackson.version>2.3.2</jackson.version>
+		<jackson.version>2.3.3</jackson.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wro4j.version>1.7.2</wro4j.version>
+		<wro4j.version>1.7.7</wro4j.version>
 		<warFile.name>opengeoportal</warFile.name>
 	</properties>
 	<dependencies>
@@ -372,11 +372,13 @@
 					</execution>
 				</executions>
 				<configuration>
-					<targetGroups>ogp,ogpLib</targetGroups>
+					<targetGroups>ogp</targetGroups>
 					<minimize>true</minimize>
-					<cssDestinationFolder>${basedir}/target/${warFile.name}/resources/css/</cssDestinationFolder>
-					<jsDestinationFolder>${basedir}/target/${warFile.name}/resources/javascript/</jsDestinationFolder>
+					<contextFolder>${basedir}/src/main/webapp/</contextFolder>
+					<cssDestinationFolder>${project.build.directory}/${project.build.finalName}/resources/css/</cssDestinationFolder>
+					<jsDestinationFolder>${project.build.directory}/${project.build.finalName}/resources/javascript/</jsDestinationFolder>
 					<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory>
+					<!-- <contextPath>/ogp</contextPath> -->
 				</configuration>
 			</plugin>
 		</plugins>

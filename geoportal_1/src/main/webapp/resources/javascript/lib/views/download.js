@@ -217,7 +217,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var rasterControlId = "rasterControl";
 
 				if (showVectorControl) {
-					html += this.template.formatSelectionControl({
+					html += this.template.get('formatSelectionControl')({
 						controlId : vectorControlId,
 						controlClass : "downloadSelect",
 						controlLabel : "Vector files",
@@ -242,7 +242,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				}
 
 				if (showRasterControl) {
-					html += this.template.formatSelectionControl({
+					html += this.template.get('formatSelectionControl')({
 						controlId : rasterControlId,
 						controlClass : "downloadSelect",
 						controlLabel : "Raster files",
@@ -273,7 +273,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				} else {
 					// create the clip control
 					var clipControlId = "downloadClipControl";
-					html += this.template.clipControl({
+					html += this.template.get('clipControl')({
 						elId : clipControlId,
 						isClipped : this.preferences.get("isClipped")
 					});
@@ -332,7 +332,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				var dialogId = "downloadSettingsDialog";
 				if (jQuery('#' + dialogId).length === 0) {
-					var downloadDiv = this.template.genericDialogShell({
+					var downloadDiv = this.template.get('genericDialogShell')({
 						elId : dialogId
 					});
 					jQuery('#dialogs').append(downloadDiv);
@@ -480,7 +480,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				if (required) {
 
-					template = this.template.requireEmailAddress();
+					template = this.template.get('requireEmailAddress')();
 				}
 
 				return template;
@@ -506,7 +506,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var total = emailCount + downloadCount;
 				var plural = (total > 1);
 
-				template = this.template.layerDownloadNotice({
+				template = this.template.get('layerDownloadNotice')({
 					emailCount : emailCount,
 					downloadCount : downloadCount,
 					total : total,
@@ -521,7 +521,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				var dialogId = "downloadFinalizeDialog";
 				if (jQuery('#' + dialogId).length === 0) {
-					var downloadDiv = this.template.genericDialogShell({
+					var downloadDiv = this.template.get('genericDialogShell')({
 						elId : dialogId
 					});
 					jQuery('#dialogs').append(downloadDiv);

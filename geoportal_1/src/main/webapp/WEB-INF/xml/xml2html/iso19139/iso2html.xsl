@@ -8,7 +8,7 @@
 	
 	
 	Used and adapted for OGP by Chris Barnett (1/2015) with the gracious permission 
-	of John Maurer. -->
+	of John Maurer. --> 
 
 <xsl:stylesheet version="2.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -33,8 +33,7 @@
 	<!-- This HTML output method conforms to the following DOCTYPE statement: 
 		<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> -->
 
-	<xsl:output method="html" doctype-public="-//W3C//DTD HTML 4.01 Transitional//EN"
-		doctype-system="http://www.w3.org/TR/html4/loose.dtd" encoding="UTF-8"
+	<xsl:output method="html" encoding="UTF-8"
 		indent="yes" />
 
 	<!-- VARIABLES: *********************************************************** -->
@@ -121,8 +120,7 @@
 				</xsl:comment>
 				<xsl:value-of select="$newline" />
 				<xsl:value-of select="$newline" />
-				<!-- css stylesheet for testing -->
-				<link href="../../../resources/css/structure.css" rel="stylesheet" media="all" type="text/css" title="test stylesheet" />
+
 			</head>
 			<xsl:value-of select="$newline" />
 			<body onLoad="loadGoogleMap( [ {$bbox} ] )">

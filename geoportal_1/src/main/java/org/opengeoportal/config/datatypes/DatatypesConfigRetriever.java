@@ -11,6 +11,7 @@ import org.opengeoportal.config.XmlProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
  
 /**
  * Retrieves Datatype info from an xml file and marshalls into a List of POJOs
@@ -20,7 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DatatypesConfigRetriever implements ConfigRetriever {
 
-	@Autowired
+	@Autowired	
+	@Qualifier("properties.ogp")
 	XmlProperties xmlProperties;
 	
 	List<DatatypeConfig> config = new ArrayList<DatatypeConfig>();

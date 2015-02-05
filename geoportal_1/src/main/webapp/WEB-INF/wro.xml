@@ -1,10 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <groups xmlns="http://www.isdc.ro/wro">
-	<group name='ogpLib'>
+	<group name='ogp'>
+
+		<css>/resources/css/structure.css</css>
 		<css>/resources/css/google.css</css>
 		<css>/resources/css/mapDiv.css</css>
-		<css>/resources/css/structure.css</css>
+		<css>/resources/css/footer.css</css>			
+		<css>/resources/css/icons.css</css>
+		<css>/resources/css/dialogs.css</css>
+		<css>/resources/css/spinner.css</css>
+		<css>/resources/css/dropdown.css</css>
+		<css>/resources/css/infoBubble.css</css>
+		<css>/resources/css/search.css</css>
+		<css>/resources/css/layerTable.css</css>
+		<css>/resources/css/previewControls.css</css>
+		<css>/resources/css/attributeInfo.css</css>
+		<css>/resources/css/metadata.css</css>
+		<css>/resources/css/geocommons.css</css>
 		<css>/resources/css/localize.css</css>
 		
 		<js>/resources/javascript/lib/models/config.js</js>
@@ -39,7 +52,6 @@
 		<js>/resources/javascript/lib/views/cartRow.js</js>
 		<js>/resources/javascript/lib/views/cartTable.js</js>
 		<js>/resources/javascript/lib/views/leftPanel.js</js>
-		<js>/resources/javascript/lib/views/tableRowSettings.js</js>
 		<js>/resources/javascript/lib/models/externalPreviewWindowsCollection.js</js>
 		<js>/resources/javascript/lib/views/abstractCartAction.js</js>
 		<js>/resources/javascript/lib/views/download.js</js>
@@ -57,9 +69,7 @@
 		<js>/resources/javascript/lib/geoCommonsExport.js</js>
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>
-	</group>
-	<group name='ogp'>
-		<group-ref>ogpLib</group-ref>
+
 		<js>/resources/javascript/lib/main.js</js>
 	</group>
 </groups>

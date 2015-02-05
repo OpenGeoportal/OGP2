@@ -14,13 +14,13 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 
 	initialize: function(){
-		this.template = OpenGeoportal.ogp.template;
+		this.template = OpenGeoportal.Template;
 		this.widgets = OpenGeoportal.ogp.widgets;
 		this.render();
 		this.createCartButtons();
 	},
 	render: function(){
-		this.$el.html(this.template.cartHeader());
+		this.$el.html(this.template.get("cartHeader")());
 	},
 
 	displayOptionText: function(event, optionText, listLabel) {

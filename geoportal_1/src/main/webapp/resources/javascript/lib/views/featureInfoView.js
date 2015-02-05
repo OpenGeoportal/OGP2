@@ -22,7 +22,7 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 	
 	initialize: function(){
 		this.listenTo(this.collection, "reset", this.render);
-		this.template = OpenGeoportal.ogp.template;
+		this.template = OpenGeoportal.Template;
 	},
 
 	page: 0,
@@ -56,7 +56,7 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 		var img_keys = this.handleImages(pageData.attributes);
 		var download_keys = this.handleDownloads(pageData.attributes);
 		
-		content = template.attributeTable({
+		content = template.get('attributeTable')({
 			previews: img_keys,
 			downloads: download_keys,
 			page: this.page + 1, //0 based index

@@ -30,7 +30,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		  },
 		  
 	initialize : function() {
-		this.template = OpenGeoportal.ogp.template;
+		this.template = OpenGeoportal.Template;
 		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 
 		this.login = OpenGeoportal.ogp.appState.get("login").model;
@@ -257,13 +257,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			var contents = "";
 			if (currCol.has("modelRender")) {
 				contents = currCol.get("modelRender")(model);
-				html += that.template.cartCell({
+				html += that.template.get('cartCell')({
 					colClass : currCol.get("columnClass"),
 					contents : contents
 				});
 			} else {
 				contents = model.get(currCol.get("columnName"));
-				html += that.template.textCartCell({
+				html += that.template.get('textCartCell')({
 					colClass : currCol.get("columnClass"),
 					contents : contents
 				});
@@ -297,7 +297,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		var expand$ = "";
 		if (this.model.get("showControls")) {
 
-				expand$ = jQuery(this.template.cartPreviewToolsContainer());
+				expand$ = jQuery(this.template.get('cartPreviewToolsContainer')());
 				// a view that watches expand state
 				// Open this row
 				var tools$ = expand$.find(".previewTools").first();

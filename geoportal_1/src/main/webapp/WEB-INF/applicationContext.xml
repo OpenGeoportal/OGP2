@@ -50,12 +50,17 @@
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 	
-	<beans:bean id="properties.xml" class="org.opengeoportal.config.XmlProperties" init-method="load" >
+	<beans:bean id="properties.ogp" class="org.opengeoportal.config.XmlProperties" init-method="load" >
 		<beans:property name="config_file" value="WEB-INF/ogp_config.xml"/>
+	</beans:bean>
+	
+	<beans:bean id="properties.wro" class="org.opengeoportal.config.XmlProperties" init-method="load" >
+		<beans:property name="config_file" value="WEB-INF/wro.xml"/>
 	</beans:bean>
 	
 	<beans:bean id="config.topics" class="org.opengeoportal.config.topics.TopicsConfigRetriever" init-method="load" />
 	<beans:bean id="config.datatypes" class="org.opengeoportal.config.datatypes.DatatypesConfigRetriever" init-method="load" />
+	<beans:bean id="config.wro" class="org.opengeoportal.config.wro.WroConfigRetriever" init-method="load" />
 
 
 	<beans:bean id="jsonpCallbackFilter"

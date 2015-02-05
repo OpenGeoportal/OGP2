@@ -28,8 +28,7 @@ OpenGeoportal.Views.Query = Backbone.View
 		.extend({
 
 			initialize : function() {
-				jQuery("#whereField").attr("placeholder", this.model.get("whereExample"));
-				jQuery("#whatField").attr("placeholder", this.model.get("whatExample"));
+
 
 				this.widgets = OpenGeoportal.ogp.widgets;
 				this.tableControls = OpenGeoportal.ogp.tableControls;
@@ -52,7 +51,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.createTopicsMenu();
 				
 				this.mapInputsToModel();
-
+								
 				var advSearchButtons$ = jQuery(".advancedSearchButtons")
 						.first();
 				this.widgets.prependButton(advSearchButtons$,
@@ -93,25 +92,40 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * nb: ideally, this happens when the dom elements are created via template to ensure a match
 			 */
 			mapInputsToModel : function() {
+				
 				jQuery("#whatField").data({
-					queryAttr : "what"
-				});
+					queryAttr : "what",
+					fieldType: "text"
+				}).val(this.model.get("what")).attr("placeholder", this.model.get("whatExample"));
+				
 				jQuery("#whereField").data({
-					queryAttr : "where"
-				});
+					queryAttr : "where",
+					fieldType: "text"
+				}).val(this.model.get("where")).attr("placeholder", this.model.get("whereExample"));
+				
 				jQuery("#advancedKeywordText").data({
-					queryAttr : "keyword"
-				});
+					queryAttr : "keyword",
+					fieldType: "text"
+				}).val(this.model.get("keyword"));
+				
+				
 				jQuery("#advancedOriginatorText").data({
-					queryAttr : "originator"
-				});
+					queryAttr : "originator",
+					fieldType: "text"
+				}).val(this.model.get("originator"));
+				
 				jQuery("#advancedDateFromText").data({
-					queryAttr : "dateFrom"
-				});
+					queryAttr : "dateFrom",
+					fieldType: "text"
+				}).val(this.model.get("dateFrom"));
+				
 				jQuery("#advancedDateToText").data({
-					queryAttr : "dateTo"
-				});
+					queryAttr : "dateTo",
+					fieldType: "text"
+				}).val(this.model.get("dateTo"));
 			},
+			
+			
 			/**
 			 * using the mapping in mapInputsToModel, sets the value of a model attribute from the dom value
 			 */
@@ -313,20 +327,19 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 			
 			showRestrictedHandler : function() {
-				
+				//initialize with model value
+				jQuery("#restrictedCheck").prop("checked", this.model.get("includeRestricted"));
+
 				var that = this;
 				jQuery("#restrictedCheck").on("change", function(event) {
-					that.noteSearchChanged();
-					var arrRestricted = [];
-					if (!this.checked) {
-						//this shows restricted results for the institutions in the "displayRestrictedBasic" array
-						//arrRestricted = that.model.get("displayRestrictedBasic");
-					} else {
-						arrRestricted = that.model.get("repositoryList").pluck("shortName");
-					}
+					var checked = jQuery(this).prop("checked");
+
 					that.model.set({
-						displayRestrictedAdvanced : arrRestricted
+						includeRestricted: checked
 					});
+					
+					that.noteSearchChanged();
+
 				});
 			},
 			
@@ -368,14 +381,11 @@ OpenGeoportal.Views.Query = Backbone.View
 								showOnly: true
 							});
 					that.repositories = repositoryMenu;
-					that.model.set({
-						repository : that.repositories.getValueAsArray()
-					});
+					
+					
 					that.repositories.$el.on("change", function() {
 						that.noteSearchChanged();
-						that.model.set({
-							repository : that.repositories.getValueAsArray()
-						});
+
 					});
 				};
 				if (repositoryCollection.length === 0) {
@@ -411,15 +421,10 @@ OpenGeoportal.Views.Query = Backbone.View
 						});
 
 				this.dataTypes = dataTypesMenu;
-				this.model.set({
-					dataType : this.dataTypes.getValueAsArray()
-				});
+
 				this.dataTypes.$el.on("change", function() {
 					that.noteSearchChanged();
 
-					that.model.set({
-						dataType : that.dataTypes.getValueAsArray()
-					});
 				});
 
 			},
@@ -438,19 +443,16 @@ OpenGeoportal.Views.Query = Backbone.View
 					buttonLabel : "Select a topic",
 					itemClass : "isoTopicMenuItem"
 				});
-				this.model.set({
-					isoTopic : this.topics.getValue()
-				});
+
 				var that = this;
 				this.topics.$el.on("change", function() {
 					that.noteSearchChanged();
-				
-					that.model.set({
-						isoTopic : that.topics.getValue()
-					});
+
 				});
 
 			},
+			
+		
 
 			clearForm : function(e) {
 								

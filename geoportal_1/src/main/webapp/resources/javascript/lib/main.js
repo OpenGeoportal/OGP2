@@ -19,7 +19,7 @@ jQuery(document)
 					OpenGeoportal.ogp = {};
 					var ogp = OpenGeoportal.ogp; // an alias
 
-					ogp.template = new OpenGeoportal.Template();
+					//ogp.template = OpenGeoportal.Template;
 					ogp.widgets = new OpenGeoportal.Widgets();
 					ogp.tableControls = new OpenGeoportal.TableItems();
 					
@@ -37,7 +37,7 @@ jQuery(document)
 					});
 					
 					
-					ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: ogp.appState.get("requestQueue"), template: ogp.template});
+					ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: ogp.appState.get("requestQueue"), template: OpenGeoportal.Template});
 
 				
 					

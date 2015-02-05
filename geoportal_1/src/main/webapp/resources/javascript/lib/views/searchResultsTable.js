@@ -76,7 +76,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 
 			},
 			
-			scrollOffset: 200,
+			scrollOffset: 300,
 			
 			attachEvents: function(){
 				this.collection.enableFetch();
@@ -230,7 +230,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: ""}));
+				return jQuery(this.template.get('tableView')({tableHeader: this.template.get('tableHeader')(this.getHeaderInfo()), tableFooter: ""}));
 			},
 			
 			render : function() {
@@ -254,7 +254,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var template$ = this.getTable();
 
 				if (rows.length === 0){
-					template$.append(this.template.emptyTable({message: this.emptyTableMessage}));
+					template$.append(this.template.get('emptyTable')({message: this.emptyTableMessage}));
 					
 				} else {
 					template$.children(".rowContainer").append(rows);

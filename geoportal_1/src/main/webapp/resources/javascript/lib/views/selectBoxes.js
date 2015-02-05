@@ -143,8 +143,8 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	setValue: function(){throw new Error("no function for setValue defined.");},
 	initRender: function(){
 		//template
-		this.template = OpenGeoportal.ogp.template;
-		this.$el.html(this.template.styledSelectBody(this.getTemplateParams()));
+		this.template = OpenGeoportal.Template;
+		this.$el.html(this.template.get('styledSelectBody')(this.getTemplateParams()));
 
 		this.uiInit();
 		this.setValue();
@@ -173,7 +173,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
-			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: itemClass});
+			menuHtml += that.template.get('simpleMenuItem')({name: name, value: value, className: itemClass});
 		});
 
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
@@ -267,7 +267,7 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
-			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: itemClass});
+			menuHtml += that.template.get('simpleMenuItem')({name: name, value: value, className: itemClass});
 		});
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
 	},
@@ -383,7 +383,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		var extraControl = "";
 		
 		if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
-			extraControl = this.template.showOnlyControl();
+			extraControl = this.template.get('showOnlyControl')();
 			//make sure we start in the right state
 			this.checkSelected();
 			//if using 'only' and 'select all' controls, do a check on selection to see if all are selected
@@ -407,14 +407,14 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 				isSelected = "checkOn";
 			}
 
-			var control = extraControl + that.template.genericControl({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
-			menuHtml += that.template.controlMenuItem({icon: icon, control: control, name: name, value: value, className: itemClass});
+			var control = extraControl + that.template.get('genericControl')({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
+			menuHtml += that.template.get('controlMenuItem')({icon: icon, control: control, name: name, value: value, className: itemClass});
 		});
 
 		var params = {menuHtml: menuHtml, buttonLabel: buttonLabel};
 		
 		if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
-			params.caption = this.template.selectAllCaption();
+			params.caption = this.template.get('selectAllCaption')();
 		}
 		
 		return params;
@@ -538,7 +538,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 			if (colName.toLowerCase() == value.toLowerCase()){
 				selected = "selected";
 			}
-			menuHtml += that.template.simpleMenuItem({name: name, value: value, className: selected});
+			menuHtml += that.template.get('simpleMenuItem')({name: name, value: value, className: selected});
 		});
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
 	},

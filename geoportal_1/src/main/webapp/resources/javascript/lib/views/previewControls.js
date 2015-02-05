@@ -100,13 +100,13 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	render : function() {
 		// render preview tools for a previewed layer
 		var markup = "";
-		var template = OpenGeoportal.ogp.template;
+		var template = OpenGeoportal.Template;
 
 		if (this.model.has("opacity")) {
 			// render opacity control
 			var tooltip = "Adjust layer transparency";
 			var label = "Opacity";
-			markup += template.sliderControl({
+			markup += template.get('sliderControl')({
 				controlClass : "opacityControlCell",
 				label : label,
 				value : this.model.get("opacity"),
@@ -131,7 +131,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 				label = "Width";
 			}
 			var tooltip = "Adjust size";
-			markup += template.sliderControl({
+			markup += template.get('sliderControl')({
 				controlClass : "sizeControlCell",
 				label : label,
 				value : this.model.get("graphicWidth"),
@@ -141,13 +141,13 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		}
 		if (this.model.has("color")) {
 			// render a color control
-			markup += template.colorControl({
+			markup += template.get('colorControl')({
 				color : this.model.get("color")
 			});
 		}
 		// if (this.model.getBounds().isValid()){
 		// render a zoom to layer control
-		markup += template.zoomControl();
+		markup += template.get('zoomControl')();
 		// }
 		if (this.model.has("getFeature")) {
 			// render getFeature control
@@ -157,12 +157,12 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			} else {
 				toolClass += "Off";
 			}
-			markup += template.getFeatureControl({
+			markup += template.get('getFeatureControl')({
 				toolClass : toolClass
 			});
 		}
 
-		this.$el.html(template.previewTools({
+		this.$el.html(template.get('previewTools')({
 			toolsMarkup : markup
 		}));
 
@@ -409,35 +409,72 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
 
 	render : function() {
 
-		var allColors = {};
-		allColors.grey = [ "#828282", "#aaaaaa", "#b2b2b2", "#cccccc",
-				"#e1e1e1", "#ffffff" ];
-		allColors.red = [ "#730000", "#a80000", "#e80000", "#ff0000",
-				"#ff7f7f", "#ffbebe" ];
-		allColors.darkOrange = [ "#732600", "#a83800", "#e64c00", "#ff5500",
-				"#ffa77f", "#ffebbe" ];
-		allColors.orange = [ "#734c00", "#a87000", "#e69800", "#ffaa00",
-				"#ffd37f", "#ffebaf" ];
-		allColors.yellow = [ "#737300", "#a8a800", "#e6e600", "#ffff00",
-				"#ffff73", "#ffffbe" ];
-		allColors.grassGreen = [ "#426e00", "#6da800", "#98e600", "#aaff00",
-				"#d1ff73", "#e9ffbe" ];
-		allColors.green = [ "#267300", "#38a800", "#4ce600", "#55ff00",
-				"#a3ff73", "#d3ffbe" ];
-		allColors.cyan = [ "#00734c", "#00a884", "#00e6a9", "#00ffc5",
-				"#73ffdf", "#beffe8" ];
-		allColors.blue = [ "#004c73", "#0084a8", "#00a9e6", "#00c5ff",
-				"#73dfff", "#bee8ff" ];
-		allColors.indigo = [ "#002673", "#0049a9", "#005ce6", "#0070ff",
-				"#73b2ff", "#bed2ff" ];
-		allColors.violet = [ "#4c0073", "#8400a8", "#a900e6", "#c500ff",
-				"#df73ff", "#e8beff" ];
-		allColors.pink = [ "#780f52", "#a80084", "#e00fa7", "#ff00c5",
-				"#ff73df", "#ffbee8" ];
+		var colors = [
+				[ "#828282", "#aaaaaa", "#b2b2b2", "#cccccc", "#e1e1e1",
+						"#ffffff" ],
+				[ "#730000", "#a80000", "#e80000", "#ff0000", "#ff7f7f",
+						"#ffbebe" ],
+				[ "#732600", "#a83800", "#e64c00", "#ff5500", "#ffa77f",
+						"#ffebbe" ],
+				[ "#734c00", "#a87000", "#e69800", "#ffaa00", "#ffd37f",
+						"#ffebaf" ],
+				[ "#737300", "#a8a800", "#e6e600", "#ffff00", "#ffff73",
+						"#ffffbe" ],
+				[ "#426e00", "#6da800", "#98e600", "#aaff00", "#d1ff73",
+						"#e9ffbe" ],
+				[ "#267300", "#38a800", "#4ce600", "#55ff00", "#a3ff73",
+						"#d3ffbe" ],
+				[ "#00734c", "#00a884", "#00e6a9", "#00ffc5", "#73ffdf",
+						"#beffe8" ],
+				[ "#004c73", "#0084a8", "#00a9e6", "#00c5ff", "#73dfff",
+						"#bee8ff" ],
+				[ "#002673", "#0049a9", "#005ce6", "#0070ff", "#73b2ff",
+						"#bed2ff" ],
+				[ "#4c0073", "#8400a8", "#a900e6", "#c500ff", "#df73ff",
+						"#e8beff" ],
+				[ "#780f52", "#a80084", "#e00fa7", "#ff00c5", "#ff73df",
+						"#ffbee8" ]
+
+		];
 
 		var currentColorSelection = this.model.get("color");
+		
+		var colorRow = function(row){
+			var colorRow = ['<tr>'];
+			_.each(row, function(color){
+		
+				var selectionClass;
+				if (color == currentColorSelection) {
+					selectionClass = " colorCellSelected";
+				} else {
+					selectionClass = "";
+				}
+				
+				var colorCell = ['<td class="colorCellParent">',
+				                '<div class="colorCell' + selectionClass + '" style="background-color:' + color + '"></div>',
+				                '</td>'].join('\n')
+				colorRow.push(colorCell);
+			});
+			
+			colorRow.push('</tr>');
+			return colorRow.join('\n');
+		};
+		
+		var colorTable = function(colors){
+			
+			var colorTable = ['<table><tbody>'];
+
+			_.each(colors, function(row){
+				colorTable.push(colorRow(row));
+			});
+			
+			colorTable.push('</tbody></table>');
+			
+			return colorTable.join('\n');
+		};
+		
 		// TODO: move to template
-		var colorDiv = '<table><tbody>';
+		/*var colorDiv = ;
 		var row = null;
 		for (row in allColors) {
 			colorDiv += '<tr>';
@@ -458,9 +495,9 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
 			}
 			colorDiv += '</tr>';
 		}
-		colorDiv += '</tbody></table>';
+		colorDiv += ;*/
 
-		this.$el.html(colorDiv);
+		this.$el.html(colorTable(colors));
 
 		return this;
 	},

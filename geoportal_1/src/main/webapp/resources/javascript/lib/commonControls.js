@@ -17,14 +17,14 @@ if (typeof OpenGeoportal === 'undefined') {
  */
 OpenGeoportal.Widgets = function Widgets() {
 
-	this.template = OpenGeoportal.ogp.template;
+	this.template = OpenGeoportal.Template;
 	
 
 	
 	// *
 	this.appendButton = function(parent$, buttonId, buttonLabel, clickHandler) {
 		// var that = this;
-		var html = this.template.genericButton({
+		var html = this.template.get('genericButton')({
 			buttonId : buttonId,
 			buttonLabel : buttonLabel
 		});
@@ -39,7 +39,7 @@ OpenGeoportal.Widgets = function Widgets() {
 	};
 	// * * *
 	this.prependButton = function(parent$, buttonId, buttonLabel, clickHandler) {
-		var html = this.template.genericButton({
+		var html = this.template.get('genericButton')({
 			buttonId : buttonId,
 			buttonLabel : buttonLabel
 		});
@@ -99,7 +99,7 @@ OpenGeoportal.Widgets = function Widgets() {
 	};
 
 	this.iframeDownload = function(iframeClass, iframeSrc) {
-		var newIframe = this.template.iframeDownload({
+		var newIframe = this.template.get('iframeDownload')({
 			iframeClass : iframeClass,
 			iframeSrc : iframeSrc
 		});

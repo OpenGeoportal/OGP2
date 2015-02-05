@@ -30,7 +30,7 @@ OpenGeoportal.MapController = function() {
 	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
 
-	this.template = OpenGeoportal.ogp.template;
+	this.template = OpenGeoportal.Template;
 	var analytics = new OpenGeoportal.Analytics();
 
 	/**
@@ -89,8 +89,10 @@ OpenGeoportal.MapController = function() {
 		if (div$.length === 0) {
 			throw new Error("The DIV [" + div + "] does not exist!");
 		}
-		var resultsHTML = this.template.map({
-			mapId : div
+		var renderCorner = this.template.get('genericDiv');
+		var resultsHTML = this.template.get('map')({
+			mapId : div,
+			renderCorner: renderCorner
 		});
 		div$.html(resultsHTML);
 	};
@@ -267,12 +269,16 @@ OpenGeoportal.MapController = function() {
 		}, OpenGeoportal.Utility.doPrint);
 
 		// add the HTML for the basemap menu to the toolbar
-		this.addToMapToolbar(this.template.basemapMenu());
+		var elId = "basemapMenu";
+		this.addToMapToolbar(this.template.get('genericDiv')({
+			elId: elId,
+			elClass: ""
+		}));
 
 		// the menu itself is implemented as a view of the Basemap collection
 		this.basemapMenu = new OpenGeoportal.Views.CollectionSelect({
 			collection : this.basemaps,
-			el : "div#basemapMenu",
+			el : "div#" + elId,
 			valueAttribute : "name",
 			displayAttribute : "displayName",
 			buttonLabel : "Basemap",
@@ -413,7 +419,7 @@ OpenGeoportal.MapController = function() {
 	 */
 	this.addMapToolbarButton = function(displayParams, clickCallback) {
 
-		this.addToMapToolbar(this.template.mapButton(displayParams));
+		this.addToMapToolbar(this.template.get('mapButton')(displayParams));
 		var that = this;
 		jQuery("." + displayParams.displayClass).button().on("click",
 				function() {

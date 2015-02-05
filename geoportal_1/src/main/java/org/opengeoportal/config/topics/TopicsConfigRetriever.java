@@ -11,6 +11,7 @@ import org.opengeoportal.config.XmlProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Retrieves ISO topic info from an xml file and marshalls into a List of POJOs
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TopicsConfigRetriever implements ConfigRetriever {
 
 	@Autowired
+	@Qualifier("properties.ogp")
 	XmlProperties xmlProperties;
 	
 	List<TopicsConfig> config = new ArrayList<TopicsConfig>();

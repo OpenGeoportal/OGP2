@@ -136,9 +136,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 	            	 preferenceElId: wmcPreferenceId,
 	            	 generateButtonId: wmcButtonId
 	             };
-				
-				serviceTypes.wmc = wmcService;
-				
+								
 				var that = this;
 				//remove existing click handlers for the button
 				jQuery(document).off("click", "#" + wmcButtonId);
@@ -152,6 +150,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 					that.generateWmc(arrWmsIds, pref, bbox);
 				});
 				
+				var ws = {dynamic: []};
 				if (arrWfsIds.length > 0) {
 					var wfsUrl = this.getWfsUrl(arrWfsIds);
 
@@ -162,7 +161,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 						            	 caption : "Suitable for analysis. Creates a vector web service. Only available for vector data. Paste the selected link into your desktop mapping software."
 						             };
 				
-					serviceTypes.webservices.push(wfsService);
+					ws.dynamic.push(wfsService);
 				}
 				
 				if (arrWmsIds.length > 0){
@@ -175,15 +174,17 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 						            	 caption : "Suitable for base maps. Creates a raster web service for all your data. Vector data will be converted to raster format. Paste the selected link into your desktop mapping software."
 						             }; 
 						             
-					serviceTypes.webservices.push(wmsService);
+					ws.dynamic.push(wmsService);
 
 				};
 				
 
 				var dialogContent = "";
 				
-				if (serviceTypes.webservices.length > 0){
-					dialogContent = this.template.webServicesDialogContent(serviceTypes);
+				if (ws.dynamic.length > 0){
+					var content = this.template.get('dynamicWSDialog')(ws);
+					content += this.template.get('wmcDialog')(wmcService);
+					dialogContent = this.template.get('webServicesDialog')({content: _.escape(content)});
 				} else {
 					dialogContent = "No Web Services are available for the selected layers.";
 				}
@@ -196,7 +197,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				var dialog$ = jQuery("#" + dialogId);
 
 				if (dialog$.length === 0) {
-					var wrapper = this.template.genericDialogShell({elId: dialogId});
+					var wrapper = this.template.get('genericDialogShell')({elId: dialogId});
 
 					jQuery('#dialogs').append(wrapper);
 					dialog$ = jQuery("#" + dialogId);

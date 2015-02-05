@@ -11,7 +11,7 @@
 	
 	<!-- SPATIAL_REPRESENTATION_INFORMATION: ********************************** -->
 
-	<xsl:import href="../utils/strip-digits.xsl" />
+	<xsl:import href="../../utils/strip-digits.xsl" />
 
 	<xsl:template
 		match="gmd:spatialRepresentationInfo/gmd:MD_GridSpatialRepresentation">

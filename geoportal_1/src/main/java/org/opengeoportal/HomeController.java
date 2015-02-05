@@ -10,6 +10,8 @@ import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
 import org.opengeoportal.config.topics.TopicsConfigRetriever;
+import org.opengeoportal.config.wro.WroConfig;
+import org.opengeoportal.config.wro.WroConfigRetriever;
 import org.opengeoportal.security.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,9 @@ public class HomeController {
 	
 	@Autowired
 	private ProxyConfigRetriever proxyConfigRetriever;
+	
+	@Autowired
+	private WroConfigRetriever wroConfigRetriever;
 	
 	@Autowired
 	private LoginService loginService;
@@ -87,7 +92,7 @@ public class HomeController {
 		
 		
 		
-		addConfig(mav);
+		addConfig(mav, isDev);
 		
 		//Debugging
 		/*Iterator<Entry<String, Object>> iter = mav.getModelMap().entrySet().iterator();
@@ -109,7 +114,7 @@ public class HomeController {
 		return quotedSet;
 	}
 	
-	private void addConfig(ModelAndView mav) throws IOException{
+	private void addConfig(ModelAndView mav, Boolean isDev) throws IOException{
 		OgpConfig conf = ogpConfigRetriever.getConfig();
 		
 		mav.addObject("titlePrimary", conf.getPageTitlePrimary());
@@ -132,6 +137,12 @@ public class HomeController {
 		mav.addObject("proxies", toJsonString(proxyConfigRetriever.getPublicConfig()));
 		
 		mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
+
+		if (isDev){
+			WroConfig wro = wroConfigRetriever.getConfig().get(0);
+			mav.addObject("devCss", wro.getCss());
+			mav.addObject("devJs", wro.getJs());
+		}
 	}
 	
 	private String toJsonString(Object obj) throws JsonProcessingException{

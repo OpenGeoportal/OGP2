@@ -15,7 +15,7 @@ if (typeof OpenGeoportal == 'undefined') {
 }
 
 OpenGeoportal.Structure = function() {
-	this.template = OpenGeoportal.ogp.template;
+	this.template = OpenGeoportal.Template;
 	var analytics = new OpenGeoportal.Analytics();
 
 	/**
@@ -397,7 +397,7 @@ OpenGeoportal.Structure = function() {
 			"left" : 269,
 			"arrow" : "top"
 		};
-		return this.infoBubble(elId, this.template.welcomeText(), params);
+		return this.infoBubble(elId, this.template.get('welcomeText')(), params);
 	};
 
 	this.showDirectionsBubble_1 = function(elId) {
@@ -409,7 +409,7 @@ OpenGeoportal.Structure = function() {
 			"left" : 520,
 			"arrow" : "left"
 		};
-		return this.infoBubble(elId, this.template.directionsText(), params);
+		return this.infoBubble(elId, this.template.get('directionsText')(), params);
 	};
 
 	this.showDowntimeNotice = function() {
@@ -438,7 +438,7 @@ OpenGeoportal.Structure = function() {
 			arrowDirection = "left-arrow";
 		}
 
-		var infoBubbleMain = this.template.infoBubble({elId: bubbleId, arrowDirection: arrowDirection, content: infoHtml});
+		var infoBubbleMain = this.template.get('infoBubble')({elId: bubbleId, arrowDirection: arrowDirection, content: infoHtml});
 		jQuery("#infoBubbles").append(infoBubbleMain);
 		jQuery("#" + bubbleId).height(optionsObj.height + 4).width(
 				optionsObj.width + 4).css("top", optionsObj.top - 2).css(
