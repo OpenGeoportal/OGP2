@@ -467,6 +467,14 @@ div.olControlMousePosition {
 	background-repeat: repeat-y;
 }
 
+div.olMap {
+    background: none repeat scroll 0 0 #eeeeee;
+}
+
+.olMapViewport > div {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
+}
+
 .olLayerGoogleCopyright {
 	z-index: 0 !important;
 }

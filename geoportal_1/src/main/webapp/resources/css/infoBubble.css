@@ -120,7 +120,7 @@ zoom: 1;
 .infoBubbleBackground {
 	padding: 10px 20px;
 	color: white;
-	box-shadow: 0 0 7px black;
+	box-shadow: 5px 5px 5px 1px rgba(51,51,51,.75);
 	display: none;
 	z-index: 9999;
 }
@@ -185,4 +185,28 @@ zoom: 1;
 	/*border-bottom: 8px solid #4B8ACF;*/
 	top: -11px;
 	z-index: 999;
+}
+
+
+
+#welcomeBubble {
+			height : 335px;
+			width : 700px;
+			top : 259px;
+			left : 269px;
+}
+
+@media screen and (max-width: 1050px) {
+	#welcomeBubble {
+			left : 200px;
+	}
+	
+}
+
+
+#directionsBubble {
+			height : 250px;
+			width : 600px;
+			top : 226px;
+			left : 533px;
 }

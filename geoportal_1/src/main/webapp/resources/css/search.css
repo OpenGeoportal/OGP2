@@ -38,7 +38,7 @@
 	top: 65px;
 	width: 100%;
 	z-index: 1500;
-	min-width: 1050px;
+	min-width: 1024px;
 }
 
 .advancedSearchButtons {
@@ -137,6 +137,7 @@
 	left: 750px;
 }
 
+
 .searchRow2 {
 	top: 40px;
 }
@@ -147,6 +148,17 @@
 
 .searchRow4 {
 	top: 97px;
+}
+
+@media screen and (max-width: 1050px) {
+
+	.advancedSearch.searchCol2 {
+		left: 382px;
+	}
+	.advancedSearch.searchCol3 {
+		left: 710px;
+	}
+
 }
 
 .searchToggle {

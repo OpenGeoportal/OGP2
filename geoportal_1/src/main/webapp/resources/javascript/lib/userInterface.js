@@ -127,6 +127,7 @@ OpenGeoportal.Structure = function() {
 						jQuery(document).one("panelOpen", function() {
 							var bubble2 = "directionsBubble";
 							if (that.doShowInfo(bubble2)){
+								
 								var $bubbleDir = that.showDirectionsBubble_1(bubble2);
 								jQuery(document).one("click focus", function() {
 									$bubbleDir.hide("drop");
@@ -276,22 +277,15 @@ OpenGeoportal.Structure = function() {
 
 	this.showInfoBubble = function(elId) {
 		var params = {
-			"height" : 335,
-			"width" : 700,
-			"top" : 259,
-			"left" : 269,
 			"arrow" : "top"
 		};
 		return this.infoBubble(elId, this.template.get('welcomeText')(), params);
 	};
 
 	this.showDirectionsBubble_1 = function(elId) {
-
+		//need to get the width of the left panel. based on this, reset 'width', 'left' of the element
+		
 		var params = {
-			"height" : 250,
-			"width" : 600,
-			"top" : 259,
-			"left" : 520,
 			"arrow" : "left"
 		};
 		return this.infoBubble(elId, this.template.get('directionsText')(), params);
@@ -316,33 +310,60 @@ OpenGeoportal.Structure = function() {
 	
 	this.infoBubble = function(bubbleId, infoHtml, optionsObj) {
 
-		var arrowDirection = "top-arrow";// default value
+		var arrowDirection = "";// default value is no arrow
 		if (optionsObj.arrow == 'top') {
 			arrowDirection = "top-arrow";
 		} else if (optionsObj.arrow == "left") {
 			arrowDirection = "left-arrow";
 		}
 
+		
 		var infoBubbleMain = this.template.get('infoBubble')({elId: bubbleId, arrowDirection: arrowDirection, content: infoHtml});
 		jQuery("#infoBubbles").append(infoBubbleMain);
-		jQuery("#" + bubbleId).height(optionsObj.height + 4).width(
-				optionsObj.width + 4).css("top", optionsObj.top - 2).css(
-				"left", optionsObj.left - 2);
-		jQuery("#" + bubbleId + " > .infoBubbleText").height(optionsObj.height)
-				.width(optionsObj.width);
-		var infoBubble$ = jQuery("#" + bubbleId);
-		infoBubble$.on("click", ".closeBubble", function() {
-			infoBubble$.fadeOut("slow");
+		var $bubble = jQuery("#" + bubbleId);
+		
+		var hght = $bubble.height();
+		var wdth = $bubble.width();
+		var left = $bubble.css("left");
+		
+		//check the map size to see if we need to adjust sizes, since we don't want to cover the results.
+		var offset = OpenGeoportal.Utility.getMapOffset();
+		var fullwidth = jQuery("#container").width();
+		var marginright = 20;
+		var marginleft = 33;
+		var margins = marginright + marginleft
+		var padding = parseInt($bubble.css("padding-left")) + parseInt($bubble.css("padding-right"));
+		
+		
+		if (wdth + margins + padding > fullwidth - offset.x){
+			wdth = fullwidth - offset.x - margins - padding;
+			$bubble.width(wdth);
+		}
+		
+		if (arrowDirection == "left-arrow"){
+			 left = offset.x + marginleft;
+		} else {
+			//center
+			left = (fullwidth + offset.x - wdth)/2;
+		}
+		
+		$bubble.css("left", left);
+		
+		var $inset = $bubble.find(".infoBubbleText");
+		$inset.height(hght - 4).width(wdth - 4);
+
+		$bubble.on("click", ".closeBubble", function() {
+			$bubble.fadeOut("slow");
 		}).fadeIn("slow");
 
-		infoBubble$.on("click", ".doNotShow", function(){
+		$bubble.on("click", ".doNotShow", function(){
 			var show = true;
 			if (jQuery(this).is("input:checked")){
 				show = false;
 			}
 			OpenGeoportal.Utility.LocalStorage.setBool(bubbleId, show);
 		});
-		return infoBubble$;
+		return $bubble;
 	};
 
 };

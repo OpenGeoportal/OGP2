@@ -1020,16 +1020,9 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.getMapOffset = function() {
-		var mapOffset = jQuery("#" + this.containerDiv).offset();
-		var xOffset = 0;
-		var leftCol$ = jQuery("#left_col");
-		var leftColOffset = leftCol$.offset();
-		if (leftCol$.is(":visible")) {
-			xOffset = leftCol$.width() + leftColOffset.left - mapOffset.left;
-		}
-		var yOffset = jQuery("#tabs").offset().top - mapOffset.top;
+		var offset = OpenGeoportal.Utility.getMapOffset();
 
-		return new OpenLayers.Pixel(xOffset, yOffset);
+		return new OpenLayers.Pixel(offset.x, offset.y);
 	};
 
 	this.getVisibleExtent = function() {

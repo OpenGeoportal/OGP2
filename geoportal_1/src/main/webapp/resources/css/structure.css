@@ -158,7 +158,7 @@ iframe.download {
 	height: 120px;
 	background-color: #ffffff;
 	border-bottom: #999999 solid 1px;
-	min-width: 1050px;
+	min-width: 1024px;
 }
 
 #logo {
@@ -213,13 +213,13 @@ iframe.download {
 	background-color: #fff;
 	overflow: hidden;
 	min-height: 512px;
-	min-width: 1050px;
+	min-width: 1024px;
 	position: relative;
 }
 
 #map {
 	opacity: 0;
-	min-width: 1050px;
+	min-width: 999px;
 	
 }
 /* left column panel */

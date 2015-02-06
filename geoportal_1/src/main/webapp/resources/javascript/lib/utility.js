@@ -393,4 +393,21 @@ OpenGeoportal.Utility.anchorsToNiceScroll = function(affectedDiv, offsetHash) {
 	});
 };
 
+OpenGeoportal.Utility.getMapOffset = function(){
+	var mapOffset = jQuery("#container").offset();
+	var xOffset = 0;
+	var leftCol$ = jQuery("#left_col");
+	var leftColOffset = leftCol$.offset();
+	if (leftCol$.is(":visible")) {
+		xOffset = leftCol$.width() + leftColOffset.left - mapOffset.left;
+	}
+	var yOffset = jQuery("#tabs").offset().top - mapOffset.top;
+
+	return {
+		x: xOffset,
+		y: yOffset
+	};
+};
+
+
 
