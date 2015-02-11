@@ -111,6 +111,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 						jQuery(this).trigger("adjustContents");
 						that.resizablePanel();
 						jQuery(document).trigger("panelOpen");
+						//jQuery(document).trigger("fireSearch");
 					}
 				});
 				try {
@@ -140,6 +141,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 						
 						jQuery(this).trigger("adjustContents");
 						that.resizablePanel();
+
 					}
 				});
 
@@ -233,6 +235,10 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 							openWidth : newWidth
 						});
 						jQuery(this).trigger("adjustContents");
+						//if the size difference is more than 10 percent, fire a search
+						if (Math.abs(ui.originalSize.width - newWidth) > ui.originalSize.width * .1){
+							jQuery(document).trigger("fireSearch");
+						}
 
 					}
 				});

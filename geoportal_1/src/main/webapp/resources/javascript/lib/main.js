@@ -19,7 +19,6 @@ jQuery(document)
 					OpenGeoportal.ogp = {};
 					var ogp = OpenGeoportal.ogp; // an alias
 
-					//ogp.template = OpenGeoportal.Template;
 					ogp.widgets = new OpenGeoportal.Widgets();
 					ogp.tableControls = new OpenGeoportal.TableItems();
 					
@@ -40,14 +39,17 @@ jQuery(document)
 					ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: ogp.appState.get("requestQueue"), template: OpenGeoportal.Template});
 
 				
-					
 					// handles behavior of "frame elements", like expansion of
 					// advanced search area, left panel
 					ogp.structure = new OpenGeoportal.Structure();
 					ogp.structure.init();
-
+					
+					var offset = {
+							x: ogp.structure.panelView.model.get("openWidth"),
+							y: 0
+					};
 					// create the map and handle map related functions
-					ogp.map = new OpenGeoportal.MapController();
+					ogp.map = new OpenGeoportal.MapController(offset);
 					ogp.map.initMap("map");
 
 					// creating the cart

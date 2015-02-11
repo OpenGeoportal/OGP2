@@ -127,6 +127,7 @@ OpenGeoportal.Geocoder = function Geocoder() {
 				jQuery(this).removeClass("ui-corner-all").addClass(
 						"ui-corner-top");
 			},
+			
 			close : function() {
 				jQuery(this).removeClass("ui-corner-top").addClass(
 						"ui-corner-all");

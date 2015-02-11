@@ -72,6 +72,8 @@ OpenGeoportal.Views.Query = Backbone.View
 				jQuery(document).on("map.extentChanged", function(e, data) {
 					that.model.setMapExtent(data.mapExtent, data.mapCenter);
 				});
+				
+				$("#whereField").focus();
 			},
 			
 
