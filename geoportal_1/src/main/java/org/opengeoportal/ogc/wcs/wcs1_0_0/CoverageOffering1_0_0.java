@@ -68,7 +68,9 @@ public class CoverageOffering1_0_0 implements OwsDescribeInfo{
 	String label;
 	
 	Envelope lonLatEnvelope;
-	
+	//Ben ADDED
+	Envelope nativeEnvelope;
+	//
 	List<String> keywords;
 	
 	RectifiedGrid rectifiedGrid;
@@ -105,6 +107,14 @@ public class CoverageOffering1_0_0 implements OwsDescribeInfo{
 	public void setLonLatEnvelope(Envelope lonLatEnvelope) {
 		this.lonLatEnvelope = lonLatEnvelope;
 	}
+	// BEN ADDED
+	public Envelope getNativeEnvelope() {
+		return nativeEnvelope;
+	}
+	public void setNativeEnvelope(Envelope nativeEnvelope) {
+		this.nativeEnvelope = nativeEnvelope;
+	}
+	//
 	public List<String> getKeywords() {
 		return keywords;
 	}
