@@ -19,7 +19,7 @@
 	src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script type="text/javascript"
 	src="resources/javascript/jquery.ba-resize.js"></script>
-<script type="text/javascript" src="resources/javascript/panZoom.js"></script>
+<script type="text/javascript" src="resources/javascript/lib/unused/panZoom.js"></script>
 
 <!-- ogp javascript library files -->
 

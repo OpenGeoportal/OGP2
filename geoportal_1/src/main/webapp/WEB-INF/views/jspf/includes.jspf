@@ -5,9 +5,9 @@
 <script src="resources/javascript/jquery.scrollTo-min.js"></script>
 <script src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 <script src="resources/javascript/jquery.ba-postmessage.min.js"></script>
-<script src="//maps.google.com/maps/api/js?v=3.10&sensor=false"></script>
-<script src="resources/javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
-<script src="resources/javascript/panZoom.js"></script>
+<script src="//maps.google.com/maps/api/js?v=3.19&sensor=false"></script>
+<script src="resources/javascript/openlayers/OpenLayers-2.13.1/OpenLayers.js"></script>
+<script src="resources/javascript/openlayers/custom/PanZoomBar.js"></script>
 
 <link rel="stylesheet" href="resources/css/jquery-ui-ogpTheme.custom.css" type="text/css" />
 
@@ -19,7 +19,7 @@ if (!Object.create) {
 		F.prototype = o;
 		return new F();
 	};
-};
+}
 </script>
 
 <c:choose>

@@ -218,9 +218,7 @@ iframe.download {
 }
 
 #map {
-	opacity: 0;
 	min-width: 999px;
-	
 }
 /* left column panel */
 #left_col {

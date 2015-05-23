@@ -127,11 +127,11 @@ div.olControlMousePosition {
     right: auto !important;
 }
 
-#geoportalMap {
+/*#geoportalMap {
 	margin: 0px;
 	padding: 0px;
 	opacity: 0;
-}
+}*/
 
 
 .olControlAttribution {
@@ -220,14 +220,14 @@ div.olControlMousePosition {
 .olControlNavigationHistory {
 	background-image: none;
 	background-repeat: no-repeat;
-	height: 38px;
-	width: 30px;
+	height: 38px !important;
+	width: 30px !important;
 	cursor: pointer;
 }
 
 .olControlNavigationHistoryPreviousItemActive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryPreviousItemActive:hover {
@@ -237,12 +237,12 @@ div.olControlMousePosition {
 
 .olControlNavigationHistoryPreviousItemInactive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryNextItemActive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryNextItemActive:hover {
@@ -252,7 +252,7 @@ div.olControlMousePosition {
 
 .olControlNavigationHistoryNextItemInactive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlPanel .olControlNavigationItemActive {
@@ -352,14 +352,14 @@ div.olControlMousePosition {
 	filter: alpha(opacity = 50);
 }
 
-.olControlPanPanel {
+/*.olControlPanPanel {
 	top: 37px;
 	left: 5px;
 	width: 41px;
 	height: 41px;
 	background: url("../media/panarrows_bg.png") no-repeat scroll 0 0
 		transparent;
-}
+}*/
 
 .olControlPanPanel div {
 	cursor: pointer;
@@ -368,7 +368,7 @@ div.olControlMousePosition {
 	height: 41px;
 }
 
-.olControlPanPanel .olControlPanNorthItemInactive {
+/*.olControlPanPanel .olControlPanNorthItemInactive {
 	width: 18px;
 	height: 18px;
 	top: 2px;
@@ -438,7 +438,7 @@ div.olControlMousePosition {
 	left: 28px;
 	background: url("../media/pandarrows_east.png") no-repeat scroll 0 0
 		transparent;
-}
+}*/
 
 .olControlZoomPanel .olControlZoomOutItemInactive {
 	top: 36px;

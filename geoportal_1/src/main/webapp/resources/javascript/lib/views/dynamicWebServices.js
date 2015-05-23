@@ -132,7 +132,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 	            	 title : "Web Map Context (WMC):",
 	            	 caption : "OGC standard for sharing web services. Press the button to generate a WMC file.",
 	            	 preferenceText: "Choose how the web service will be used: ",
-	            	 preference: [{label: "Analysis", value: "data"}, {label: "Display", value:"display"}],
+	            	 preference: [{label: "Display", value:"display"}, {label: "Analysis", value: "data"}],
 	            	 preferenceElId: wmcPreferenceId,
 	            	 generateButtonId: wmcButtonId
 	             };
@@ -176,15 +176,13 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 						             
 					ws.dynamic.push(wmsService);
 
-				};
-				
-
+				}
 				var dialogContent = "";
 				
 				if (ws.dynamic.length > 0){
 					var content = this.template.get('dynamicWSDialog')(ws);
 					content += this.template.get('wmcDialog')(wmcService);
-					dialogContent = this.template.get('webServicesDialog')({content: _.escape(content)});
+					dialogContent = this.template.get('webServicesDialog')({content: content});
 				} else {
 					dialogContent = "No Web Services are available for the selected layers.";
 				}

@@ -31,6 +31,7 @@ OpenGeoportal.Structure = function() {
 		this.resizeWindowHandler();
 
 		var model = new OpenGeoportal.Models.LeftPanel();
+
 		this.panelView = new OpenGeoportal.Views.LeftPanel({
 			model : model,
 			el : "div#left_col"
@@ -327,24 +328,28 @@ OpenGeoportal.Structure = function() {
 		var left = $bubble.css("left");
 		
 		//check the map size to see if we need to adjust sizes, since we don't want to cover the results.
-		var offset = OpenGeoportal.Utility.getMapOffset();
+        var panelModel = this.panelView.model;
+        var xoffset = 0;
+        if (panelModel.get("mode") !== "closed"){
+            xoffset = panelModel.get("openWidth");
+        }
 		var fullwidth = jQuery("#container").width();
 		var marginright = 20;
 		var marginleft = 33;
-		var margins = marginright + marginleft
+		var margins = marginright + marginleft;
 		var padding = parseInt($bubble.css("padding-left")) + parseInt($bubble.css("padding-right"));
 		
 		
-		if (wdth + margins + padding > fullwidth - offset.x){
-			wdth = fullwidth - offset.x - margins - padding;
+		if (wdth + margins + padding > fullwidth - xoffset){
+			wdth = fullwidth - xoffset - margins - padding;
 			$bubble.width(wdth);
 		}
 		
 		if (arrowDirection == "left-arrow"){
-			 left = offset.x + marginleft;
+			 left = xoffset + marginleft;
 		} else {
 			//center
-			left = (fullwidth + offset.x - wdth)/2;
+			left = (fullwidth + xoffset - wdth)/2;
 		}
 		
 		$bubble.css("left", left);

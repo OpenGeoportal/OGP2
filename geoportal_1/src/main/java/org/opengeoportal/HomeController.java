@@ -120,8 +120,8 @@ public class HomeController {
 		mav.addObject("titlePrimary", conf.getPageTitlePrimary());
 		mav.addObject("titleOffset", conf.getPageTitleOffset());
 		
-		mav.addObject("extraJs", conf.getJsLocalized());	//<script type="text/javascript" src="resources/javascript/dataTables.scroller.min.js"></script>
-		mav.addObject("extraCss", conf.getCssLocalized());  //<link rel="stylesheet" href="resources/css/google.css" type="text/css" />
+		mav.addObject("extraJs", conf.getJsLocalized());
+		mav.addObject("extraCss", conf.getCssLocalized());
 		
 		mav.addObject("searchUrl", conf.getSearchUrl().toString());
 		mav.addObject("analyticsId", conf.getAnalyticsId());

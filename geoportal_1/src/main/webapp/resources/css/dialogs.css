@@ -185,6 +185,15 @@ span.columnNote {
 	margin-left: 0px;
 }
 
+.sub_headerTitle {
+  margin-left: 20px;
+  color: #003366;
+  font-family: Trebuchet MS;
+  font-size: 13px;
+  font-weight: normal;
+  line-height: 25px;
+}
+
 .owsServicesLinkContainer > label, .owsServicesLinkContainer > select, .owsServicesLinkContainer > div {
     margin: 4px;
 }
