@@ -1,5 +1,6 @@
 package org.opengeoportal.metadata;
 
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,7 +34,8 @@ public class XmlParserFactory implements ApplicationContextAware {
 	 * 
 	 * @throws ParserConfigurationException
 	 */
-	void initDocumentBuilder() throws ParserConfigurationException {
+    @PostConstruct
+    void initDocumentBuilder() throws ParserConfigurationException {
 		if (documentBuilder == null) {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
 					.newInstance();

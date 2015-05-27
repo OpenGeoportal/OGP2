@@ -4,7 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.opengeoportal.config.PropertiesFile;
 import org.opengeoportal.config.ogp.OgpConfig.LoginConfig;
 import org.slf4j.Logger;
@@ -117,7 +117,7 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 		String urlVal = getPropertyWithDefault(LOGIN_URL, LOGIN_URL_DEFAULT);		
 		logConf.setUrl(urlVal);
 
-		String sdVal = getPropertyWithDefault(SECURE_DOMAIN, "");		; //should default to current domain with https:; for now let the client do this
+		String sdVal = getPropertyWithDefault(SECURE_DOMAIN, "");        //should default to current domain with https:; for now let the client do this
 		logConf.setSecureDomain(sdVal);
 
 

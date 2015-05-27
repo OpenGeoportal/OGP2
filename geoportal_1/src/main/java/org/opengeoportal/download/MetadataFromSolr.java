@@ -9,8 +9,10 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -49,9 +51,28 @@ public class MetadataFromSolr implements MetadataRetriever {
 	private Resource iso19139StyleSheet;
 	
 	public enum MetadataType {
-		ISO_19139, FGDC;
-	}
-	
+        ISO_19139, FGDC
+    }
+
+    @PostConstruct
+    public void primeTransformerCache() {
+        //prime the cache
+        try {
+            cachingTransformerProvider.getTransformer("generic");
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+
+        }
+        try {
+            this.getTransformer(MetadataType.FGDC);
+            this.getTransformer(MetadataType.ISO_19139);
+
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 	
 	/**
 	 * takes the XML metadata string from the Solr instance, does some filtering, parses it as XML
@@ -74,10 +95,9 @@ public class MetadataFromSolr implements MetadataRetriever {
 		Transformer transformer = cachingTransformerProvider.getTransformer("generic");
 
 		transformer.transform(xmlSource, streamResult);
-		
-		String outputString = stringWriter.toString();
 
-		return outputString;
+		return stringWriter.toString();
+
 	 }
 	
 	/**
@@ -85,7 +105,6 @@ public class MetadataFromSolr implements MetadataRetriever {
 	 * 
 	 * @param rawXMLString
 	 * @return the XML String as a Document
-	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 * @throws SAXException
 	 */
@@ -94,16 +113,16 @@ public class MetadataFromSolr implements MetadataRetriever {
 
 		// parse the returned XML to make sure it is well-formed & formatted
 		// Parse the document
-		Document document = xmlParser.parse(rawXMLString);
-		this.xmlDocument = document;
+		this.xmlDocument = xmlParser.parse(rawXMLString);
 
 		return this.xmlDocument;
 	}
 	
 	/**
 	 * given a layer name, retrieves the XML metadata string from the OGP Solr instance
-	 * @param layerName
-	 * @return the XML metadata as a string
+     * @param identifier
+     * @param descriptor
+     * @return the XML metadata as a string
 	 * @throws Exception 
 	 */
 	private String getXMLStringFromSolr(String identifier, String descriptor) throws Exception{
@@ -186,26 +205,30 @@ public class MetadataFromSolr implements MetadataRetriever {
 		StreamResult streamResult = new StreamResult(stringWriter);
 		
 		MetadataType metadataType = getMetadataType(document);
-		
-		File styleSheet = null;
-		if (metadataType.equals(MetadataType.FGDC)){
-			styleSheet = this.getFgdcStyleSheet().getFile();
-		} else {
-			styleSheet = this.getIso19139StyleSheet().getFile();
-		}
-		
-        Source xslt = new StreamSource(styleSheet);
-        
-		Transformer transformer = cachingTransformerProvider.getTransformer(xslt, metadataType.toString());
+
+
+        Transformer transformer = getTransformer(metadataType);
 
 		transformer.transform(xmlSource, streamResult);
-		String outputString = stringWriter.toString();
-
-		return outputString;
+		return stringWriter.toString();
 
 	}
-	
-	File getStyleSheet(Document document) throws Exception{
+
+    Transformer getTransformer(MetadataType metadataType) throws TransformerConfigurationException, IOException {
+        File styleSheet = null;
+        if (metadataType.equals(MetadataType.FGDC)) {
+            styleSheet = this.getFgdcStyleSheet().getFile();
+        } else {
+            styleSheet = this.getIso19139StyleSheet().getFile();
+        }
+
+        Source xslt = new StreamSource(styleSheet);
+
+        return cachingTransformerProvider.getTransformer(xslt, metadataType.toString());
+
+    }
+
+    File getStyleSheet(Document document) throws Exception{
 		MetadataType metadataType = getMetadataType(document);
 		//getMetadataType throws an exception if not fgdc or iso19139
 		if (metadataType.equals(MetadataType.FGDC)){

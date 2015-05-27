@@ -41,7 +41,6 @@ public class WroConfigRetriever implements ConfigRetriever {
 
 	@Override
 	public void load() throws IOException {
-		//we have a list of datatypes to display/search from ogp_config.xml
 		WroConfig wro = new WroConfig();
 		XMLConfiguration xml = xmlProperties.getConfig();
 		

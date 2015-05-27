@@ -27,15 +27,20 @@ public class CachingTransformerProvider {
 		if (transformerCache.containsKey(key)) {
 			transformer = transformerCache.get(key);
 			transformer.reset();
-		} else {
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+        } else {
 			if (xslt == null) {
 				transformer = transformerFactory.newTransformer();
 			} else {
 				transformer = transformerFactory.newTransformer(xslt);
+
 			}
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformerCache.put(key, transformer);
-		}
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+            transformerCache.put(key, transformer);
+        }
 		return transformer;
 	}
 
