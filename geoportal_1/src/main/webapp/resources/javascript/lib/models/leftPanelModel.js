@@ -10,10 +10,14 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 }
 
 OpenGeoportal.Models.LeftPanel = Backbone.Model.extend({
+	initialize: function () {
+		var width = Math.ceil($(window).width() * .4);
+		this.set("openWidth", Math.max(width, this.get("panelMinWidth")));
+	},
+
 	defaults : {
 		mode : "closed",
-		openWidth : 500, // maybe initial openWidth should be a certain
-							// percentage of the screen width or panelminwidth
+		openWidth: 500,
 		panelMinWidth : 390,
 		mapMinWidth : 550
 	}

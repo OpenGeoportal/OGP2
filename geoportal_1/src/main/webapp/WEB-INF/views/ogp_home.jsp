@@ -62,5 +62,7 @@ OpenGeoportal.Config.RepositoriesBootstrap = ${repositories};
 	
 	<div id="iframes" class="hiddenElements"></div>
 	<div id="infoBubbles"></div>
+	<%@include file="jspf/includes_bottom.jspf" %>
+
 </body>
 </html>

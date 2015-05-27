@@ -77,11 +77,9 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			},
 			
 			cartAction : function() {
-				
-
-				
+                console.log("cart action");
 				var sortedLayers = this.sortLayersByDownloadType();
-
+                console.log("sort");
 				var hasServerLayers = _.has(sortedLayers, "ogpServer") && sortedLayers.ogpServer.length > 0;
 				if (hasServerLayers) {
 					// get user input and form a request to send to the ogp
@@ -93,6 +91,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 					this.preferences = new OpenGeoportal.Models.DownloadPreferences();
 					var that = this;
+                    console.log("setting preferences");
 					this.setPreferences().then(this.finalizeRequest,
 							this.failHandler1).then(this.sendDownloadRequest,
 							this.failHandler2);
@@ -225,9 +224,8 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					});
 
 					// set a default
-					var defaultFormat = formats.vectorFormats[0].formatType;
 					this.preferences.set({
-						vectorChoice : defaultFormat
+                        vectorChoice: formats.vectorFormats[0].formatType
 					});
 
 					// update the preferences model when the ui element changes
@@ -250,9 +248,8 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					});
 
 					// set a default
-					var defaultFormat = formats.rasterFormats[0].formatType;
 					this.preferences.set({
-						rasterChoice : defaultFormat
+                        rasterChoice: formats.rasterFormats[0].formatType
 					});
 					// update the preferences model when the ui element changes
 					jQuery(document).on("change", "#" + rasterControlId,
@@ -305,9 +302,12 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					// with user specified preferences and resolve the
 					// setPreferences deferred obj
 					try {
+                        console.log("updating models");
 						that.updateModelsWithPreferences();
 						setPreferencesDeferred.resolveWith(that);
 					} catch (e) {
+                        console.log("failed");
+                        console.log(e);
 						setPreferencesDeferred.rejectWith(that);
 					}
 				});
@@ -338,6 +338,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					jQuery('#dialogs').append(downloadDiv);
 				}
 				var dialog$ = jQuery("#" + dialogId);
+
 				dialog$.html(dialogContent);
 				dialog$.addClass("downloadDialog");
 				dialog$.dialog(params);
@@ -408,7 +409,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// set the bounds on the request object if "clipped" is checked
 				if (this.preferences.get("isClipped")) {
 					// set bounds in the downloadRequest model
-					var extent = OpenGeoportal.ogp.map.getGeodeticExtent();
+                    var extent = OpenGeoportal.ogp.map.getWGS84VisibleExtent();
 					this.downloadRequest.set({
 						bbox : extent
 					});
@@ -421,7 +422,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			 */
 
 			finalizeRequest : function() {
-				//console.log("starting finalize request");
+                console.log("starting finalize request");
 				var finalizeRequestDeferred = jQuery.Deferred();
 				var dialogDonePromise = this.openFinalizeRequestDialog();
 
@@ -432,9 +433,12 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					// with user specified preferences and resolve the
 					// setPreferences deferred obj
 					try {
+                        console.log("trying update request from finalize");
 						that.updateRequestFromFinalize();
 						finalizeRequestDeferred.resolveWith(that, arguments);
 					} catch (e) {
+                        console.log("error");
+                        console.log(e);
 						finalizeRequestDeferred.rejectWith(that, arguments);
 					}
 
@@ -488,13 +492,11 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 			getLayerDownloadNotice : function() {
 				var arrModels = this.downloadRequest.get("layers");
-
-				var template = "";
-
 				var downloadCount = 0;
 				var emailCount = 0;
 				var that = this;
-				_.each(arrModels, function(model) {
+
+                _.each(arrModels, function(model) {
 					var format = model.get("requestedFormat");
 					if (that.requiresEmailAddress(model, format)) {
 						emailCount++;
@@ -506,7 +508,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var total = emailCount + downloadCount;
 				var plural = (total > 1);
 
-				template = this.template.get('layerDownloadNotice')({
+                var template = this.template.get('layerDownloadNotice')({
 					emailCount : emailCount,
 					downloadCount : downloadCount,
 					total : total,
