@@ -57,6 +57,8 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 
 		var opacity$ = this.$el.find(".opacityControlCell");
 		this.destroySlider(opacity$);
+
+        this.destroyColorPicker();
 	},
 	
 	toggleControls: function(model, val, options) {
@@ -321,49 +323,48 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			colorPickerOn : !val
 		});
 	},
-	
+
+	createColorPicker: function(model){
+		var $color = $('<div class="picker" tabindex="-1"></div>').appendTo(this.$el.find(".colorControlCell"));
+		//.colorControl
+
+        model.set({
+            colorDialog : new OpenGeoportal.Views.ColorPicker({
+                model : model,
+                el : $color
+            })
+        });
+
+        this.$el.find(".colorControlWrapper").addClass("controlOn");
+
+        $color.find(".colorCell").first().focus();
+
+    },
+
+    destroyColorPicker: function(){
+        var model = this.model;
+        if (model.has("colorDialog")) {
+            var picker = model.get("colorDialog");
+            picker.$el.hide();
+            this.$el.find(".colorControlWrapper").removeClass("controlOn");
+            picker.remove();
+            model.unset("colorDialog");
+            model.set({colorPickerOn: false}, {silent: true});
+        }
+    },
+
 	colorPicker : function(model) {
-
-		var dialogDiv$ = null;
-		if (!model.has("colorDialog")) {
-			var dialogDiv = '<div class="dialog colorDialog"></div>';
-			dialogDiv$ = jQuery(dialogDiv);
-
-			dialogDiv$.appendTo("#dialogs").dialog({
-				zIndex : 9999,
-				autoOpen : false,
-				width : 'auto',
-				height : 'auto',
-				title : "Colors",
-				resizable : false,
-				close : function(event, ui) {
-					model.set({
-						colorPickerOn : false
-					});
-				}
-			});
-			model.set({
-				colorDialog : new OpenGeoportal.Views.ColorPicker({
-					model : model,
-					el : dialogDiv$
-				})
-			});
-		} else {
-			dialogDiv$ = model.get("colorDialog").$el;
-		}
-
 		if (model.changed.colorPickerOn) {
-			dialogDiv$.dialog("open");
+			this.createColorPicker(model);
+
 		} else {
-			dialogDiv$.dialog("close");
+			this.destroyColorPicker();
 		}
 	},
 	
 	updateColorControl : function() {
 		var paletteColor = this.model.get("color");
 		this.$el.find(".colorControl").css("background-color", paletteColor);
-		// trigger map sld update from here, or is there another view watching
-		// these models in the map?
 	},
 	
 	// toggle the attribute info button & functionality
@@ -398,120 +399,3 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	}
 });
 
-OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
-	tagName : "div",
-	events : {
-		"click .colorCell" : "selectColorCell"
-	},
-	initialize : function() {
-		this.render();
-	},
-
-	render : function() {
-
-		var colors = [
-				[ "#828282", "#aaaaaa", "#b2b2b2", "#cccccc", "#e1e1e1",
-						"#ffffff" ],
-				[ "#730000", "#a80000", "#e80000", "#ff0000", "#ff7f7f",
-						"#ffbebe" ],
-				[ "#732600", "#a83800", "#e64c00", "#ff5500", "#ffa77f",
-						"#ffebbe" ],
-				[ "#734c00", "#a87000", "#e69800", "#ffaa00", "#ffd37f",
-						"#ffebaf" ],
-				[ "#737300", "#a8a800", "#e6e600", "#ffff00", "#ffff73",
-						"#ffffbe" ],
-				[ "#426e00", "#6da800", "#98e600", "#aaff00", "#d1ff73",
-						"#e9ffbe" ],
-				[ "#267300", "#38a800", "#4ce600", "#55ff00", "#a3ff73",
-						"#d3ffbe" ],
-				[ "#00734c", "#00a884", "#00e6a9", "#00ffc5", "#73ffdf",
-						"#beffe8" ],
-				[ "#004c73", "#0084a8", "#00a9e6", "#00c5ff", "#73dfff",
-						"#bee8ff" ],
-				[ "#002673", "#0049a9", "#005ce6", "#0070ff", "#73b2ff",
-						"#bed2ff" ],
-				[ "#4c0073", "#8400a8", "#a900e6", "#c500ff", "#df73ff",
-						"#e8beff" ],
-				[ "#780f52", "#a80084", "#e00fa7", "#ff00c5", "#ff73df",
-						"#ffbee8" ]
-
-		];
-
-		var currentColorSelection = this.model.get("color");
-		
-		var colorRow = function(row){
-			var colorRow = ['<tr>'];
-			_.each(row, function(color){
-		
-				var selectionClass;
-				if (color == currentColorSelection) {
-					selectionClass = " colorCellSelected";
-				} else {
-					selectionClass = "";
-				}
-				
-				var colorCell = ['<td class="colorCellParent">',
-				                '<div class="colorCell' + selectionClass + '" style="background-color:' + color + '"></div>',
-				                '</td>'].join('\n')
-				colorRow.push(colorCell);
-			});
-			
-			colorRow.push('</tr>');
-			return colorRow.join('\n');
-		};
-		
-		var colorTable = function(colors){
-			
-			var colorTable = ['<table><tbody>'];
-
-			_.each(colors, function(row){
-				colorTable.push(colorRow(row));
-			});
-			
-			colorTable.push('</tbody></table>');
-			
-			return colorTable.join('\n');
-		};
-		
-		// TODO: move to template
-		/*var colorDiv = ;
-		var row = null;
-		for (row in allColors) {
-			colorDiv += '<tr>';
-			var cell = null;
-			for (cell in allColors[row]) {
-				colorDiv += '<td class="colorCellParent">';
-				var currentColorValue = allColors[row][cell];
-				var selectionClass;
-				if (currentColorValue == currentColorSelection) {
-					selectionClass = " colorCellSelected";
-				} else {
-					selectionClass = "";
-				}
-				colorDiv += '<div class="colorCell' + selectionClass
-						+ '" style="background-color:' + allColors[row][cell]
-						+ '"></div>';
-				colorDiv += '</td>';
-			}
-			colorDiv += '</tr>';
-		}
-		colorDiv += ;*/
-
-		this.$el.html(colorTable(colors));
-
-		return this;
-	},
-
-	selectColorCell : function(event) {
-		var selectedCell$ = jQuery(event.target);
-		var selectedColor = selectedCell$.css("background-color");
-		if (selectedColor.indexOf("rgb") > -1) {
-			selectedColor = OpenGeoportal.Utility.rgb2hex(selectedColor);
-		}
-		this.model.set({
-			color : selectedColor
-		}); // here's where things happen
-		this.$el.find('.colorCell').removeClass('colorCellSelected');
-		selectedCell$.addClass('colorCellSelected');
-	}
-});

@@ -1,8 +1,8 @@
 <script src="//maps.google.com/maps/api/js?v=3.20&sensor=false"></script>
 <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="//cdn.jsdelivr.net/backbonejs/1.1.2/backbone-min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
 <script src="resources/javascript/jquery.scrollTo-min.js"></script>
 <script src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 <script src="resources/javascript/jquery.ba-postmessage.min.js"></script>

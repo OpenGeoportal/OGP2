@@ -188,9 +188,10 @@ OpenGeoportal.Template = {
 					'<div class="previewToolsSlider" title="{{ tooltip }}">',
 					'</div>', '</div>', '</div>', '</div>' ].join('\n'),
 			colorControl : [
-					'<div class="colorControlCell">',
+					'<div class="colorControlCell" tabindex="0">',
+					'<div class="colorControlWrapper">',
 					'<div class="colorControl button" title="Change the layer color" style="background-color:{{ color }}">',
-					'</div>', '</div>' ].join('\n'),
+					'</div>', '</div>', '</div>' ].join('\n'),
 			zoomControl : '<div class="button zoomToLayerControl" title="Zoom to geographic extent of layer"></div>',
 			getFeatureControl : '<div class="button attributeInfoControl {{ toolClass }}" title="Click a previewed feature on the map to view its attributes"></div>',
 			genericControl : '<div class="button {{ controlClass }} {{ displayClass }}" title="{{ tooltip }}">{{ text }}</div>',

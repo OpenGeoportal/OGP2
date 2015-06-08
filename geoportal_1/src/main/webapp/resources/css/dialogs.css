@@ -7,30 +7,7 @@
 	margin-right: 5px;
 }
 
-td.colorCellParent {
-	width: 18px;
-	height: 18px;
-	padding: 0px;
-}
 
-div.colorCell {
-	cursor: pointer;
-	width: 14px;
-	height: 14px;
-	border: 1px solid #CCCCCC;
-}
-
-div.colorCell:hover {
-	border-color: #999999;
-	width: 16px;
-	height: 16px;
-}
-
-.colorCellSelected {
-	border: 1px solid black !important;
-	width: 16px !important;
-	height: 16px !important;
-}
 
 .linkText {
 	width: 465px;

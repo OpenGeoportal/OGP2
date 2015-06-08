@@ -52,6 +52,7 @@ preview controls
 	padding: 5px 10px 5px 8px;
 	right: 4px;
 	display: none;
+    box-shadow: 1px 1px 3px -1px #555555;
 }
 
 .controlText {
@@ -68,6 +69,64 @@ preview controls
 	border: 1px solid #aaaaaa;
 	display: inline-block;
 	-moz-border-radius: 1px;
+}
+
+.picker {
+    background: white none repeat scroll 0 0;
+    border: 1px solid #aaaaaa;
+    border-radius: 3px;
+    box-shadow: 5px 4px 4px #bbbbbb;
+    left: -5px;
+    padding: 5px;
+    margin-top: 23px;
+    position: absolute;
+    z-index: 1;
+}
+
+.colorControlWrapper {
+    border: none;
+    background: transparent none repeat scroll 0 0;
+    padding: 5px;
+    position: absolute;
+}
+
+.colorControlWrapper.controlOn {
+    background: white none repeat scroll 0 0;
+    border-left: 1px solid #aaaaaa;
+    border-radius: 3px 3px 0 0;
+    border-right: 1px solid #aaaaaa;
+    border-top: 1px solid #aaaaaa;
+    margin-top: 1px;
+    padding: 4px 4px 1px;
+    z-index: 2;
+}
+
+td.colorCellParent {
+    width: 18px;
+    height: 18px;
+    padding: 0px;
+}
+
+div.colorCell {
+    cursor: pointer;
+    width: 14px;
+    height: 14px;
+    margin: 1px;
+    border: 1px solid #CCCCCC;
+}
+
+div.colorCell:focus {
+    border-color: #999999;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+}
+
+div.colorCell.colorCellSelected {
+    border: 1px solid black;
+    width: 15px;
+    height: 15px;
+    margin: 0;
 }
 
 .sizeControlCell .sliderLabel {
@@ -93,7 +152,7 @@ preview controls
 
 .colorControlCell {
 	left: 89px;
-	top: -1px;
+    top: -3px;
 }
 
 .layerInfo {
@@ -104,7 +163,7 @@ preview controls
 }
 
 .zoomToLayerControl {
-	left: 104px;
+    left: 127px;
 	background: url("../media/ogp-sprite.png") no-repeat scroll -9px -90px
 		transparent;
 	height: 17px;
@@ -113,7 +172,7 @@ preview controls
 }
 
 .attributeInfoControl {
-	left: 110px;
+    left: 133px;
 	height: 17px;
 	width: 17px;
 	top: 1px;
