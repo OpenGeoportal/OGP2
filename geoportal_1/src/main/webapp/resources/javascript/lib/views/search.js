@@ -281,7 +281,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				if (this.checkSearchChanged()){
 					//console.log("searchChanged");
 					this.fireSearch();
-					return;
+
 				}
 				
 			},
@@ -543,12 +543,25 @@ OpenGeoportal.Views.Query = Backbone.View
 
 			
 			expandSearchBox: function(hght, stepTime){
-				jQuery("#searchForm .basicSearch").hide();
-				jQuery("#geosearchDiv").removeClass("basicSearch").addClass(
+                var $search = $("#searchForm");
+                $search.find(".basicSearch").hide();
+                $("#geosearchDiv").removeClass("basicSearch").addClass(
 						"advancedSearch");
-				jQuery("#searchForm .advancedSearch.searchRow1").show();
+                var $adv = $search.find(".advancedSearch");
+                $adv.filter(".searchRow1").show();
 
-				jQuery('#searchBox').animate(
+                var $searchBox = $('#searchBox');
+                $searchBox.animate(
+                    {
+                        height: "+=" + hght
+                    },
+                    {
+                        queue: false,
+                        duration: stepTime,
+                        easing: "linear",
+                        complete: function () {
+                            $adv.filter(".searchRow2").show();
+                            $searchBox.animate(
 								{
 									height : "+=" + hght
 								},
@@ -557,38 +570,28 @@ OpenGeoportal.Views.Query = Backbone.View
 									duration : stepTime,
 									easing : "linear",
 									complete : function() {
-										jQuery("#searchForm .advancedSearch.searchRow2").show();
-										jQuery('#searchBox').animate(
-														{
-															height : "+=" + hght
-														},
-														{
-															queue : false,
-															duration : stepTime,
-															easing : "linear",
-															complete : function() {
-																jQuery("#searchForm .advancedSearch.searchRow3").show();
-																jQuery('#searchBox').animate(
-																				{
-																					height : "+=" + hght
-																				},
-																				{
-																					queue : false,
-																					duration : stepTime,
-																					easing : "linear",
-																					complete : function() {
-																						jQuery("#searchForm .advancedSearch.searchRow4").show();
-																						jQuery("#lessSearchOptions").focus();
-																						jQuery(document).trigger("searchform.setAdvanced");
+                                        $adv.filter(".searchRow3").show();
+                                        $searchBox.animate(
+                                            {
+                                                height: "+=" + hght
+                                            },
+                                            {
+                                                queue: false,
+                                                duration: stepTime,
+                                                easing: "linear",
+                                                complete: function () {
+                                                    $adv.filter(".searchRow4").show();
+                                                    $("#lessSearchOptions").focus();
+                                                    $(document).trigger("searchform.setAdvanced");
 
-																					}
-																				});
-															}
-														});
+                                                }
+                                            });
 									}
 								});
+                        }
+                    });
 
-				jQuery(".slideVertical").animate(
+                $(".slideVertical").animate(
 						{
 							"margin-top" : "+=" + hght * 3
 						},
@@ -596,7 +599,7 @@ OpenGeoportal.Views.Query = Backbone.View
 							duration : stepTime * 3,
 							easing : "linear",
 							done : function() {
-								jQuery(document).trigger("searchform.resize");
+                                $(document).trigger("searchform.resize");
 							}
 				});
 
@@ -604,7 +607,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 			
 			shrinkSearchBox: function(hght, stepTime){
-				jQuery(".slideVertical").animate(
+                $(".slideVertical").animate(
 						{
 							"margin-top" : "-=" + hght * 3
 						},
@@ -613,13 +616,30 @@ OpenGeoportal.Views.Query = Backbone.View
 							duration : stepTime * 3,
 							easing : "linear",
 							done : function() {
-								jQuery(document).trigger("searchform.resize");
+                                $(document).trigger("searchform.resize");
 							}
 				});
 
-				jQuery("#searchForm .advancedSearch.searchRow4").hide();
-				jQuery('#searchBox')
-						.animate(
+                var $search = $("#searchForm");
+                var $adv = $search.find(".advancedSearch");
+                var $searchBox = $('#searchBox');
+
+                $adv.filter(".searchRow4").hide();
+
+                $searchBox.animate(
+                    {
+                        height: "-=" + hght
+                    },
+                    {
+                        queue: false,
+                        duration: stepTime,
+                        easing: "linear",
+                        complete: function () {
+                            // jQuery(".slideVertical").animate({"margin-top":
+                            // "-=" + hght, queue: false, duration: 100,
+                            // easing: "linear"});
+                            $adv.filter(".searchRow3").hide();
+                            $searchBox.animate(
 								{
 									height : "-=" + hght
 								},
@@ -628,62 +648,39 @@ OpenGeoportal.Views.Query = Backbone.View
 									duration : stepTime,
 									easing : "linear",
 									complete : function() {
-										// jQuery(".slideVertical").animate({"margin-top":
-										// "-=" + hght, queue: false, duration: 100,
-										// easing: "linear"});
-										jQuery("#searchForm .advancedSearch.searchRow3").hide();
-										jQuery('#searchBox').animate(
-														{
-															height : "-=" + hght
-														},
-														{
-															queue : false,
-															duration : stepTime,
-															easing : "linear",
-															complete : function() {
-																jQuery("#searchForm .advancedSearch.searchRow2").hide();
-																jQuery('#searchBox').animate(
-																				{
-																					height : "-="
-																							+ hght
-																				},
-																				{
-																					queue : false,
-																					duration : stepTime,
-																					easing : "linear",
-																					complete : function() {
-																						// jQuery(".slideVertical").animate({"margin-top":
-																						// "-="
-																						// +
-																						// hght,
-																						// queue:
-																						// false,
-																						// duration:
-																						// 100,
-																						// easing:
-																						// "linear"});
-																						jQuery("#geosearchDiv").removeClass("advancedSearch")
-																								.addClass("basicSearch");
-																						jQuery("#searchForm .advancedSearch.searchRow1").hide();
-																						jQuery("#searchForm .basicSearch").show();
-																						jQuery("#moreSearchOptions").focus();
-																						jQuery(document).trigger("searchform.setBasic");
+                                        $adv.filter(".searchRow2").hide();
+                                        $searchBox.animate(
+                                            {
+                                                height: "-="
+                                                + hght
+                                            },
+                                            {
+                                                queue: false,
+                                                duration: stepTime,
+                                                easing: "linear",
+                                                complete: function () {
+                                                    $("#geosearchDiv").removeClass("advancedSearch")
+                                                        .addClass("basicSearch");
+                                                    $adv.filter(".searchRow1").hide();
+                                                    $search.find(".basicSearch").show();
+                                                    $("#moreSearchOptions").focus();
+                                                    $(document).trigger("searchform.setBasic");
 
-																					}
-																				});
-															}
-														});
+                                                }
+                                            });
 									}
 								});
+                        }
+                    });
 			
 			},
 			
 			toggleSearch: function(e) {
 
 				var stepTime = 50;
-				var thisId = jQuery(e.target).attr('id');
-				var hght = jQuery(".searchFormRow").height();
-				jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
+                var thisId = $(e.target).attr('id');
+                var hght = $(".searchFormRow").height();
+                $(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
 				
 				if (thisId === 'moreSearchOptions') {
 					this.expandSearchBox(hght, stepTime);

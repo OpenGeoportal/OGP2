@@ -41,7 +41,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			that.render.apply(that, arguments);
 		});
 		this.listenTo(this.model, "change:showControls change:hidden", this.render);
-
+		this.listenTo(this.model, "change:selected", this.handleSelection);
 		this.subClassInit();
 		this.addSubClassEvents();
 		//console.log("init render");
@@ -78,8 +78,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	viewMetadata : function() {
-		// console.log(arguments);
-		this.getMetadataViewer().viewMetadata(this.model);
+        //temporarily disable mouseout event listener. reenable once the dialog is open.
+        this.stopListening(this, "mouseout");
+		var promise = this.getMetadataViewer().viewMetadata(this.model);
+        var that = this;
+        $.when(promise).then(function(){
+            that.listenTo(that, "mouseout", that.doMouseoverOff);
+        });
 	},
 	
 	handlePreviewLink: function(){
@@ -319,13 +324,32 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 
 		return expand$;
 	},
-	
-	doMouseoverOn : function(){
+
+	handleSelection: function(){
+		if (this.model.get("selected")){
+            //this.stopListening(this, ["mouseover", "mouseout"]);
+			this.doSelectionOn();
+		} else {
+			this.doSelectionOff();
+            //this.listenTo(this, "mouseover", this.doMouseoverOn);
+            //this.listenTo(this, "mouseout", this.doMouseoverOff);
+		}
+	},
+
+    doMouseoverOn: function(){
+        this.model.set({selected: true});
+    },
+
+    doMouseoverOff: function(){
+        this.model.set({selected: false});
+    },
+
+	doSelectionOn : function(){
 		this.highlightRow();
 		this.showBounds();
 	},
 	
-	doMouseoverOff: function(){
+	doSelectionOff: function(){
 		this.unHighlightRow();
 		this.hideBounds();
 	},
@@ -339,20 +363,26 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	unHighlightRow: function(){
 		this.$el.removeClass("rowHover");
 	},
+
+    getBounds: function(){
+        var currModel = this.model;
+        var bbox = {};
+        bbox.south = currModel.get("MinY");
+        bbox.north = currModel.get("MaxY");
+        bbox.west = currModel.get("MinX");
+        bbox.east = currModel.get("MaxX");
+        return bbox;
+    },
 	
 	showBounds : function() {
-		var currModel = this.model;
-		var bbox = {};
-		bbox.south = currModel.get("MinY");
-		bbox.north = currModel.get("MaxY");
-		bbox.west = currModel.get("MinX");
-		bbox.east = currModel.get("MaxX");
+        var bbox = this.getBounds();
 		jQuery(document).trigger("map.showBBox", bbox);
-		// console.log("triggered map.showBBox");
 
 	},
 	
 	hideBounds : function() {
-		jQuery(document).trigger("map.hideBBox");
-	}
+        var bbox = this.getBounds();
+        jQuery(document).trigger("map.hideBBox", bbox);
+
+    }
 });

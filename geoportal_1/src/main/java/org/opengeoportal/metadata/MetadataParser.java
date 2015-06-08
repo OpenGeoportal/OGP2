@@ -1,16 +1,22 @@
 package org.opengeoportal.metadata;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.Map;
 
 public interface MetadataParser {
 
-	void setXPathFactory(XPathFactory xpathFactory);
+    Document parse(String xmlString) throws SAXException, IOException;
 
-	void setDocumentBuilder(DocumentBuilder documentBuilder);
+    Map<String, String> getAttributeMap() throws XPathExpressionException;
 
-	Document getDocument();
+    String getContactPhoneNumber();
 
+    String getContactName();
+
+    String getContactAddress();
 }

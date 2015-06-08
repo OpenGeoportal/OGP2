@@ -475,10 +475,3 @@ div.olMap {
     background: none repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
 }
 
-.olLayerGoogleCopyright {
-	z-index: 0 !important;
-}
-
-.googleLogo img {
-	left: 25px !important;
-}

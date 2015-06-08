@@ -136,8 +136,8 @@ Backbone table view
 
 .tableRow {
 	width: 100%;
-	padding-top: 1px;
-	padding-bottom: 1px;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 .tableCell {
@@ -158,6 +158,7 @@ Backbone table view
     height: 18px;
     vertical-align: top;
     overflow: hidden;
+
 }
 
 .rowContainer .tableCell {
@@ -182,6 +183,8 @@ Backbone table view
     height: 17px;
     line-height: 17px;
     word-break: break-all;
+    color: #686868;
+    text-overflow: ellipsis;
 }
 
 td.colTitle {
@@ -189,7 +192,7 @@ td.colTitle {
 	color: #000000 !important;
 }
 
-.rowContainer .colTitle {
+.rowContainer .colTitle .cellWrapper {
 	cursor: pointer;
 	color: #000000;
 }
@@ -198,8 +201,8 @@ td.colTitle {
 	background-color: #ebf6ff;
 	border-bottom: #d8e8fa 1px solid !important;
 	border-top: #d8e8fa 1px solid !important;
-	padding-top: 0;
-	padding-bottom: 0;
+    padding-top: 1px;
+    padding-bottom: 1px;
 }
 
 .emptyTable {

@@ -562,9 +562,12 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 	outline: 0;
 	border-radius: 0;
 	z-index: 1500;
-	-moz-box-shadow: 0px 4px 6px -2px #888888;
-	-webkit-box-shadow: 0px 4px 6px -2px #888888;
-	box-shadow: 0px 4px 6px -2px #888888;
+    /*	-moz-box-shadow: 0px 4px 6px -2px #888888;
+        -webkit-box-shadow: 0px 4px 6px -2px #888888;
+        box-shadow: 0px 4px 6px -2px #888888;*/
+    -moz-box-shadow: 2px 4px 6px #555555;
+    -webkit-box-shadow: 2px 4px 6px #555555;
+    box-shadow: 2px 4px 6px #555555;
 }
 
 .ui-dialog.ui-corner-all {

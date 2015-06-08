@@ -117,9 +117,10 @@
 	
 	<beans:bean id="xmlParser" factory-bean="xmlParserFactory" factory-method="getParser" 
 		class="org.opengeoportal.metadata.XmlParserImpl" scope="prototype"/>
-	
+
+    <beans:bean id="metadataParserFactory" class="org.opengeoportal.metadata.MetadataParserFactory" />
+
 	<beans:bean id="fgdcParser" class="org.opengeoportal.metadata.FgdcMetadataParser" scope="prototype" />
-	
 
 	<beans:bean id="layerInfoRetriever.solr"
 		class="org.opengeoportal.metadata.SolrLayerInfoRetriever" />
@@ -128,6 +129,12 @@
 		<beans:property name="fgdcStyleSheet" value="${styleSheet.fgdc}"/>
 		<beans:property name="iso19139StyleSheet" value="${styleSheet.iso19139}"/>
 	</beans:bean>
+
+	<beans:bean id="attrDictionaryRetrieverFactory"
+				class="org.opengeoportal.metadata.AttributeDictionaryRetrieverFactory" />
+
+	<beans:bean id="attrDictionaryRetriever" factory-bean="attrDictionaryRetrieverFactory"
+				factory-method="getAttributeDictionaryRetriever" scope="prototype"/>
 
 	<beans:bean id="configRetriever.download"
 		class="org.opengeoportal.download.config.OgpDownloadConfigRetriever">
@@ -286,6 +293,8 @@
 		class="org.opengeoportal.download.EmailLayerDownloader" scope="prototype">
 		<beans:property name="emailDownloadMethod" ref="downloadMethod.email.HGL" />
 	</beans:bean>
+
+
 
 	<beans:bean id="ogcInfoRequester.wms" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
 		scope="prototype">

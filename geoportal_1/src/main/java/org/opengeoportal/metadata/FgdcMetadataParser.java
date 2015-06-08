@@ -1,20 +1,19 @@
 package org.opengeoportal.metadata;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
 /**
@@ -29,40 +28,33 @@ import org.xml.sax.SAXException;
  *         <li>contact info</li>
  *         </ul>
  */
-public class FgdcMetadataParser {
+public class FgdcMetadataParser implements MetadataParser {
 
-	private NodeList contactNodes;
+    @Autowired
+    private XmlParser xmlParser;
 
-	@Autowired
-	private XmlParser xmlParser;
+    private NodeList contactNodes;
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	private final static String ATTRIBUTE_NODES = "/metadata/eainfo/detailed/attr";
 	private final static String CONTACT_NODES = "/metadata/idinfo/ptcontac/cntinfo";
 
-	public XPath getXPath() {
-		return xmlParser.getXPath();
-	}
+    @Override
+    public Document parse(String xmlString) throws SAXException, IOException {
+        logger.info(Boolean.toString(xmlParser == null));
 
-	public Document getDocument() {
-		return xmlParser.getDocument();
-	}
+        return xmlParser.parse(xmlString);
+    }
 
-	public Document parse(InputStream is) throws SAXException, IOException {
-		return xmlParser.parse(is);
-	}
-
-	public Document parse(String xmlString) throws SAXException, IOException {
-		return xmlParser.parse(xmlString);
-	}
-
-	public Map<String, String> getAttributeMap()
+    @Override
+    public Map<String, String> getAttributeMap()
 			throws XPathExpressionException {
+        logger.debug("XmlParser is null: " + Boolean.toString(xmlParser.getXPath() == null));
 
-		NodeList attributeNodes = (NodeList) getXPath().evaluate(
-				ATTRIBUTE_NODES, getDocument(), XPathConstants.NODESET);
-		Map<String, String> attrMap = new HashMap<String, String>();
+        NodeList attributeNodes = (NodeList) xmlParser.getXPath().evaluate(
+                ATTRIBUTE_NODES, xmlParser.getDocument(), XPathConstants.NODESET);
+        Map<String, String> attrMap = new HashMap<String, String>();
 
 		for (int i = 0; i < attributeNodes.getLength(); i++) {
 			Node current = attributeNodes.item(i);
@@ -108,11 +100,12 @@ public class FgdcMetadataParser {
 	 * 9:00 am - 4:00 pm EST-USA</hours> </cntinfo> </ptcontac>
 	 */
 
+
 	public NodeList getContactNodeList() throws XPathExpressionException {
 		if (contactNodes == null) {
-			contactNodes = (NodeList) getXPath().evaluate(CONTACT_NODES,
-					getDocument(), XPathConstants.NODESET);
-		}
+            contactNodes = (NodeList) xmlParser.getXPath().evaluate(CONTACT_NODES,
+                    xmlParser.getDocument(), XPathConstants.NODESET);
+        }
 		return contactNodes;
 
 	}
@@ -122,9 +115,8 @@ public class FgdcMetadataParser {
 		try {
 			contactInfo = this.getContactNodeList();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			logger.error("No contact info found.");
-			e.printStackTrace();
+            logger.warn("No contact info found.");
+            e.printStackTrace();
 		}
 		for (int i = 0; i < contactInfo.getLength(); i++) {
 			Node currentNode = contactInfo.item(i);
@@ -135,17 +127,20 @@ public class FgdcMetadataParser {
 		return null;
 	}
 
-	public String getContactPhoneNumber() {
+    @Override
+    public String getContactPhoneNumber() {
 		return this.getContactNode("cntvoice").getNodeValue().trim();
 	}
 
-	public String getContactName() {
+    @Override
+    public String getContactName() {
 		String contactName = this.getContactNode("cntpos").getNodeValue()
 				.trim();
 		return contactName;
 	}
 
-	public String getContactAddress() {
+    @Override
+    public String getContactAddress() {
 		Node addressNode = this.getContactNode("cntaddr");
 		NodeList addressNodeList = addressNode.getChildNodes();
 

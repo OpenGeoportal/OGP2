@@ -28,8 +28,9 @@ import org.opengeoportal.download.MetadataRetriever;
 import org.opengeoportal.layer.AccessLevel;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.layer.Metadata;
-import org.opengeoportal.metadata.FgdcMetadataParser;
 import org.opengeoportal.metadata.LayerInfoRetriever;
+import org.opengeoportal.metadata.MetadataParser;
+import org.opengeoportal.metadata.MetadataParserFactory;
 import org.opengeoportal.solr.SolrRecord;
 import org.opengeoportal.utilities.*;
 import org.slf4j.Logger;
@@ -54,9 +55,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 	    private RestTemplate restTemplate;
 	    private Credentials credentials;
 	    private final String serverName = "http://geocommons.com";
-	    //String workspace;
-	    //private String layerName;
-		//private URI dataSetUri;
+
 	    @Autowired
 		LayerInfoRetriever layerInfoRetriever;
 	    @Autowired
@@ -64,7 +63,9 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 		private Set<String> allTags;
 		@Autowired
 		QuickDownload quickDownload;
-		@Autowired FgdcMetadataParser fgdcMetadataParser;
+
+	@Autowired
+	MetadataParserFactory metadataParserFactory;
 		
 		final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -399,6 +400,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 				//where can I get this url from?
 				createDataSetRequestJson.setMetadata_url("http://geodata.tufts.edu/getMetadata?id=" + layerId);
 				String metadataString = null;
+			MetadataParser metadataParser = null;
 				try {
 					metadataString = this.metadataRetriever.getXMLStringFromId(layerId);
 				} catch (Exception e1) {
@@ -406,7 +408,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 					e1.printStackTrace();
 				}
 				try {
-					fgdcMetadataParser.parse(metadataString);
+					metadataParser = metadataParserFactory.getMetadataParser(metadataString);
 				} catch (SAXException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -416,17 +418,17 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 				}
 				
 				try {
-					createDataSetRequestJson.setContact_name(cleanString(fgdcMetadataParser.getContactName()));
+					createDataSetRequestJson.setContact_name(cleanString(metadataParser.getContactName()));
 				} catch (Exception e){
 					createDataSetRequestJson.setContact_name("open geo portal");
 				}
 				try {
-					createDataSetRequestJson.setContact_address(cleanString(fgdcMetadataParser.getContactAddress()));
+					createDataSetRequestJson.setContact_address(cleanString(metadataParser.getContactAddress()));
 				} catch (Exception e) {
 					createDataSetRequestJson.setContact_address("replace with generic address");
 				}
 				try {
-					createDataSetRequestJson.setContact_phone(cleanString(fgdcMetadataParser.getContactPhoneNumber()));
+					createDataSetRequestJson.setContact_phone(cleanString(metadataParser.getContactPhoneNumber()));
 				} catch (Exception e){
 					createDataSetRequestJson.setContact_phone("replace with generic phone num");
 				}
@@ -716,6 +718,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 				//where can I get this url from?
 				createDataSetRequestJson.setMetadata_url("http://geodata.tufts.edu/getMetadata?id=" + layerId);
 				String metadataString = null;
+                MetadataParser metadataParser = null;
 				try {
 					metadataString = this.metadataRetriever.getXMLStringFromId(layerId);
 				} catch (Exception e1) {
@@ -723,7 +726,8 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 					e1.printStackTrace();
 				}
 				try {
-					fgdcMetadataParser.parse(metadataString);
+                    metadataParser = metadataParserFactory.getMetadataParser(metadataString);
+
 				} catch (SAXException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -733,17 +737,17 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 				}
 				
 				try {
-					createDataSetRequestJson.setContact_name(cleanString(fgdcMetadataParser.getContactName()));
+					createDataSetRequestJson.setContact_name(cleanString(metadataParser.getContactName()));
 				} catch (Exception e){
 					createDataSetRequestJson.setContact_name("open geo portal");
 				}
 				try {
-					createDataSetRequestJson.setContact_address(cleanString(fgdcMetadataParser.getContactAddress()));
+					createDataSetRequestJson.setContact_address(cleanString(metadataParser.getContactAddress()));
 				} catch (Exception e) {
 					createDataSetRequestJson.setContact_address("replace with generic address");
 				}
 				try {
-					createDataSetRequestJson.setContact_phone(cleanString(fgdcMetadataParser.getContactPhoneNumber()));
+					createDataSetRequestJson.setContact_phone(cleanString(metadataParser.getContactPhoneNumber()));
 				} catch (Exception e){
 					createDataSetRequestJson.setContact_phone("replace with generic phone num");
 				}

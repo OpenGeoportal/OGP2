@@ -139,6 +139,10 @@ iframe.download {
 	color: #587CBC;
 }
 
+a.offsetColor {
+    color: #587CBC;
+}
+
 .ui-effects-transfer {
 	background-color: #edf4fa;
 	opacity: .5;
@@ -347,9 +351,9 @@ resize arrows
 /*****************
 resize handles
 ******************/
-#tabs > .ui-resizable-e {
+/*#tabs > .ui-resizable-e {
 	background: none repeat scroll 0 0 red;
-}
+}*/
 
 th >.ui-resizable-e {
 	cursor: col-resize;
@@ -360,11 +364,11 @@ th >.ui-resizable-e {
 	width: 7px;
 }
 
-#left_col > .ui-resizable-se {
+#left_col > .ui-resizable-e {
 	cursor: col-resize;
 	height: 100% !important;
-	right: 0;
-	width: 7px !important;
+    right: -1px;
+    width: 7px;
 	z-index: 2147483647 !important
 }
 

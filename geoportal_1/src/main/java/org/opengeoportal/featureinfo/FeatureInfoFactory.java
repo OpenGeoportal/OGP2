@@ -1,9 +1,5 @@
 package org.opengeoportal.featureinfo;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.solr.SolrRecord;
 import org.slf4j.Logger;
@@ -12,6 +8,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author cbarne02
@@ -28,39 +28,14 @@ public class FeatureInfoFactory implements ApplicationContextAware {
 	@Autowired
 	protected LayerInfoRetriever layerInfoRetriever;
 	
-	/**
-	 * Get the Solr record given a layerId, if the user has permission
-	 * 
-	 * @param layerId
-	 * @return SolrRecord the solr record matching the passed layerId
-	 * @throws Exception
-	 */
-	protected SolrRecord getSolrRecord(String layerId) throws Exception {
-		Set<String> layerIds = new HashSet<String>();
-		layerIds.add(layerId);
-
-		List<SolrRecord> allLayerInfo = this.layerInfoRetriever
-				.fetchAllowedRecords(layerIds);
-
-		if (allLayerInfo.isEmpty()) {
-			throw new Exception("No allowed records returned for Layer Id: ['"
-					+ layerId + "'");
-		}
-
-		SolrRecord layerInfo = allLayerInfo.get(0);
-		return layerInfo;
-	}
-	
 	public FeatureInfo getObject(String layerId) throws Exception {
 		logger.debug("Creating FeatureInfo bean");
-		SolrRecord solrRecord = getSolrRecord(layerId);
 		String[] beans = applicationContext.getBeanNamesForType(FeatureInfo.class);
 		logger.debug(Integer.toString(beans.length) + " beans found.");
 		for (String key: beans){
 			FeatureInfo bean = applicationContext.getBean(key, FeatureInfo.class);
-			
-			bean.setSolrRecord(solrRecord);
-			if (bean.hasInfoUrl()){
+            bean.setSolrRecord(getSolrRecord(layerId));
+            if (bean.hasInfoUrl()){
 				logger.debug("Our bean is type: " + key);
 				return bean;
 			}
@@ -68,6 +43,29 @@ public class FeatureInfoFactory implements ApplicationContextAware {
 		
 		throw new Exception("No eligible bean found for FeatureInfo");
 	}
+
+    /**
+     * Get the Solr record given a layerId, if the user has permission
+     *
+     * @param layerId
+     * @return SolrRecord the solr record matching the passed layerId
+     * @throws Exception
+     */
+    protected SolrRecord getSolrRecord(String layerId) throws Exception {
+        Set<String> layerIds = new HashSet<String>();
+        layerIds.add(layerId);
+
+        List<SolrRecord> allLayerInfo = this.layerInfoRetriever
+                .fetchAllowedRecords(layerIds);
+
+        if (allLayerInfo.isEmpty()) {
+            throw new Exception("No allowed records returned for Layer Id: ['"
+                    + layerId + "'");
+        }
+
+        SolrRecord layerInfo = allLayerInfo.get(0);
+        return layerInfo;
+    }
 
 	public Class<FeatureInfo> getObjectType() {
 		return FeatureInfo.class;

@@ -19,8 +19,9 @@ import org.springframework.context.ApplicationContextAware;
  *         DocumentBuilder and an XPathFactory, since these objects are
  *         expensive (and slow) to create.
  */
-public class XmlParserFactory implements ApplicationContextAware {
-	private ApplicationContext applicationContext;
+public class XmlParserFactory {
+    //private ApplicationContext applicationContext;
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private XPathFactory xpathFactory;
 	private DocumentBuilder documentBuilder = null;
@@ -66,15 +67,16 @@ public class XmlParserFactory implements ApplicationContextAware {
 	 * @throws Exception
 	 */
 	public XmlParser getParser() throws Exception {
-		XmlParser parser = new XmlParserImpl();
+        logger.info("getting xml parser instance");
+        XmlParser parser = new XmlParserImpl();
 		parser.setXPathFactory(xpathFactory);
 		initDocumentBuilder();
 		parser.setDocumentBuilder(documentBuilder);
 		return parser;
 	}
 
-	public Class<XmlParser> getObjectType() {
-		return XmlParser.class;
+/*	public Class<XmlParser> getObjectType() {
+        return XmlParser.class;
 	}
 
 	public boolean isSingleton() {
@@ -86,5 +88,5 @@ public class XmlParserFactory implements ApplicationContextAware {
 			throws BeansException {
 		applicationContext = appContext;
 
-	}
+	}*/
 }

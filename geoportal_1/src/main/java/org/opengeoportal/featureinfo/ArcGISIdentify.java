@@ -36,19 +36,20 @@ public class ArcGISIdentify extends AbstractFeatureInfo implements FeatureInfo {
 	//geometryType=esriGeometryPoint&geometry=<x>,<y>
 	//http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Specialty/ESRI_StateCityHighway_USA/MapServer/
 	//identify?geometryType=esriGeometryPoint&geometry=-120,40&tolerance=10&mapExtent=-119,38,-121,41&imageDisplay=400,300,96
-	/**
-	 * Converts parameters passed to a map of parameters
-	 * 
-	 * @param layerName
-	 * @param xCoord
-	 * @param yCoord
-	 * @param bbox
-	 * @param height
-	 * @param width
-	 * @param maxFeatures
-	 * @return a map representing the parameters to send to the WMS server
-	 */
-	protected Map<String, String> createFeatureInfoQuery(String layerName,
+
+    /**
+     * Converts parameters passed to a map of parameters used by the RestTemplate
+     *
+     * @param layerName
+     * @param coord
+     * @param bbox
+     * @param srs
+     * @param pixel
+     * @param size
+     * @param maxFeatures
+     * @return {{Map<String,String>}}a map representing the parameters to send to the WMS server
+     */
+    protected Map<String, String> createFeatureInfoQuery(String layerName,
 			Double[] coord,
 			Double[] bbox, String srs, Integer[] pixel,
 			Integer[] size,
@@ -112,10 +113,10 @@ public class ArcGISIdentify extends AbstractFeatureInfo implements FeatureInfo {
 			Map<String, String> query) throws Exception {
 		JsonNode jn = sendIdentifyRequest(url, query);
 		return processIdentifyResponse(jn);
-	}
-	
-	private JsonNode sendIdentifyRequest(String url, Map<String, String> query) throws JsonProcessingException, IOException {
-		String queryString = getQueryString(query);
+    }
+
+    private JsonNode sendIdentifyRequest(String url, Map<String, String> query) throws IOException {
+        String queryString = getQueryString(query);
 		String fullUrl = url + "?" + queryString;
 		logger.debug("sending identify request to: " + fullUrl);
 

@@ -55,14 +55,14 @@ public class WmsGetFeatureInfo extends AbstractFeatureInfo implements FeatureInf
 
 	/**
 	 * Converts parameters passed to a map of parameters
-	 * 
-	 * @param layerName
-	 * @param xCoord
-	 * @param yCoord
-	 * @param bbox
-	 * @param height
-	 * @param width
-	 * @param maxFeatures
+     *
+     * @param layerName
+     * @param coord
+     * @param bbox
+     * @param srs
+     * @param pixel
+     * @param size
+     * @param maxFeatures
 	 * @return a map representing the parameters to send to the WMS server
 	 */
 	protected Map<String, String> createFeatureInfoQuery(String layerName,

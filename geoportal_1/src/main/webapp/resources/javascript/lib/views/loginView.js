@@ -200,7 +200,7 @@ OpenGeoportal.Views.Login = Backbone.View
 
 			showLoginMessage : function(passedMessage) {
 				if (passedMessage.length > 0) {
-					jQuery("#loginDialog .warning").text(passedMessage);
+					jQuery("#loginDialog").find(".warning").text(passedMessage);
 				}
 			},
 

@@ -29,9 +29,6 @@ public abstract class AbstractFeatureInfo {
 
 	protected static final String TIMEOUT_MESSAGE = "The remote server is not responding. Please try again later";
 	protected static final String OPERATION_NOT_SUPPORTED_MESSAGE = "GetFeatureInfo not supported for this layer.";
-
-	@Autowired
-	protected FgdcMetadataParser fgdcMetadataParser;
 	
 	protected SolrRecord solrRecord;
 	
@@ -79,18 +76,9 @@ public abstract class AbstractFeatureInfo {
 			} catch (IOException e) {
 				model.addAttribute("error", TIMEOUT_MESSAGE);
 			}
-			
-			try {
-				String metadata = solrRecord.getFgdcText();
-				if (!metadata.isEmpty()){
-					attributeMap = getAttributeMetadata(metadata);
-				}
-			} catch (Exception e){
-				model.addAttribute("metadata_error", "Error parsing metadata");
-			}
+
 			model.addAttribute("features", featureMap);
-			model.addAttribute("attrDictionary", attributeMap);
-			
+
 			return model;
 		} else {
 
@@ -102,22 +90,6 @@ public abstract class AbstractFeatureInfo {
 	protected abstract boolean hasInfoUrl();
 	
 	protected abstract String getInfoUrl() throws Exception;
-	
-	/**
-	 * Retrieves attribute definitions from XML metadata
-	 * 
-	 * @param xmlString
-	 * @return Map<String,String> map of attribute labels and their definitions,
-	 *         if defined in the metadata
-	 * @throws XPathExpressionException
-	 * @throws SAXException
-	 * @throws IOException
-	 */
-	public Map<String, String> getAttributeMetadata(String xmlString)
-			throws XPathExpressionException, SAXException, IOException {
-		fgdcMetadataParser.parse(xmlString);
-		return fgdcMetadataParser.getAttributeMap();
-	}
 
 
 	/**
@@ -139,7 +111,7 @@ public abstract class AbstractFeatureInfo {
 			int maxFeatures);
 	
 	protected abstract List<Map<String, String>> handleFeatureInfo(String url,
-			Map<String, String> query) throws IOException, Exception;
+																   Map<String, String> query) throws Exception;
 
 
 

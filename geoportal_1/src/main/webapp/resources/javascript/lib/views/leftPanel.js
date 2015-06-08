@@ -17,8 +17,10 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				this.listenTo(this.model, "change:mode", this.showPanel);
 
 				var width = this.model.get("openWidth");
-				var margin = width - jQuery("#roll_right").width();
-				jQuery("#left_col").show().width(width).css({
+                this.$rollRight = $("#roll_right");
+                this.$leftCol =  $("#left_col");
+				var margin = width - this.$rollRight.width();
+				this.$leftCol.show().width(width).css({
 					"margin-left" : "-" + margin  + "px"
 				});
 
@@ -57,6 +59,10 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				}
 			},
 
+		/**
+		 * some displayed items (map controls, etc.) should move with the panel so they are not obscured. Add a css class
+		 * to these so they can all be selected and moved easily with jQuery
+		 */
 			setAlsoMoves : function() {
 				if (!jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
 						.hasClass("slideHorizontal")) {
@@ -84,18 +90,19 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
 			showPanelMidRight : function() {
-				if (jQuery(".slideHorizontal").is(":hidden")) {
+                var $slide = jQuery(".slideHorizontal");
+				if ($slide.is(":hidden")) {
 					// extent arrows need to move, but shouldn't be made visible
 					// when the the panel opens
-					jQuery(".slideHorizontal").not(".corner").show();
+					$slide.not(".corner").show();
 				}
 
-				if (jQuery("#roll_right").is(":visible")) {
-					jQuery("#roll_right").hide();
+				if (this.$rollRight.is(":visible")) {
+					this.$rollRight.hide();
 				}
 
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
+				var panelOffset = panelWidth - this.$rollRight.width();
 
 				this.$el.show().width(panelWidth).css({
 					"margin-left" : -1 * panelOffset
@@ -108,10 +115,9 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					duration : 500,
 					complete : function() {
 
-						jQuery(this).trigger("adjustContents");
+						$(this).trigger("adjustContents");
 						that.resizablePanel();
-						jQuery(document).trigger("panelOpen");
-						//jQuery(document).trigger("fireSearch");
+						$(document).trigger("panelOpen");
 					}
 				});
 				try {
@@ -126,7 +132,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			showPanelMidLeft : function() {
 
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
+				var panelOffset = panelWidth - this.$rollRight.width();
 				var that = this;
 				
 				this.$el.show().animate({
@@ -135,11 +141,11 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					queue : false,
 					duration : 500,
 					complete : function() {
-						jQuery(".slideHorizontal").css({
+						$(".slideHorizontal").css({
 							'margin-left' : panelOffset
 						}).not(".corner").fadeIn();
 						
-						jQuery(this).trigger("adjustContents");
+						$(this).trigger("adjustContents");
 						that.resizablePanel();
 
 					}
@@ -149,12 +155,12 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 
 			showPanelClosed : function() {
 				// display full width map
-				if (jQuery(".slideHorizontal").is(":hidden")) {
-					jQuery(".slideHorizontal").not(".corner").show();
+                var $slide = $(".slideHorizontal");
+				if ($slide.is(":hidden")) {
+					$slide.not(".corner").show();
 				}
-				var that = this;
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
+				var panelOffset = panelWidth - this.$rollRight.width();
 				
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '-=' + panelOffset
@@ -163,7 +169,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					duration : 500,
 					complete : function() {
 
-						jQuery("#roll_right").show();
+						$("#roll_right").show();
 					}
 				});
 				
@@ -171,21 +177,21 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
 			showPanelFullScreen : function() {
-				if (jQuery("#roll_right").is(":visible")) {
-					jQuery("#roll_right").hide();
+				if (this.$rollRight.is(":visible")) {
+					this.$rollRight.hide();
 				}
 				if (this.$el.is(":hidden")) {
 					this.$el.show();
 				}
-				jQuery(".slideHorizontal").fadeOut();
+				$(".slideHorizontal").fadeOut();
 
 				this.$el.animate({
-					'width' : jQuery('#container').width()
+					'width' : $('#container').width()
 				}, {
 					queue : false,
 					duration : 500,
 					complete : function() {
-						jQuery(this).trigger("adjustContents");
+						$(this).trigger("adjustContents");
 					}
 				});
 			},
@@ -194,51 +200,71 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				this.setAlsoMoves();
 				var that = this;
 				this.$el.resizable({
-					handles : 'se', // for some reason "e" handle doesn't work
+					handles : 'e', // for some reason "e" handle doesn't work
 									// correctly
 					start : function(event, ui) {
-						var margin = parseInt(jQuery(".slideHorizontal").css(
-								"margin-left"));
 
-						that.model.set({
-							alsoMovesMargin : margin
-						});
-						this.prevWidth = ui.originalSize.width;
-						ui.element.resizable("option", "minWidth", that.model
-								.get("panelMinWidth"));
-						var maxWidth = jQuery("#container").width()
-								- that.model.get("mapMinWidth");
-						ui.element.resizable("option", "maxWidth", maxWidth);
-						ui.element.resizable("option", "minHeight", jQuery(
-								"#container").height());
-						ui.element.resizable("option", "maxHeight", jQuery(
-								"#container").height());
+                        //resize the drag handle so that it doesn't lose focus when the pointer strays over the map
+                        this.$handle = $("#left_col > .ui-resizable-e");
+                        this.handleWidth = this.$handle.width();
+                        this.handleOffset = this.$handle.css("right");
+
+                        this.$handle.css({
+                            width: 500,
+                            right: -500
+                        });
+
+                        this.$slide = $(".slideHorizontal");
+                        var margin = parseInt(this.$slide.css(
+                            "margin-left"));
+
+                        that.model.set({
+                            alsoMovesMargin: margin
+                        });
+
+                        this.prevWidth = ui.originalSize.width;
+                        ui.element.resizable("option", "minWidth", that.model
+                            .get("panelMinWidth"));
+                        var maxWidth = $("#container").width()
+                            - that.model.get("mapMinWidth");
+                        ui.element.resizable("option", "maxWidth", maxWidth);
+
 
 					},
 					prevWidth: null,
 					resize : function(event, ui) {
 
-						var delta = ui.size.width - this.prevWidth;
-						this.prevWidth = ui.size.width;
-						//var newMargin = that.model.get("alsoMovesMargin") + delta;
-						jQuery(".slideHorizontal").css({
-							"margin-left" : "+=" + delta
-						});
-						jQuery(this).trigger("panelResizing");
+                        var delta = ui.size.width - this.prevWidth;
+                        this.prevWidth = ui.size.width;
+
+                        this.$slide.css({
+                            "margin-left": "+=" + delta
+                        });
+
+                        $(this).trigger("panelResizing");
 
 					},
 					
 					stop : function(event, ui) {
-						// console.log("resize stop");
-						var newWidth = ui.size.width;
-						that.model.set({
-							openWidth : newWidth
-						});
-						jQuery(this).trigger("adjustContents");
-						//if the size difference is more than 10 percent, fire a search
-						if (Math.abs(ui.originalSize.width - newWidth) > ui.originalSize.width * .1){
-							jQuery(document).trigger("fireSearch");
-						}
+
+                        var newWidth = ui.size.width;
+                        that.model.set({
+                            openWidth: newWidth
+                        });
+
+                        //reset the resize handle to it's starting size
+
+                        this.$handle.css({
+                            width: this.handleWidth,
+                            right: this.handleOffset
+                        });
+
+                        $(this).trigger("adjustContents");
+                        //if the size difference is more than 10 percent, fire a search
+                        if (Math.abs(ui.originalSize.width - newWidth) > ui.originalSize.width * .1) {
+                            $(document).trigger("fireSearch");
+                        }
+
 
 					}
 				});
