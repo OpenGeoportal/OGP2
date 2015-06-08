@@ -102,6 +102,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		},
 		
 		pageParams: {
+            // these parameters are used directly by Solr, so we need to maintain the naming conventions
 			start: 0,
 			rows: 50
 		},
