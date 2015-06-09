@@ -10,6 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -40,11 +44,19 @@ public class LayerController {
     @RequestMapping(value = "/{layerId:.+}", method = RequestMethod.GET)
     public
     @ResponseBody
-    ResponseEntity<String> getMetadata(@PathVariable String layerId) throws Exception {
-        //TODO: offer other response formats?
-        logger.debug(layerId);
+    ResponseEntity<String> getMetadata(@RequestHeader(value = "X-Requested-With", defaultValue = "standalone") String requestedWith,
+                                       @PathVariable String layerId) throws Exception {
+        //TODO: offer other response formats?;
 
-        String metadataString = this.metadataRetriever.getMetadataAsHtml(layerId);
+        logger.debug(layerId);
+        boolean embedded = true;
+        if (requestedWith.equalsIgnoreCase("standalone")) {
+            //if not from an ajax request, inject metadata.css
+            embedded = false;
+        }
+
+        String metadataString = this.metadataRetriever.getMetadataAsHtml(layerId, embedded);
+
         return ResponseEntity.ok()
                 .contentLength(metadataString.getBytes().length)
                 .contentType(MediaType.TEXT_HTML)
@@ -52,11 +64,20 @@ public class LayerController {
 
     }
 
+
     @RequestMapping(value = "/{layerId:.+}/attributes", method = RequestMethod.GET)
     public
     @ResponseBody
     AttributeDictionary getAttributeDictionary(@PathVariable String layerId) throws Exception {
         return attributeDictionaryRetriever.getAttributeDictionary(layerId);
+    }
 
+    @ExceptionHandler(Exception.class)
+    public
+    @ResponseBody
+    Map<String, String> handleException(Exception e) {
+        Map<String, String> errorMap = new HashMap<String, String>();
+        errorMap.put("error", e.getMessage());
+        return errorMap;
     }
 }

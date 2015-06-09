@@ -42,7 +42,6 @@ public class FgdcMetadataParser implements MetadataParser {
 
     @Override
     public Document parse(String xmlString) throws SAXException, IOException {
-        logger.info(Boolean.toString(xmlParser == null));
 
         return xmlParser.parse(xmlString);
     }

@@ -67,26 +67,13 @@ public class XmlParserFactory {
 	 * @throws Exception
 	 */
 	public XmlParser getParser() throws Exception {
-        logger.info("getting xml parser instance");
-        XmlParser parser = new XmlParserImpl();
+		logger.debug("Getting xml parser instance...");
+		XmlParser parser = new XmlParserImpl();
 		parser.setXPathFactory(xpathFactory);
 		initDocumentBuilder();
 		parser.setDocumentBuilder(documentBuilder);
 		return parser;
 	}
 
-/*	public Class<XmlParser> getObjectType() {
-        return XmlParser.class;
-	}
 
-	public boolean isSingleton() {
-		return false;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext appContext)
-			throws BeansException {
-		applicationContext = appContext;
-
-	}*/
 }

@@ -116,14 +116,6 @@ http://www.w3.org/TR/xslt
 				</title>
 				<xsl:value-of select="$newline" />
 				<xsl:value-of select="$newline" />
-				<xsl:comment>
-					If you want to show polylines on a Google Map (like the rectangle
-					used to
-					outline the data set geographic coverage), you need to include the VML
-					namespace in the html tag and the following CSS code in an XHTML
-					compliant
-					doctype to make everything work properly in IE:
-				</xsl:comment>
 				<xsl:value-of select="$newline" />
 				<xsl:value-of select="$newline" />
 
@@ -140,19 +132,31 @@ http://www.w3.org/TR/xslt
 									<xsl:value-of select="metadata/idinfo/citation/citeinfo/title" />
 								</h1>
 							</div>
-							<!--  
-							<div class="metadataDescription">
-							</div>
-							-->
+							<xsl:if test="string-length( metadata/idinfo/browse/browsen )">
+								<div class="metadataBrowse">
+									<img src="{metadata/idinfo/browse/browsen}" class="browse" alt=""/>
+								</div>
+							</xsl:if>
+							<xsl:if test="string-length( metadata/idinfo/descript/abstract )">
+
+								<div class="metadataDescription">
+									<xsl:value-of select="metadata/idinfo/descript/abstract"/>
+
+								</div>
+							</xsl:if>
+
 						</div>
 						
 						
 						<div class="metadataFull">
-						
+
+							<br/>
+							<br/>
+							<hr/>
 
 							<div class="metadataTOC level1">		
 								<!-- title -->
-								<h3>Full Metadata:</h3>
+								<h1>Full Metadata:</h1>
 								<ul>
 									<li>
 										<a href="#dataIdentification">Identification Information</a>
@@ -250,7 +254,7 @@ http://www.w3.org/TR/xslt
 		
 		<h2 id="distribution" class="sectionHeader distribution">Distribution Information</h2>
 		<div class="distribution sectionContent">
-    <xsl:apply-templates select="distinfo"/>
+			<xsl:apply-templates select="distinfo"/>
 		</div>
 		
 		<h2 id="referenceInfo" class="sectionHeader referenceInfo">Metadata Reference Information</h2>

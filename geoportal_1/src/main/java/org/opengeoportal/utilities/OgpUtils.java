@@ -46,11 +46,8 @@ public class OgpUtils {
 		if (arr.length != 2){
 			return false;
 		}
-		if (!arr[1].contains(".")){
-			return false;
-		}
+		return arr[1].contains(".");
 
-		return true;
 	}
 	
 	
@@ -192,8 +189,8 @@ public class OgpUtils {
 		} else {
 			combined = path;
 		}
-		
-		logger.info("Combined URL: " + combined);
+
+		logger.debug("Combined URL: " + combined);
 		return combined;
 	}
 
@@ -206,8 +203,8 @@ public class OgpUtils {
 	 * @return Double as a String, with rounding
 	 */
 	public static String doubleToString(Double value){
-		logger.info(Double.toString(value));
-	    BigDecimal valDec = new BigDecimal(value);
+		logger.debug("Double to string: " + Double.toString(value));
+		BigDecimal valDec = new BigDecimal(value);
 	    String valString = valDec.setScale(7, RoundingMode.HALF_UP).toPlainString();
 	    return valString;
 	}

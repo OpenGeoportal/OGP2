@@ -134,6 +134,23 @@
 									<xsl:value-of select="//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:title/gco:CharacterString" />
 								</h1>
 							</div>
+
+
+							<xsl:template
+									match="//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:graphicOverview">
+								<xsl:for-each select="gmd:MD_BrowseGraphic">
+
+									<xsl:for-each select="gmd:fileName">
+
+										<div class="metadataBrowse">
+											<img src="{.}" class="browse" alt=""/>
+										</div>
+
+									</xsl:for-each>
+								</xsl:for-each>
+							</xsl:template>
+
+
 							<div class="metadataDescription">
 								<xsl:value-of select="//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:abstract/gco:CharacterString" />
 							</div>
@@ -141,11 +158,15 @@
 						
 						
 						<div class="metadataFull">
-						
 
-							<div class="metadataTOC level1">		
+
+							<div class="metadataTOC level1">
+								<br/>
+								<br/>
+								<hr/>
+
 								<!-- title -->
-								<h3>Full Metadata:</h3>
+								<h1>Full Metadata:</h1>
 								<ul>
 									<li>
 										<a href="#dataIdentification">Identification Information</a>

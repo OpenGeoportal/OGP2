@@ -1,3 +1,55 @@
+.metadataContainer {
+    font-family: arial, sans-serif;
+    padding: 40px;
+    min-width: 500px;
+    min-height: 200px;
+}
+
+.metadataContainer img {
+    border: none;
+}
+
+.metadataContainer h1 {
+    color: #003366;
+    font-size: 2em;
+}
+
+.metadataContainer h2 {
+    color: #3366cc;
+    font-size: 1.5em;
+    margin-bottom: 3px;
+}
+
+.metadataContainer h3 {
+    font-size: 1em;
+    color: #003366;
+}
+
+.metadataContainer img.browse {
+    border: 0;
+    max-height: 400px;
+    max-width: 400px;
+}
+
+.metadataContainer .inline {
+    display: inline;
+}
+
+.metadataContainer h2.sectionHeader {
+    background-color: #edf4fa;
+    color: #333333;
+    padding: 9px;
+}
+
+.metadataContainer hr {
+    color: #0755ac;
+    opacity: 0.5;
+}
+
+.metadataTOC.level1 > h1 {
+    font-size: 1.5em;
+}
+
 .metadataDialogContent div.thumbnail {
    display: inline-block;
     left: 140px;
@@ -11,24 +63,12 @@
 
 .metadataDescription {
     color: #444444;
-    font-size: 14px;
-    padding: 0 12px 12px;
+    font-size: 1.2em;
     line-height: 1.5em;
 }
 
-.metadataContainer {
-	margin: 2.5em 4em;
-}
 
-.metadataContainer .inline {
-	display: inline;
-}
 
-.metadataContainer h2.sectionHeader {
-    background-color: #edf4fa;
-    color: #333333;
-    padding: 9px;
-}
 
 .metadataContent .sectionContent {
     margin-left: 8px;
@@ -53,7 +93,7 @@
 .metadataContent .subSectionContent h5 {
     color: #444444;
     display: inline-block;
-    font-size: 12px;
+    font-size: 0.9em;
     margin: 9px 0;
     text-transform: capitalize;
 }
@@ -66,8 +106,6 @@
 
 .metadataContent .contactInfo {
     line-height: 1em;
-    margin-left: 48px;
-    font-style: italic;
 }
 
 .metadataContent .contactInfo h6,h5 {
@@ -111,9 +149,17 @@
 }
 
 .metadataTitle {
-	padding: 5px 5px 0;
+    padding: 1px 0;
 }
 
-.metadataTitle > h1 {
-    font-size: 16px;
+.metadataBrowse {
+    border: 1px solid black;
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding: 16px;
+}
+
+.metadataFull {
+    clear: both;
 }

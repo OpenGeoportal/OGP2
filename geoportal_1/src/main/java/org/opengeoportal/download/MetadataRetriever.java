@@ -12,8 +12,8 @@ public interface MetadataRetriever {
 
 	/**
 	 * Gets the XML metadata as a string, then outputs it to a file.
-	 * 
-	 * @param metadataLayerName
+	 *
+	 * @param metadataFileName
 	 *            the name of the layer you want XML metadata for
 	 * @param xmlFile
 	 *            the name of the file the metadata will be written to return a
@@ -41,4 +41,5 @@ public interface MetadataRetriever {
 	 */
 	String getMetadataAsHtml(String layerID) throws Exception;
 
+	String getMetadataAsHtml(String layerID, boolean embedded) throws Exception;
 }

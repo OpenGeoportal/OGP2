@@ -49,6 +49,7 @@
 
 #metadataDialog {
 	padding: 0 0 15px;
+	font-size: .7rem;
 }
 
 .metadataDialogContent {
@@ -56,6 +57,27 @@
 	height: 100%;
 
 	/*word-wrap: break-word;*/
+}
+
+.metadataDialogContent .metadataDescription {
+	overflow: hidden;
+	max-height: 6em;
+}
+
+.metadataDialogContent .metadataDescription.unelided {
+	max-height: unset;
+}
+
+.moreWords {
+	float: right;
+	padding: 5px;
+	text-decoration: underline;
+}
+
+.metadata-paging {
+	padding: 10px;
+	position: absolute;
+	right: 2px;
 }
 
 

@@ -212,7 +212,7 @@
 			<xsl:for-each select="gmd:fileName">
 				<div>
 					<a href="{.}" target="_blank">
-						<img src="{.}" height="260" border="0" />
+						<img src="{.}" class="browse"/>
 					</a>
 					<br />
 					<a href="{.}" target="_blank">View full image</a>

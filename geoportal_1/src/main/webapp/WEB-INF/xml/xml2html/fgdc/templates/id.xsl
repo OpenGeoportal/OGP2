@@ -954,11 +954,11 @@
 	<xsl:template match="browse">
 		<xsl:if test="string-length( browsen )">
 			<div>
-				<a href="{browsen}" class="browse">
-					<img src="{browsen}" height="400" border="0" />
+				<a href="{browsen}" target="_blank">
+					<img src="{browsen}" class="browse"/>
 				</a>
 				<br />
-				<a href="{browsen}" class="browse">View full image</a>
+				<a href="{browsen}" target="_blank">View full image</a>
 			</div>
 
 			<xsl:call-template name="ciElement">

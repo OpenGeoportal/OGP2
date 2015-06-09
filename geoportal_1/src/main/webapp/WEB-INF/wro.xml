@@ -16,9 +16,9 @@
 		<css>/resources/css/layerTable.css</css>
 		<css>/resources/css/previewControls.css</css>
 		<css>/resources/css/attributeInfo.css</css>
-		<css>/resources/css/metadata.css</css>
 		<css>/resources/css/geocommons.css</css>
-		<css>/resources/css/localize.css</css>
+        <css>/resources/css/metadata.css</css>
+        <css>/resources/css/localize.css</css>
 		
 		<js>/resources/javascript/lib/models/config.js</js>
 		<js>/resources/javascript/lib/utility.js</js>
