@@ -18,8 +18,8 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	
 	activeEvents : {
 		"click .zoomToLayerControl" : "zoomToLayerExtent",
-		"click .colorControl" : "colorPickerToggle",
-		"click .attributeInfoControl" : "toggleFeatureInfo",
+        "click .colorControlWrapper": "colorPickerToggle",
+        "click .attributeInfoControl": "toggleFeatureInfo",
 		"click .sliderArrow" : "toggleSlider",
 		"mouseleave .controlContainer" : "closeSlider"
 	},
@@ -104,6 +104,11 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		var markup = "";
 		var template = OpenGeoportal.Template;
 
+        // if (this.model.getBounds().isValid()){
+        // render a zoom to layer control
+        markup += template.get('zoomControl')();
+        // }
+
 		if (this.model.has("opacity")) {
 			// render opacity control
 			var tooltip = "Adjust layer transparency";
@@ -147,10 +152,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 				color : this.model.get("color")
 			});
 		}
-		// if (this.model.getBounds().isValid()){
-		// render a zoom to layer control
-		markup += template.get('zoomControl')();
-		// }
+
 		if (this.model.has("getFeature")) {
 			// render getFeature control
 			var toolClass = "attributeInfoControl";
@@ -312,53 +314,72 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		extent.push(this.model.get("MaxY"));
 
 		var bbox = extent.join();
-		jQuery(document).trigger("map.zoomToLayerExtent", {
+        $(document).trigger("map.zoomToLayerExtent", {
 			bbox : bbox
 		});
 	},
-	
-	colorPickerToggle : function(model) {
-		var val = this.model.get("colorPickerOn");
-		this.model.set({
-			colorPickerOn : !val
-		});
+
+    colorPickerToggle: function (e) {
+        var isOpen = this.model.get("colorPickerOn");
+        this.model.set({
+            colorPickerOn: !isOpen
+        });
+
 	},
 
 	createColorPicker: function(model){
-		var $color = $('<div class="picker" tabindex="-1"></div>').appendTo(this.$el.find(".colorControlCell"));
-		//.colorControl
+        if (typeof model === "undefined") {
+            model = this.model;
+        }
+        //this.$el.find(".colorControlWrapper").addClass("controlOn").removeClass("controlOff");
+
+        var $color = this.$el.find(".picker");
+        var $parent = this.$el.find(".colorControlCell");
+        $parent.addClass("controlOn").removeClass("controlOff");
+        if ($color.length === 0) {
+            $color = $('<div class="picker" tabindex="-1"></div>').appendTo($parent);
+        }
 
         model.set({
             colorDialog : new OpenGeoportal.Views.ColorPicker({
                 model : model,
-                el : $color
+                el: $color[0]
             })
         });
 
-        this.$el.find(".colorControlWrapper").addClass("controlOn");
-
-        $color.find(".colorCell").first().focus();
-
     },
 
-    destroyColorPicker: function(){
-        var model = this.model;
+    destroyColorPicker: function (model) {
+
+        if (typeof model === "undefined") {
+            model = this.model;
+        }
+
         if (model.has("colorDialog")) {
             var picker = model.get("colorDialog");
             picker.$el.hide();
-            this.$el.find(".colorControlWrapper").removeClass("controlOn");
+            //this.$el.find(".colorControlWrapper").removeClass("controlOn").addClass("controlOff");
             picker.remove();
             model.unset("colorDialog");
-            model.set({colorPickerOn: false}, {silent: true});
+
+            var $parent = this.$el.find(".colorControlCell");
+            $parent.removeClass("controlOn").addClass("controlOff");
+
+
+        }
+
+        if (model.get("colorPickerOn")) {
+            model.set({colorPicker: false});
         }
     },
 
-	colorPicker : function(model) {
-		if (model.changed.colorPickerOn) {
+    colorPicker: function (model, value) {
+
+        if (value) {
 			this.createColorPicker(model);
 
 		} else {
-			this.destroyColorPicker();
+            this.destroyColorPicker(model);
 		}
 	},
 	
@@ -370,32 +391,23 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	// toggle the attribute info button & functionality
 	toggleFeatureInfo : function(event) {
 		var getFeature = this.model.get("getFeature");
-		if (!getFeature) {
-			// update layer state
-			this.model.set({
-				getFeature : true
-			});
-		} else {
-			// update layer state, turn off get feature
-			this.model.set({
-				getFeature : false
-			});
-		}
+        this.model.set({
+            getFeature: !getFeature
+        });
 
 	},
 	
 	featureInfoButtonState : function(model) {
 
-		var button$ = this.$el.find(".attributeInfoControl");
+        var $button = this.$el.find(".attributeInfoControl");
 		var onClass = "attributeInfoControlOn";
 		var offClass = "attributeInfoControlOff";
 		var getFeature = model.get("getFeature");
 		if (getFeature) {
-			button$.removeClass(offClass).addClass(onClass);
+            $button.removeClass(offClass).addClass(onClass);
 		} else {
-			button$.removeClass(onClass).addClass(offClass);
+            $button.removeClass(onClass).addClass(offClass);
 		}
-		//this.setGetFeatureTitle(model);
 	}
 });
 

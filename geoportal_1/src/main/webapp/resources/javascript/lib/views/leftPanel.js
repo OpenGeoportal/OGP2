@@ -203,16 +203,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					handles : 'e', // for some reason "e" handle doesn't work
 									// correctly
 					start : function(event, ui) {
-
-                        //resize the drag handle so that it doesn't lose focus when the pointer strays over the map
-                        this.$handle = $("#left_col > .ui-resizable-e");
-                        this.handleWidth = this.$handle.width();
-                        this.handleOffset = this.$handle.css("right");
-
-                        this.$handle.css({
-                            width: 500,
-                            right: -500
-                        });
+						//trigger an event mask so map doesn't grab mouseover events
+						$(document).trigger('eventMaskOn');
 
                         this.$slide = $(".slideHorizontal");
                         var margin = parseInt(this.$slide.css(
@@ -246,24 +238,20 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					},
 					
 					stop : function(event, ui) {
+                        $(document).trigger('eventMaskOff');
 
                         var newWidth = ui.size.width;
                         that.model.set({
                             openWidth: newWidth
                         });
 
-                        //reset the resize handle to it's starting size
-
-                        this.$handle.css({
-                            width: this.handleWidth,
-                            right: this.handleOffset
-                        });
 
                         $(this).trigger("adjustContents");
                         //if the size difference is more than 10 percent, fire a search
                         if (Math.abs(ui.originalSize.width - newWidth) > ui.originalSize.width * .1) {
                             $(document).trigger("fireSearch");
                         }
+
 
 
 					}

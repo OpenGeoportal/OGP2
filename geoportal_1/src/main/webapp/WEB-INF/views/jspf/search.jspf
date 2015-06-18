@@ -11,7 +11,7 @@
 				<span class="formCheckbox searchFormInput"> <input
 					type="checkbox" name="mapFilterCheck" id="mapFilterCheck"
 					class="mapFilterFlag" value="ignore" /> <label
-					for="mapFilterCheck">Ignore map extent (Where)</label>
+					for="mapFilterCheck"><div class="checkBox"></div><div class="checkLabel">Ignore map extent (Where)</div></label>
 				</span>
 			</div>
 			<div class="advancedSearch searchFormRow searchRow3 searchCol searchCol1">
@@ -39,9 +39,9 @@
 				<div id="repositoryDropdown" class="searchFormInput"></div>
 			</div>
 			<div id="restrictedCheckContainer" class="advancedSearch searchFormRow searchRow4 searchCol searchCol2">
-				<span class="formCheckbox searchFormInput"> <input
-					type="checkbox" name="restrictedCheck" id="restrictedCheck" /> 
-					<label for="restrictedCheck">Include Restricted Data</label>
+				<span class="formCheckbox searchFormInput">
+					<input type="checkbox" name="restrictedCheck" id="restrictedCheck" />
+					<label for="restrictedCheck"><div class="checkBox"></div><div class="checkLabel">Include Restricted Data</div></label>
 				</span>
 			</div>
 		<!--  </div> -->

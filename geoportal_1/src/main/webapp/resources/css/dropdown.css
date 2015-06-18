@@ -20,14 +20,14 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 
 .dropdown .ui-menu-item > div.showOnly {
 	font-size: 10px;
-    position: absolute;
-    right: 31px;
     height: 20px;
-    display: none;
+    vertical-align: top;
+    visibility: hidden;
 }
 
 .dropdown .ui-menu-item.ui-state-focus > div.showOnly {
-	display: inline-block;	
+	display: inline-block;
+    visibility: visible;
 }
 
 .dropdown .ui-menu-item.ui-state-focus > div.showOnly:hover {
@@ -45,25 +45,23 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	text-decoration: underline;
 }
 
-.dropdown .ui-menu-item  > div.sortArrows {
-	right: 0px;
-	position: absolute;
+.dropdown .ui-menu-item div.sortArrows {
 	margin-top: 2px;
 	width: 10px;
 	height: 12px;
 }
 
-.dropdown .ui-menu-item.ui-state-focus > div.sortArrows {
+.dropdown .ui-menu-item.ui-state-focus div.sortArrows {
 		background: url("../media/sorting.png") no-repeat scroll 0px
 		0px transparent;
 }
 		
-.dropdown .ui-menu-item.selected > div.sortArrows.sortDown {
+.dropdown .ui-menu-item.selected div.sortArrows.sortDown {
 	background: url("../media/sorting.png") no-repeat scroll -22px
 		0px transparent;
 }
 
-.dropdown .ui-menu-item.selected > div.sortArrows.sortUp {
+.dropdown .ui-menu-item.selected div.sortArrows.sortUp {
 	background: url("../media/sorting.png") no-repeat scroll -11px
 		0px transparent;
 }
@@ -95,21 +93,20 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 
 .dropdown .ui-menu-item > div {
 	display: inline-block;
-	margin-right: 9px;
 }
 
-.dropdown .ui-menu-item > div.checkOff {
-	float: right;
-	position: absolute;
-	right: 5px;
-}
 
-.dropdown .ui-menu-item > div.checkOn {
-	float: right;
-	position: absolute;
-	right: 5px;
-}
+/*.menuIcon {
+	padding: 0 0 0 20px;
+}*/
 
 .selectText {
 	vertical-align: top;
+	width: calc(100% - 55px);
+}
+
+
+#dataTypeDropdown .selectText, #repositoryDropdown .selectText {
+    padding-left: 15px;
+    width: calc(100% - 117px);
 }

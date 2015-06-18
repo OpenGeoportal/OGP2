@@ -40,7 +40,7 @@ OpenGeoportal.Structure = function() {
 		this.initializeTabs();
 
 		this.resetHandler();
-		
+
 		// dialogs
 		this.aboutHandler();
 		this.contactHandler();
@@ -62,6 +62,7 @@ OpenGeoportal.Structure = function() {
 		});
 
 	};
+
 
 	//clear info bubble prefs from local storage
 	this.resetShowInfo = function(){

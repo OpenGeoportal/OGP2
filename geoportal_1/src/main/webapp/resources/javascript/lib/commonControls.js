@@ -67,7 +67,20 @@ OpenGeoportal.Widgets = function Widgets() {
 			resizable : true,
 			modal : true,
 			minWidth : 415,
-			autoOpen : false
+			autoOpen : false,
+			dragStart: function(event, ui){
+				$(document).trigger('eventMaskOn');
+			},
+			dragStop: function(event, ui){
+				$(document).trigger('eventMaskOff');
+
+			},
+			resizeStart: function(event, ui){
+				$(document).trigger('eventMaskOn');
+			},
+			resizeStop: function(event, ui){
+				$(document).trigger('eventMaskOff');
+			}
 		});
 
 		return jQuery('#' + divId).dialog('open');
@@ -87,7 +100,20 @@ OpenGeoportal.Widgets = function Widgets() {
 				width : 'auto',
 				title : dialogTitle,
 				resizable : true,
-				buttons : buttonsObj
+				buttons : buttonsObj,
+				dragStart: function(event, ui){
+					$(document).trigger('eventMaskOn');
+				},
+				dragStop: function(event, ui){
+					$(document).trigger('eventMaskOff');
+
+				},
+				resizeStart: function(event, ui){
+					$(document).trigger('eventMaskOn');
+				},
+				resizeStop: function(event, ui){
+					$(document).trigger('eventMaskOff');
+				}
 			});
 		} else {
 			// replace dialog text/controls & open the instance of 'dialog' that

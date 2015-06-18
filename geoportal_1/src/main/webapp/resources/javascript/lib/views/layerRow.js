@@ -15,7 +15,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	className : "tableRow",
 	events : {
 		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
+		"change .previewControl > input[type=checkbox]" : "togglePreview",
 		"click .previewLink"	: "handlePreviewLink",
 		"click .colExpand" : "toggleExpand",
 		"click .colTitle" : "toggleExpand",
@@ -185,7 +185,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	togglePreview : function(e) {
-
+		console.log(arguments);
 		var model = this.previewed.getLayerModel(this.model);
 
 			var update = "";

@@ -249,7 +249,22 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 			},
 			resize: function( event, ui ) {
 				that.adjustTableHeight();
-			}
+			},
+			dragStart: function(event, ui){
+				$(document).trigger('eventMaskOn');
+			},
+			resizeStart: function(event, ui){
+                $(document).trigger('eventMaskOn');
+
+            },
+            dragStop: function(event, ui){
+                $(document).trigger('eventMaskOff');
+
+            },
+            resizeStop: function(event, ui){
+                $(document).trigger('eventMaskOff');
+
+            }
 		});
 		
 	},

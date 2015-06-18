@@ -25,8 +25,8 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	private static final String SECURE_DOMAIN = "login.secureDomain";
 
 	//default values
-	private static final String TITLE_PRIMARY_DEFAULT = "Open";
-	private static final String TITLE_OFFSET_DEFAULT = "Geoportal";
+	private static final String TITLE_PRIMARY_DEFAULT = "";
+	private static final String TITLE_OFFSET_DEFAULT = "";
 
 	private static final String LOGIN_TYPE_DEFAULT = "form";
 	private static final String LOGIN_URL_DEFAULT = "login";

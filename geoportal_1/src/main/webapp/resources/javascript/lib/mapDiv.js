@@ -588,10 +588,10 @@ OpenGeoportal.MapController = function(panelView) {
             var $map = $(".olMap");
 
 			var newHeight = Math.max(data.ht, data.minHt);
-			var oldHeight = map$.height();
+            var oldHeight = $map.height();
 			
 			var newWidth = Math.max(data.wd, data.minWd);
-			var oldWidth = map$.width();
+            var oldWidth = $map.width();
 			
 			if (newHeight !== oldHeight || newWidth !== oldWidth){
                 $map.height(newHeight).width(newWidth);
@@ -681,6 +681,7 @@ OpenGeoportal.MapController = function(panelView) {
 		this.clearLayersHandler();
 		this.mouseCursorHandler();
 		this.loadIndicatorHandler();
+        this.eventMaskHandler();
 		
 	};
 
@@ -1031,6 +1032,19 @@ OpenGeoportal.MapController = function(panelView) {
 	/***************************************************************************
 	 * map event handlers
 	 **************************************************************************/
+
+    this.eventMaskHandler = function () {
+        $(document).on("eventMaskOn", function () {
+            if ($(".olMap").find(".eventMask").length === 0) {
+                $(".olMap").append('<div class="eventMask"></div>');
+            }
+        });
+
+        $(document).on("eventMaskOff", function () {
+            $(".eventMask").remove();
+        });
+    };
+
 	this.opacityHandler = function() {
 		var that = this;
         $(document).on(
@@ -2265,6 +2279,33 @@ OpenGeoportal.MapController = function(panelView) {
 
 	};
 
+    this.removeStyle = function (layerId) {
+        var olLayer = this.getOLLayer(layerId);
+        if (olLayer === null) {
+            return;
+        }
+
+        var layerModel = this.getLayerModel(layerId);
+
+        // don't use a tilecache
+        olLayer.url = this.getPreviewUrlArray(layerModel, true).urls;
+
+        var params = {};
+        var typ = layerModel.get("previewType");
+        if (typ === "wms") {
+
+            delete olLayer.sld_body;
+            params.tiled = true;
+        } else if (typ === "arcgisrest") {
+
+            delete olLayer.dynamicLayers;
+
+        }
+
+        olLayer.mergeNewParams(params);
+
+    };
+
 	this.styleWMS = function(layerModel){
 		// console.log(layerModel);
 		var dataType = layerModel.get("DataType").toLowerCase();
@@ -2318,7 +2359,8 @@ OpenGeoportal.MapController = function(panelView) {
 		} ];
 		var newSLD = {
 			layers : wmsName,
-			sld_body : this.createSLDFromParams(arrSLD)
+            sld_body: this.createSLDFromParams(arrSLD),
+            tiled: false
 		};
 
 		layerModel.set({
@@ -2563,19 +2605,22 @@ OpenGeoportal.MapController = function(panelView) {
 		}
 		
 	};
-	
-	this.addWMSLayer = function(layerModel) {
+
+    this.addWMSLayer = function (layerModel, nocheck) {
+        if (typeof nocheck === "undefined") {
+            nocheck = false;
+        }
 		this.handleExisting(layerModel);
 
 		var layerId = layerModel.get("LayerId");
 		// check to see if layer is on openlayers map, if so, show layer
 		var opacitySetting = layerModel.get("opacity");
 		var that = this;
-		
+
 
 		// use a tilecache if we are aware of it
 		var previewObj = this.getPreviewUrlArray(layerModel, true);
-	
+
 		var wmsArray = previewObj.urls;
 		var isTilecache = previewObj.isTilecache;
 		// won't actually do anything, since noMagic is true and transparent is
@@ -2587,56 +2632,69 @@ OpenGeoportal.MapController = function(panelView) {
 			format = "image/jpeg";
 		}
 
-		
+
 		// we do a check to see if the layer exists before we add it
-		jQuery(document).bind(layerModel.get("LayerId") + 'Exists',
-				function() {
-					// if this is a raster layer, we should use jpeg format, png for vector
-					// (per geoserver docs)
-					var layerName = that.getLayerName(layerModel, wmsArray[0]);
-					var version = "1.3.0";
-					if (isTilecache){
-						//geowebcache doesn't support wms 1.3.0 
-						version = "1.1.1";
-					}
-					
-					var newLayer = new OpenLayers.Layer.WMS(
-							layerModel.get("LayerDisplayName"), 
-							wmsArray, 
-						{
-							layers : layerName, 
-							format : format,
-							tiled : true,
-							exceptions : "application/vnd.ogc.se_xml",
-							transparent : true,
-							version : version
-						}, {
-							transitionEffect : 'resize',
-							opacity : opacitySetting * .01,
-							ogpLayerId : layerModel.get("LayerId"),
-                            ogpLayerRole: "LayerPreview",
-                            wrapDateLine: true
-					});
-			
-					newLayer.events.register('loadstart', newLayer, function() {
-						//console.log("Load start");
-						jQuery(document).trigger({type: "showLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
+        $(document).bind(layerModel.get("LayerId") + 'Exists',
+            function () {
+                // if this is a raster layer, we should use jpeg format, png for vector
+                // (per geoserver docs)
+                var layerName = that.getLayerName(layerModel, wmsArray[0]);
+                var version = "1.3.0";
+                if (isTilecache) {
+                    //geowebcache doesn't support wms 1.3.0
+                    version = "1.1.0";
+                }
+
+                var newLayer = new OpenLayers.Layer.WMS(
+                    layerModel.get("LayerDisplayName"),
+                    wmsArray,
+                    {
+                        layers: layerName,
+                        format: format,
+                        tiled: true,
+                        exceptions: "application/vnd.ogc.se_xml",
+                        transparent: true,
+                        version: version
+                    }, {
+                        transitionEffect: 'resize',
+                        opacity: opacitySetting * .01,
+                        ogpLayerId: layerModel.get("LayerId"),
+                        ogpLayerRole: "LayerPreview",
+                        wrapDateLine: true
 					});
 
-					newLayer.events.register('loadend', newLayer, function() {
-						//console.log("Load end");
-						jQuery(document).trigger({type: "hideLoadIndicator", loadType: "layerLoad", layerId: layerModel.get("LayerId")});
-					});
-					
-					that.ol.addLayer(newLayer);
-					try {
-						layerModel.set({zIndex: newLayer.getZIndex()}, {silent: true});
-					} catch (e){
-						console.log(e);
-						console.log(newLayer.getZIndex());
-					}
+                newLayer.events.register('loadstart', newLayer, function () {
+                    //console.log("Load start");
+                    jQuery(document).trigger({
+                        type: "showLoadIndicator",
+                        loadType: "layerLoad",
+                        layerId: layerModel.get("LayerId")
+                    });
 				});
-		this.layerExists(layerModel);
+
+                newLayer.events.register('loadend', newLayer, function () {
+                    //console.log("Load end");
+                    jQuery(document).trigger({
+                        type: "hideLoadIndicator",
+                        loadType: "layerLoad",
+                        layerId: layerModel.get("LayerId")
+                    });
+                });
+
+                that.ol.addLayer(newLayer);
+                try {
+                    layerModel.set({zIndex: newLayer.getZIndex()}, {silent: true});
+                } catch (e) {
+                    console.log(e);
+                    console.log(newLayer.getZIndex());
+                }
+            });
+        if (nocheck) {
+            $(document).trigger(layerModel.get("LayerId") + 'Exists');
+            console.log("triggered exist");
+        } else {
+            this.layerExists(layerModel);
+        }
 
 	};
 

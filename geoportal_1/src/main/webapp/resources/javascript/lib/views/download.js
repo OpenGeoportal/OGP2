@@ -77,9 +77,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			},
 			
 			cartAction : function() {
-                console.log("cart action");
 				var sortedLayers = this.sortLayersByDownloadType();
-                console.log("sort");
 				var hasServerLayers = _.has(sortedLayers, "ogpServer") && sortedLayers.ogpServer.length > 0;
 				if (hasServerLayers) {
 					// get user input and form a request to send to the ogp
@@ -91,7 +89,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 					this.preferences = new OpenGeoportal.Models.DownloadPreferences();
 					var that = this;
-                    console.log("setting preferences");
+                    //console.log("setting preferences");
 					this.setPreferences().then(this.finalizeRequest,
 							this.failHandler1).then(this.sendDownloadRequest,
 							this.failHandler2);
@@ -302,7 +300,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					// with user specified preferences and resolve the
 					// setPreferences deferred obj
 					try {
-                        console.log("updating models");
+                        //console.log("updating models");
 						that.updateModelsWithPreferences();
 						setPreferencesDeferred.resolveWith(that);
 					} catch (e) {
@@ -327,7 +325,14 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					resizable : false,
 					modal : true,
 					show : "fade",
-					hide : "fade"
+					hide : "fade",
+					dragStart: function(event, ui){
+						$(document).trigger('eventMaskOn');
+					},
+					dragStop: function(event, ui){
+						$(document).trigger('eventMaskOff');
+
+					}
 				};
 
 				var dialogId = "downloadSettingsDialog";
@@ -422,7 +427,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			 */
 
 			finalizeRequest : function() {
-                console.log("starting finalize request");
+                //console.log("starting finalize request");
 				var finalizeRequestDeferred = jQuery.Deferred();
 				var dialogDonePromise = this.openFinalizeRequestDialog();
 
@@ -433,7 +438,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					// with user specified preferences and resolve the
 					// setPreferences deferred obj
 					try {
-                        console.log("trying update request from finalize");
+                        //console.log("trying update request from finalize");
 						that.updateRequestFromFinalize();
 						finalizeRequestDeferred.resolveWith(that, arguments);
 					} catch (e) {
@@ -562,7 +567,14 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					show : "fade",
 					hide : "fade",
 					modal : true,
-					buttons : buttons
+					buttons : buttons,
+                    dragStart: function(event, ui){
+                        $(document).trigger('eventMaskOn');
+                    },
+                    dragStop: function(event, ui){
+                        $(document).trigger('eventMaskOff');
+
+                    }
 				};
 
 				dialog$.dialog(params);

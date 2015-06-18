@@ -43,15 +43,17 @@ $.fn.val = function(value) {
 
 
 OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({	
-	constructor: function (options) {
-		//allow options to be passed in the constructor argument as in previous Backbone versions.
-		    this.options = options;
-		    Backbone.View.apply(this, arguments);
-		  },
-		  events: {
-			  "click .select" : "toggleMenu",
-			  "blur .ui-menu" : "hideMenu"
-		  },
+    constructor: function (options) {
+        //allow options to be passed in the constructor argument as in previous Backbone versions.
+            this.options = options;
+            Backbone.View.apply(this, arguments);
+          },
+
+    events: {
+      "click .select" : "toggleMenu",
+      "blur .ui-menu" : "hideMenu"
+    },
+
 	uiInit: function(selectFunction){
 		var that = this;
 		this.$el.addClass("dropdown").attr("ogpSelectMenu", true);
@@ -73,11 +75,13 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 			}
 		});
 	},
+
 	hideMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");
 		menu$.slideUp({duration: 100});
 		jQuery(document).off("focusin.dropdown click.dropdown");
 	},
+
 	showMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");
 		var that = this;
@@ -96,6 +100,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 			}			
 		});
 	},
+
 	toggleMenu: function(e){
 		e.preventDefault;
 		
@@ -245,7 +250,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 
 OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMenu.extend({
 	  events: {
-		  "click .select" : "showMenu",
+		  "click .select" : "toggleMenu",
 		  "click .showOnly": "showOnly",
 		  "click .showAll": "selectAll",
 		  "focus .select" : "showMenu"
@@ -406,7 +411,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			if (currModel.get(selectionAttr)){
 				isSelected = "checkOn";
 			}
-
+			//TODO: refactor to use actual checkboxes with label styled...template.get('checkboxControl')
 			var control = extraControl + that.template.get('genericControl')({displayClass: isSelected, controlClass: controlClass, text: "", tooltip: ""});
 			menuHtml += that.template.get('controlMenuItem')({icon: icon, control: control, name: name, value: value, className: itemClass});
 		});
@@ -461,7 +466,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			}
 			if (!model.get(selectAttr)){
 				all = false;
-				return;
+
 			}
 		});
 
@@ -480,7 +485,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			}
 			if (model.get(selectAttr)){
 				all = false;
-				return;
+
 			}
 		});
 		
@@ -531,14 +536,16 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 			}
 			
 			var value = currModel.get(valueAttr);
-			var name = currModel.get(displayAttr) + '<div class="sortArrows"></div>';
+			var name = currModel.get(displayAttr);
 			
 			var selected = "";
 
 			if (colName.toLowerCase() == value.toLowerCase()){
 				selected = "selected";
 			}
-			menuHtml += that.template.get('simpleMenuItem')({name: name, value: value, className: selected});
+			var suffix = '<div class="sortArrows"></div>';
+			menuHtml += that.template.get('simpleMenuItemSuffix')({name: name, value: value, className: selected,
+				suffix: suffix});
 		});
 		return {menuHtml: menuHtml, buttonLabel: buttonLabel};
 	},

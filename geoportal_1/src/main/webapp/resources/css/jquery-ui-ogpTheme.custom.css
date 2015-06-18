@@ -233,6 +233,16 @@
 
 .ui-autocomplete.ui-menu {
 	z-index: 9999;
+    max-height: 250px;
+    max-width: 500px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+ul.ui-autocomplete > li.ui-menu-item {
+    width: calc(100% - 40px);
+    padding-bottom: 5px;
+    white-space: normal;
 }
 
 .ui-autocomplete-input.ui-corner-all {
@@ -704,7 +714,7 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 	line-height: 1.5;
 	min-height: 0; /* support: IE7 */
 	font-weight: normal;
-	padding: 2px 2em 2px 1em;
+    padding: 2px 20px;
 	white-space: nowrap;
 }
 

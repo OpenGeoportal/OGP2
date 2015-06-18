@@ -355,7 +355,6 @@ OpenLayers.Control.ModPanZoomBar = OpenLayers.Class(OpenLayers.Control.PanZoom, 
      * evt - {Event}
      */
     onButtonClick: function(evt) {
-        console.log('on button click');
         OpenLayers.Control.PanZoom.prototype.onButtonClick.apply(this, arguments);
         if (evt.buttonElement === this.zoombarDiv) {
             var levels = evt.buttonXY.y / this.zoomStopHeight;

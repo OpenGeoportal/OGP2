@@ -108,6 +108,13 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 										height : 'auto',
 										title : 'Share Cart',
 										resizable : false,
+                                        dragStart: function (event, ui) {
+                                            $(document).trigger('eventMaskOn');
+                                        },
+                                        dragStop: function (event, ui) {
+                                            $(document).trigger('eventMaskOff');
+
+                                        },
 										buttons : {
 											Close : function() {
 												jQuery(this).dialog('close');

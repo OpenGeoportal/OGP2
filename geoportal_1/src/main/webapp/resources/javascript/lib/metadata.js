@@ -84,11 +84,11 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 	this.viewExternalMetadata = function (model, url) {
 		var layerId = model.get("LayerId");
-		var document = this.template.get('genericIframe')({
+        var iframe = this.template.get('genericIframe')({
 			iframeSrc: url,
 			iframeClass: "metadataIframe"
 		});
-		var $dialog = this.renderMetadataDialog(layerId, document);
+        var $dialog = this.renderMetadataDialog(layerId, iframe);
 		$dialog.dialog("open");
 
 	};
@@ -98,17 +98,17 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 		try {
 
-			var document = null;
+            var metadata = null;
 			var params = {
 				url: "layer/" + layerId,
 				async: false,
 				success: function (data) {
-					document = data;
+                    metadata = data;
 				}
 			};
 			jQuery.ajax(params);
 
-			var $dialog = this.renderMetadataDialog(layerId, document);
+            var $dialog = this.renderMetadataDialog(layerId, metadata);
 			this.addMetadataDownloadButton($dialog, layerId);
 			//this.addFullscreenButton($dialog);
 			//this.addPagingButtons($dialog);
@@ -145,7 +145,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 	this.renderEllipsis = function ($desc) {
 
-		if ($desc.get(0).scrollHeight > $desc.height()) {
+        if ($desc.get(0).scrollHeight > $desc.height() + 10) {
 
 			if ($desc.find(".moreWords").length === 0) {
 				var more = "more...";
@@ -172,13 +172,18 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 		}
 	};
 
-	this.renderMetadataDialog = function(layerId, document) {
+    this.renderMetadataDialog = function (layerId, doc) {
 		var dialogId = "metadataDialog";
-		if (typeof jQuery('#' + dialogId)[0] == 'undefined') {
-			jQuery('#dialogs').append(this.template.get('genericDialogShell')({
+        if ($('#' + dialogId).length === 0) {
+            $('#dialogs').append(this.template.get('genericDialogShell')({
 				elId : dialogId
 			}));
-		}
+        } else {
+            try {
+                $("#" + dialogId).dialog("destroy");
+            } catch (e) {
+            }
+        }
 
 		var $metadataDialog = jQuery("#" + dialogId);
 		// should remove any handlers w/in #metadataDialog
@@ -187,21 +192,31 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 		$metadataDialog.html(this.template.get('metadataContent')({
 			layerId : layerId,
 			elId: this.elId
-		})).find('#' + this.elId).append(document);
-		try {
-			$metadataDialog.dialog("destroy");
-		} catch (e) {
-		}
+        })).find('#' + this.elId).append(doc);
+
 
 		var dialogHeight = 450;
 		var that = this;
 
-		$metadataDialog.dialog({
+
+        $metadataDialog.dialog({
 			zIndex : 9999,
 			width : 750,
 			height : dialogHeight,
 			title : "Metadata",
 			autoOpen: false,
+            dragStart: function (event, ui) {
+                $(document).trigger('eventMaskOn');
+            },
+            resizeStart: function (event, ui) {
+                $(document).trigger('eventMaskOn');
+            },
+            dragStop: function (event, ui) {
+                $(document).trigger('eventMaskOff');
+            },
+            resizeStop: function (event, ui) {
+                $(document).trigger('eventMaskOff');
+            },
 			beforeClose: function () {
 				that.model.set("selected", false);
 			},
@@ -212,11 +227,12 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 			}
 		});
 
-		return $metadataDialog;
+
+        return $metadataDialog;
 	};
 
 	this.addScrollMetadataToTop = function() {
-		var $content = jQuery('#' + this.elId);
+        var $content = $('#' + this.elId);
 		$content.prepend(this.template.get('toMetadataTop')({content: "to top"}));
 		$content[0].scrollTop = 0;
 
@@ -238,38 +254,38 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 	this.addMetadataDownloadButton = function ($metadataDialog, layerId) {
 		var buttonId = "metadataDownloadButton";
-		if (jQuery("#" + buttonId).length == 0) {
+        if ($("#" + buttonId).length == 0) {
 			var params = {};
 			params.displayClass = "ui-titlebar-button";
 			params.buttonId = buttonId;
 			params.buttonLabel = "Download Metadata (XML)";
 			$metadataDialog.parent().find(".ui-dialog-titlebar").first()
 					.prepend(this.template.get('dialogHeaderButton')(params));
-			jQuery("#" + buttonId).button();
+            $("#" + buttonId).button();
 		}
 
-		jQuery("#" + buttonId).off();
+        $("#" + buttonId).off();
 		var that = this;
-		jQuery("#" + buttonId).on("click", function() {
+        $("#" + buttonId).on("click", function () {
 			that.downloadMetadata(layerId);
 		});
 	};
 
 	this.addFullscreenButton = function ($metadataDialog) {
 		var buttonId = "metadataFullscreenButton";
-		if (jQuery("#" + buttonId).length == 0) {
+        if ($("#" + buttonId).length == 0) {
 			var params = {};
 			params.displayClass = "ui-titlebar-button fullscreen";
 			params.buttonId = buttonId;
 			params.buttonLabel = "";
 			$metadataDialog.parent().find(".ui-dialog-titlebar").first()
 					.prepend(this.template.get('dialogHeaderButton')(params));
-			jQuery("#" + buttonId).button();
+            $("#" + buttonId).button();
 		}
 
-		jQuery("#" + buttonId).off();
+        $("#" + buttonId).off();
 		var that = this;
-		jQuery("#" + buttonId).on("click", function() {
+        $("#" + buttonId).on("click", function () {
 			if (that.isFullscreen()){
 				that.exitFullscreen();
 			} else {
@@ -280,7 +296,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 	this.addPagingButtons = function ($metadataDialog) {
 		var divClass = "metadata-paging";
-		if (jQuery("." + divClass).length == 0) {
+        if ($("." + divClass).length == 0) {
 			var params = {};
 			params.elClass = divClass;
 			$metadataDialog.parent().find(".metadataDialogContent")
@@ -294,38 +310,38 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 	this.addNextButton = function ($metadataDialog) {
 		var buttonId = "metadataNextButton";
-		if (jQuery("#" + buttonId).length == 0) {
+        if ($("#" + buttonId).length == 0) {
 			var params = {};
 			params.displayClass = "metadata-next";
 			params.buttonId = buttonId;
 			params.buttonLabel = ">";
 			$metadataDialog.parent().find(".metadata-paging")
 				.append(this.template.get('dialogHeaderButton')(params));
-			jQuery("#" + buttonId).button();
+            $("#" + buttonId).button();
 		}
 
-		jQuery("#" + buttonId).off();
+        $("#" + buttonId).off();
 		var that = this;
-		jQuery("#" + buttonId).on("click", function () {
+        $("#" + buttonId).on("click", function () {
 			that.next();
 		});
 	};
 
 	this.addPrevButton = function ($metadataDialog) {
 		var buttonId = "metadataPrevButton";
-		if (jQuery("#" + buttonId).length == 0) {
+        if ($("#" + buttonId).length == 0) {
 			var params = {};
 			params.displayClass = "metadata-prev";
 			params.buttonId = buttonId;
 			params.buttonLabel = "<";
 			$metadataDialog.parent().find(".metadata-paging")
 				.append(this.template.get('dialogHeaderButton')(params));
-			jQuery("#" + buttonId).button();
+            $("#" + buttonId).button();
 		}
 
-		jQuery("#" + buttonId).off();
+        $("#" + buttonId).off();
 		var that = this;
-		jQuery("#" + buttonId).on("click", function () {
+        $("#" + buttonId).on("click", function () {
 			that.prev();
 		});
 	};
@@ -343,11 +359,11 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 			iframeClass : iframeClass,
 			iframeSrc : iframeSrc
 		});
-		var $iframe = jQuery(newIframe).appendTo('#iframes');
+        var $iframe = $(newIframe).appendTo('#iframes');
 		var timeout = 1 * 120 * 1000;// allow 2 minute for download before
 		// iframe
 		// is removed
-		jQuery(document).on("iframeload", $iframe, function () {
+        $(document).on("iframeload", $iframe, function () {
 			setTimeout(function() {
 				$iframe.remove();
 			}, timeout);

@@ -18,7 +18,7 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
     tagName: "div",
     events: {
         "click .colorCell": "selectColorCell",
-        "keydown .colorCell": "checkKeypress",
+        "keyup .colorCell": "checkKeypress",
         "mouseover .colorCell": "setFocus",
         "focusout": "closeOnLoseFocus"
     },
@@ -94,6 +94,8 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
 
         this.$el.html(colorTable(colors));
 
+        this.$el.find(".colorCell").first().focus();
+
         return this;
     },
 
@@ -112,8 +114,16 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
 
     closeOnLoseFocus: function (event) {
         var that = this;
+
+        // console.log("lose focus");
+
         var closeIfNotChild = function () {
-            if (!$.contains(that.el, document.activeElement)) {
+
+            var $cell = that.$el.closest(".colorControlCell");
+            if ($cell.length === 0) {
+                //since there is a time delay, it is possible for this to be fired after the element has been removed
+                that.close();
+            } else if (!$.contains($cell[0], document.activeElement) && !$cell.is(document.activeElement)) {
                 that.close();
             }
         };
@@ -122,6 +132,7 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
     },
 
     close: function () {
+
         this.model.set({colorPickerOn: false});
     },
 
@@ -139,5 +150,6 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
         }); // here's where things happen
         this.$el.find('.colorCell').removeClass('colorCellSelected');
         $cell.addClass('colorCellSelected');
+        this.close();
     }
 });

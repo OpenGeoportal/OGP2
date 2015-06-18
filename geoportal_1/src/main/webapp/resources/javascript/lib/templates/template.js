@@ -70,13 +70,18 @@ OpenGeoportal.Template = {
 
 		selectAllCaption : '<div class="showAll offsetColor button">select all</div>',
 
-		simpleMenuItem : [ '<li class="{{ className }}">{{ name }}',
+		simpleMenuItem: ['<li class="{{ className }}"><div class="selectText">{{ name }}</div>',
 				'<input type="hidden" value="{{ value }}" />', '</li>' ]
 				.join('\n'),
 
+		simpleMenuItemSuffix: ['<li class="{{ className }}"><div class="selectText">{{ name }}</div>',
+			'<div class="menuItemSuffix">{{ suffix }}</div>',
+			'<input type="hidden" value="{{ value }}" />', '</li>']
+			.join('\n'),
+
 		showOnlyControl : '<div class="showOnly button offsetColor">only</div>',
 
-		controlMenuItem : [ '<li class="{{ className }}">', '{{ icon }}',
+		controlMenuItem: ['<li class="{{ className }}">', '<div class="menuIcon">{{ icon }}</div>',
 				'<div class="selectText">{{ name }}</div>', '{{ control }}',
 				'<input type="hidden" value="{{ value }}" />', '</li>' ]
 				.join('\n'),
@@ -128,8 +133,8 @@ OpenGeoportal.Template = {
 		cartCell : '<div class="tableCell {{ colClass }}">{{ contents }}</div>',
 
 		textCartCell : '<div class="tableCell {{ colClass }}" title="{{ contents }}"><div class="cellWrapper">{{ contents }}</div></div>',
-		
-		
+
+		checkboxControl: '<div class="button {{ controlClass }}" title="{{ tooltip }}"><input id="{{ elId }}" type="checkbox" <% if ( isChecked ) { %>checked<% } %>/><label for="{{ elId }}"><div class="checkBox"></div><div class="checkLabel">{{ text }}</div></label></div>',
 
 		doNotShow : '<label><input type="checkbox" class="doNotShow" />Do not show again</label>',
 
@@ -189,7 +194,7 @@ OpenGeoportal.Template = {
 					'</div>', '</div>', '</div>', '</div>' ].join('\n'),
 			colorControl : [
 					'<div class="colorControlCell" tabindex="0">',
-					'<div class="colorControlWrapper">',
+				'<div class="colorControlWrapper controlOff">',
 					'<div class="colorControl button" title="Change the layer color" style="background-color:{{ color }}">',
 					'</div>', '</div>', '</div>' ].join('\n'),
 			zoomControl : '<div class="button zoomToLayerControl" title="Zoom to geographic extent of layer"></div>',

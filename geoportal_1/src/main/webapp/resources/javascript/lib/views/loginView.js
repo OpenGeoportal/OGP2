@@ -105,7 +105,14 @@ OpenGeoportal.Views.Login = Backbone.View
 						resizable : false,
 						zIndex : 3000,
 						stack : true,
-						buttons : loginButtons
+                        buttons: loginButtons,
+                        dragStart: function (event, ui) {
+                            $(document).trigger('eventMaskOn');
+                        },
+                        dragStop: function (event, ui) {
+                            $(document).trigger('eventMaskOff');
+
+                        }
 					});
 				} else {
 					// replace dialog text/controls & open the instance of

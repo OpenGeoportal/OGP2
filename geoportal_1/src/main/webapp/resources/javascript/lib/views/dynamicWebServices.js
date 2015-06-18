@@ -207,6 +207,19 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 										height : 'auto',
 										title : 'Web Services',
 										width : 495,
+										dragStart: function(event, ui){
+											$(document).trigger('eventMaskOn');
+										},
+										dragStop: function(event, ui){
+											$(document).trigger('eventMaskOff');
+
+										},
+										resizeStart: function(event, ui){
+											$(document).trigger('eventMaskOn');
+										},
+										resizeStop: function(event, ui){
+											$(document).trigger('eventMaskOff');
+                                        },
 										close: function( event, ui ) {
 											//resolve the deferred object on dialog close
 											//that.deferred.resolve();
