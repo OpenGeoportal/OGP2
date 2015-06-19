@@ -1,12 +1,8 @@
 package org.opengeoportal.download.methods;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 
@@ -14,7 +10,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.slf4j.Logger;
@@ -33,7 +28,7 @@ public abstract class AbstractFtpDownloadMethod extends AbstractDownloadMethod {
 				throw new MalformedURLException("Must use File Transfer Protocol.");
 			}
 		} catch (MalformedURLException e){
-			logger.error("URL is malformed: '" + url + "'");
+			logger.error("URL is malformed: '" + url + "' " + e.getMessage());
 			throw new MalformedURLException();
 		}
 	
@@ -91,7 +86,7 @@ public abstract class AbstractFtpDownloadMethod extends AbstractDownloadMethod {
 
 			if(ftp.isConnected()) {
 				try {
-					logger.info("disconnecting");
+					logger.info("Disconnecting...");
 					ftp.disconnect();
 				} catch(IOException ioe) {
 					// do nothing
@@ -110,7 +105,7 @@ public abstract class AbstractFtpDownloadMethod extends AbstractDownloadMethod {
 		if (filename.toLowerCase().endsWith(".zip")){
 			contentType = "application/zip";
 		}
-		logger.info("creating new output file");
+		logger.info("Creating new output file...");
 		return OgpFileUtils.createNewFileFromDownload(filename, contentType, directory);
 	}
 }

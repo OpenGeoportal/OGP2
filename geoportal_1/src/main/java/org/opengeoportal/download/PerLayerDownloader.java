@@ -33,17 +33,14 @@ public class PerLayerDownloader implements LayerDownloader {
 	@Async
 	@Override
 	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest downloadRequest) throws Exception {
-		//downloadStatusManager.addDownloadRequestStatus(requestId, sessionId, layerRequests);
 		List<LayerRequest> layerList = downloadRequest.getRequestList();
 		for (LayerRequest currentLayer: layerList){
-			//this.downloadMethod.validate(currentLayer);
-				//check to see if the filename exists
 			try {
 				logger.info("Requesting download for: " + currentLayer.getLayerNameNS());
 				currentLayer.setFutureValue(this.perLayerDownloadMethod.download(currentLayer));
 			} catch (Exception e){
 				e.printStackTrace();
-				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
+				logger.error("An error occurred downloading this layer: {}", currentLayer.getLayerNameNS());
 				currentLayer.setStatus(Status.FAILED);
 				continue;
 			}
@@ -54,9 +51,9 @@ public class PerLayerDownloader implements LayerDownloader {
 				currentLayer.getDownloadedFiles().addAll((Set<File>) currentLayer.getFutureValue().get());
 				currentLayer.setStatus(Status.SUCCESS);
 				successCount++;
-				logger.info("finished download for: " + currentLayer.getLayerNameNS());
+				logger.info("Finished download for: {}", currentLayer.getLayerNameNS());
 			} catch (Exception e){
-				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
+				logger.error("An error occurred downloading this layer: {}", currentLayer.getLayerNameNS());
 				currentLayer.setStatus(Status.FAILED);	
 			}
 		
@@ -65,7 +62,12 @@ public class PerLayerDownloader implements LayerDownloader {
 		if (successCount > 0){
 			Future<Boolean> ready = downloadPackager.packageFiles(requestId); //this is going to try to package files each time a download method is complete.
 			Boolean response = ready.get();
-			logger.info("Packager response: " + Boolean.toString(response));
+			if (response) {
+				logger.info("Package is ready for download!");
+			} else {
+				logger.error("Packaging failed.");
+			}
+
 		} else {
 			logger.error("No Files to package.  Download failed.");
 		}

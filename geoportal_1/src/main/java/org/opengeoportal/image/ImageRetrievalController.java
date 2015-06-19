@@ -42,8 +42,8 @@ public class ImageRetrievalController {
 		if (counter > 0){
 			logger.info("Milliseconds slept: " + Long.toString(counter));
 		}
-		logger.info(downloadPackage.getName());
-		logger.info(downloadPackage.getAbsolutePath());
+		logger.debug(downloadPackage.getName());
+		logger.debug(downloadPackage.getAbsolutePath());
 		response.setContentLength((int) downloadPackage.length());
 		//response.setContentType("application/octet-stream");
 		response.setContentType("image/png");

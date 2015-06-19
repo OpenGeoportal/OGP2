@@ -61,7 +61,6 @@ public class WmsDescribeLayer implements OgcInfoRequest {
 
 			NamedNodeMap attributes = layerDescription.getAttributes();
 			String name = attributes.getNamedItem("name").getTextContent();
-			logger.info(name);
 			describeLayerInfo.put("qualifiedName", name);
 
 			Node urlNode = attributes.getNamedItem("owsURL");
@@ -73,11 +72,11 @@ public class WmsDescribeLayer implements OgcInfoRequest {
 			}
 			String url = urlNode.getNodeValue();
 			describeLayerInfo.put("owsUrl", url);
-			logger.info(url);
 
 			String type = attributes.getNamedItem("owsType").getTextContent();
 			describeLayerInfo.put("owsType", type);
-			logger.info(type);
+
+			logger.info("Name: {}, Type: {}, URL: {}", name, type, url);
 
 		} catch (Exception e){
 			logger.error(document.getFirstChild().getTextContent());

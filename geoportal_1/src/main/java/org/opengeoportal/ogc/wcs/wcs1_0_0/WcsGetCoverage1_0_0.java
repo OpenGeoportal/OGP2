@@ -23,7 +23,7 @@ public class WcsGetCoverage1_0_0 {
 	
 	public static Boolean supports(List<String> supportedList, String testValue){
 		for (String current: supportedList){
-			logger.info(current);
+			logger.info("supports: {}", current);
 			if (current.toLowerCase().contains(testValue)){
 				return true;
 			}
@@ -48,8 +48,8 @@ public class WcsGetCoverage1_0_0 {
 			CoordinateReferenceSystem sourceCRS = factory.createCoordinateReferenceSystem("EPSG:4326");
 			
 		    ReferencedEnvelope envelope = new ReferencedEnvelope(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY(), sourceCRS);
-		    logger.info("requested Bounds: " + OgpUtils.referencedEnvelopeToString(envelope));
-		    // Transform using 10 sample points around the envelope
+		logger.info("Requested Bounds: {}", OgpUtils.referencedEnvelopeToString(envelope));
+		// Transform using 10 sample points around the envelope
 
 		    CoordinateReferenceSystem targetCRS = factory.createCoordinateReferenceSystem(coverageOffering.getSupportedCRSs().get(0));
 

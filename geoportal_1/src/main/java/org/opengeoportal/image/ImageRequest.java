@@ -254,13 +254,13 @@ public class ImageRequest {
 		
 		List<LayerImage> layerList = getLayers();
 		for (LayerImage request: layerList){
-			logger.info(request.getImageStatus().toString());
 			if (request.getImageStatus().equals(ImageStatus.PROCESSING)){
 				return StatusSummary.PROCESSING;
 			} else if (request.getImageStatus().equals(ImageStatus.SUCCESS)) {
 				successCount++;
 			} else if (request.getImageStatus().equals(ImageStatus.FAILED)){
 				failureCount++;
+				logger.info(request.getImageStatus().toString());
 			}
 		}
 		if (failureCount == 0){

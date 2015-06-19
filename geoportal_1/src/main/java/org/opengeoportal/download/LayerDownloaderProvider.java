@@ -18,6 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+/**
+ * This class provides a concrete implementation of a download method for a layer based on DataType, Access level,
+ * requested format, Institution (if specified in ogpDownloadConfig.json), and preference. If the data requirements for
+ * the first preference are not met, the next registered method is attempted, and so on.
+ */
 public class LayerDownloaderProvider implements BeanFactoryAware {
 	private BeanFactory beanFactory;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -137,7 +142,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 	}
 
 	/**
-	 * a method to get a concrete class of type LayerDownloader given a string key defined in WEB-INF/download.xml
+	 * a method to get a concrete class of type LayerDownloader given the id string in the Spring Application Context
 	 * 
 	 * 
 	 * @param downloaderKey a string key that identifies a concrete class of LayerDownloader
@@ -179,16 +184,33 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 		slogger.debug("path: " + path + ", value: " + value + " match: " + match.toString());
 		return match;
 	}
-	
+
+	/**
+	 * A cursory check to see if OGP has the information required to attempt a download of the layer for a given method.
+	 *
+	 * @param classKey
+	 * @param layer
+	 * @return
+	 */
 	private Boolean hasRequirements(String classKey, LayerRequest layer){
 		//query the download method to see if it has the info it needs
 		LayerDownloader testDownloader = getLayerDownloader(classKey);
 		Boolean hasInfo = testDownloader.hasRequiredInfo(layer);
 		return hasInfo;
 	}
-	
+
+	/**
+	 * Look for the default download method defined in ogpDownloadConfig.json. The method returns the first download
+	 * method, in order of specified preference, that meets the requirements for the method. (appropriate url type, etc.)
+	 *
+	 * @param institutions
+	 * @param layer
+	 * @return
+	 * @throws Exception
+	 */
 	private String getDefaultDownloadKey(JsonNode institutions, LayerRequest layer) throws Exception{
 		logger.info("Looking for default method...");
+
 		JsonNode defaultNode = institutions.path("default");
 		if (!defaultNode.isArray()){
 			throw new Exception("No default defined!");
@@ -196,30 +218,36 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 		ArrayNode jsonArray = (ArrayNode) defaultNode;
 		Iterator<JsonNode> iterator = jsonArray.elements();
 		SortedMap<Integer, String> classKeys = new TreeMap<Integer, String>();
+
 		while (iterator.hasNext()){
 			JsonNode currentNode = iterator.next();
 			Boolean outputFormatMatch = matchNode(currentNode, "outputFormats", layer.getRequestedFormat().toLowerCase());
 			if (outputFormatMatch){
 				String classKey = currentNode.path("classKey").textValue();
-				logger.info(classKey);
 				Integer preference = currentNode.path("preference").intValue();
-				logger.debug("Matched classKey: " + classKey);
-				if (hasRequirements(classKey, layer)){
-					logger.debug("requirements met: " + classKey);
-					classKeys.put(preference, classKey);
-				} else {
-					logger.debug("requirements not met for: " + classKey);
-				}
+				classKeys.put(preference, classKey);
+
 			}
 		}
-		if (!classKeys.isEmpty()){
-			String bestMatch = classKeys.get(classKeys.firstKey());
-			logger.debug("Trying preferred match..." + bestMatch);
-			return bestMatch;
-		} else {
-			String errMsg = "No applicable default download method found.";
-			logger.error(errMsg);
-			throw new Exception(errMsg);
+
+		for (Integer key : classKeys.keySet()) {
+
+			String match = classKeys.get(key);
+
+			logger.info("examining requirements for... " + match);
+			logger.debug("Matched classKey: " + match);
+			if (hasRequirements(match, layer)) {
+				logger.debug("requirements met: " + match);
+				logger.info("Preferred match..." + match);
+				return match;
+			} else {
+				logger.debug("requirements not met for: " + match);
+			}
+
 		}
+
+		String errMsg = "No applicable default download method found.";
+		logger.error(errMsg);
+		throw new Exception(errMsg);
 	}
 }

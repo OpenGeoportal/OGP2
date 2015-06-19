@@ -68,7 +68,7 @@ public class ImageHandlerImpl implements ImageHandler {
 			//now we have everything we need to create a request
 			//this needs to be done for each image received
 			try {
-				logger.info(layerImage.getUrl().toString());
+				logger.debug(layerImage.getUrl().toString());
 				ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
 				Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl());
 				layerImage.setImageFileFuture(imgFile);
@@ -86,7 +86,7 @@ public class ImageHandlerImpl implements ImageHandler {
 	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
 		//only retrieve records the user has permission to access data for
 		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllowedRecords(imageRequest.getLayerIds());
-	    logger.info("Number of layers in image: " + Integer.toString(layerInfo.size()));
+		logger.info("Creating composite of {} image(s).", Integer.toString(layerInfo.size()));
 		
 		for (LayerImage layerImage: imageRequest.getLayers()){
 			

@@ -51,8 +51,15 @@ public abstract class AbstractHttpDownloadMethod extends AbstractDownloadMethod 
 		try{
 			inputStream = this.httpRequester.sendRequest(url, query, getMethod());	
 			int status = httpRequester.getStatus();
-			if (status != 200){
+			logger.info(Integer.toString(status));
+			if (status >= 400 || status < 200) {
 				throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
+			}
+			if (status >= 300) {
+				logger.info("Redirecting!");
+				String redirect = httpRequester.getHeaderValue("location");
+				logger.info(redirect);
+				return getFileFromUrl(redirect, query);
 			}
 			String contentType = httpRequester.getContentType().toLowerCase();
 			Boolean contentMatch = expectedContentTypeMatched(contentType);

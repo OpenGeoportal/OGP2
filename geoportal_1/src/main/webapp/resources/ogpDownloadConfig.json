@@ -5,9 +5,69 @@
 			{"classKey": "layerDownloader.wcs.proxied", "accessLevel":["restricted"],"dataType":["raster", "scannedmap"],"outputFormats":["geotiff"]}],
 		"harvard":[
 			{"classKey": "layerDownloader.email.HGL", "accessLevel":["public","restricted"],"dataType":["raster","scannedmap"],"outputFormats":["geotiff"]}],
-		"default":[{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"], "preference": 1},
-			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "scannedmap"],"outputFormats":["geotiff"], "preference": 1},
+	  "default": [
+		{
+		  "classKey": "layerDownloader.wfs",
+		  "accessLevel": [
+			"public"
+		  ],
+		  "dataType": [
+			"vector"
+		  ],
+		  "outputFormats": [
+			"shp"
+		  ],
+		  "preference": 3
+		},
+		{
+		  "classKey": "layerDownloader.wcs",
+		  "accessLevel": [
+			"public"
+		  ],
+		  "dataType": [
+			"raster",
+			"scannedmap"
+		  ],
+		  "outputFormats": [
+			"geotiff"
+		  ],
+		  "preference": 3
+		},
 			{"classKey": "layerDownloader.wms", "accessLevel":["public"],"dataType":["raster", "scannedmap"],"outputFormats":["geotiff"], "preference": 4},
 			{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["raster", "vector"],"outputFormats":["kml", "kmz"], "preference": 5},
-			{"classKey": "layerDownloader.file", "accessLevel":["public"],"dataType":["vector", "raster", "scannedmap"],"outputFormats":["shp", "geotiff"], "preference": 2},
-			{"classKey": "layerDownloader.ftpFile", "accessLevel":["public"],"dataType":["vector", "raster", "scannedmap"],"outputFormats":["shp", "geotiff"], "preference": 3}]}}} 
+		{
+		  "classKey": "layerDownloader.file",
+		  "accessLevel": [
+			"public"
+		  ],
+		  "dataType": [
+			"vector",
+			"raster",
+			"scannedmap"
+		  ],
+		  "outputFormats": [
+			"shp",
+			"geotiff"
+		  ],
+		  "preference": 1
+		},
+		{
+		  "classKey": "layerDownloader.ftpFile",
+		  "accessLevel": [
+			"public"
+		  ],
+		  "dataType": [
+			"vector",
+			"raster",
+			"scannedmap"
+		  ],
+		  "outputFormats": [
+			"shp",
+			"geotiff"
+		  ],
+		  "preference": 2
+		}
+	  ]
+	}
+}
+}

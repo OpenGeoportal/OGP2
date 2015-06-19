@@ -12,7 +12,7 @@ public class ImageHandlerFactory implements ApplicationContextAware {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public ImageHandler getObject() throws Exception {
-		logger.info("Creating ImageHandler bean");
+		logger.debug("Creating ImageHandler bean");
 		return applicationContext.getBean(ImageHandler.class);
 	}
 

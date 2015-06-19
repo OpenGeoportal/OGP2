@@ -96,14 +96,14 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	
 	@Override
 	public synchronized void addDownloadRequest(DownloadRequest downloadRequest){
-		logger.info("Adding download request status object...");
+		logger.debug("Adding download request status object...");
 		globalDownloadRequestRegistry.add(downloadRequest);
 	}
 
 	@Override
 	public synchronized void addImageRequest(UUID requestId, String sessionId,
 			ImageRequest imageRequest) {
-		logger.info("Adding image request status object...");
+		logger.debug("Adding image request status object...");
 		imageRequest.setRequestId(requestId);
 		imageRequest.setSessionId(sessionId);
 		globalImageRequestRegistry.add(imageRequest);

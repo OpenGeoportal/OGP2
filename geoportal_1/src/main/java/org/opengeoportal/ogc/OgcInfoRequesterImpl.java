@@ -42,7 +42,7 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	}
 
 	private OwsInfo handleResponse(String contentType, InputStream inputStream) throws Exception{
-		logger.info(contentType);
+		logger.info("Response Type: " + contentType);
 		Boolean contentMatch = contentType.toLowerCase().contains("xml");
 		if (!contentMatch){
 			logger.error("Unexpected content type: " + contentType);

@@ -57,7 +57,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 		Set<File> filesToPackage = getFilesToPackage(layerList);
 
 		logger.debug(directory.getAbsolutePath());
-		logger.info("Packaging files");
+		logger.info("Packaging files...");
 		File zipArchive = new File(directory, "OGPDownload.zip");
 		ZipFilePackager.addFilesToArchive(filesToPackage, zipArchive);
 		downloadRequest.setDownloadPackage(zipArchive);

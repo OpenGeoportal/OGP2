@@ -75,14 +75,14 @@ public class DownloadHandlerImpl implements DownloadHandler {
 
 	/**
 	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
-	 *  
-	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
-	 * LayerRequest objects that can be downloaded using that concrete class.
+	 *
 	 */
 	@Async
 	public void submitDownloadRequest() {
 		List<MethodLevelDownloadRequest> requestList = downloadRequest.getRequestList();
 		for (MethodLevelDownloadRequest request: requestList){
+			logger.info("Submitting download request...{} layer(s) to {}", Integer.toString(request.getRequestList().size()), request.getDownloadKey());
+
 			try {
 				request.getLayerDownloader().downloadLayers(downloadRequest.getRequestId(), request);
 			} catch (Exception e) {
@@ -124,10 +124,10 @@ public class DownloadHandlerImpl implements DownloadHandler {
 			
 			try {
 				currentClassKey = this.layerDownloaderProvider.getClassKey(layerRequest);
-				logger.info("DownloadKey: " + currentClassKey);
+				logger.debug("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
 				layerRequest.setStatus(Status.FAILED);
-				logger.info("No download method found for: '" + record.getLayerId() +"'");
+				logger.warn("No download method found for: '" + record.getLayerId() + "'");
 				continue;
 			}
 
@@ -151,7 +151,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	}
 	
 	private void addOwsInfo(LayerRequest layer){
-		
+		logger.info("Trying to retrieve layer info from the remote server...");
 		try {
 			AugmentedSolrRecord asr = asrRetriever.getOgcAugmentedSolrRecord(layer.getLayerInfo());
 			List<OwsInfo> info = asr.getOwsInfo();

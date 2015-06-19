@@ -58,7 +58,7 @@ public class PoolingHttpClient implements OgpHttpClient {
 	}
 
 	private void init(){
-		
+		logger.info("Starting http client...");
 		ConnectionSocketFactory plainsf = PlainConnectionSocketFactory.getSocketFactory();
 
 		SSLContext sc = null;
@@ -216,11 +216,8 @@ import org.apache.http.util.EntityUtils;
 	        				port = 443;
 	        			}
 	        		}
-	        		logger.info("credential info");
-	        		//logger.info(username);
-	        		//logger.info(password);
-	        		//logger.info(domain);
-	        		//logger.info(Integer.toString(port));
+					logger.debug("Credential info:: username: {}, domain: {}, port: {}", username, domain, Integer.toString(port));
+
 	        		
 	        		credsProvider.setCredentials(
 	        				new AuthScope(domain, port),

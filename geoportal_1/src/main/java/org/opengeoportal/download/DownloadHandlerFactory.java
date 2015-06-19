@@ -11,7 +11,7 @@ public class DownloadHandlerFactory implements ApplicationContextAware {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public DownloadHandler getObject() throws Exception {
-		logger.info("Creating DownloadHandler bean");
+		logger.debug("Creating DownloadHandler bean");
 		return applicationContext.getBean(DownloadHandler.class);
 	}
 

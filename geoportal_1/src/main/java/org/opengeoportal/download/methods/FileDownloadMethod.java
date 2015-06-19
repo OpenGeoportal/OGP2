@@ -45,10 +45,10 @@ public class FileDownloadMethod extends AbstractHttpDownloadMethod implements Pe
 	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
 		List<String> urls = layer.getDownloadUrl();
 		for (String currentUrl: urls){
-			logger.info("download url:" + currentUrl);
+			logger.debug("download url:" + currentUrl);
 			this.checkUrl(currentUrl);
 
 		}
 		return urls;
-	};
+	}
 }
