@@ -59,7 +59,7 @@ preview controls
 	height: 13px;
 	display: inline-block;
 	font-size: 10px;
-	padding: 0px 1px;
+    padding: 0 1px;
 }
 
 
@@ -103,7 +103,7 @@ preview controls
 td.colorCellParent {
     width: 18px;
     height: 18px;
-    padding: 0px;
+    padding: 0;
 }
 
 div.colorCell {

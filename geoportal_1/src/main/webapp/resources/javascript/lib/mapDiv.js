@@ -1112,16 +1112,6 @@ OpenGeoportal.MapController = function(panelView) {
                 that.getFeatureAttributesOff.apply(that, arguments)
             });
 
-        $(document).tooltip({
-			show: 100, 
-			hide: false, 
-			items: "td.attributeName",
-			position: {
-				my: "right top",
-				at: "left-5 top-7"
-				}
-			});
-
 	};
 
 	this.zoomToLayerExtentHandler = function() {
@@ -1156,6 +1146,8 @@ OpenGeoportal.MapController = function(panelView) {
         $(document).on(
 				"map.attributeInfoOff",
 				function() {
+                    $(".olMap").css('cursor', "initial");
+
 					var zoomControl = that
 							.ol.getControlsByClass("OpenLayers.Control.ZoomBox")[0];
 					var panControl = that
@@ -1949,7 +1941,7 @@ OpenGeoportal.MapController = function(panelView) {
 
             var attrDictionaryPromise = this.getAttributeDictionaryPromise(layerId);
 
-            getFeatureAttributes = function (e) {
+            this.getFeatureAttributes = function (e) {
                 //context ('this') is the OpenLayers Layer object
                 var mapExtent = this.map.getExtent();
                 var pixel = e.xy;
@@ -1980,7 +1972,7 @@ OpenGeoportal.MapController = function(panelView) {
 
 
             this.ol.events.register("click", olLayer,
-                getFeatureAttributes);
+                this.getFeatureAttributes);
 		}
 	};
 

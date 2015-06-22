@@ -185,7 +185,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	togglePreview : function(e) {
-		console.log(arguments);
 		var model = this.previewed.getLayerModel(this.model);
 
 			var update = "";

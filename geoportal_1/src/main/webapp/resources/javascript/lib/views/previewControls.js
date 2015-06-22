@@ -32,9 +32,10 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			return this.disabledEvents;
 		}
 	},
-	
+
+    colorPickerView: null,
 	initialize : function() {
-		this.listenTo(this.model, "change:colorPickerOn", this.colorPicker);
+
 		this.listenTo(this.model, "change:color", this.updateColorControl);
 		this.listenTo(this.model, "change:getFeature",
 				this.featureInfoButtonState);
@@ -47,6 +48,7 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	
 	close: function(){
 		this.stopListening();
+
 		this.destroyWidgets();
 		this.remove();
 	},
@@ -78,7 +80,6 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	},
 	
 	disableControls: function() {
-		this.model.set({colorPickerOn: false});
 		this.$(".previewControls").children().not(".zoomToLayerControl").css({
 			opacity:.4
 			}).find(".button").addBack(".button").css({
@@ -320,69 +321,35 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	},
 
     colorPickerToggle: function (e) {
-        var isOpen = this.model.get("colorPickerOn");
-        this.model.set({
-            colorPickerOn: !isOpen
-        });
+        if (this.colorPickerView === null){
 
+            this.createColorPicker();
+        } else if (this.colorPickerView.isClosed){
+            this.destroyColorPicker();
+            this.createColorPicker();
+        } else {
+            this.destroyColorPicker();
+        }
 	},
 
-	createColorPicker: function(model){
-        if (typeof model === "undefined") {
-            model = this.model;
-        }
-        //this.$el.find(".colorControlWrapper").addClass("controlOn").removeClass("controlOff");
+	createColorPicker: function(){
 
-        var $color = this.$el.find(".picker");
-        var $parent = this.$el.find(".colorControlCell");
-        $parent.addClass("controlOn").removeClass("controlOff");
-        if ($color.length === 0) {
-            $color = $('<div class="picker" tabindex="-1"></div>').appendTo($parent);
-        }
-
-        model.set({
-            colorDialog : new OpenGeoportal.Views.ColorPicker({
-                model : model,
-                el: $color[0]
-            })
-        });
+        this.colorPickerView =  new OpenGeoportal.Views.ColorPicker({
+                model : this.model,
+                el: this.$el.find(".colorControlCell")[0]
+            });
 
     },
 
-    destroyColorPicker: function (model) {
+    destroyColorPicker: function () {
 
-        if (typeof model === "undefined") {
-            model = this.model;
+        if (this.colorPickerView !== null) {
+            this.colorPickerView.close();
+            this.colorPickerView = null;
         }
 
-        if (model.has("colorDialog")) {
-            var picker = model.get("colorDialog");
-            picker.$el.hide();
-            //this.$el.find(".colorControlWrapper").removeClass("controlOn").addClass("controlOff");
-            picker.remove();
-            model.unset("colorDialog");
-
-            var $parent = this.$el.find(".colorControlCell");
-            $parent.removeClass("controlOn").addClass("controlOff");
-
-
-        }
-
-        if (model.get("colorPickerOn")) {
-            model.set({colorPicker: false});
-        }
     },
 
-    colorPicker: function (model, value) {
-
-        if (value) {
-			this.createColorPicker(model);
-
-		} else {
-            this.destroyColorPicker(model);
-		}
-	},
-	
 	updateColorControl : function() {
 		var paletteColor = this.model.get("color");
 		this.$el.find(".colorControl").css("background-color", paletteColor);

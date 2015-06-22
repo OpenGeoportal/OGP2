@@ -67,11 +67,11 @@ OpenGeoportal.Structure = function() {
 	//clear info bubble prefs from local storage
 	this.resetShowInfo = function(){
 		OpenGeoportal.Utility.LocalStorage.resetItems(this.infoBubbleAttrs);
-	},
+    };
 	
 	this.doShowInfo = function(key){
 		return OpenGeoportal.Utility.LocalStorage.getBool(key, true);
-	},
+    };
 	
 	/**
 	 * should register event handlers that should interrupt the flow and initiate a search. If one of them is triggered, they should all be unregistered
@@ -210,7 +210,8 @@ OpenGeoportal.Structure = function() {
 	};
 
 	this.userHelpHandler = function() {
-		jQuery('#userGuide').dialog({
+        var $userGuide = $('#userGuide');
+        $userGuide.dialog({
 			zIndex : 2999,
 			title : "User Guide",
 			resizable : true,
@@ -218,11 +219,11 @@ OpenGeoportal.Structure = function() {
 			width : 745,
 			autoOpen : false
 		});
-		jQuery("#userGuideLink").click(function() {
-			if (jQuery("#userGuide").length == 0) {
-				jQuery.get(OpenGeoportal.Utility.JspfLocation + "userGuide.jspf", function(data) {
-					jQuery("#dialogs").append(data);
-					jQuery("#userGuide").dialog({
+        $("#userGuideLink").click(function () {
+            if ($userGuide.length == 0) {
+                $.get(OpenGeoportal.Utility.JspfLocation + "userGuide.jspf", function (data) {
+                    $("#dialogs").append(data);
+                    $userGuide.dialog({
 						zIndex : 2999,
 						title : "USER GUIDE",
 						resizable : true,
@@ -234,10 +235,10 @@ OpenGeoportal.Structure = function() {
 						top : -10,
 						left : -30
 					});
-					jQuery('#userGuide').dialog("open");
+                    $userGuide.dialog("open");
 				});
 			} else {
-				jQuery('#userGuide').dialog("open");
+                $userGuide.dialog("open");
 			}
 			analytics.track("Help", "Show User Guide");
 		});
@@ -246,33 +247,38 @@ OpenGeoportal.Structure = function() {
 
 
 	this.resizeWindowHandler = function() {
-
-		var minHeight = parseInt(jQuery("#container").css("min-height"));
-		var minWidth = parseInt(jQuery("#container").css("min-width"));
+        var $container = $("#container");
+        var minHeight = parseInt($container.css("min-height"));
+        var minWidth = parseInt($container.css("min-width"));
 		
 		var resizeElements = function() {
-			
-			var headerHeight = jQuery("#header").height();
-			var footerHeight = jQuery("#footer").height();
+
+            var headerHeight = $("#header").height();
+            var footerHeight = $("#footer").height();
 			var fixedHeights = headerHeight + footerHeight + 3;
-			var container$ = jQuery("#container");
-			
-			var oldContainerWidth = container$.width();
+
+
+            var oldContainerWidth = $container.width();
 			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
 
-			var oldContainerHeight = container$.height();
+            var oldContainerHeight = $container.height();
 			var newContainerHeight = Math.max(jQuery(window).height()
 					- fixedHeights, minHeight);
 			
 			//resize the container if there is a change.
 			if ((newContainerWidth !== oldContainerWidth)||(newContainerHeight !== oldContainerHeight)){
-				container$.height(newContainerHeight).width(newContainerWidth);
-				jQuery(document).trigger("container.resize", {ht: newContainerHeight, wd: newContainerWidth, minHt: minHeight, minWd: minWidth});
+                $container.height(newContainerHeight).width(newContainerWidth);
+                $(document).trigger("container.resize", {
+                    ht: newContainerHeight,
+                    wd: newContainerWidth,
+                    minHt: minHeight,
+                    minWd: minWidth
+                });
 			}
 			
 		};
 		resizeElements();
-		jQuery(window).resize(resizeElements);
+        $(window).resize(resizeElements);
 	};
 
 
@@ -306,7 +312,7 @@ OpenGeoportal.Structure = function() {
 			minWidth : 415,
 			autoOpen : false
 		});
-		jQuery("#downtimeNotice").dialog("open");
+        $("#downtimeNotice").dialog("open");
 
 	};
 	
@@ -319,9 +325,14 @@ OpenGeoportal.Structure = function() {
 			arrowDirection = "left-arrow";
 		}
 
-		
-		var infoBubbleMain = this.template.get('infoBubble')({elId: bubbleId, arrowDirection: arrowDirection, content: infoHtml});
-		jQuery("#infoBubbles").append(infoBubbleMain);
+
+        var infoBubbleMain = this.template.get('infoBubble')({
+            elId: bubbleId,
+            arrowDirection: arrowDirection,
+            content: infoHtml,
+            isChecked: false
+        });
+        $("#infoBubbles").append(infoBubbleMain);
 		var $bubble = jQuery("#" + bubbleId);
 		
 		var hght = $bubble.height();

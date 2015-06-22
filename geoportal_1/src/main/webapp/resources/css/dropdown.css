@@ -4,34 +4,32 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
     margin: 0;
 }
 
-
-
 #sortDropdown {
-	margin-left: 12px;
+    margin-left: 12px;
 }
 
 #sortDropdown .select .ui-button-text {
-	width: 70px;
+    width: 70px;
 }
 
 #topicDropdown .select .ui-button-text {
-	width: 136px;	
+    width: 136px;
 }
 
 .dropdown .ui-menu-item > div.showOnly {
-	font-size: 10px;
+    font-size: 10px;
     height: 20px;
     vertical-align: top;
     visibility: hidden;
 }
 
 .dropdown .ui-menu-item.ui-state-focus > div.showOnly {
-	display: inline-block;
+    display: inline-block;
     visibility: visible;
 }
 
 .dropdown .ui-menu-item.ui-state-focus > div.showOnly:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 .dropdown .showAll {
@@ -42,69 +40,60 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 }
 
 .dropdown .showAll:hover {
-	text-decoration: underline;
+    text-decoration: underline;
 }
 
 .dropdown .ui-menu-item div.sortArrows {
-	margin-top: 2px;
-	width: 10px;
-	height: 12px;
+    margin-top: 2px;
+    width: 10px;
+    height: 12px;
 }
 
 .dropdown .ui-menu-item.ui-state-focus div.sortArrows {
-		background: url("../media/sorting.png") no-repeat scroll 0px
-		0px transparent;
+    background: url("../media/sorting.png") no-repeat scroll 0 0 transparent;
 }
-		
+
 .dropdown .ui-menu-item.selected div.sortArrows.sortDown {
-	background: url("../media/sorting.png") no-repeat scroll -22px
-		0px transparent;
+    background: url("../media/sorting.png") no-repeat scroll -22px 0 transparent;
 }
 
 .dropdown .ui-menu-item.selected div.sortArrows.sortUp {
-	background: url("../media/sorting.png") no-repeat scroll -11px
-		0px transparent;
+    background: url("../media/sorting.png") no-repeat scroll -11px 0 transparent;
 }
 
 .styledSelect > ul {
-	max-height: 160px;
-	overflow-x: hidden;
-	overflow-y: auto;
-	position: absolute;
-	z-index: 1500;
-	box-shadow: 1px 3px 6px #555555;
+    max-height: 160px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: absolute;
+    z-index: 1500;
+    box-shadow: 1px 3px 6px #555555;
 }
 
 .searchFormInput.dropdown {
-	display: inline-block;
+    display: inline-block;
 }
 
 .searchFormInput.dropdown .select.ui-button {
-	width: 198px;
+    width: 198px;
 }
 
 .searchFormInput.dropdown ul {
-	min-width: 196px;
+    min-width: 196px;
 }
 
-.searchFormInput>.styledSelect {
-	width: 255px;
+.searchFormInput > .styledSelect {
+    width: 255px;
 }
 
 .dropdown .ui-menu-item > div {
-	display: inline-block;
+    display: inline-block;
 }
-
-
-/*.menuIcon {
-	padding: 0 0 0 20px;
-}*/
 
 .selectText {
-	vertical-align: top;
-	width: calc(100% - 55px);
+    vertical-align: top;
+    width: calc(100% - 55px);
 }
-
 
 #dataTypeDropdown .selectText, #repositoryDropdown .selectText {
     padding-left: 15px;

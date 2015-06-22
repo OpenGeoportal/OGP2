@@ -79,7 +79,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	hideMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");
 		menu$.slideUp({duration: 100});
-		jQuery(document).off("focusin.dropdown click.dropdown");
+		$(document).off("focusin.dropdown click.dropdown");
 	},
 
 	showMenu: function(){
@@ -91,8 +91,8 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 			done: function(){
 				menu$.menu("focus", null, menu$.find( ".ui-menu-item:first" ) );
 				menu$.find( ".ui-menu-item:first" ).focus();
-				jQuery(document).on("focusin.dropdown click.dropdown", function(e){
-					if (!$(e.target).parents(menu$).is(menu$) && !$(e.target).is(menu$) 
+				$(document).on("focusin.dropdown click.dropdown", function(e){
+					if (!$(e.target).parents(menu$).is(menu$) && !$(e.target).is(menu$)
 							&& !$(e.target).parent().siblings(menu$).is(menu$)){
 						that.hideMenu();
 					}
@@ -253,7 +253,7 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		  "click .select" : "toggleMenu",
 		  "click .showOnly": "showOnly",
 		  "click .showAll": "selectAll",
-		  "focus .select" : "showMenu"
+		  "keyup .select" : "toggleMenuKey"
 	},
 	initialize: function() {
 		var selectionEvent = "change:" + this.getSelectionAttribute();
@@ -262,6 +262,13 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		this.initRender();
 		this.render();
 	},
+    toggleMenuKey: function(e){
+        if (e.which === 32){
+            this.toggleMenu(e);
+        } else if (e.which === 38 || e.which === 40){
+            this.showMenu();
+        }
+    },
 	getTemplateParams: function(){
 		var menuHtml = "";	
 		var buttonLabel = this.getButtonLabel();

@@ -52,9 +52,8 @@ OpenGeoportal.TableItems = function TableItems() {
 				params.text = "";
 			}
 		}
-		var icon = template.get('genericIcon')(params);
+		return template.get('genericIcon')(params);
 
-		return icon;
 	};
 
 	this.renderExpandControl = function(layerExpanded) {
@@ -217,7 +216,11 @@ OpenGeoportal.TableItems = function TableItems() {
 	};
 
 	this.renderDownloadControl = function(isChecked) {
-		return template.get('defaultDownloadCheckbox')({isChecked: isChecked});
+		return template.get('defaultDownloadCheckbox')({elId: _.uniqueId("download_"), isChecked: isChecked});
+	};
+
+	this.renderDownloadHeader = function(isChecked) {
+		return template.get('defaultDownloadCheckbox')({elId: "downloadHeaderCheck", isChecked: isChecked});
 	};
 
 };

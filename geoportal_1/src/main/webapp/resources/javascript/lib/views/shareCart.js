@@ -40,7 +40,7 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 							.lastIndexOf("/"));
 					var shareLink = path + "/";
 					var geodeticBbox = OpenGeoportal.ogp.map
-							.getGeodeticExtent().toBBOX();
+							.getWGS84VisibleExtent().toBBOX();
 					var queryString = '?' + jQuery.param({
 						ogpids : arrIds.join(),
 						bbox : geodeticBbox

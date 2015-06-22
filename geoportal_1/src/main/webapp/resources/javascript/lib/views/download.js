@@ -250,7 +250,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
                         rasterChoice: formats.rasterFormats[0].formatType
 					});
 					// update the preferences model when the ui element changes
-					jQuery(document).on("change", "#" + rasterControlId,
+					$(document).on("change", "#" + rasterControlId,
 							function() {
 								var uiValue = jQuery(this).val();
 								that.preferences.set({
@@ -268,17 +268,21 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				} else {
 					// create the clip control
 					var clipControlId = "downloadClipControl";
-					html += this.template.get('clipControl')({
+					html += this.template.get('checkboxControl')({
 						elId : clipControlId,
-						isClipped : this.preferences.get("isClipped")
+                        controlClass: "",
+                        tooltip: "",
+						isChecked : this.preferences.get("isClipped"),
+                        text: this.template.get("clipControlLabel")()
 					});
 
-					// update the preferences model when the ui element changes
+
+                        // update the preferences model when the ui element changes
 
 					jQuery(document).on("change", "#" + clipControlId,
 							function() {
 								that.preferences.set({
-									isClipped : jQuery(this).is(":checked")
+									isClipped : $(this).is(":checked")
 								});
 							});
 				}

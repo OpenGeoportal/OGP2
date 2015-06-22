@@ -181,13 +181,13 @@ span.columnNote {
 
 
 #owsServicesArea .sub_headerTitle {
-	margin-left: 0px;
+	margin-left: 0;
 }
 
 .sub_headerTitle {
   margin-left: 20px;
   color: #003366;
-  font-family: Trebuchet MS;
+	font-family: Trebuchet MS, arial, sans-serif;
   font-size: 13px;
   font-weight: normal;
   line-height: 25px;

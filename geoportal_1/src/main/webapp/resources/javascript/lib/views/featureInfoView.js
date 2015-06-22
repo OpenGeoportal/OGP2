@@ -266,6 +266,16 @@ OpenGeoportal.Views.LayerAttributeView = Backbone.View.extend({
 
             }
 		});
+
+        this.$el.tooltip({
+            show: 100,
+            hide: false,
+            items: "td.attributeName",
+            position: {
+                my: "right top",
+                at: "left-5 top-7"
+            }
+        });
 		
 	},
 

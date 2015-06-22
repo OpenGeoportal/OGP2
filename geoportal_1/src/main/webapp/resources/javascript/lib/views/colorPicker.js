@@ -28,6 +28,13 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
 
     render: function () {
 
+        this.$el.addClass("controlOn").removeClass("controlOff");
+
+        var $color = this.$el.find(".picker");
+        if ($color.length === 0) {
+            this.$el.append('<div class="picker" tabindex="-1"></div>');
+        }
+
         var colors = [
             ["#828282", "#aaaaaa", "#b2b2b2", "#cccccc", "#e1e1e1",
                 "#ffffff"],
@@ -92,7 +99,7 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
             return colorTable.join('\n');
         };
 
-        this.$el.html(colorTable(colors));
+        this.$el.find(".picker").html(colorTable(colors));
 
         this.$el.find(".colorCell").first().focus();
 
@@ -130,10 +137,14 @@ OpenGeoportal.Views.ColorPicker = Backbone.View.extend({
         setTimeout(closeIfNotChild, 1);
 
     },
-
+    isClosed: false,
     close: function () {
-
-        this.model.set({colorPickerOn: false});
+        var $picker = this.$el.find(".picker");
+        $picker.hide();
+        this.$el.addClass("controlOff").removeClass("controlOn");
+        this.stopListening();
+        $picker.remove();
+        this.isClosed = true;
     },
 
     selectColorCell: function (event) {

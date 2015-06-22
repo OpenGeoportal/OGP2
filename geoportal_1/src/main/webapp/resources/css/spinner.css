@@ -12,7 +12,7 @@
 	width: 170px;
 	background-color: #DDDDDD;
 
-	background: -webkit-gradient(linear, left, right, from(#BBBBBB), to(#DDDDDD));
+	/*background: -webkit-gradient(linear, left, right, from(#BBBBBB), to(#DDDDDD));*/
 	background: -webkit-linear-gradient(#BBBBBB, #DDDDDD);
 	background: -moz-linear-gradient(left, #BBBBBB, #DDDDDD);
 	background: -ms-linear-gradient(#BBBBBB, #DDDDDD);

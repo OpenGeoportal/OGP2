@@ -101,7 +101,7 @@ OpenGeoportal.Template = {
 
 		iframeDownload : '<iframe class="{{ iframeClass }}" src="{{ iframeSrc }}" onload="jQuery(document).trigger(\'iframeload\')"/>',
 
-		defaultDownloadCheckbox : '<input type="checkbox" class="cartCheckBox" <% if ( isChecked ) { %>checked<% } %> />',
+        defaultDownloadCheckbox : '<div class="button cartCheckBox"><input id="{{ elId }}" type="checkbox" <% if ( isChecked ) { %>checked<% } %>/><label for="{{ elId }}"><div class="checkBox"></div><div class="checkLabel"></div></label></div>',
 
 		emptyTable : '<div class="emptyTable">{{ message }}</div>',
 
@@ -136,11 +136,9 @@ OpenGeoportal.Template = {
 
 		checkboxControl: '<div class="button {{ controlClass }}" title="{{ tooltip }}"><input id="{{ elId }}" type="checkbox" <% if ( isChecked ) { %>checked<% } %>/><label for="{{ elId }}"><div class="checkBox"></div><div class="checkLabel">{{ text }}</div></label></div>',
 
-		doNotShow : '<label><input type="checkbox" class="doNotShow" />Do not show again</label>',
-
 		restrictedWarning : [
 				'<span>This layer is restricted by licensing agreement to the {{ repository }} community. </span>{{ localeWarning }}<br /><span class="ignoreWarning">',
-				this.doNotShow, '</span' ].join('\n'),
+			'<div class="button doNotShow"><input id="{{ elId }}_dns" type="checkbox" <% if ( isChecked ) { %>checked<% } %>/><label for="{{ elId }}_dns"><div class="checkBox"></div><div class="checkLabel">Do not show again</div></label></div>', '</span' ].join('\n'),
 
 		restrictedWarningLocal : '<span class="notice">Restricted layers can be added to the Cart, but you must login before you can preview or download restricted layers.</span>',
 		restrictedWarningExternal : '<span class="notice">Restricted layers can be added to the Cart here, but you must use {{ repository }}\'s site and login to preview or download restricted layers.</span>',
@@ -149,7 +147,8 @@ OpenGeoportal.Template = {
 				'<div id="{{ elId }}" class="infoBubbleBackground triangle-isoscelesBackground {{ arrowDirection }}Background">',
 				'<div class="infoBubbleText triangle-isosceles {{ arrowDirection }}">',
 				'<button class="closeBubble button"></button>{{ content }}',
-				this.doNotShow, '</div></div>' ].join('\n'),
+			'<div class="button doNotShow"><input id="{{ elId }}_dns" type="checkbox" <% if ( isChecked ) { %>checked<% } %>/><label for="{{ elId }}_dns"><div class="checkBox"></div><div class="checkLabel">Do not show again</div></label></div>',
+			'</div></div>' ].join('\n'),
 
 		welcomeText : [
 				'<div id="welcomeText" class="welcomeText">',
@@ -193,8 +192,8 @@ OpenGeoportal.Template = {
 					'<div class="previewToolsSlider" title="{{ tooltip }}">',
 					'</div>', '</div>', '</div>', '</div>' ].join('\n'),
 			colorControl : [
-					'<div class="colorControlCell" tabindex="0">',
-				'<div class="colorControlWrapper controlOff">',
+					'<div class="colorControlCell controlOff" tabindex="0">',
+				'<div class="colorControlWrapper">',
 					'<div class="colorControl button" title="Change the layer color" style="background-color:{{ color }}">',
 					'</div>', '</div>', '</div>' ].join('\n'),
 			zoomControl : '<div class="button zoomToLayerControl" title="Zoom to geographic extent of layer"></div>',
@@ -212,7 +211,7 @@ OpenGeoportal.Template = {
 					'<select id="{{ controlId }}" class="{{ controlClass }}">',
 					'<% _.each(formats, function(formatEl) { %><option value="{{ formatEl.formatType }}">{{ formatEl.formatDisplay }}</option><% }); %>',
 					'</select><br/>' ].join('\n'),
-			clipControl : '<input id="{{ elId }}" type="checkbox" <% if (isClipped){ %>checked="checked" <% } %>/><label for="{{ elId }}">Clip data to map extent</label><br/>',
+			clipControlLabel: 'Clip data to map extent',
 			requireEmailAddress : [
 					'<div><label for="emailAddress">You have selected some layers that require an email address. Please enter your email to receive a download link:</label><br />',
 					'<input id="emailAddress" type="text" /></div>',

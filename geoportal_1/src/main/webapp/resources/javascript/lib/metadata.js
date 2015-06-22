@@ -21,10 +21,6 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 	 */
 	this.template = OpenGeoportal.Template;
 
-	/*
-	 * Metadata control
-	 * 
-	 */
 	this.elId = "metadataDialogContent";
 
 	this.model = null;
