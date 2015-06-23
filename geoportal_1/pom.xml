@@ -20,10 +20,7 @@
 		</repository>
 
 	</repositories>
-	<!--mvn test runs the Selenium 2 based junit tests. you probably won't like 
-		the default value for the OpenGeoportal server. You can specify it via -Durl=http://geoportal-demo.atech.tufts.edu 
-		the tests run with both the Firefox and Chrome browsers. to run the tests 
-		on a headless server use -Dheadless=true. additional information is at http://code.google.com/p/opengeoportal/wiki/AutomatedTesting -->
+
 	<!-- Shared version number properties -->
 	<properties>
 		<org.springframework.version>4.1.6.RELEASE</org.springframework.version>
@@ -258,9 +255,19 @@
 			<artifactId>cors-filter</artifactId>
 			<version>1.9.2</version>
 		</dependency>
+        <dependency>
+            <groupId>ro.isdc.wro4j</groupId>
+            <artifactId>wro4j-core</artifactId>
+            <version>${wro4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ro.isdc.wro4j</groupId>
+            <artifactId>wro4j-extensions</artifactId>
+            <version>${wro4j.version}</version>
+        </dependency>
 
 
-		<!-- JAX-B for WMC -->
+        <!-- JAX-B for WMC -->
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
@@ -363,28 +370,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>ro.isdc.wro4j</groupId>
-				<artifactId>wro4j-maven-plugin</artifactId>
-				<version>${wro4j.version}</version>
-				<executions>
-					<execution>
-						<phase>compile</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<targetGroups>ogp</targetGroups>
-					<minimize>true</minimize>
-					<contextFolder>${basedir}/src/main/webapp/</contextFolder>
-					<cssDestinationFolder>${project.build.directory}/${project.build.finalName}/resources/css/</cssDestinationFolder>
-					<jsDestinationFolder>${project.build.directory}/${project.build.finalName}/resources/javascript/</jsDestinationFolder>
-					<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory>
-					<!-- <contextPath>/ogp</contextPath> -->
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -1,15 +1,22 @@
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
 <script src="//maps.google.com/maps/api/js?v=3.20&sensor=false"></script>
 <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="//cdn.jsdelivr.net/backbonejs/1.1.2/backbone-min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-<script src="resources/javascript/jquery.scrollTo-min.js"></script>
-<script src="resources/javascript/spinners/spinners/spinners.min.js"></script>
-<script src="resources/javascript/jquery.ba-postmessage.min.js"></script>
-<script src="resources/javascript/openlayers/OpenLayers-2.13.1/OpenLayers.js"></script>
-<script src="resources/javascript/openlayers/custom/PanZoomBar.js"></script>
+<spring:url value="/resources/javascript/jquery.scrollTo-min.js" var="scroll_url" htmlEscape="true"/>
+<script src="${scroll_url}"></script>
+<spring:url value="/resources/javascript/spinners/spinners/spinners.min.js" var="spin_url" htmlEscape="true"/>
+<script src="${spin_url}"></script>
+<spring:url value="/resources/javascript/jquery.ba-postmessage.min.js" var="pm_url" htmlEscape="true"/>
+<script src="${pm_url}"></script>
+<spring:url value="/resources/javascript/openlayers/OpenLayers-2.13.1/OpenLayers.js" var="ol_url" htmlEscape="true"/>
+<script src="${ol_url}"></script>
+<spring:url value="/resources/javascript/openlayers/custom/PanZoomBar.js" var="olpan_url" htmlEscape="true"/>
+<script src="${olpan_url}"></script>
 
-<link rel="stylesheet" href="resources/css/jquery-ui-ogpTheme.custom.css" type="text/css" />
+<spring:url value="/resources/css/jquery-ui-ogpTheme.custom.css" var="uitheme_css" htmlEscape="true"/>
+<link rel="stylesheet" href="${uitheme_css}" type="text/css"/>
 
 <script>
 if (!Object.create) {
@@ -26,15 +33,34 @@ if (!Object.create) {
       <c:when test="${dev}" >
       
 		<c:forEach var="style" items="${devCss}">
-			<link rel="stylesheet" href="${style}" type="text/css" />
+            <spring:url value="${style}" var="devcss_url" htmlEscape="true"/>
+            <link rel="stylesheet" href="${devcss_url}" type="text/css"/>
 		</c:forEach>
 
       </c:when>
 
       <c:otherwise>
-      	<link rel="stylesheet" href="resources/css/ogp.css" type="text/css" />
+          <spring:url value="/wro/ogp.css" var="css_url" htmlEscape="true"/>
+          <link rel="stylesheet" href="${css_url}" type="text/css"/>
      
       </c:otherwise>
+</c:choose>
+
+<c:choose>
+    <c:when test="${dev}">
+
+        <c:forEach var="code" items="${devJs}">
+            <spring:url value="${code}" var="devjs_url" htmlEscape="true"/>
+            <script type="text/javascript" src="${devjs_url}"></script>
+        </c:forEach>
+
+    </c:when>
+
+    <c:otherwise>
+        <spring:url value="/wro/ogp.js" var="js_url" htmlEscape="true"/>
+
+        <script type="text/javascript" src="${js_url}"></script>
+    </c:otherwise>
 </c:choose>
 
 

@@ -11,7 +11,7 @@ import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
 import org.opengeoportal.config.topics.TopicsConfigRetriever;
 import org.opengeoportal.config.wro.WroConfig;
-import org.opengeoportal.config.wro.WroConfigRetriever;
+import org.opengeoportal.config.wro.WroResourceRetriever;
 import org.opengeoportal.security.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * The Controller for the main OGP page.
@@ -48,8 +49,8 @@ public class HomeController {
 	private ProxyConfigRetriever proxyConfigRetriever;
 	
 	@Autowired
-	private WroConfigRetriever wroConfigRetriever;
-	
+    private WroResourceRetriever wroResourceRetriever;
+
 	@Autowired
 	private LoginService loginService;
 	
@@ -139,8 +140,8 @@ public class HomeController {
 		mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
 
 		if (isDev){
-			WroConfig wro = wroConfigRetriever.getConfig().get(0);
-			mav.addObject("devCss", wro.getCss());
+            WroConfig wro = wroResourceRetriever.getWroConfig();
+            mav.addObject("devCss", wro.getCss());
 			mav.addObject("devJs", wro.getJs());
 		}
 	}

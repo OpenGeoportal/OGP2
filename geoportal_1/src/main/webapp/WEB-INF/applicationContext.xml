@@ -60,8 +60,8 @@
 	
 	<beans:bean id="config.topics" class="org.opengeoportal.config.topics.TopicsConfigRetriever" init-method="load" />
 	<beans:bean id="config.datatypes" class="org.opengeoportal.config.datatypes.DatatypesConfigRetriever" init-method="load" />
-	<beans:bean id="config.wro" class="org.opengeoportal.config.wro.WroConfigRetriever" init-method="load" />
 
+    <beans:bean id="config.wro" class="org.opengeoportal.config.wro.WroResourceRetriever"/>
 
 	<beans:bean id="jsonpCallbackFilter"
 		class="org.opengeoportal.utilities.http.JsonpCallbackFilter" />
@@ -352,5 +352,14 @@
 		<task:scheduled ref="cleanupDirectory.download" method="cleanupDownloadDirectory"
 			fixed-rate="${cleanupInterval}" />
 	</task:scheduled-tasks>
+
+    <!-- WRO config -->
+    <beans:bean id="wroFilter" class="ro.isdc.wro.http.ConfigurableWroFilter">
+        <beans:property name="properties" ref="wroProperties"/>
+    </beans:bean>
+
+    <beans:bean id="wroProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <beans:property name="location" value="WEB-INF/wro.properties"/>
+    </beans:bean>
 
 </beans:beans>

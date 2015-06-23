@@ -3,10 +3,10 @@
 <groups xmlns="http://www.isdc.ro/wro">
 	<group name='ogp'>
 
-		<css>/resources/css/structure.css</css>
+        <css>/resources/css/structure.css</css>
 		<css>/resources/css/google.css</css>
 		<css>/resources/css/mapDiv.css</css>
-		<css>/resources/css/footer.css</css>			
+        <css>/resources/css/footer.css</css>
 		<css>/resources/css/icons.css</css>
 		<css>/resources/css/dialogs.css</css>
 		<css>/resources/css/spinner.css</css>
@@ -18,7 +18,7 @@
 		<css>/resources/css/attributeInfo.css</css>
 		<css>/resources/css/geocommons.css</css>
         <css>/resources/css/metadata.css</css>
-        <css>/resources/css/localize.css</css>
+        <css>/resources/css/localize/*.css</css>
 		
 		<js>/resources/javascript/lib/models/config.js</js>
 		<js>/resources/javascript/lib/utility.js</js>
@@ -29,6 +29,7 @@
 		<js>/resources/javascript/lib/metadata.js</js>
 		<js>/resources/javascript/lib/tableItems.js</js>
 		<js>/resources/javascript/lib/solr.js</js>
+
 		<js>/resources/javascript/lib/models/resultItem.js</js>
 		<js>/resources/javascript/lib/models/basemapModel.js</js>
 		<js>/resources/javascript/lib/models/tableConfig.js</js>
@@ -57,7 +58,7 @@
 		<js>/resources/javascript/lib/views/download.js</js>
 		<js>/resources/javascript/lib/views/shareCart.js</js>
 		<js>/resources/javascript/lib/views/mapIt.js</js>
-		<js>/resources/javascript/lib/views/dynamicWebServices.js</js>		
+        <js>/resources/javascript/lib/views/dynamicWebServices.js</js>
 		<js>/resources/javascript/lib/views/search.js</js>
         <js>/resources/javascript/lib/views/colorPicker.js</js>
 		<js>/resources/javascript/lib/views/previewControls.js</js>
@@ -71,6 +72,11 @@
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>
 
-		<js>/resources/javascript/lib/main.js</js>
+        <js>/resources/javascript/lib/localize/*.js</js>
+        <js>/resources/javascript/lib/models/localize/*.js</js>
+        <js>/resources/javascript/lib/views/localize/*.js</js>
+
+
+        <js>/resources/javascript/lib/main.js</js>
 	</group>
 </groups>
