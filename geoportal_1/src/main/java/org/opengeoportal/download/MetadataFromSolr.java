@@ -150,9 +150,9 @@ public class MetadataFromSolr implements MetadataRetriever {
 		query.setQuery( descriptor + ":" + identifier );
 		query.addField("FgdcText");
 		query.setRows(1);
-		
-		 SolrDocumentList docs = this.layerInfoRetriever.getSolrServer().query(query).getResults();
-		 return (String) docs.get(0).getFieldValue("FgdcText");
+
+        SolrDocumentList docs = this.layerInfoRetriever.getSolrClient().query(query).getResults();
+        return (String) docs.get(0).getFieldValue("FgdcText");
 	}
 	
 	/**

@@ -472,7 +472,7 @@ private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) thro
 	String queryText = "Name:" + layerName;
 	
     query.setQuery(queryText);
-	QueryResponse queryResponse = this.layerInfoRetriever.getSolrServer().query(query);
+	QueryResponse queryResponse = this.layerInfoRetriever.getSolrClient().query(query);
 	List<SolrRecord> records = queryResponse.getBeans(SolrRecord.class);
 	if (records.isEmpty()){
 		throw new Exception("No matching record found in Solr Index for ['" + layerName + "']");

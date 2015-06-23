@@ -51,12 +51,13 @@ public abstract class AbstractHttpDownloadMethod extends AbstractDownloadMethod 
 		try{
 			inputStream = this.httpRequester.sendRequest(url, query, getMethod());	
 			int status = httpRequester.getStatus();
-			logger.info(Integer.toString(status));
 			if (status >= 400 || status < 200) {
-				throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
-			}
+                logger.error("Response Status: {}", Integer.toString(status));
+                throw new Exception("Request Failed! Server responded with status: " + Integer.toString(status));
+            }
 			if (status >= 300) {
-				logger.info("Redirecting!");
+                logger.warn("Response Status: {}", Integer.toString(status));
+                logger.info("Redirecting!");
 				String redirect = httpRequester.getHeaderValue("location");
 				logger.info(redirect);
 				return getFileFromUrl(redirect, query);
@@ -65,8 +66,8 @@ public abstract class AbstractHttpDownloadMethod extends AbstractDownloadMethod 
 			Boolean contentMatch = expectedContentTypeMatched(contentType);
 			if (!contentMatch){
 				logger.error("Unexpected content type: " + contentType);
-				//If their is a mismatch with the expected content, but the response is text, we want to at least log the response
-				if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
+                //If there is a mismatch with the expected content, but the response is text, we want to at least log the response
+                if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
 					logger.error("Returned text: " + IOUtils.toString(inputStream));
 				} 
 
