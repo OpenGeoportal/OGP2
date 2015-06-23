@@ -373,9 +373,9 @@ OpenGeoportal.Structure = function() {
 			$bubble.fadeOut("slow");
 		}).fadeIn("slow");
 
-		$bubble.on("click", ".doNotShow", function(){
+		$bubble.on("click", ".doNotShow > input", function(){
 			var show = true;
-			if (jQuery(this).is("input:checked")){
+			if (jQuery(this).is(":checked")){
 				show = false;
 			}
 			OpenGeoportal.Utility.LocalStorage.setBool(bubbleId, show);
