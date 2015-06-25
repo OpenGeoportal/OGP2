@@ -70,7 +70,7 @@ OpenGeoportal.MapController = function(panelView) {
 
 			//we want to predict center based on where the left panel will open to
 			// set map position
-            this.zoomToAdjustedLayerExtent('-180,-90,180,90');
+            this.firstZoomToAdjustedLayerExtent('-180,-90,180,90');
 
 		} catch (e){
 			console.log("problem setting basemap?");
@@ -338,8 +338,7 @@ OpenGeoportal.MapController = function(panelView) {
 		if (jQuery('#' + this.containerDiv).parent().height() > 810) {
 			initialZoom = 2;
 			// TODO: this should be more sophisticated. width is also important
-			// initialZoom = Math.ceil(Math.sqrt(Math.ceil(jQuery('#' +
-			// this.containerDiv).parent().height() / 256)));
+
 		}
 		return initialZoom;
 	};
@@ -360,7 +359,7 @@ OpenGeoportal.MapController = function(panelView) {
 		var mapBounds = new OpenLayers.Bounds(-20037508.34, -20037508.34,
 				20037508.34, 20037508.34);
 		var controls = this.createOLControls();
-		var initialZoom = this.getInitialZoomLevel();
+        //var initialZoom = this.getInitialZoomLevel();
 		var options = {
 			allOverlays : true,
 			projection : new OpenLayers.Projection("EPSG:3857"),
@@ -368,7 +367,7 @@ OpenGeoportal.MapController = function(panelView) {
 			maxExtent : mapBounds,
 			numZoomLevels: 19,
 			units : "m",
-			zoom : initialZoom,
+            //zoom : initialZoom,
 			controls : controls
 		};
 
@@ -378,14 +377,14 @@ OpenGeoportal.MapController = function(panelView) {
 
 		// div defaults to 0 height for certain doc-types; we want the map to
 		// fill the parent container
-		var initialHeight;
+        /*		var initialHeight;
 		if (initialZoom === 1){
 			initialHeight = 512;
 		} else {
             initialHeight = $container.height();
-		}
+         }*/
 
-        this.$mapDiv.height(initialHeight).width($container.width());
+        this.$mapDiv.height($container.height()).width($container.width());
 		
 		// attempt to reload tile if load fails
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
@@ -604,6 +603,7 @@ OpenGeoportal.MapController = function(panelView) {
 		// OpenLayers event
 	
 		this.ol.events.register('zoomend', this, function() {
+            console.log("zoomend");
             //clear previous update function. we only want to run the last one
             clearTimeout(this.zoomendId);
 
@@ -1524,26 +1524,31 @@ OpenGeoportal.MapController = function(panelView) {
 
     this.isZoomingToExtent = false;
 
-	this.zoomToAdjustedLayerExtent = function(extent, offset, doCallback) {
+    this.getCenter = function (layerExtent, zoom, offset) {
+
+        var resAtZoom = this.ol.getResolutionForZoom(zoom);
+
+        var lonlat = layerExtent.getCenterLonLat();
+        lonlat.lon = lonlat.lon - offset.x / 2 * resAtZoom;
+        lonlat.lat = lonlat.lat - offset.y * resAtZoom;
+
+        return lonlat;
+    };
+
+    this.getZoomForAdjustedLayerExtent = function (extent, offset, doCallback) {
         if (typeof doCallback == "undefined") {
             doCallback = true;
         }
-
-        var layerExtent = this.ogpExtentToOLBounds(extent);
-
-        // this.addMapBBox(layerExtent.toArray());
 
         if (typeof offset == "undefined") {
             offset = this.getFutureMapOffset();
             //offset = {x: 500, y: 0};
         }
+
+        var layerExtent = this.ogpExtentToOLBounds(extent);
         var newZoom = this.getAdjustedZoom(layerExtent, offset);
 
-        var resAtZoom = this.ol.getResolutionForZoom(newZoom);
-
-        var lonlat = layerExtent.getCenterLonLat();
-        lonlat.lon = lonlat.lon - offset.x / 2 * resAtZoom;
-        lonlat.lat = lonlat.lat - offset.y * resAtZoom;
+        var lonlat = this.getCenter(layerExtent, newZoom, offset);
 
         var that = this;
 
@@ -1551,7 +1556,7 @@ OpenGeoportal.MapController = function(panelView) {
         //correctly for a different sized map
         if (doCallback) {
             that.$mapDiv.one('updatedSizeOnZoom', function () {
-                //TODO: how do I handle the case where the size is not updated? this listener will still be registered
+                //TODO: how to handle the case where the size is not updated? this listener will still be registered
                 that.zoomToAdjustedLayerExtent(extent, offset, false);
 
             });
@@ -1562,11 +1567,34 @@ OpenGeoportal.MapController = function(panelView) {
             this.isZoomingToExtent = true;
         }
 
-        this.ol.setCenter(lonlat, Math.max(1, newZoom));
+        return {zoom: Math.max(1, newZoom), lonlat: lonlat};
+    };
+
+    this.zoomToAdjustedLayerExtent = function (extent, offset, doCallback) {
+        var params = this.getZoomForAdjustedLayerExtent(extent, offset, doCallback);
+        this.ol.setCenter(params.lonlat, params.zoom);
 
 
 	};
 
+    /**
+     * on the first "zoom" we may need to adjust the map size since zoomend is not triggered.
+     * @param extent
+     * @param offset
+     */
+    this.firstZoomToAdjustedLayerExtent = function (extent, offset) {
+
+        var params = this.getZoomForAdjustedLayerExtent(extent, offset, false);
+        if (this.ol.getResolution() < 15000) {
+            var $map = $(".olMap");
+            if ($map.height() !== 512) {
+                $map.height(512);
+                //this.ol.updateSize();
+            }
+        }
+        this.ol.setCenter(params.lonlat, params.zoom);
+
+    };
 
 
     /**

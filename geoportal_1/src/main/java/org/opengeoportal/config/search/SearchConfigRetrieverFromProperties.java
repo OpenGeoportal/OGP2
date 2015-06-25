@@ -120,6 +120,11 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 	}
 
 	@Override
+	public void setSearchUrl(URL url) {
+		getConfig().setSearchUrl(url);
+	}
+
+	@Override
 	public URL getInternalSearchUrl() {
 		return getConfig().getInternalSearchUrl();
 	}

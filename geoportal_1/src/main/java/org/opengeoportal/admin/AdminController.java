@@ -1,5 +1,6 @@
 package org.opengeoportal.admin;
 
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class AdminController {
 	public @ResponseBody Map<String,Object> setSearchUrl(@RequestParam("url") String url) throws Exception {
 		Boolean success = false;
 		try {
-			//searchConfigRetriever.setSearchUrl(url);
+			searchConfigRetriever.setSearchUrl(new URL(url));
 			success = true;
 		} catch (Exception e){
 			logger.error("Problem setting solr url: " + url);

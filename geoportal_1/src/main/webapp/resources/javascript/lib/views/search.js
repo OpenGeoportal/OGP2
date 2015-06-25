@@ -377,7 +377,7 @@ OpenGeoportal.Views.Query = Backbone.View
 								collection : repositoryCollection,
 								el : "div#repositoryDropdown",
 								valueAttribute : "shortName",
-								displayAttribute : "shortName",
+								displayAttribute: "fullName",
 								buttonLabel : "Select repositories",
 								itemClass : "repositoryMenuItem",
 								iconRenderer : iconRenderer,

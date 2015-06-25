@@ -29,7 +29,9 @@ public interface SearchConfigRetriever {
 	 * @return {URL} the url of the solr instance used
 	 */
 	URL getSearchUrl();
-	
+
+	void setSearchUrl(URL url);
+
 	/**
 	 * The Internal search url is used if solr is proxied (e.g. could be "http://localhost/solr") and
 	 * the external facing value is either unavailable to the server or is problematic (through load balancers or
