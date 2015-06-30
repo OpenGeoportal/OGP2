@@ -28,7 +28,7 @@
 		<geotools.version>13.1</geotools.version>
 		<jackson.version>2.5.1</jackson.version>
 		<httpcomponents.version>4.3.6</httpcomponents.version>
-		<wro4j.version>1.7.7</wro4j.version>
+		<wro4j.version>1.7.8</wro4j.version>
 		<slf4j.version>1.7.12</slf4j.version>
         <solrj.version>5.1.0</solrj.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

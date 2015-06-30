@@ -121,7 +121,9 @@ public class OgpFileUtils {
 			fileExtension = ".kmz";
 		} else if (responseContentType.contains("application/vnd.ogc.se_xml")){ 
 			fileExtension = "_error.xml";
-		} else if (responseContentType.contains("application/x-tar")){ 
+        } else if (responseContentType.contains("application/x-gzip")) {
+            fileExtension = ".gz";
+        } else if (responseContentType.contains("application/x-tar")){
 			fileExtension = ".tar.gz";
 		} else {
 			fileExtension = "";

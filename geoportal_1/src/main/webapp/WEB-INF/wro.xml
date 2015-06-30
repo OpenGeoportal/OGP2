@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <groups xmlns="http://www.isdc.ro/wro">
+	<group name='lib'>
+        <js minimize="false">/resources/javascript/jquery.scrollTo-min.js</js>
+        <js minimize="false">/resources/javascript/spinners/spinners/spinners.min.js</js>
+        <js minimize="false">/resources/javascript/jquery.ba-postmessage.min.js</js>
+    </group>
 	<group name='ogp'>
 
         <css>/resources/css/structure.css</css>

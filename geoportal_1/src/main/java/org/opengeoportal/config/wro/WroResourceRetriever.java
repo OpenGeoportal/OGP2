@@ -1,7 +1,9 @@
 package org.opengeoportal.config.wro;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,20 +21,25 @@ public class WroResourceRetriever {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private WroConfig wro = null;
+    private Set<WroConfig> wro = null;
 
     public void load() {
-        wro = new WroConfig();
+        wro = new HashSet<>();
 
-        List<String> cssList = new ArrayList<>();
 
-        List<String> jsList = new ArrayList<>();
 
         WroModel model = configurableWroFilter.getWroManagerFactory().create().getModelFactory().create();
         for (Group grp : model.getGroups()) {
-            if (!grp.getName().equalsIgnoreCase("ogp")) {
-                continue;
-            }
+
+            WroConfig group = new WroConfig();
+            wro.add(group);
+            group.setName(grp.getName());
+
+            List<String> cssList = new ArrayList<>();
+            group.setCss(cssList);
+            List<String> jsList = new ArrayList<>();
+            group.setJs(jsList);
+
             for (Resource resource : grp.getResources()) {
                 String uri = resource.getUri();
                 if (resource.getType() == ResourceType.CSS) {
@@ -48,12 +55,10 @@ public class WroResourceRetriever {
             }
         }
 
-        wro.setCss(cssList);
-        wro.setJs(jsList);
 
     }
 
-    public WroConfig getWroConfig() {
+    public Set<WroConfig> getWroConfigSets() {
         if (wro == null) {
             load();
         }

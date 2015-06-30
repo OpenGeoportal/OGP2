@@ -140,10 +140,17 @@ public class HomeController {
 		mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
 
 		if (isDev){
-            WroConfig wro = wroResourceRetriever.getWroConfig();
-            mav.addObject("devCss", wro.getCss());
-			mav.addObject("devJs", wro.getJs());
-		}
+            Set<WroConfig> wroSet = wroResourceRetriever.getWroConfigSets();
+            for (WroConfig wro : wroSet) {
+                if (wro.getName().equalsIgnoreCase("ogp")) {
+                    mav.addObject("devCss", wro.getCss());
+                    mav.addObject("devJs", wro.getJs());
+                } else if (wro.getName().equalsIgnoreCase("lib")) {
+                    mav.addObject("libCss", wro.getCss());
+                    mav.addObject("libJs", wro.getJs());
+                }
+            }
+        }
 	}
 	
 	private String toJsonString(Object obj) throws JsonProcessingException{
