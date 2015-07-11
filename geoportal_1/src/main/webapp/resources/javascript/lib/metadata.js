@@ -95,14 +95,27 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 		try {
 
             var metadata = null;
+			var that = this;
 			var params = {
 				url: "layer/" + layerId,
 				async: false,
 				success: function (data) {
-                    metadata = data;
+					if (typeof data.error !== "undefined") {
+						that.errorDialog(data.error);
+					} else {
+						metadata = data;
+					}
+
+				},
+				error: function(){
+					that.errorDialog("No additional metadata found.");
 				}
 			};
 			jQuery.ajax(params);
+
+			if (metadata === null){
+				return;
+			}
 
             var $dialog = this.renderMetadataDialog(layerId, metadata);
 			this.addMetadataDownloadButton($dialog, layerId);
@@ -227,7 +240,46 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
         return $metadataDialog;
 	};
 
-	this.addScrollMetadataToTop = function() {
+    this.errorDialog = function (message) {
+        var dialogId = _.uniqueId("errorDialog");
+        if ($('#' + dialogId).length === 0) {
+            $('#dialogs').append(this.template.get('genericDialogShell')({
+                elId : dialogId
+            }));
+        } else {
+            try {
+                $("#" + dialogId).dialog("destroy");
+            } catch (e) {
+            }
+        }
+
+        var $dialog = $("#" + dialogId);
+        $dialog.html(message);
+
+        $dialog.dialog({
+            zIndex : 9999,
+            title : "Error",
+            autoOpen: true,
+            resizable: false,
+            buttons: {
+                Ok : function() {
+                    $( this ).dialog( "close" );
+                }
+            },
+            dragStart: function (event, ui) {
+                $(document).trigger('eventMaskOn');
+            },
+            dragStop: function (event, ui) {
+                $(document).trigger('eventMaskOff');
+            }
+        });
+
+
+        return $dialog;
+    };
+
+
+    this.addScrollMetadataToTop = function() {
         var $content = $('#' + this.elId);
 		$content.prepend(this.template.get('toMetadataTop')({content: "to top"}));
 		$content[0].scrollTop = 0;

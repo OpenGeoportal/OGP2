@@ -16,6 +16,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocumentList;
 import org.opengeoportal.metadata.CachingTransformerProvider;
 import org.opengeoportal.metadata.LayerInfoRetriever;
@@ -147,8 +148,9 @@ public class MetadataFromSolr implements MetadataRetriever {
 		}
 
 		SolrQuery query = new SolrQuery();
-		query.setQuery( descriptor + ":" + identifier );
-		query.addField("FgdcText");
+        String query$ = descriptor + ":" + ClientUtils.escapeQueryChars(identifier);
+        query.setQuery(query$);
+        query.addField("FgdcText");
 		query.setRows(1);
 
         SolrDocumentList docs = this.layerInfoRetriever.getSolrClient().query(query).getResults();
@@ -167,7 +169,10 @@ public class MetadataFromSolr implements MetadataRetriever {
 		OutputStream xmlFileOutputStream = null;
 		try{
 			String xmlString = this.getXMLStringFromSolr(metadataLayerName, "Name");
-			xmlString = this.filterXMLString(xmlString);
+            if (xmlString.isEmpty()) {
+                return null;
+            }
+            xmlString = this.filterXMLString(xmlString);
 			//write this string to a file
 			xmlFileOutputStream = new FileOutputStream (xmlFile);
 			new PrintStream(xmlFileOutputStream).print(xmlString);
@@ -182,7 +187,10 @@ public class MetadataFromSolr implements MetadataRetriever {
 	@Override
 	public String getXMLStringFromId(String layerID) throws Exception {
 		String xmlString = this.getXMLStringFromSolr(layerID, "LayerId");
-		xmlString = this.filterXMLString(xmlString);
+        if (xmlString.isEmpty()) {
+            return "";
+        }
+        xmlString = this.filterXMLString(xmlString);
 
 		return xmlString;
 	}
@@ -190,17 +198,21 @@ public class MetadataFromSolr implements MetadataRetriever {
 	@Override
 	public String getMetadataAsHtml(String layerID) throws Exception {
 		String xmlString = this.getXMLStringFromSolr(layerID, "LayerId");
-		
-		Document document = null;
+        if (xmlString.isEmpty()) {
+            return "";
+        }
+        Document document = null;
 		try {
 			document = buildXMLDocFromString(xmlString);
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e) {
+            return "";
+        } catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+            return "";
+        }
 
 		//get the metadata type and correct xslt document
 		
@@ -220,6 +232,9 @@ public class MetadataFromSolr implements MetadataRetriever {
     @Override
     public String getMetadataAsHtml(String layerID, boolean embedded) throws Exception {
         String xmlString = this.getXMLStringFromSolr(layerID, "LayerId");
+        if (xmlString.isEmpty()) {
+            return "";
+        }
 
         Document document = null;
         try {

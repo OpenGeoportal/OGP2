@@ -337,20 +337,17 @@ OpenGeoportal.Utility.arrayContainsIgnoreCase = function(arr, val) {
 
 OpenGeoportal.Utility.hasLocationValueIgnoreCase = function(location, keyArr) {
 
-	var keyArrLower = OpenGeoportal.Utility.getArrayToLower(_.keys(location));
-	var lowerArr = OpenGeoportal.Utility.getArrayToLower(keyArr);
-
 	var hasKey = false;
+    var locArr = _.keys(location);
 
-	for ( var i in lowerArr) {
-		if (_.has(lowerArr, i)) {
+    _.each(keyArr, function (el) {
+        _.each(locArr, function (el2) {
+            if (el.toLowerCase() === el2.toLowerCase()) {
+                hasKey = true;
+            }
+        });
+    });
 
-			if (_.indexOf(keyArrLower, lowerArr[i]) >= 0) {
-				hasKey = true;
-			}
-
-		}
-	}
 
 	return hasKey;
 };

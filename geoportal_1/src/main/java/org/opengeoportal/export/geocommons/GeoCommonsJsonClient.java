@@ -60,7 +60,8 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 		LayerInfoRetriever layerInfoRetriever;
 	    @Autowired
 		MetadataRetriever metadataRetriever;
-		private Set<String> allTags;
+
+	private Set<String> allTags;
 		@Autowired
 		QuickDownload quickDownload;
 

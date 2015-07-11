@@ -33,7 +33,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			addedToCart : function(model) {
-				var layerId = model.get("LayerId");
+				//var layerId = model.get("LayerId");
 				model.set({
 					isChecked : true
 				});
@@ -43,7 +43,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			removedFromCart : function(model) {
-				var layerId = model.get("LayerId");
+				//var layerId = model.get("LayerId");
 
 				this.updateSavedLayersNumber();
 				this.render();

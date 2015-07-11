@@ -603,7 +603,7 @@ OpenGeoportal.MapController = function(panelView) {
 		// OpenLayers event
 	
 		this.ol.events.register('zoomend', this, function() {
-            console.log("zoomend");
+			//console.log("zoomend");
             //clear previous update function. we only want to run the last one
             clearTimeout(this.zoomendId);
 

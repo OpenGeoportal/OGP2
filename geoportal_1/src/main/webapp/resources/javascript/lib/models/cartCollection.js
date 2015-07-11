@@ -92,16 +92,14 @@ OpenGeoportal.CartCollection = Backbone.Collection
 			},
 
 			toggleCartState : function(itemModel) {
-				// console.log("toggleCartState");
+                //console.log("toggleCartState");
 				var layerId = itemModel.get("LayerId");
 				var layerModel = this.findWhere({
 					LayerId : layerId
 				});
 
 				if (typeof layerModel === "undefined") {
-					var cartItem = itemModel.clone();// Do I need to clone,
-					// since I am passing
-					// just the attributes?
+                    var cartItem = itemModel.clone();
 					this.addLayer(new OpenGeoportal.Models.CartLayer(
 							cartItem.attributes));
 
@@ -140,7 +138,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				var that = this;
 				var addToCartFunction = function() {
 					that.add(layerModel);
-					jQuery(this).dialog('close');
+                    $(this).dialog('close');
 
 				};
 				//TODO: move this stuff to a view
@@ -167,7 +165,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 					loginView.listenToOnce(loginView.model,
 							"change:authenticated", deferredAdd);
 
-					jQuery(document).on(
+                    $(document).on(
 							"loginCancel",
 							function() {
 								dialog$.dialog("enable");
@@ -179,7 +177,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 
 				var cancelFunction = function() {
 
-					jQuery(this).dialog('close');
+                    $(this).dialog('close');
 				};
 
 				var institution = layerModel.get("Institution");
@@ -199,13 +197,18 @@ OpenGeoportal.CartCollection = Backbone.Collection
 					buttons["Cancel"] = cancelFunction;
 					lsProperty = this.getExternalProperty();
 				}
-				
-				var warningMessage = this.template.get('restrictedWarning')({repository: institution, localeWarning: localeWarning});
+
+                var warningMessage = this.template.get('restrictedWarning')({
+                    repository: institution,
+                    localeWarning: localeWarning,
+                    elId: "restricted",
+                    isChecked: false
+                });
 				var dialog$ = OpenGeoportal.ogp.widgets.genericModalDialog(warningMessage, "Restricted Layer");
 				
 				dialog$.on("click", ".doNotShow", function(){
 					var show = true;
-					if (jQuery(this).is("input:checked")){
+                    if ($(this).is("input:checked")) {
 						show = false;
 					}
 

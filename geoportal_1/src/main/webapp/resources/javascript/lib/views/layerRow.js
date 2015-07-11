@@ -133,8 +133,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			var url = null;
 			if (rep.has("url")){
 				url = rep.get("url");
-			} else {
-				throw new Error("Repository definition must have the parameter 'url'");
 			}
 			
 			if (nodeType == "ogp1"){
@@ -161,7 +159,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 
 					url += "/layer/" + model.get("LayerId");
 	
-			}
+			} else if (nodeType == "geoblacklight"){
+                var inst = model.get("Institution") + ".";
+                var id = model.get("LayerId");
+				url = "http://" + id.substring(inst.length);
+			} else {
+                throw new Error("Repository type is not defined.");
+            }
 			
 	
 		} else {
