@@ -26,6 +26,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		mapCenter: {centerX: 0, centerY: 0},
 		ignoreSpatial: false,
 		includeRestricted: true,
+        includeRestrictedBasic: false,
 		alwaysIncludeRestrictedFrom: [],
 
 		geocodedBbox: null,
@@ -184,17 +185,20 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		if ((where != null) && (where != "")){
 			solr.setWhere(where); 
 		}
-		 
-		var showRestricted = this.get("includeRestricted");
-		
+
+        var showRestricted = this.get("includeRestrictedBasic");
+
 		if (!showRestricted){
 
 			//add filter for which restricted data to show by default (maybe for local layers)
 			var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+            var filter = "";
 			if (alwaysInclude.length  > 0){
-				solr.addFilter(solr.createAccessFilter(alwaysInclude));
+                filter = solr.createAccessFilter(alwaysInclude);
+            } else {
+                filter = solr.createAccessFilter();
 			}
-			
+            solr.addFilter(filter);
 		}
 
 		/*

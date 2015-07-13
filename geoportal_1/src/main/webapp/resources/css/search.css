@@ -12,6 +12,7 @@
     zoom: 1;
     border: 1px solid #6B91D5;
     color: #FFFFFF;
+    z-index: 2;
 }
 
 .advancedSearchButtons > div {
@@ -180,4 +181,12 @@
     padding-left: 76px;
     display: inline-block;
     width: 228px;
+}
+
+#basicRestrictedCheckContainer .formCheckbox {
+    padding-left: 0;
+}
+
+#moreSearchOptions {
+    margin-left: -68px;
 }

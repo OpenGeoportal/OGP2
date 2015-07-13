@@ -47,6 +47,15 @@
 		<!--  </div> -->
 <!-- 		<div id="searchCol3" class="searchCol"> -->
 			<div class="basicSearch basicSearchButtons searchFormRow  searchCol searchCol3">
+				<div id="basicRestrictedCheckContainer" class="basicSearch">
+				<span class="formCheckbox searchFormInput">
+					<input type="checkbox" name="restrictedCheck" id="basicRestrictedCheck"/>
+					<label for="basicRestrictedCheck">
+						<div class="checkBox"></div>
+						<div class="checkLabel">Include Restricted Data</div>
+					</label>
+				</span>
+				</div>
 				<button id="moreSearchOptions" class="searchToggle button offsetColor" tabindex="0" >Advanced
 					Search</button>
 			</div>
