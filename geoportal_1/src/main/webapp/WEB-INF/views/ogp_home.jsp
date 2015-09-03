@@ -51,6 +51,7 @@ OpenGeoportal.Config.shareBbox="${shareBbox}";
 
 	<div id="dialogs" class="hiddenElements">
 		<%@include file="jspf/about.jspf"%>
+		<%@include file="jspf/userGuide.jspf"%>
 		<%@include file="jspf/contact.jspf"%>
 	</div>
 	
