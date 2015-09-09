@@ -82,6 +82,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				this.setFrameHeight();
 				var scrollTarget$ = this.$el.children(".tableWrapper").children(".rowContainer");
 				scrollTarget$.off("scroll").on("scroll", function(){that.watchScroll.apply(that, arguments);});
+				this.setSortableLayers();
 				   
 			},
 			prevScrollY: 0,
@@ -123,6 +124,35 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var ht = Math.ceil(jQuery(document).height() - $scrollTarget.offset().top - previewedHeight - jQuery("#footer").height());
 				$scrollTarget.height(ht);
 			},
+			
+			setSortableLayers: function(){
+                                if (this.$(".previewedLayers .rowContainer").children().size() > 0) {
+                                        this.$(".previewedLayers").css("border", "1px solid #828282");
+                                } else {
+                                        this.$(".previewedLayers").css("border", "none");
+                                };
+
+                                this.$(".previewedLayers .rowContainer").sortable({
+                                        connectWith: ".sortable",
+                                        stop:
+                                                function(event, ui) {
+                                                        var numPreviewedLayers = $(".previewedLayers .rowContainer").length;
+                                                        $(".previewedLayers .rowContainer").children(".tableRow").each( function(){
+                                                                var layerId = $(this).attr("id")
+                                                                var index = $(this).index();
+
+                                                                var zindex = (numPreviewedLayers - index) * 5 + 335  //openLayers2 sets start of layer index to 335 and increments by 5. Using this to stay equation to consistent.
+
+                                                                jQuery(document).trigger("map.zIndexChange", {
+                                                                        zIndex : zindex,
+                                                                        LayerId: layerId
+                                                                });
+                                                         });
+                                                }
+
+                                        });
+                                this.$(".previewedLayers .rowContainer").disableSelection();
+                        },
 			
 			fireSearchHandler: function(){
 				var that = this;
