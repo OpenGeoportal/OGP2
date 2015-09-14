@@ -58,16 +58,19 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		SolrRecord layerInfo = this.currentLayer.getLayerInfo();
 		
 		Envelope env = describeLayerInfo.getLonLatEnvelope();
-		BoundingBox nativeBounds = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
+		BoundingBox nativeLatLon = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
 		logger.info("reqLatLon" + this.currentLayer.getRequestedBounds().toStringLatLon());
-		logger.info("natLatLon" + nativeBounds.toStringLatLon());
+		logger.info("natLatLon" + nativeLatLon.toStringLatLon());
 
-		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
+		BoundingBox bounds = nativeLatLon.getIntersection(this.currentLayer.getRequestedBounds());
 		logger.info("intLatLon" + bounds.toStringLatLon());
 
+		//  BEN ADDED... 
+		Envelope nativeEnv = describeLayerInfo.getNativeEnvelope();
+		BoundingBox nativeBbox = new BoundingBox(nativeEnv.getMinX(), nativeEnv.getMinY(), nativeEnv.getMaxX(), nativeEnv.getMaxY());
+		//
+
 		String layerName = this.currentLayer.getLayerNameNS();
-
-
 		
 		/*
 		String epsgCode = describeLayerInfo.get("SRS");
@@ -129,7 +132,9 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		*/
 		int epsgCode = 4326;
 		String format = "geotiff";
-		return WcsGetCoverage1_0_0.createWcsGetCoverageRequest(layerName, describeLayerInfo, bounds, epsgCode, format);
+		// BEN ADDED nativeBbox
+		return WcsGetCoverage1_0_0.createWcsGetCoverageRequest(layerName, describeLayerInfo, bounds, epsgCode, format, nativeBbox);
+		//
 		//return getCoverageRequest;	 
 	}
 	
