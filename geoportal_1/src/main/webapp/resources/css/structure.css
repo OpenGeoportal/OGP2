@@ -1354,6 +1354,11 @@ Repositories
 		-10px transparent;
 }
 
+.uarizonaIcon {
+        background: url("../media/ogp-institutions.png") no-repeat scroll -57px
+                -36px transparent;
+}
+
 
 /**************
 Backbone table view
