@@ -187,6 +187,9 @@
     padding-left: 0;
 }
 
+/* uncomment if restricted check box in basic search */
+/*
 #moreSearchOptions {
     margin-left: -68px;
 }
+*/

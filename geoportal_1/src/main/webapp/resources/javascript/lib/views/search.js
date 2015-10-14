@@ -332,7 +332,9 @@ OpenGeoportal.Views.Query = Backbone.View
 			
 			showRestrictedHandler : function() {
 				//initialize with model value
-                jQuery("#basicRestrictedCheck").prop("checked", this.model.get("includeRestrictedBasic"));
+				/*
+				 // for showing restricted checkbox on basic search
+				 jQuery("#basicRestrictedCheck").prop("checked", this.model.get("includeRestrictedBasic"));
 
 				var that = this;
                 jQuery("#basicRestrictedCheck").on("change", function (event) {
@@ -344,7 +346,7 @@ OpenGeoportal.Views.Query = Backbone.View
 					
 					that.noteSearchChanged();
 
-				});
+				 });*/
 
                 //initialize with model value
                 jQuery("#restrictedCheck").prop("checked", this.model.get("includeRestricted"));

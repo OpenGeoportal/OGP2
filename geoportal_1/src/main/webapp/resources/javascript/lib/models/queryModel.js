@@ -41,12 +41,16 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	}, 
 	
 	initialize: function(){
-		//var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
+		// Always show restricted layers for repositories you can log in to
+		var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
+		var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+		alwaysInclude.push(restricted);
+
 		//show restricted layers from all repositories
 		//var repositories = OpenGeoportal.Config.Repositories.pluck("shortName")[0];
 
 		this.set({
-
+			alwaysIncludeRestrictedFrom: alwaysInclude,
 			isoTopicList: OpenGeoportal.Config.IsoTopics,
 			dataTypeList: OpenGeoportal.Config.DataTypes,
 			repositoryList: OpenGeoportal.Config.Repositories
