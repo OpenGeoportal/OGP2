@@ -1826,3 +1826,7 @@ zoom: 1;
 	top: -11px;
 	z-index: 999;
 }
+
+.previewedLayers .tableRow.rowHover {
+        cursor: all-scroll;
+}

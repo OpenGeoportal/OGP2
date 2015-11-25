@@ -3,6 +3,7 @@ package org.opengeoportal.ogc.wcs.wcs1_0_0;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,7 +67,7 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 		return new Envelope(minX, minY, maxX, maxY, srsName);
 
 	}
-	
+		
 	public static List<String> parseKeywords(Node keywordsNode){
 
 		NodeList keywordNodes = keywordsNode.getChildNodes();
@@ -230,6 +231,10 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 			} else if (nodeName.equalsIgnoreCase("domainSet")){
 				Node sdNode = OgpXmlUtils.getChildNode(currentDetail, "spatialDomain");
 				Node rgNode = OgpXmlUtils.getChildNode(sdNode, "RectifiedGrid");
+				//BEN ADDED
+				Node nativeEnvelopeNode = OgpXmlUtils.getChildNode(sdNode,"Envelope");
+				coverageOffering.setNativeEnvelope(parseLonLatEnvelope(nativeEnvelopeNode));
+				//
 				coverageOffering.setRectifiedGrid(parseRectifiedGrid(rgNode));
 			} else if (nodeName.equalsIgnoreCase("rangeSet")){
 				// 
