@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.fasterxml.jackson.core.JsonParseException;
 
 public class WmsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
-	private static final Double MAX_AREA =  1800.0 * 1800.0;  //should be within recommended geoserver memory settings.
+	private static final Double MAX_AREA =  1800.0 * 1800.0;
 	private static final Boolean INCLUDES_METADATA = false;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
