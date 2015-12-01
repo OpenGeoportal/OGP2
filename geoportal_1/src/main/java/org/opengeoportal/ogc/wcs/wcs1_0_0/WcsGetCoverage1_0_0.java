@@ -60,6 +60,16 @@ public class WcsGetCoverage1_0_0 {
 
         ReferencedEnvelope nativeEnvelope = coverageOffering.getNativeEnvelope();
 
+        /*
+        Previously, the bounding box would be passed regardless of raster pixel alignment. This would cause the raster
+        to be transformed to coincide with the bounding box. Changes made allow for the bounding box to be snapped to
+        the nearest raster pixel edge so that a transformation will not take place. This was causing a particular issue
+        with multi-band raster where 0 values in a pixels R,G,B values (i.e. 145,0,79) would be set to the whole pixel
+        to "no-data" in transformation, resulting in pixel holes throughout the image.
+        --Ben
+         */
+        requestEnvelope = snapBoundsToGrid(requestEnvelope, nativeEnvelope, rectifiedGrid);
+
         //The requested bounds should be the request bounds sent from the client, transformed to the request SRS (ideally native),
         //intersected with the native bounds
         String bbox = "&bbox=" + OgpUtils.envelopeToString(requestEnvelope);
@@ -95,45 +105,19 @@ public class WcsGetCoverage1_0_0 {
     }
 
 
+    static Envelope snapBoundsToGrid(Envelope requestedBounds, Envelope nativeBounds, RectifiedGrid rectifiedGrid){
 
-/*
-    static ReferencedEnvelope getAdjustedBounds(ReferencedEnvelope nativeRefEnv, Envelope bounds, String epsgCode$,
-                                                 Double resX, Double resY) throws FactoryException, TransformException {
+        Double resX = rectifiedGrid.getResx();
+        Double resY = rectifiedGrid.getResy();
+        Double xMin = getMinimum(nativeBounds.getMinX(), requestedBounds.getMinX(), resX);
+        Double yMin = getMinimum(nativeBounds.getMinY(), requestedBounds.getMinY(), resY);
+        Double xMax = getMaximum(nativeBounds.getMaxX(), requestedBounds.getMaxX(), resX);
+        Double yMax = getMaximum(nativeBounds.getMaxY(), requestedBounds.getMaxY(), resY);
 
-        //reproject the requested bounds to raster's native projection/crs
-        Hints hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE);
-        CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory("EPSG", hints);
-        CoordinateReferenceSystem requestCRS = factory.createCoordinateReferenceSystem("EPSG:4326");
-
-        //The bounding box is created in EPSG 4326.  The line below takes the coordinates given and references to the sourceCRS (EPSG:4326).
-        //The envelope is then transformed to the native (targetCRS) bounds below.
-
-        ReferencedEnvelope envelope = new ReferencedEnvelope(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(),
-                bounds.getMaxY(), requestCRS);
-
-        logger.info("requested Bounds: " + OgpUtils.referencedEnvelopeToString(envelope));
-
-        CoordinateReferenceSystem nativeCRS = nativeRefEnv.getCoordinateReferenceSystem();
-        logger.info("native bounds:");
-        logger.info(nativeRefEnv.toString());
-        logger.info(nativeRefEnv.getCoordinateReferenceSystem().toString());
-
-        ReferencedEnvelope result = envelope.transform(nativeCRS, true);
-
-        Double xMin = getMinimum(nativeRefEnv.getMinX(), result.getMinX(), resX);
-        Double yMin = getMinimum(nativeRefEnv.getMinY(), result.getMinY(), resY);
-        Double xMax = getMaximum(nativeRefEnv.getMaxX(), result.getMaxX(), resX);
-        Double yMax = getMaximum(nativeRefEnv.getMaxY(), result.getMaxY(), resY);
-
-        ReferencedEnvelope adjusted =  new ReferencedEnvelope(xMin, xMax, yMin, yMax, nativeCRS);
-        logger.info("Adjusted vs transformed");
-        logger.info(adjusted.toString());
-        logger.info(adjusted.getLowerCorner().toString());
-        logger.info(adjusted.getUpperCorner().toString());
-        logger.info(result.toString());
+        Envelope adjusted =  new Envelope(xMin, xMax, yMin, yMax);
         return adjusted;
-
     }
+
 
     static Double getMinimum(Double nMin, Double rMin, Double res){
         Double min = nMin;
@@ -153,13 +137,7 @@ public class WcsGetCoverage1_0_0 {
         }
 
         return max;
-    }*/
-
-/*    private static int getLength(Double min, Double max, Double res){
-        logger.info(Double.toString(max - min));
-        Double len = (Math.abs(max - min)) / res;
-        return len.intValue();
-    }*/
+    }
 
 
 
