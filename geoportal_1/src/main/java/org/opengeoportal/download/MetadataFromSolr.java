@@ -8,6 +8,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -33,7 +34,7 @@ public class MetadataFromSolr implements MetadataRetriever {
 	private Resource iso19139StyleSheet;
 	
 	public enum MetadataType {
-		ISO_19139, FGDC;
+		ISO_19139, FGDC
 
 	}
 	
@@ -127,11 +128,12 @@ public class MetadataFromSolr implements MetadataRetriever {
 	
 	/**
 	 * given a layer name, retrieves the XML metadata string from the OGP Solr instance
-	 * @param layerName
+	 * @param identifier
+	 * @param descriptor
 	 * @return the XML metadata as a string
 	 * @throws Exception 
 	 */
-	private String getXMLStringFromSolr(String identifier, String descriptor) throws Exception{
+	private String getXMLStringFromSolr(String identifier, String descriptor) throws Exception {
 		Map<String,String> conditionsMap = new HashMap<String, String>();
 		if (descriptor.equalsIgnoreCase("name")){
 			int i = identifier.indexOf(":");
@@ -155,8 +157,15 @@ public class MetadataFromSolr implements MetadataRetriever {
 		query.addField("FgdcText");
 		query.setRows(1);
 		
-		 SolrDocumentList docs = this.layerInfoRetriever.getSolrServer().query(query).getResults();
-		 return (String) docs.get(0).getFieldValue("FgdcText");
+		SolrDocumentList docs = this.layerInfoRetriever.getSolrServer().query(query).getResults();
+		if (docs.getNumFound() != 1){
+			throw new Exception("Wrong number of documents found in solr. Should be 1.");
+		}
+		if (docs.get(0).getFieldNames().contains("FgdcText")) {
+			return (String) docs.get(0).getFieldValue("FgdcText");
+		} else {
+			throw new Exception("Solr record does not contain FgdcText field");
+		}
 	}
 	
 	/**
@@ -167,10 +176,13 @@ public class MetadataFromSolr implements MetadataRetriever {
 	 * return a File object pointing to the XML metadata file for the layer
 	 * @throws Exception 
 	 */
-	public File getXMLFile(String metadataLayerName, File xmlFile) throws Exception{
+	public File getXMLFile(String metadataLayerName, File xmlFile) throws Exception {
 		OutputStream xmlFileOutputStream = null;
 		try{
 			String xmlString = this.getXMLStringFromSolr(metadataLayerName, "Name");
+			if (StringUtils.isBlank(xmlString)){
+				throw new Exception("xml string is blank.");
+			}
 			xmlString = this.filterXMLString("", xmlString);
 			//write this string to a file
 			xmlFileOutputStream = new FileOutputStream (xmlFile);

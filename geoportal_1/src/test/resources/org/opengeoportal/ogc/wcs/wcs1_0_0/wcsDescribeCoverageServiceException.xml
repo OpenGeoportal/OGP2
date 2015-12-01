@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?><ServiceExceptionReport version="1.2.0" >   <ServiceException code="InvalidParameterValue" locator="coverage">
+    Could not find the specified coverage: nurc:Pk50095org.vfny.geoserver.wcs.WcsException: Could not find the specified coverage: nurc:Pk50095
+    Could not find the specified coverage: nurc:Pk50095
+</ServiceException></ServiceExceptionReport>

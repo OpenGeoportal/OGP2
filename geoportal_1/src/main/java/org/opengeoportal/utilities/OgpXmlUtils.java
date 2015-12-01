@@ -89,7 +89,7 @@ public class OgpXmlUtils {
 	  * @throws Exception	if the parent Document is an ows service exception report; 
 	  * 					message contains the exception code returned
 	 */
-	 public static void handleServiceException(Node baseNode) throws Exception{
+	 public static void handleServiceException(Node baseNode) throws Exception {
 		 /*
 		  * 
 		  * <ows:ExceptionReport version="1.0.0"
@@ -161,6 +161,9 @@ public class OgpXmlUtils {
 		NodeList children = parentNode.getChildNodes();
 		for (int i = 0 ; i < children.getLength(); i++){
 			Node currentNode = children.item(i);
+			if (currentNode.getLocalName() == null){
+				continue;
+			}
 			if (currentNode.getLocalName().equalsIgnoreCase(tagName)){
 				values.add(currentNode.getTextContent().trim());
 			}
@@ -177,7 +180,11 @@ public class OgpXmlUtils {
 	 */
 	public static String getAttribute(Node currentNode, String attributeName){
 		NamedNodeMap attrs = currentNode.getAttributes();
-		return attrs.getNamedItem(attributeName).getNodeValue().trim();
+		Node attribute = attrs.getNamedItem(attributeName);
+		if (attribute == null){
+			return "";
+		}
+		return attribute.getNodeValue().trim();
 	}
 	
 	/**
@@ -190,6 +197,9 @@ public class OgpXmlUtils {
 	 */
 	public static Map<String,String> getSiblingValues(Node currentNode, Set<String> siblingTags){
 			Map<String,String> responseMap = new HashMap<String,String>();
+			if (currentNode.getLocalName() == null){
+				return responseMap;
+			}
 			String testString = currentNode.getLocalName().toLowerCase();
 			for (String tagName: siblingTags){
 				if (testString.contains(tagName.toLowerCase())){
@@ -214,6 +224,9 @@ public class OgpXmlUtils {
 		
 		for (int i = 0 ; i < children.getLength(); i++){
 			Node currentNode = children.item(i);
+			if (currentNode.getLocalName() == null){
+				continue;
+			}
 			if (currentNode.getLocalName().equalsIgnoreCase(tagName)){
 				return currentNode;
 			}

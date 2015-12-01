@@ -3,7 +3,10 @@ package org.opengeoportal.ogc;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Super class that holds information retrieved from OGC OWS info requests (WCS DescribeCoverage, WMS DescribeLayer,
+ * WFS DescribeFeature)
+ */
 public class OwsInfo {
 	public enum OwsType {
 		DATA,
@@ -59,31 +62,37 @@ public class OwsInfo {
 	}
 	
 	public static OwsInfo findWmsInfo(List<OwsInfo> info) throws Exception{
-		for (OwsInfo infoBit: info){
-			if (infoBit.getOwsProtocol().equals(OwsProtocol.WMS)){
-				return infoBit;
-			}
-		}
-		throw new Exception("No WMS Info found!");
+		return findOwsInfo(info, OwsProtocol.WMS);
 	}
 	
 	public static OwsInfo findWfsInfo(List<OwsInfo> info) throws Exception{
-		for (OwsInfo infoBit: info){
-			if (infoBit.getOwsProtocol().equals(OwsProtocol.WFS)){
-				return infoBit;
-			}
-		}
-		throw new Exception("No WFS Info found!");
+		return findOwsInfo(info, OwsProtocol.WFS);
 	}
 	
 	public static OwsInfo findWcsInfo(List<OwsInfo> info) throws Exception{
+		return findOwsInfo(info, OwsProtocol.WCS);
+	}
+
+	public static OwsInfo findOwsInfo(List<OwsInfo> info, OwsProtocol protocol) throws Exception {
 		for (OwsInfo infoBit: info){
-			if (infoBit.getOwsProtocol().equals(OwsProtocol.WCS)){
+			if (infoBit.getOwsProtocol().equals(protocol)){
 				return infoBit;
 			}
 		}
-		throw new Exception("No WCS Info found!");
+		throw new Exception("No " + protocol.name() + " Info found!");
 	}
+
+
+	public static boolean hasOwsInfo(List<OwsInfo> info, OwsProtocol protocol){
+		for (OwsInfo infoBit: info){
+			if (infoBit.getOwsProtocol().equals(protocol)){
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public OwsDescribeInfo getOwsDescribeInfo() {
 		return owsDescribeInfo;
 	}

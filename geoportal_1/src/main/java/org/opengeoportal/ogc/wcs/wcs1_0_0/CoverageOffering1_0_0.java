@@ -2,11 +2,14 @@ package org.opengeoportal.ogc.wcs.wcs1_0_0;
 
 import java.util.List;
 
-import org.opengeoportal.layer.Envelope;
+import com.vividsolutions.jts.geom.Envelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengeoportal.ogc.OwsDescribeInfo;
 
-
-public class CoverageOffering1_0_0 implements OwsDescribeInfo{
+/**
+ * Data type to contain DescribeCoverage 1.0.0 response
+ */
+public class CoverageOffering1_0_0 implements OwsDescribeInfo {
 	//needed to form WCS getCoverage request
 	// wcs:domainSet/wcs:spatialDomain/gml:RectifiedGrid/gml:limits/gml:GridEnvelope/gml:low & gml:high
 	// wcs:domainSet/wcs:spatialDomain/gml:RectifiedGrid/gml:axisName (multiple)
@@ -69,7 +72,7 @@ public class CoverageOffering1_0_0 implements OwsDescribeInfo{
 	
 	Envelope lonLatEnvelope;
 	//Ben ADDED
-	Envelope nativeEnvelope;
+	ReferencedEnvelope nativeEnvelope;
 	//
 	List<String> keywords;
 	
@@ -101,20 +104,36 @@ public class CoverageOffering1_0_0 implements OwsDescribeInfo{
 	public void setLabel(String label) {
 		this.label = label;
 	}
+
 	public Envelope getLonLatEnvelope() {
 		return lonLatEnvelope;
 	}
+
 	public void setLonLatEnvelope(Envelope lonLatEnvelope) {
 		this.lonLatEnvelope = lonLatEnvelope;
 	}
-	// BEN ADDED
-	public Envelope getNativeEnvelope() {
+
+	public ReferencedEnvelope getNativeEnvelope() {
 		return nativeEnvelope;
 	}
-	public void setNativeEnvelope(Envelope nativeEnvelope) {
+
+	public static Boolean supports(List<String> supportedList, String testValue) throws Exception {
+		if (supportedList == null){
+			throw new Exception("List must not be null");
+		}
+		for (String current : supportedList) {
+
+			if (current.toLowerCase().contains(testValue.toLowerCase())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void setNativeEnvelope(ReferencedEnvelope nativeEnvelope) {
 		this.nativeEnvelope = nativeEnvelope;
 	}
-	//
+
 	public List<String> getKeywords() {
 		return keywords;
 	}

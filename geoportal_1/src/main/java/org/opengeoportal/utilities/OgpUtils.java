@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.vividsolutions.jts.geom.Envelope;
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengeoportal.solr.SolrRecord;
@@ -46,11 +47,8 @@ public class OgpUtils {
 		if (arr.length != 2){
 			return false;
 		}
-		if (!arr[1].contains(".")){
-			return false;
-		}
+		return arr[1].contains(".");
 
-		return true;
 	}
 	
 	
@@ -106,9 +104,12 @@ public class OgpUtils {
 	 * @throws Exception
 	 */
 	public static String getLayerNameNS(String workspaceName, String layerName) throws Exception{
-		workspaceName = workspaceName.trim();
+		if (StringUtils.isBlank(layerName)){
+			throw new Exception("Empty layer name!");
+		}
+
 		layerName = layerName.trim();
-		
+
 		String embeddedWSName = "";
 		if (layerName.contains(":")){
 			String[] layerNameArr = layerName.split(":");
@@ -118,17 +119,21 @@ public class OgpUtils {
 			embeddedWSName = layerNameArr[0];
 			layerName = layerNameArr[1];
 		}
-		if (!workspaceName.isEmpty()){
-			//prefer the explicit workspaceName?
-			return workspaceName + ":" + layerName;
-		} else {
+
+		if (StringUtils.isBlank(workspaceName)){
 			if (embeddedWSName.isEmpty()){
 				return layerName;
 			} else {
 				return embeddedWSName + ":" + layerName;
 			}
+		} else {
+			workspaceName = workspaceName.trim();
+			//prefer the explicit workspaceName
+			return workspaceName + ":" + layerName;
 		}
 	}
+
+
 	
 	/**
 	 * puts together a url with query string.
@@ -198,7 +203,6 @@ public class OgpUtils {
 	 * @return Double as a String, with rounding
 	 */
 	public static String doubleToString(Double value){
-		logger.info(Double.toString(value));
 	    BigDecimal valDec = new BigDecimal(value);
 	    String valString = valDec.setScale(7, RoundingMode.HALF_UP).toPlainString();
 	    return valString;
@@ -210,7 +214,7 @@ public class OgpUtils {
 	 * @param env	ReferencedEnvelope
 	 * @return bbox String
 	 */
-	public static String referencedEnvelopeToString(ReferencedEnvelope env){
+	public static String envelopeToString(Envelope env){
 		String envString = doubleToString(env.getMinX()) + ",";
 		envString += doubleToString(env.getMinY()) + ",";
 		envString += doubleToString(env.getMaxX()) + ",";
