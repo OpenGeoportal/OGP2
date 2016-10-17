@@ -16,11 +16,10 @@ if (typeof OpenGeoportal === 'undefined') {
  * 
  */
 OpenGeoportal.Geocoder = function Geocoder() {
-	this.geocoder = new google.maps.Geocoder();
 	
 	/**
-	 * geocodes the value typed into the geocoder text input using the Google
-	 * maps geocoder
+	 * geocodes the value typed into the geocoder text input using the OpenStreetMaps
+	 * maps geocoder, nominatim, via jsonp request
 	 * 
 	 * @param locationTerm	a string containing the location to geocode
 	 * @returns jQuery.promise that is resolved when the results are returned
@@ -28,12 +27,24 @@ OpenGeoportal.Geocoder = function Geocoder() {
 	this.getGeocodePromise = function(locationTerm) {
 		var dfd = new jQuery.Deferred();
 		var that = this;
-		this.geocoder.geocode({
-			'address' : locationTerm
-		}, function(results, status) {
+		
+		requestURL = 'https://nominatim.openstreetmap.org/search?json_callback=geoCallback'	
 
-			var processedResponse = that.processGeocoderResults(results, status);
-			dfd.resolve(processedResponse);
+		function geoCallback() {
+			//console.log("geoCallback");
+		};
+		
+		$.ajax({
+			url: requestURL,
+			dataType: "jsonp",
+			jsonp: false,
+			jsonpCallback: "geoCallback",
+			async:false,
+			data: { q: locationTerm, format: "json", limit: 5 },
+			success: function(data) {
+				var processedResponse = that.processGeocoderResults(data);
+				dfd.resolve(processedResponse);
+			}
 		});
 
 		return dfd.promise();
@@ -43,51 +54,33 @@ OpenGeoportal.Geocoder = function Geocoder() {
 	/**
 	 * transform the response from the geocoder to one usable by autocomplete mechanism
 	 */
-	this.processGeocoderResults = function(results, status){
-		/*
-		 * for Google Javascript API geocoder
-		 * "OK" indicates that no errors occurred; the address was
-		 * successfully parsed and at least one geocode was returned.
-		 * "ZERO_RESULTS" indicates that the geocode was successful but
-		 * returned no results. This may occur if the geocode was passed a
-		 * non-existent address or a latlng in a remote location.
-		 * "OVER_QUERY_LIMIT" indicates that you are over your quota.
-		 * "REQUEST_DENIED" indicates that your request was denied,
-		 * generally because of lack of a sensor parameter.
-		 * "INVALID_REQUEST" generally indicates that the query (address or
-		 * latlng) is missing. UNKNOWN_ERROR indicates that the request
-		 * could not be processed due to a server error. The request may
-		 * succeed if you try again
-		 */
+	this.processGeocoderResults = function(results){
 		var geocodeResponse = {
 			labels : [],
 			values : []
 		};
-		// var labelArr = [];
 
-		if (status === "OK") {
-			for ( var i in results) {
-				var viewPort = results[i].geometry.viewport;
+		if ( results.length > 0 ) {
+			for (var i in results) {
+				var viewPort = results[i].boundingbox;
 
-				var southWest = L.latLng(viewPort.getSouthWest().lat(), viewPort.getSouthWest().lng());
-				var northEast = L.latLng(viewPort.getNorthEast().lat(), viewPort.getNorthEast().lng());
-				var bbox = L.latLngBounds(southWest, northEast);
-;
-				var currentAddress = results[i].formatted_address;
-				var currentResponse = {};
-				currentResponse.name = currentAddress;
+				var southwest = L.latLng(viewPort[0],viewPort[2]);
+				var northeast = L.latLng(viewPort[1],viewPort[3]);
+				var bbox = L.latLngBounds(southwest, northeast);
+
+				var displayName = results[i].display_name;
+				var currentResponse = {}
+				currentResponse.name = displayName;
 				currentResponse.bbox = bbox;
 				currentResponse.fullResponse = results[i];
 				geocodeResponse.values.push(currentResponse);
-				geocodeResponse.labels.push(currentAddress);
-
-			}
-		} else if (status === "ZERO_RESULTS") {
+				geocodeResponse.labels.push(displayName);
+			}	
+		} else if ( results.length == 0 ) {
 			geocodeResponse.labels.push("No results found.");
 		} else {
 			geocodeResponse.labels.push("Error retrieving results.");
 		}
-		
 		
 		return geocodeResponse;
 	};
@@ -135,13 +128,13 @@ OpenGeoportal.Geocoder = function Geocoder() {
 			// Retrieve the autocomplete's instance and store it.
 			.data( "ui-autocomplete" );
 		
-		// Override the _renderMenu method for this dialog to add google attribution
+		// Override the _renderMenu method for this dialog to add OSM attribution
 		autocompleteInstance._renderMenu = function( ul, items ) {
 			var that = this;
 			jQuery.each( items, function( index, item ) {
 				that._renderItemData( ul, item );
 			});
-			var attribution = '<li class="searchAttribution"><div class="poweredByGoogleAttr"></div></li>';
+			var attribution = '<li class="searchAttribution">Powered by OpenStreetMap</li>';
 			jQuery( attribution ).appendTo( ul ).removeClass("ui-widget-content ui-menu-divider");
 			 
 		};
