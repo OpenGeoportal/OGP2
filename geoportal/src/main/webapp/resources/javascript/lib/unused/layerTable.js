@@ -699,7 +699,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 				var currentLayerId = that.getLayerIdFromTableRow(this);
 				if (currentLayerId === layerId) {
 					row$ = that.getDataRow(jQuery(this));
-					return; // this exits the each loop
+					 // this exits the each loop
 				}
 			}
 		});
@@ -719,7 +719,7 @@ OpenGeoportal.LayerTable = function LayerTable() {
 			var currentLayerId = that.getLayerIdFromTableCell(this);
 			if (currentLayerId == layerId) {
 				control$ = jQuery(this).find(controlClass).first();
-				return; // this just exits the each function
+				 // this just exits the each function
 			}
 		});
 		// if (control$.length === 0) {
@@ -1195,8 +1195,8 @@ OpenGeoportal.LayerTable = function LayerTable() {
 		jQuery('#' + tableId + ' > thead > tr > th').each(function() {
 			if (jQuery(this).text() == columnTitle) {
 				jQuery(this).addClass(columnClass);
-				return;
-			}
+
+            }
 		});
 	};
 

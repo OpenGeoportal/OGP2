@@ -1571,8 +1571,8 @@ OpenGeoportal.MapController = function() {
 																		description : attributeDescription
 																	});
 													}
-													return;
-												}
+
+                                                }
 											});
 						});
 	};
