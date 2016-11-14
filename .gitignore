@@ -1,1 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
+/.idea
+/geoportal/target
+/geoportal/geoportal.iml
+/geoportal/.classpath
+/geoportal/.project
+/geoportal/.settings/
