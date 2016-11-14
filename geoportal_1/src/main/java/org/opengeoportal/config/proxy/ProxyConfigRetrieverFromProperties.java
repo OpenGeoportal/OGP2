@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.config.PropertiesFile;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 
 public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever {
 
-	PropertiesFile propertiesFile;
-	List<ProxyConfig> proxyConfig;
+	private PropertiesFile propertiesFile;
+	private List<ProxyConfig> proxyConfig;
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -233,12 +233,8 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 		} catch (Exception e){
 			return false;
 		}
-		
-		if ( StringUtils.isNotEmpty(sm.getUsername()) && StringUtils.isNotEmpty(sm.getPassword()) ){
-			return true;
-		} else {
-			return false;
-		}
+
+		return StringUtils.isNotEmpty(sm.getUsername()) && StringUtils.isNotEmpty(sm.getPassword());
 	}
 	
 	@Override

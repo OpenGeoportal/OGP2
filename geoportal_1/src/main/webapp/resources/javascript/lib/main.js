@@ -15,6 +15,13 @@ jQuery(document)
 		.ready(
 				function() {
 
+                    //add support for csrf tokens in ajax requests via jQuery
+                    var token = jQuery("meta[name='_csrf']").attr("content");
+                    var header = jQuery("meta[name='_csrf_header']").attr("content");
+                    jQuery(document).ajaxSend(function (e, xhr, options) {
+                        xhr.setRequestHeader(header, token);
+                    });
+
 					// ogp will hold instances
 					OpenGeoportal.ogp = {};
 					var ogp = OpenGeoportal.ogp; // an alias

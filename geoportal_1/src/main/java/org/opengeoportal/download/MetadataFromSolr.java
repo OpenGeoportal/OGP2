@@ -33,11 +33,11 @@ public class MetadataFromSolr implements MetadataRetriever {
 	private Resource iso19139StyleSheet;
 	
 	public enum MetadataType {
-		ISO_19139, FGDC;
+        ISO_19139, FGDC
 
-	}
-	
-	MetadataFromSolr() {
+    }
+
+    MetadataFromSolr() {
 		// Create a factory
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
@@ -154,9 +154,9 @@ public class MetadataFromSolr implements MetadataRetriever {
 		query.setQuery( descriptor + ":" + identifier );
 		query.addField("FgdcText");
 		query.setRows(1);
-		
-		 SolrDocumentList docs = this.layerInfoRetriever.getSolrServer().query(query).getResults();
-		 return (String) docs.get(0).getFieldValue("FgdcText");
+
+        SolrDocumentList docs = this.layerInfoRetriever.getSolrClient().query(query).getResults();
+        return (String) docs.get(0).getFieldValue("FgdcText");
 	}
 	
 	/**

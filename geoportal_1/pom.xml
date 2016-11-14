@@ -4,7 +4,7 @@
 	<groupId>org.opengeoportal</groupId>
 	<artifactId>geoportal</artifactId>
 	<packaging>war</packaging>
-	<version>2.0.BETA-2</version>
+    <version>2.1-SNAPSHOT</version>
 	<name>opengeoportal webapp</name>
 	<url>http://opengeoportal.org</url>
 	<repositories>
@@ -19,58 +19,31 @@
 			<url>http://download.osgeo.org/webdav/geotools/</url>
 		</repository>
 		<repository>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
 			<id>opengeo</id>
 			<name>OpenGeo Maven Repository</name>
 			<url>http://repo.opengeo.org</url>
 		</repository>
 	</repositories>
-	<!--mvn test runs the Selenium 2 based junit tests. you probably won't like 
-		the default value for the OpenGeoportal server. You can specify it via -Durl=http://geoportal-demo.atech.tufts.edu 
-		the tests run with both the Firefox and Chrome browsers. to run the tests 
-		on a headless server use -Dheadless=true. additional information is at http://code.google.com/p/opengeoportal/wiki/AutomatedTesting -->
+
 	<!-- Shared version number properties -->
 	<properties>
-		<org.springframework.version>4.0.3.RELEASE</org.springframework.version>
-		<org.springframework.security.version>3.2.3.RELEASE</org.springframework.security.version>
-		<geotools.version>13.2</geotools.version>
-		<jackson.version>2.3.2</jackson.version>
+        <warFile.name>opengeoportal</warFile.name>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wro4j.version>1.7.2</wro4j.version>
-		<warFile.name>opengeoportal</warFile.name>
+
+        <org.springframework.version>4.3.4.RELEASE</org.springframework.version>
+        <org.springframework.security.version>4.2.0.RELEASE</org.springframework.security.version>
+        <geotools.version>16.0</geotools.version>
+        <jackson.version>2.8.4</jackson.version>
+        <httpcomponents.version>4.5.2</httpcomponents.version>
+
+        <wro4j.version>1.8.0</wro4j.version>
 	</properties>
-	<dependencies>
 
-		<!-- Core utilities used by other modules. Define this if you use Spring 
-			Utility APIs (org.springframework.core.*/org.springframework.util.*) -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
 
-		<!-- Expression Language (depends on spring-core) Define this if you use 
-			Spring Expression APIs (org.springframework.expression.*) -->
-		<!--<dependency> <groupId>org.springframework</groupId> <artifactId>spring-expression</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- Bean Factory and JavaBeans utilities (depends on spring-core) Define 
-			this if you use Spring Bean APIs (org.springframework.beans.*) -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-beans</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
+    <dependencies>
 
-		<!-- Aspect Oriented Programming (AOP) Framework (depends on spring-core, 
-			spring-beans) Define this if you use Spring AOP APIs (org.springframework.aop.*) -->
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-aop</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- Application Context (depends on spring-core, spring-expression, spring-aop, 
-			spring-beans) This is the central artifact for Spring's Dependency Injection 
-			Container and is generally always defined -->
+        <!-- spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
@@ -83,47 +56,12 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Various Application Context utilities, including EhCache, JavaMail, 
-			Quartz, and Freemarker integration Define this if you need any of these integrations -->
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-context-support</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- Transaction Management Abstraction (depends on spring-core, spring-beans, 
-			spring-aop, spring-context) Define this if you use Spring Transactions or 
-			DAO Exception Hierarchy (org.springframework.transaction.*/org.springframework.dao.*) -->
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-tx</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- JDBC Data Access Library (depends on spring-core, spring-beans, spring-context, 
-			spring-tx) Define this if you use Spring's JdbcTemplate API (org.springframework.jdbc.*) -->
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-jdbc</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- Object-to-Relation-Mapping (ORM) integration with Hibernate, JPA, 
-			and iBatis. (depends on spring-core, spring-beans, spring-context, spring-tx) 
-			Define this if you need ORM (org.springframework.orm.*) -->
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-orm</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- Object-to-XML Mapping (OXM) abstraction and integration with JAXB, 
-			JiBX, Castor, XStream, and XML Beans. (depends on spring-core, spring-beans, 
-			spring-context) Define this if you need OXM (org.springframework.oxm.*) -->
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-oxm</artifactId>
 			<version>${org.springframework.version}</version>
 		</dependency>
-
-		<!-- Web application development utilities applicable to both Servlet and 
-			Portlet Environments (depends on spring-core, spring-beans, spring-context) 
-			Define this if you use Spring MVC, or wish to use Struts, JSF, or another 
-			web framework with Spring (org.springframework.web.*) -->
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>${org.springframework.version}</version>
-		</dependency>
-
-		<!-- Spring MVC for Servlet Environments (depends on spring-core, spring-beans, 
-			spring-context, spring-web) Define this if you use Spring MVC with a Servlet 
-			Container such as Apache Tomcat (org.springframework.web.servlet.*) -->
 
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -131,14 +69,6 @@
 			<version>${org.springframework.version}</version>
 		</dependency>
 
-		<!-- Spring MVC for Portlet Environments (depends on spring-core, spring-beans, 
-			spring-context, spring-web) Define this if you use Spring MVC with a Portlet 
-			Container (org.springframework.web.portlet.*) -->
-		<!-- <dependency> <groupId>org.springframework</groupId> <artifactId>spring-webmvc-portlet</artifactId> 
-			<version>${org.springframework.version}</version> </dependency> -->
-		<!-- Support for testing Spring applications with tools such as JUnit and 
-			TestNG This artifact is generally always defined with a 'test' scope for 
-			the integration testing framework and unit testing stubs -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
@@ -147,147 +77,122 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpcore</artifactId>
-			<version>4.3</version>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${org.springframework.security.version}</version>
+        </dependency>
 
-		<dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>${org.springframework.security.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+            <version>${org.springframework.security.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-cas</artifactId>
+            <version>${org.springframework.security.version}</version>
+        </dependency>
+
+
+        <dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.1</version>
+            <version>${httpcomponents.version}</version>
 		</dependency>
 
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>${httpcomponents.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-cache</artifactId>
+            <version>${httpcomponents.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>2.20.0</version>
-			<scope>runtime</scope>
-		</dependency>
+        <!-- geotools -->
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.5</version>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
 
-		<dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-metadata</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-extension</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-wfs</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+
+
+        <dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
-			<version>4.5.1</version>
+            <version>6.2.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-			<version>${org.springframework.security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
-			<version>${org.springframework.security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-web</artifactId>
-			<version>${org.springframework.security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-ldap</artifactId>
-			<version>${org.springframework.security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-cas</artifactId>
-			<version>${org.springframework.security.version}</version>
-		</dependency>
-		<dependency>
+
+
+        <dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
 			<version>1.6</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.thetransactioncompany</groupId>
-			<artifactId>cors-filter</artifactId>
-			<version>1.9.2</version>
-		</dependency>
 
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-main</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-shapefile</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-metadata</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-referencing</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-epsg-hsql</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-epsg-extension</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-wfs</artifactId>
-			<version>${geotools.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<version>4.3.1</version>
-		</dependency>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+
+        <dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 			<version>${jackson.version}</version>
@@ -302,23 +207,63 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jstl</artifactId>
-			<version>1.2</version>
-		</dependency>
 
-		<dependency>
+
+        <dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.1</version>
 		</dependency>
-		<dependency>
+
+        <dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			<version>2.5.2-M1</version>
 		</dependency>
-	</dependencies>
+
+
+        <!-- logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+
+        <!-- testing -->
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>2.20.0</version>
+            <scope>runtime</scope>
+        </dependency>
+
+    </dependencies>
 	<build>
 		<finalName>${warFile.name}</finalName>
 		<plugins>

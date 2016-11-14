@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengeoportal.solr.SolrRecord;
 import org.slf4j.Logger;
@@ -46,15 +46,12 @@ public class OgpUtils {
 		if (arr.length != 2){
 			return false;
 		}
-		if (!arr[1].contains(".")){
-			return false;
-		}
+        return arr[1].contains(".");
 
-		return true;
-	}
-	
-	
-	/**
+    }
+
+
+    /**
 	 * a convenience method to get a url without the query string
 	 * 
 	 * @param url	a url String

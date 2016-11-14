@@ -9,6 +9,7 @@
 	<security:http pattern="/resources/**" security="none" />
 	
 	<security:http auto-config='false' use-expressions="true">
+		<security:cors/>
 		<security:form-login login-page="/${login.url}"/>
 		<security:intercept-url pattern="/log*" access="permitAll" requires-channel="https" />
 		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />

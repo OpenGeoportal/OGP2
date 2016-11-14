@@ -1,6 +1,8 @@
 package org.opengeoportal;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.opengeoportal.config.ogp.OgpConfig;
@@ -57,11 +59,17 @@ public class HomeController {
 		addConfig(mav);
 		
 		//Debugging
-		/*Iterator<Entry<String, Object>> iter = mav.getModelMap().entrySet().iterator();
-		  while (iter.hasNext()){
-			Entry<String, Object> stuff = iter.next();
+/*		Iterator<Map.Entry<String, Object>> iter = mav.getModelMap().entrySet().iterator();
+          while (iter.hasNext()){
+			Map.Entry<String, Object> stuff = iter.next();
 			logger.info(stuff.getKey());
-			logger.info((String) stuff.getValue());
+			  if (stuff.getValue() instanceof String) {
+				  logger.info((String) stuff.getValue());
+			  }
+			  if (stuff.getValue() instanceof Boolean) {
+				  logger.info(Boolean.toString((Boolean) stuff.getValue()));
+			  }
+
 		}*/
 		return mav;
 
@@ -81,10 +89,25 @@ public class HomeController {
 		
 		mav.addObject("titlePrimary", conf.getPageTitlePrimary());
 		mav.addObject("titleOffset", conf.getPageTitleOffset());
-		
-		mav.addObject("extraJs", conf.getJsLocalized());	//<script type="text/javascript" src="resources/javascript/dataTables.scroller.min.js"></script>
-		mav.addObject("extraCss", conf.getCssLocalized());  //<link rel="stylesheet" href="resources/css/google.css" type="text/css" />
-		
+
+        String extraJs = conf.getJsLocalized();
+        if (extraJs.length() > 0) {
+            mav.addObject("hasExtraJs", true);
+            mav.addObject("extraJs", extraJs);
+        } else {
+            mav.addObject("hasExtraJs", false);
+        }
+        //<script type="text/javascript" src="resources/javascript/dataTables.scroller.min.js"></script>
+        //<link rel="stylesheet" href="resources/css/google.css" type="text/css" />
+        String extraCss = conf.getCssLocalized();
+        if (extraJs.length() > 0) {
+            mav.addObject("hasExtraCss", true);
+            mav.addObject("extraCss", extraCss);
+        } else {
+            mav.addObject("hasExtraCss", false);
+        }
+
+
 		mav.addObject("searchUrl", conf.getSearchUrl().toString());
 		mav.addObject("analyticsId", conf.getAnalyticsId());
 		
@@ -94,4 +117,6 @@ public class HomeController {
 		mav.addObject("secureDomain", conf.getLoginConfig().getSecureDomain());
 		
 	}
+
+
 }

@@ -50,8 +50,6 @@
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
-	<beans:bean id="jsonpCallbackFilter"
-		class="org.opengeoportal.utilities.http.JsonpCallbackFilter" />
 	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.proxy.ImageHandlerFactory" />
 	
 	<beans:bean id="imageHandler" class="org.opengeoportal.proxy.ImageHandlerImpl" scope="prototype" lazy-init="true" />
@@ -293,6 +291,10 @@
 
 	<beans:bean id="wmcCreator" class="org.opengeoportal.ogc.WmcCreatorImpl"
 		scope="prototype" />
+
+    <beans:bean id="corsFilter" class="org.opengeoportal.security.OgpCorsFilter">
+        <beans:constructor-arg name="domain" value="${ogp.domain}"/>
+    </beans:bean>
 
 	<task:annotation-driven executor="executor" />
 

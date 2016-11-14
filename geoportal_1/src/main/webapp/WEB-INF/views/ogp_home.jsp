@@ -5,11 +5,15 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>${pageTitle.primary} ${pageTitle.offset}</title>
+    <meta name="_csrf" content="${_csrf.token}"/>
+    <!-- default header name is X-CSRF-TOKEN -->
+    <meta name="_csrf_header" content="${_csrf.headerName}"/>
+
+    <title>${titlePrimary} ${titleOffset}</title>
 	<!-- add analyticsId, searchUrl, login info here -->
 	<script>
-	
-OpenGeoportal = {};
+
+        OpenGeoportal = {};
 OpenGeoportal.Config = {};
 OpenGeoportal.Config.analyticsId="${analyticsId}";
 OpenGeoportal.Config.searchUrl="${searchUrl}";

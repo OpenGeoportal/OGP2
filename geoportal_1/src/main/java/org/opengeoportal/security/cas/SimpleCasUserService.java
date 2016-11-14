@@ -14,6 +14,7 @@ package org.opengeoportal.security.cas;
 * limitations under the License.
 */
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.cas.userdetails.AbstractCasAssertionUserDetailsService;
@@ -22,7 +23,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.Assert;
-import org.apache.commons.lang.ArrayUtils;
 import org.jasig.cas.client.validation.Assertion;
 
 import java.util.List;

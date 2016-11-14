@@ -19,7 +19,7 @@ package org.opengeoportal.proxy.controllers;
 * limitations under the License.
 */
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.AbortableHttpRequest;
@@ -44,7 +44,6 @@ import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -335,8 +334,8 @@ private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) thro
 	String queryText = "Name:" + layerName;
 	
     query.setQuery(queryText);
-	QueryResponse queryResponse = this.layerInfoRetriever.getSolrServer().query(query);
-	List<SolrRecord> records = queryResponse.getBeans(SolrRecord.class);
+    QueryResponse queryResponse = this.layerInfoRetriever.getSolrClient().query(query);
+    List<SolrRecord> records = queryResponse.getBeans(SolrRecord.class);
 	if (records.isEmpty()){
 		throw new Exception("No matching record found in Solr Index for ['" + layerName + "']");
 	}

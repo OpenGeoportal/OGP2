@@ -1,14 +1,15 @@
 package org.opengeoportal.metadata;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.http.client.HttpClient;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
@@ -22,7 +23,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PostFilter;
 
 public class SolrLayerInfoRetriever implements LayerInfoRetriever{
-	private SolrServer solrServer = null;
+	private SolrClient solrClient = null;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
@@ -40,16 +41,16 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 		if (url$.contains("select")){
 			url$ = url$.substring(0, url$.indexOf("/select"));
 		}
-		logger.debug("creating Solr Server at " + url$);
-		HttpSolrServer httpServer = new HttpSolrServer(url$, httpClient);
-		httpServer.setParser(new XMLResponseParser());
-		
-		this.solrServer = (SolrServer) httpServer;
+		logger.debug("creating SolrClient at " + url$);
+		HttpSolrClient httpSolrClient = new HttpSolrClient.Builder(url$)
+				.withHttpClient(httpClient).withResponseParser(new XMLResponseParser()).build();
+
+		this.solrClient = httpSolrClient;
 	}
 	
 	@Override
-	public SolrServer getSolrServer(){
-		if (solrServer == null){
+	public SolrClient getSolrClient() {
+		if (solrClient == null) {
 			try {
 				init();
 			} catch (Exception e) {
@@ -58,7 +59,7 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 		}
 
 
-		return solrServer;
+		return solrClient;
 	}
 	
 	//use Spring Security hasPermission expression 
@@ -72,7 +73,7 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	}
 	
 	public List<SolrRecord> fetchAllLayerInfo(Set<String> layerIds) throws SolrServerException {
-		SolrServer server = getSolrServer();
+		SolrClient solrClient = getSolrClient();
 		String query = "";
 		for (String layerId : layerIds){
 			logger.debug(layerId);
@@ -91,8 +92,8 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	    queryObj.setQuery(query);
 	    QueryResponse response = null;
 	    try {
-	    	response = server.query(queryObj);
-	    } catch (Exception e){
+			response = solrClient.query(queryObj);
+		} catch (Exception e){
 	    	logger.error(e.getMessage());
 	    }
 	    //logger.info(response.getResults().get(0).getFieldValue("Name").toString());
@@ -102,11 +103,11 @@ public class SolrLayerInfoRetriever implements LayerInfoRetriever{
 	}
 
 	@Override
-	public SolrRecord getAllLayerInfo(String layerId) throws SolrServerException {
+	public SolrRecord getAllLayerInfo(String layerId) throws SolrServerException, IOException {
 		String query = "LayerId:" + ClientUtils.escapeQueryChars(layerId.trim());
 	    SolrQuery queryObj = new SolrQuery();
 	    queryObj.setQuery( query );
-		List<SolrRecord> results = getSolrServer().query(queryObj).getBeans(SolrRecord.class);
+		List<SolrRecord> results = getSolrClient().query(queryObj).getBeans(SolrRecord.class);
 		if(results.isEmpty()){
 			throw new SolrServerException("Layer with id ['" + layerId.trim() + "'] not found in the Solr index.");
 		} else {

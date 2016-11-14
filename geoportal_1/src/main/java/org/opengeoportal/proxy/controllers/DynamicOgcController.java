@@ -1,26 +1,7 @@
 package org.opengeoportal.proxy.controllers;
 
-/**
- * Adapted from David Smiley's HTTP reverse proxy/gateway servlet
- */
-/**
-* Copyright MITRE
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
-
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.*;
 import org.apache.http.client.methods.AbortableHttpRequest;
 import org.apache.http.client.methods.HttpGet;
@@ -71,7 +52,6 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.Formatter;
@@ -80,6 +60,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+/**
+ * Adapted from David Smiley's HTTP reverse proxy/gateway servlet
+ */
+/**
+* Copyright MITRE
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 
 @Controller
 @RequestMapping("/dynamic")
@@ -473,7 +473,7 @@ private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) thro
 	String queryText = "Name:" + layerName;
 	
     query.setQuery(queryText);
-	QueryResponse queryResponse = this.layerInfoRetriever.getSolrServer().query(query);
+	QueryResponse queryResponse = this.layerInfoRetriever.getSolrClient().query(query);
 	List<SolrRecord> records = queryResponse.getBeans(SolrRecord.class);
 	if (records.isEmpty()){
 		throw new Exception("No matching record found in Solr Index for ['" + layerName + "']");
