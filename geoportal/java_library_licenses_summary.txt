@@ -9,7 +9,6 @@ HttpClient Mime	 		Apache 2.0 license
 Jackson JSON library	dual, Apache 2.0, LGPL 2.1
 JUnit	  				IBM's Common Public License Version 0.5 
 Solr 	 				Apache 2.0 license
-cors filter 	 		Apache 2.0 license.  http://software.dzhuvinov.com/cors-filter.html
 log4j	 				Apache 2.0 license
 slf4j	 				MIT license
 Selenium				Apache 2.0 License

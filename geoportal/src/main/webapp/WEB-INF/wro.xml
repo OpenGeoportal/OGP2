@@ -39,7 +39,6 @@
 		<js>/resources/javascript/lib/views/cartRow.js</js>
 		<js>/resources/javascript/lib/views/cartTable.js</js>
 		<js>/resources/javascript/lib/views/leftPanel.js</js>
-		<js>/resources/javascript/lib/views/tableRowSettings.js</js>
 		<js>/resources/javascript/lib/models/externalPreviewWindowsCollection.js</js>
 		<js>/resources/javascript/lib/views/abstractCartAction.js</js>
 		<js>/resources/javascript/lib/views/download.js</js>

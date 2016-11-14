@@ -15,7 +15,7 @@
 }
 
 #footerLogos .institutionLogo {
-	background: url("../media/ogp-institutions.png") no-repeat scroll -9px
+	background: url("/resources/media/ogp-institutions.png") no-repeat scroll -9px
 		-59px transparent;
 	height: 30px;
 	width: 66px;

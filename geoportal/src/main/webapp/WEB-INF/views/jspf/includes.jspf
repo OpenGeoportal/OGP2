@@ -19,7 +19,7 @@ if (!Object.create) {
 		F.prototype = o;
 		return new F();
 	};
-};
+}
 </script>
 
 <c:choose>
@@ -28,9 +28,9 @@ if (!Object.create) {
       </c:when>
 
       <c:otherwise>
-      <link rel="stylesheet" href="resources/css/ogp.css" type="text/css" />
-     
-      <script type="text/javascript" src="resources/javascript/ogp.js"></script>
+            <link rel="stylesheet" href="wro/ogp.css" type="text/css"/>
+
+            <script type="text/javascript" src="wro/ogp.js"></script>
       </c:otherwise>
 </c:choose>
 

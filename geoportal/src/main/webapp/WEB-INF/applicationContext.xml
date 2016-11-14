@@ -18,8 +18,15 @@
     	<oxm:class-to-be-bound name="org.opengeoportal.ogc.wmc.jaxb.ViewContextType"/>
     </oxm:jaxb2-marshaller>
 
+	<beans:bean id="wroProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<beans:property name="location" value="WEB-INF/wro.properties"/>
+	</beans:bean>
 
-    
+	<beans:bean id="wroFilter" class="ro.isdc.wro.http.ConfigurableWroFilter">
+		<beans:property name="properties" ref="wroProperties"/>
+	</beans:bean>
+
+
 	<beans:bean id="proxyFactory" class="org.opengeoportal.proxy.ProxyFactory"/>
 
 	<beans:bean id="proxy.simple" class="org.opengeoportal.proxy.GenericProxyImpl" scope="prototype" lazy-init="true" />

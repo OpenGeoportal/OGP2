@@ -16,7 +16,7 @@
 }
 
 .poweredByGoogleAttr {
-    background: url("../media/powered-by-google/desktop/powered-by-google-on-white.png") no-repeat scroll 0 0 #FFFFFF;
+    background: url("/resources/media/powered-by-google/desktop/powered-by-google-on-white.png") no-repeat scroll 0 0 #FFFFFF;
     float: right;
     height: 20px;
     width: 110px;

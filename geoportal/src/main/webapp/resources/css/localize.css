@@ -2,7 +2,7 @@
 
 
 #logoGraphic {
-		background: url("../media/OGP_logo.png") repeat scroll 0 -5px rgba(0, 0, 0, 0);
+	background: url("/resources/media/OGP_logo.png") repeat scroll 0 -5px rgba(0, 0, 0, 0);
 		height: 50px;
 		width: 50px;
 		padding: 2px;
