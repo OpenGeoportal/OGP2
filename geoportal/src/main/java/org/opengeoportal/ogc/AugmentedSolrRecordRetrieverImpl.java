@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.fasterxml.jackson.core.JsonParseException;
 
 public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetriever {
-	final Logger logger = LoggerFactory.getLogger(this.getClass());
+	final Logger logger = LoggerFactory.getLogger(AugmentedSolrRecordRetrieverImpl.class);
 	private final int WMS_ATTEMPTS = 3;
 	private final int DATA_ATTEMPTS = 3;
 	private final int PAUSE = 200;//milliseconds
