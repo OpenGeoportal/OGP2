@@ -1,10 +1,24 @@
+<!DOCTYPE HTML>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="_csrf" content="${_csrf.token}"/>
+    <!-- default header name is X-CSRF-TOKEN -->
+    <meta name="_csrf_header" content="${_csrf.headerName}"/>
+
+    <title>OGP User Guide</title>
+    <!-- add analyticsId, searchUrl, login info here -->
+
 <style>
 
 #userGuide img {
 	border:1px solid #cccccc;
 }
 </style>
-
+</head>
+<body>
 <div id="userGuide">
 	<div style="position:fixed; width:100%">
 		<span class="button" href="#tableOfContents" onclick="jQuery('#userGuide').scrollTo(0,0);" style="position:relative; left:0px; color: blue;"> top </span>
@@ -145,7 +159,7 @@
 										</li>
 										<li>
 											<p class=MsoListParagraphCxSpMiddle>
-												<span style:'color:black'>Include Restricted Data</span>
+                                                <span style='color:black'>Include Restricted Data</span>
 											</p>
 										</li>
 									</ol>
@@ -1120,7 +1134,7 @@
 
 								<ul>
 									<li class=MsoListParagraphCxSpMiddle>
-										<span style='font: 7.0pt'> </span><b>Shapefile</b>
+                                        <span style='font-size: 7pt'> </span><b>Shapefile</b>
 										- If any of the datasets in your cart are vector data, you will be given the option
 										to download as in shapefile format.  A shapefile is a geospatial vector data
 										format for geographic information systems. A table of records stores
@@ -1128,7 +1142,7 @@
 									</li>
 														
 									<li class=MsoListParagraphCxSpMiddle>
-										<span style='font: 7.0pt'> </span><b>GeoTIFF</b>
+                                        <span style='font-size: 7pt'> </span><b>GeoTIFF</b>
 										- If any of the datasets in your cart are raster data, you will be given the option
 										to download as in the GeoTiff format.  A GeoTiff is a geospatial raster data format
 										that stores spatial information within the TIFF file so that it can be used in GIS
@@ -1136,7 +1150,7 @@
 									</li>
 
 									<li class=MsoListParagraphCxSpMiddle>
-										<span style='font: 7.0pt'> </span><b>KML</b>
+                                        <span style='font-size: 7pt'> </span><b>KML</b>
 										- Keyhole Markup Language (KML) is an XML schema for expressing
 										geographic annotation and visualization within Internet-based,
 										two-dimensional maps and three-dimensional Earth browsers, for
@@ -1196,7 +1210,7 @@
 		
 		<li id="ogpInterface">
 			<p class=MsoListParagraph>
-				<b><span style="font-size:16.0pt color:black">The OpenGeoportal Interface</span></b>
+                <b><span style="font-size:16.0pt; color:black">The OpenGeoportal Interface</span></b>
 				<br />
 				<span style='color: black'>Several links are always visible on the Open Geoportal
 					interface. They	include four links on a menu bar on the upper right of the site:
@@ -1241,7 +1255,7 @@
 	<br />
 
 
-	<div id="userGuideFooter" style="background-color:#b1b1b1; padding:15px; width=100%">
+        <div id="userGuideFooter" style="background-color:#b1b1b1; padding:15px; width:100%">
 		<p class=MsoNormal>
 			University of Arizona Library and the Tufts UIT Training &amp; Documentation Department<br> August 2015<br>
 		</p>
@@ -1254,3 +1268,5 @@
 	</div>
 </div>
 </div>
+</body>
+</html>

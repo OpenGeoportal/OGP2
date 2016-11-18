@@ -1,4 +1,4 @@
-package org.opengeoportal;
+package org.opengeoportal.controllers;
 
 import java.util.HashSet;
 import java.util.Iterator;

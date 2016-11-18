@@ -7,8 +7,8 @@
 		<button class="reset button headerButton">Reset</button> 
 		<span class="separator">|</span> 
 		<button id="userGuideLink" class="infoLinks button headerButton">Help</button>
-		<span class="separator">|</span> 
-		<button id="highlightsLink" class="infoLinks button headerButton">About</button> 
+		<span class="separator">|</span>
+		<button id="aboutLink" class="infoLinks button headerButton">About</button>
 		<span class="separator">|</span> 
 		<button id="headerLogin" class="infoLinks login button headerButton">Login</button>
 	</div>

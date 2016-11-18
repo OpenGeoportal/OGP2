@@ -192,7 +192,7 @@ OpenGeoportal.Structure = function() {
 		});
 		jQuery("#userGuideLink").click(function() {
 			if (jQuery("#userGuide").length == 0) {
-				jQuery.get(OpenGeoportal.Utility.JspfLocation + "userGuide.jspf", function(data) {
+				jQuery.get("userguide", function (data) {
 					jQuery("#dialogs").append(data);
 					jQuery("#userGuide").dialog({
 						zIndex : 2999,
