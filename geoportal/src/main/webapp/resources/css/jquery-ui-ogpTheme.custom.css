@@ -242,13 +242,35 @@
 .ui-button {
 	display: inline-block;
 	position: relative;
-	padding: 0;
+    padding: .2em 1em;
 	line-height: normal;
 	margin-right: .1em;
 	cursor: pointer;
 	vertical-align: middle;
 	text-align: center;
 	overflow: visible; /* removes extra width in IE */
+
+    border: 1px solid #999999;
+    border-radius: .3em;
+    background: #f1f1f1 url(../media/gray_button_off.png) 50% 50% repeat;
+    font-weight: normal;
+    color: #000000;
+}
+
+.ui-button-icon {
+    float: right;
+    margin-bottom: -.3em;
+}
+
+.ui-menu-item.ui-state-active {
+    background-image: none;
+}
+
+a.ui-menu-item-wrapper.ui-state-active {
+    border-top: 1px solid #d8e8fa;
+    border-bottom: 1px solid #d8e8fa;
+    background: #ebf6ff none;
+    border-radius: 0;
 }
 
 .ui-button,.ui-button:link,.ui-button:visited,.ui-button:hover,.ui-button:active
@@ -583,9 +605,9 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 /*added: a button that appears in a title bar*/
 .ui-dialog .ui-dialog-titlebar .ui-titlebar-button {
 	margin: -10px 0 0;
-	padding: 1px;
 	position: absolute;
 	top: 57%;
+    font-size: .75em;
 }
 
 .ui-dialog .ui-dialog-titlebar .ui-button-text-only .ui-button-text {
@@ -612,16 +634,12 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 	right: 0.3em;
 	top: 57%;
 	width: 17px;
+    visibility: hidden;
 
-	/*position: absolute;
-	right: .3em;
-	top: 57%;
-	width: 21px;
-	margin: -10px 0 0 0;
-	padding: 1px;
-	height: 20px;
-	background-image: none;
-	background-color: #6F6F72;*/
+}
+
+.ui-dialog-titlebar button.ui-dialog-titlebar-close > span {
+    visibility: visible;
 }
 
 .ui-dialog .ui-dialog-titlebar-close .ui-icon {

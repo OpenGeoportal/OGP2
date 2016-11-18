@@ -10,9 +10,13 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-
-OpenGeoportal.Views.LayerTable = Backbone.View
-		.extend({
+/**
+ * This is a base class for display tables used in OGP. The SearchResults table and Cart table inherit from it. This
+ * class handles column sizing and resizing and basic construction.
+ *
+ * @type {any}
+ */
+OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 
 			initialize : function() {
 				this.template = OpenGeoportal.ogp.template;
@@ -21,6 +25,13 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 
 				this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 				this.adjustColumnsHandler();
+
+                //resizable appears not to work correctly if the panel is not visible
+                var self = this;
+                jQuery(document).on("panelOpen", function () {
+                    self.resizeColumns();
+                });
+
 				this.initSubClass();
 				this.subviewStorage();
 				this.render();
@@ -274,6 +285,9 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 
 
 				for (var i in resizables){
+                    if (!resizables.hasOwnProperty(i)) {
+                        continue;
+                    }
 					var model = resizables[i];
 					var currSize = newSizes[i];
 					var newWidth = currSize.newWidth - minWidthCarryOver;
@@ -292,75 +306,48 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 						// need to propogate the difference bw minWidth and newWidth
 
 					}
-				};
-
-				this.updateColWidths();
+                }
+                this.updateColWidths();
 				
 			},
 			
 			resizeColumns: function() {
-				//mark columns that are resizable and store selectors
-				//this.markResizableColumns();
-
 				var columns = this.tableConfig.where({resizable: true, visible: true});
 				// we need at least 2 columns for resizing to work
 				if (columns.length < 2) {
 					return;
 				}
 
-				/*var that = this;
-				try{
-				_.each(columns, function(model){
-					var colClass = model.get("columnClass");
-					var sel = that.$el.find(".tableHeaders ." + colClass).first()[0];					
-					model.set({headerEl: sel});
-				});
-				} catch (e){
-					console.log("error");
-					console.log(e);
-				}*/
-				
 				//don't apply resizable to the last resizable column
 				for (var i = 0; i < (columns.length - 1); i++) {
+
 					if (!columns.hasOwnProperty(i)){
 						continue;
 					}
-					var currentModel = columns[i];
+
 					var remainingColumns = columns.slice(i);
 
-					// reset column resizable state; trying to destroy a 'resizable' that hasn't been initialized causes an error
-					if (currentModel.has("resizableApplied") && currentModel.get("resizableApplied")){
-						try{
-							jQuery(sel).resizable("destroy");
-							currentModel.set({resizableApplied: false})
-							//console.log("resizable removed");
-						} catch (e){
-							//sometimes no resizable to destroy...
-							//TODO: debug
-						}
+                    this.addResizableColumn(remainingColumns);
 
-					}
-
-					this.addResizableColumn(currentModel, remainingColumns);
-
-					
-					
 				}
 
 			},
 
-			addResizableColumn: function(model, remainingColumns) {
-				var that = this;
+    addResizableColumn: function (remainingColumns) {
+        var self = this;
+        var model = remainingColumns[0];
 				var colClass = model.get("columnClass");
-				var alsoResizeString = ".rowContainer ." + colClass; 
-				
-				var resizableEl$ = that.$el.find(".tableHeaders ." + colClass);
+        var alsoResizeString = ".rowContainer ." + colClass;
+
+        var resizableEl$ = this.$el.find(".tableHeaders ." + colClass);
+
+        //if an instance exists already, we need to destroy it
+        if (typeof resizableEl$.resizable("instance") != "undefined") {
+            resizableEl$.resizable("destroy");
+        }
+
 				resizableEl$.resizable(
 						{
-							create: function( event, ui ) {
-								//console.log("created resizable");
-								model.set({resizableApplied: true});
-							},
 							alsoResize : alsoResizeString,
 							handles : "e",
 							minWidth : model.get("minWidth"),
@@ -369,7 +356,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 								var remainingMinWidth = 0;
 								for ( var j in remainingColumns) {
 									var currentCol = remainingColumns[j];
-									var measuredWidth = that.$el.find(".tableHeaders ." + currentCol
+                                    var measuredWidth = self.$el.find(".tableHeaders ." + currentCol
 											.get("columnClass")).width();
 
 									remainingWidth += measuredWidth;
@@ -406,9 +393,9 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 										newWidth = proposedNewWidth;
 										totalPlay = 0;
 									}
-									var innerResize$ = that.$el.find(".rowContainer ." + colModel.get("columnClass"));
-									var header$ = that.$el.find(".tableHeaders ." + colModel
-											.get("columnClass"))
+                                    var innerResize$ = self.$el.find(".rowContainer ." + colModel.get("columnClass"));
+                                    var header$ = self.$el.find(".tableHeaders ." + colModel
+                                            .get("columnClass"));
 									var colResizables$ = header$.add(innerResize$);
 									//console.log("next resize " + colModel.get("columnClass"));
 									colResizables$.width(newWidth);
@@ -425,47 +412,17 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 								model.set({width: resizableEl$.width() });
 								for ( var j in remainingColumns) {
 									var currentCol = remainingColumns[j];
-									var measuredWidth = that.$el.find(".tableHeaders ." + currentCol
+                                    var measuredWidth = self.$el.find(".tableHeaders ." + currentCol
 											.get("columnClass")).width();
 									currentCol.set({
 										width : measuredWidth 
 									});
 								}
-								that.updateColWidths();
+                                self.updateColWidths();
 
 							}
 
 						});
-			},
-
-			// converts solr response object to backbone models
-			solrToCollection: function(dataObj) {
-				// dataObj is a Javascript object (usually) returned by Solr
-
-				// var solrResponse = dataObj.response;
-				// var totalResults = solrResponse.numFound;
-				// var startIndex = solrResponse.start;
-				var solrLayers = dataObj.response.docs;
-
-				// solr docs holds an array of hashtables, each hashtable contains a
-				// layer
-
-				var arrModels = [];
-				_.each(solrLayers, function(solrLayer){
-					//just parse the json here, so we can use the results elsewhere
-					var locationParsed = {};
-					try {
-						var rawVal = solrLayer.Location;
-						if (rawVal.length > 2){
-							locationParsed = jQuery.parseJSON(rawVal);
-						}
-					} catch (e){
-						console.log([solrLayer["LayerId"], e]);
-					}
-					solrLayer.Location = locationParsed;
-					arrModels.push(solrLayer);
-				});
-				return arrModels;
 			},
 			
 			addColumns: function(tableConfigCollection) {

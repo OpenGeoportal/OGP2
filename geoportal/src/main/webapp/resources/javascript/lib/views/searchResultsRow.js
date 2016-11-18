@@ -10,6 +10,11 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * The SearchResultsRow extends the LayerRow to add functionality specific to search results.
+ *
+ * @extends OpenGeoportal.Views.LayerRow
+ */
 OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 
 	subClassEvents : {

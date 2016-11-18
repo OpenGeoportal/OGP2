@@ -10,7 +10,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-
+/**
+ * The PreviewedLayersTable extends LayerTable and renders and controls the preview pane.
+ */
 OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 		.extend({
 			constructor: function (options) {

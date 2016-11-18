@@ -11,9 +11,11 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 }
 
 /**
- * A Backbone View of the Cart Collection
- * 
- * @constructor
+ * A Backbone View of the Cart Collection. The WebServices view handles the web services dialog and constructs
+ * urls that point to web service endpoints. If the user requests a WMC, it forms the request and passes it to the
+ * request queue. It extends CartActionView.
+ *
+ * @extends OpenGeoportal.Views.CartActionView
  */
 OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 		.extend({
@@ -177,10 +179,8 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 						             
 					serviceTypes.webservices.push(wmsService);
 
-				};
-				
-
-				var dialogContent = "";
+                }
+                var dialogContent = "";
 				
 				if (serviceTypes.webservices.length > 0){
 					dialogContent = this.template.webServicesDialogContent(serviceTypes);

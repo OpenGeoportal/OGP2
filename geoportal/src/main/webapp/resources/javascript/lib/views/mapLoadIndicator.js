@@ -10,6 +10,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * View handles display and behavior for the Load indicators.
+ * @type {any}
+ */
 OpenGeoportal.Views.LoadIndicatorView = Backbone.View.extend({
 	constructor: function (options) {
 		//allow options to be passed in the constructor argument as in previous Backbone versions.
@@ -159,7 +163,7 @@ OpenGeoportal.Views.RequestQueueLoadIndicatorView = OpenGeoportal.Views.LoadIndi
 		var tickerText = "Sending Request...";
 		var processing = this.collection.getLayerCount();
 		if (processing > 0){
-			tickerText = "Processing " + processing
+            tickerText = "Processing " + processing;
 			if (processing > 1) {
 				tickerText += " layers...";
 			} else {

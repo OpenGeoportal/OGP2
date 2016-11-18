@@ -10,6 +10,11 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * CartRow handles rendering and logic for rows in the Cart table. Extends LayerRow by handling checkbox behavior and
+ * highlighting for available cart actions.
+ * @type {any}
+ */
 OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 
 	subClassEvents : {

@@ -9,7 +9,10 @@ if (typeof OpenGeoportal.Models == 'undefined'){
     throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
-
+/**
+ * QueryTerms sets defaults for OGP search queries, as well as setting behavior for basic and advanced query types.
+ * @type {any}
+ */
 OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	defaults: {
 

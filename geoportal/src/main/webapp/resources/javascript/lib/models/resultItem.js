@@ -10,6 +10,12 @@ if (typeof OpenGeoportal.Models == 'undefined'){
     throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * The ResultsCollection holds search results. It also contains some logic for parsing results from Solr and for
+ * paging. The ResultsCollection is where the actually Solr search query is fired, using Backbone fetch.
+ * @type {any}
+ */
+
 
 OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
 	//there are some cases where the LayerId doesn't make a good id for a Backbone model
@@ -17,9 +23,9 @@ OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
 
 });
 
-OpenGeoportal.ResultCollection = Backbone.Collection.extend({
+/*OpenGeoportal.ResultCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem
-});
+ });*/
 
 //collection for the bbview results table (to replace above)
 OpenGeoportal.ResultsCollection = Backbone.Collection.extend({

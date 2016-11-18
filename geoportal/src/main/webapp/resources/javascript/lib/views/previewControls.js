@@ -10,6 +10,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * The PreviewTools view handles behavior and rendering of preview tools, based on underlying model attributes.
+ * @type {any}
+ */
 OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	// should be subviews for each control?
 	events : {

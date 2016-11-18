@@ -10,6 +10,11 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * Contains model for a CartLayer and the Collection of CartLayers. CartLayer extends the ProtocolAware model.
+ * CartCollection holds some logic dealing with user authorization to add items to the Cart.
+ * @type {any}
+ */
 OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 	defaults : {},

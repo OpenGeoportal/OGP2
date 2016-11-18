@@ -21,7 +21,8 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 }
 
 /**
- * Search
+ * The Query view handles the rendering and behavior of the basic and advanced search forms. It's backed by
+ * the QueryTerms model.
  */
 // this should be a view of the query terms model
 OpenGeoportal.Views.Query = Backbone.View

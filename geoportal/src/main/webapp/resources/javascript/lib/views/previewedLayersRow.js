@@ -10,6 +10,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * The PreviewedLayersRow subclasses LayerRow and handles rows in the preview pane.
+ */
 OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 
 	subClassEvents: {

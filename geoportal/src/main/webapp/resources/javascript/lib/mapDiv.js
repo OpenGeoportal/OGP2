@@ -1442,6 +1442,7 @@ OpenGeoportal.MapController = function() {
 	this.saveImage = function() {
 		// TODO: add html5 canvas stuff...may have to wait for OL3?
 		var request = this.createImageRequest();
+
 		this.requestQueue.add(request);
 	};
 	

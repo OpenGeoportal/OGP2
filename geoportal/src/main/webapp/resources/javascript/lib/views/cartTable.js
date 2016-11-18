@@ -10,7 +10,12 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-
+/**
+ * CartTable renders the CartCollection as a table. It is a parent view of CartRow, which handles rendering
+ * at the row level. Extends LayerTable to add cart specific functions and behaviors.
+ *
+ * @type {any}
+ */
 OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 		.extend({
 			events : {

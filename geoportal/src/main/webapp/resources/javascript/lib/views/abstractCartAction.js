@@ -11,7 +11,8 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 }
 
 /**
- * A Backbone View of the Cart Collection
+ * The CartActionView is an abstract class for actions to perform on the
+ * CartCollection. Extend this class to add new cart actions.
  * 
  * @constructor
  */

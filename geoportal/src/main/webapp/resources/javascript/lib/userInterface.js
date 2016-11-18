@@ -1,11 +1,4 @@
-/** 
- * This javascript module includes functions for dealing with the user interface.
- * 
- * @author Chris Barnett
- * 
- */
-
-/**
+/*
  * create the namespace objects if they don't already exist
  */
 if (typeof OpenGeoportal == 'undefined') {
@@ -14,6 +7,12 @@ if (typeof OpenGeoportal == 'undefined') {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
+/**
+ * Structure contains logic for handling initial page load behavior (welcome and instruction bubbles, etc.), basic page
+ * behavior for window resize, search form resizing, click handlers for links, initialization of tabs, instantiation of
+ * LeftPanel model and view.
+ *
+ */
 OpenGeoportal.Structure = function() {
 	this.template = OpenGeoportal.ogp.template;
 	var analytics = new OpenGeoportal.Analytics();
@@ -33,6 +32,15 @@ OpenGeoportal.Structure = function() {
 		this.searchToggleHandler();
 
 		var model = new OpenGeoportal.Models.LeftPanel();
+
+		//make the default results pane width a percentage of the overall width
+		var defaultPercentWidth = .35;
+
+		this.openWidth = Math.max(model.get("openWidth"),
+			Math.ceil(jQuery(document).innerWidth() * defaultPercentWidth));
+
+		model.set("openWidth", this.openWidth);
+
 		this.panelView = new OpenGeoportal.Views.LeftPanel({
 			model : model,
 			el : "div#left_col"
@@ -406,7 +414,7 @@ OpenGeoportal.Structure = function() {
 			"height" : 250,
 			"width" : 600,
 			"top" : 259,
-			"left" : 520,
+			"left": this.openWidth + 40,
 			"arrow" : "left"
 		};
 		return this.infoBubble(elId, this.template.directionsText(), params);
@@ -414,7 +422,7 @@ OpenGeoportal.Structure = function() {
 
 	this.showDowntimeNotice = function() {
 		/* downtime notice */
-		var downtimeText = "Layers will be unavailable until later this afternoon while we perform server maintenance. We apologize for the inconvenience.";
+		var downtimeText = "Layers will be unavailable temporarily while we perform server maintenance. We apologize for the inconvenience.";
 		var downtimeDiv = '<div id="downtimeNotice" class="dialog infoDialog"><p>'
 				+ downtimeText + '</p></div>';
 		jQuery("#dialogs").append(downtimeDiv);

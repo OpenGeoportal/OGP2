@@ -1,4 +1,5 @@
-/* This javascript module creates all the global objects, namespaces them
+/**
+ * This javascript module creates all the global objects, namespaces them
  * It is the main function of the OGP application
  * 
  * author: Chris Barnett

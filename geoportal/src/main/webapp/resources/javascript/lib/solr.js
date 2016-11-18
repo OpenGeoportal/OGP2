@@ -1,19 +1,10 @@
-// This code provides an interface to the spatial data in the OpenGeoServer Solr server
+// This code provides an interface to the spatial data in the OpenGeoportal Solr server
 
-// To use it, first create an instance.  Then call member functions to set 
-//   as many search parameters as desired (e.g., setBoundingBox or setPublisher).
-//   Finally, to run the query call executeSearchQuery with success and error functions.
 
 // Solr queries can contain multiple filters (fq=) and a single query term (q=).  Filters are used to eliminate rows
 // from the set of returned results.  However, they do not affect scoring.  The query term
 // can both eliminate rows and specify a boost (which affects scoring).
-// For spatial searching, both filtering and query terms are used. 
-// For keyword searching, only query terms are used (different boosts are applied to each field).
-// For searches requiring both keywords and spatial elements, their query terms are ANDed together
-
-// Documentation on search in OpenGeoPortal is at http://code.google.com/p/opengeoportal/wiki/Search
-
-// This code uses ogpConfig.json values via OpenGeoportal.InstitutionInfo.getSearch()
+// For spatial searching, both filtering and query terms are used.
 
 // Repeat the creation and type-checking code for the next level
 if (typeof OpenGeoportal === 'undefined') {

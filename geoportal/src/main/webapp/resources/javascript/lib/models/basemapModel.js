@@ -11,7 +11,7 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 }
 
 /**
- * Basemap model
+ * Basemap model. handles some logic for holding and changing basemaps
  */
 OpenGeoportal.Models.Basemap = Backbone.Model.extend({
 	initialize : function() {

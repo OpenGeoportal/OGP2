@@ -1,11 +1,3 @@
-/* This javascript module includes utility functions for OpenGeoPortal plus
- * extra functions with no current home. OpenGeoportal.Utility is a
- * namespace rather than an object.  The XML functions might go away when we
- * upgrade to a newer version of jQuery, as it contains functions to parse XML.
- * 
- * author: Chris Barnett
- * 
- */
 
 if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
@@ -19,6 +11,10 @@ if (typeof OpenGeoportal.Utility === 'undefined') {
 	throw new Error("OpenGeoportal.Utility already exists and is not an object");
 }
 
+
+/**
+ * Some utility functions and settings.
+ */
 OpenGeoportal.Utility.ImageLocation = "resources/media/";
 OpenGeoportal.Utility.CssLocation = "resources/css/";
 OpenGeoportal.Utility.JspfLocation = "jspf/";
@@ -30,59 +26,7 @@ OpenGeoportal.Utility.getImage = function(imageName) {
 };
 
 OpenGeoportal.Utility.CurrentTab = 0;
-/*OpenGeoportal.Utility.whichTab = function() {
-	var tabInfo = {};
-	var tabIndex;
-	if (arguments.length > 0) {
-		tabIndex = arguments[0];
-	} else {
-		tabIndex = OpenGeoportal.Utility.CurrentTab;
-	}
-	tabInfo.index = tabIndex;
-	switch (tabIndex) {
-	case 0:
-		tabInfo.name = 'search';
-		tabInfo.tableObject = function() {
-			return OpenGeoportal.ogp.resultsTableObj;
-		};
-		tabInfo.tableDiv = 'resultsTable';
-		tabInfo.tableName = 'searchResults';
-		break;
-	case 1:
-		tabInfo.name = 'saved';
-		tabInfo.tableObject = function() {
-			return OpenGeoportal.ogp.cartTableObj;
-		};
-		tabInfo.tableDiv = 'savedLayersTable';
-		tabInfo.tableName = 'savedLayers';
-		break;
-	default:
-		// throw new Error('No tab is selected.');
-	}
-	return tabInfo;
-};
-*/
-/*OpenGeoportal.Utility.whichSearch = function() {
-	var activeSearchDiv = null;
-	jQuery(".searchBox > div").each(function() {
-		if (jQuery(this).css("display") == 'block') {
-			activeSearchDiv = jQuery(this).attr("id");
-		}
-	});
-	var searchInfo = {};
-	// searchInfo.script = 'solrSearchHandler.jsp';
-	switch (activeSearchDiv) {
-	case "basicSearchBox":
-		searchInfo.type = 'basicSearch';
-		break;
-	case "advancedSearchBox":
-		searchInfo.type = 'advancedSearch';
-		break;
-	default:
-		// throw new Error('No tab is selected.');
-	}
-	return searchInfo;
-};*/
+
 OpenGeoportal.Utility.LocalStorage = {};
 OpenGeoportal.Utility.LocalStorage.setBool = function(key, boolVal){
 
@@ -138,15 +82,6 @@ OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	return hex.join('').toUpperCase();
 };
 
-/*OpenGeoportal.Utility.idEscape = function(domElementId) {
-	return domElementId.replace(/(:|\.)/g, '\\$1');
-};*/
-
-/*
- * OpenGeoportal.Utility.getMetadata = function (layerId){ var params = { url:
- * "getMetadata.jsp?layer=" + layerId, dataType: 'xml', success: function(data){
- * console.log(data); } }; jQuery.ajax(params); };
- */
 
 OpenGeoportal.Utility.escapeQuotes = function(stringOfInterest) {
 	return stringOfInterest.replace("'", "\\'").replace('"', '\\"');

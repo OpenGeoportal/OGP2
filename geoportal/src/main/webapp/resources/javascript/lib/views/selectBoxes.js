@@ -355,7 +355,7 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 			});
 		});
 		if (this.lastFocus !== null){
-			$(".ui-menu" ).menu( "focus", null, this.lastFocus );
+			this.$el.find(".ui-menu").menu("focus", null, this.lastFocus);
 		}
 		return this;
 	}
@@ -458,7 +458,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			}
 			if (!model.get(selectAttr)){
 				all = false;
-				return;
+
 			}
 		});
 		
@@ -477,7 +477,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			}
 			if (model.get(selectAttr)){
 				all = false;
-				return;
+
 			}
 		});
 		

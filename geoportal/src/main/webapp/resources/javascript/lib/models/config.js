@@ -1,7 +1,4 @@
-/**
- * pulls info from config controller for the client to use
- * 
- * */
+
 
 // Repeat the creation and type-checking code for the next level
 if (typeof OpenGeoportal === 'undefined') {
@@ -21,6 +18,15 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 } else if (typeof OpenGeoportal.Models !== "object") {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
+
+/**
+ * Holds collections that configure OGP. Pulls some info from config controller (repositories, some other settings).
+ * Other info is bootstrapped on initial page load, and a couple of collections (iso topics and data types) are
+ * currently defined here.
+ *
+ * */
+
+
 
 //{"searchUrl":"http://geodata.tufts.edu/solr/select","analyticsId":"UA-19787732-1","loginConfig":{"repositoryId":"tufts","type":"form","url":"login","secureDomain":"https://localhost:8443"}}
 OpenGeoportal.Models.OgpConfig = Backbone.Model.extend({

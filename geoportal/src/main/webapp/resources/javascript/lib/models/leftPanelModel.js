@@ -9,6 +9,10 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * Model holding settings for Results panel behavior.
+ * @type {any}
+ */
 OpenGeoportal.Models.LeftPanel = Backbone.Model.extend({
 	defaults : {
 		mode : "closed",

@@ -10,6 +10,10 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * This View handles resizing behavior of the results pane.
+ * @type {any}
+ */
 OpenGeoportal.Views.LeftPanel = Backbone.View
 		.extend({
 			initialize : function() {

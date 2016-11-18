@@ -11,6 +11,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * This view handles the Cart header section, including adding buttons and attaching Cart actions. (download, share, etc.)
+ * @type {any}
+ */
 OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 
 	initialize: function(){

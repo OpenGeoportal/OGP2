@@ -10,12 +10,13 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-/**
- * A Backbone View of the Cart Collection
- * 
- * @constructor
- */
 
+/**
+ * A Backbone View of the Cart Collection. The ShareCart view handles the sharing dialog and sends a request to the link
+ * shortening endpoint.
+ *
+ * @extends OpenGeoportal.Views.CartActionView
+ */
 OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 		.extend({
 			

@@ -9,9 +9,8 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 } else if (typeof OpenGeoportal.Models !== "object") {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
-/*
- * OpenGeoportal.LayerSettings object to hold display setting info, where it
- * exists (opacity, etc.)
+/**
+ * the PreviewedLayers Collection holds layers that are currently being previewed.
  */
 
 /*
@@ -255,8 +254,8 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		this.each(function(model){
 			if (model.get("getFeature")){
 				gfEvent = "map.attributeInfoOn";
-				return;
-			}
+
+            }
 		});
 
 		jQuery(document).trigger(gfEvent);

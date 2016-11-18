@@ -10,6 +10,12 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * The SearchResultsTable displays the search results. It extends LayerTable. Adds logic for infinite scroll. It's
+ * backed by the ResultsCollection
+ *
+ * @extends OpenGeoportal.Views.LayerTable
+ */
 OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 		.extend({
 			events: {
@@ -73,8 +79,8 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
 
 			},
-			
-			scrollOffset: 200,
+
+			scrollOffset: 300,
 			
 			attachEvents: function(){
 				this.collection.enableFetch();
@@ -97,6 +103,8 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 
 				
 				if (scrollY >= docHeight - this.scrollOffset && this.prevScrollY <= scrollY) {
+					this.prevScrollY = scrollY;
+
 					this.collection.nextPage();
 
 				} else if (scrollY < this.prevScrollY) {
@@ -107,8 +115,9 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 							this.$el.children(".tableWrapper").children(".rowContainer").children(".tableRow").first().trigger("istop");
 						}
 					}
+					this.prevScrollY = scrollY;
+
 				}
-				this.prevScrollY = scrollY;
 			},
 			
 			setFrameHeight: function(){
@@ -147,7 +156,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					return num < topResultNum && num >= Math.max(topResultNum - pageSize, 0);
 				});
 
-				var spacer$ = this.$(".topSpacer").first();;
+				var spacer$ = this.$(".topSpacer").first();
 				spacer$.css("min-height", 0);
 				var container$ = this.$el.children(".tableWrapper").children(".rowContainer");
 				//add them to the top in reverse order
@@ -165,32 +174,6 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					that.collection.remove(last);
 				});
 			},
-			
-			/*renderNextPage: function(event, model){
-				var that = this;
-				var pageSize = this.collection.pageParams.rows;
-
-				var bottomResultNum = model.get("resultNum");
-				var nextPage = model.collection.filter(function(currModel){
-					var num = currModel.get("resultNum");
-					return num > bottomResultNum && num <= bottomResultNum + pageSize;
-				});
-				
-
-				var spacer$ = this.$(".bottomSpacer");
-				spacer$.css("min-height", 0);
-				_.each(nextPage, function(currModel){
-					var newRow = that.createNewRow(currModel);
-					var currentBottom$ = that.$(".tableRow").last();
-					var ht = jQuery(newRow.el).insertAfter(currentBottom$).height();
-					spacer$.css("height", "-=" + ht);
-				});
-				
-				var lastNum = _.last(nextPage).get("resultNum");
-				if (lastNum < this.collection.totalResults && lastNum < bottomResultNum + pageSize){
-					this.collection.nextPage();
-				}
-			},*/
 
 			
 			appendRender: function(model){

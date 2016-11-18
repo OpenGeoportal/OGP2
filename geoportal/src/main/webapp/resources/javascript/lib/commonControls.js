@@ -11,8 +11,7 @@ if (typeof OpenGeoportal === 'undefined') {
 }
 
 /**
- * Widgets constructor this object determines how to render controls
- * common across the application
+ * A collection of Widgets common across the application
  * 
  */
 OpenGeoportal.Widgets = function Widgets() {
@@ -66,6 +65,7 @@ OpenGeoportal.Widgets = function Widgets() {
 			title : dialogTitle,
 			resizable : true,
 			modal : true,
+			closeText: "",
 			minWidth : 415,
 			autoOpen : false
 		});
@@ -86,7 +86,8 @@ OpenGeoportal.Widgets = function Widgets() {
 				autoOpen : false,
 				width : 'auto',
 				title : dialogTitle,
-				resizable : true,
+				closeText: "",
+				resizable: true,
 				buttons : buttonsObj
 			});
 		} else {

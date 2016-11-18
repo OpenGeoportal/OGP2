@@ -10,14 +10,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-/**
- * A Backbone View of the Cart Collection
- * 
- * @constructor
- */
+
 
 /**
- * a backing model for setting download preferences
+ * A backing model for setting download preferences
  */
 OpenGeoportal.Models.DownloadPreferences = Backbone.Model.extend({
 	defaults : {
@@ -44,7 +40,12 @@ OpenGeoportal.Models.DownloadPreferences = Backbone.Model.extend({
 	}
 });
 
-
+/**
+ * A Backbone View of the Cart Collection. The Download view handles the download dialogs and creates a download
+ * request object which is then passed to the request queue. It extends CartActionView.
+ *
+ * @extends OpenGeoportal.Views.CartActionView
+ */
 OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 		.extend({
 

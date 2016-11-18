@@ -10,6 +10,11 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * Base View for rendering individual rows in a table. Controls are shown depending on attributes in the underlying
+ * models, as well as auth state.
+ * @type {any}
+ */
 OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	tagName : "div",
 	className : "tableRow",

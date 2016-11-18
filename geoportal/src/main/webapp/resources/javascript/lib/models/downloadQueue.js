@@ -10,6 +10,14 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * A Queue that holds QueueItems. Generally, these are long running requests. The Queue makes the request asynchronously,
+ * polls a status endpoint, then requests the object when the processing is complete. Used by download, image requests,
+ * and mapit.
+ *
+ * @type {any}
+ */
+
 OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 	initialize : function() {
 		this.listenTo(this, "change:status",
@@ -20,6 +28,7 @@ OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 		this.subClassInit();
 	},
 
+	itemType: "request",
 	/*
 	 * attributes: type: layer, image, export, etc. bbox: (if no clipping requested,
 	 * set this to full extent; we want to keep track of if a user has requested
@@ -36,6 +45,7 @@ OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 	},
 
 	submitRequest : function() {
+
 		var that = this;
 		var params = {
 				url : this.get("requestUrl"),
@@ -381,11 +391,16 @@ OpenGeoportal.Models.ImageRequest = OpenGeoportal.Models.AbstractQueueItem.exten
 });
 
 
+OpenGeoportal.RequestQueue = Backbone.Collection.extend({
+	//Backbone no longer recognizes subclassed models, so we will validate for
+	// a particular property
 
-OpenGeoportal.RequestQueue = Backbone.Collection
-.extend({
-	model : OpenGeoportal.Models.QueueItem,
+	//model : OpenGeoportal.Models.QueueItem,
 
+	validate: function (attrs, options) {
+		return (_.has(attrs, "itemType") && attrs['itemType'] == "request");
+
+	},
 	poll: {
 		id : "",
 		isRunning : false,

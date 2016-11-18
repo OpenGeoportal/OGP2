@@ -62,7 +62,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 					success: function(data){
 						document = data;
 					}
-			}
+			};
 			jQuery.ajax(params);
 
 			var dialog$ = this.renderMetadataDialog(layerId, document);
@@ -103,6 +103,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 			width : 630,
 			height : dialogHeight,
 			title : "Metadata",
+			closeText: "",
 			autoOpen : false
 		});
 

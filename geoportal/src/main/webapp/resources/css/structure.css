@@ -261,6 +261,8 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
     overflow-y: auto;
     position: absolute;
     z-index: 1500;
+    box-shadow: #aaaaaa 1px 1px 1px;
+    border: 1px solid #cccccc;
 }
 
 .searchFormInput.dropdown {
@@ -272,7 +274,11 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 }
 
 .searchFormInput.dropdown ul {
-    min-width: 196px;
+    min-width: 20em;
+    padding-bottom: 1em;
+    padding-top: 1em;
+    margin-left: .5em;
+    margin-right: .5em;
 }
 
 .searchFormInput > .styledSelect {
@@ -1378,7 +1384,7 @@ Backbone table view
     border-style: none none none solid;
     border-width: 0 0 0 1px;
     color: #000000;
-    font-size: 12px;
+    font-size: 1em;
     font-weight: normal;
     margin: 0;
     padding: 3px;
@@ -1404,13 +1410,19 @@ Backbone table view
 
 .tableCell > .cellWrapper {
     width: 100%;
-    margin-left: 2px;
+    margin-left: .5em;
     margin-right: 2px;
     overflow: hidden;
-    font-size: 11px;
-    height: 17px;
-    line-height: 17px;
+    font-size: .9em;
+    height: 1.3em;
+    line-height: 1.3em;
     word-break: break-all;
+    color: #666666;
+}
+
+.tableCell.colTitle > .cellWrapper {
+    font-size: 1em;
+    color: #000000;
 }
 
 td.colTitle {
