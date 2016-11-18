@@ -9,20 +9,24 @@
     <!-- default header name is X-CSRF-TOKEN -->
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
 
-    <title>${titlePrimary} ${titleOffset}</title>
+	<link rel="icon"
+		  type="image/x-icon"
+		  href="resources/media/favicon.ico">
+
+	<title>${titlePrimary} ${titleOffset}</title>
 	<!-- add analyticsId, searchUrl, login info here -->
 	<script>
 
         OpenGeoportal = {};
-OpenGeoportal.Config = {};
-OpenGeoportal.Config.analyticsId="${analyticsId}";
-OpenGeoportal.Config.searchUrl="${searchUrl}";
-OpenGeoportal.Config.loginRepository="${loginRepository}";
-OpenGeoportal.Config.loginType="${loginType}";
-OpenGeoportal.Config.loginUrl="${loginUrl}";
-OpenGeoportal.Config.sd="${secureDomain}";
-OpenGeoportal.Config.shareIds=${shareIds} ;
-OpenGeoportal.Config.shareBbox="${shareBbox}";
+		OpenGeoportal.Config = {};
+		OpenGeoportal.Config.analyticsId = "${analyticsId}";
+		OpenGeoportal.Config.searchUrl = "${searchUrl}";
+		OpenGeoportal.Config.loginRepository = "${loginRepository}";
+		OpenGeoportal.Config.loginType = "${loginType}";
+		OpenGeoportal.Config.loginUrl = "${loginUrl}";
+		OpenGeoportal.Config.sd = "${secureDomain}";
+		OpenGeoportal.Config.shareIds =${shareIds};
+		OpenGeoportal.Config.shareBbox = "${shareBbox}";
 
 	</script>
 	
