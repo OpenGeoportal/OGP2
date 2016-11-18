@@ -64,8 +64,8 @@ public class ZipFilePackager{
 			IOUtils.closeQuietly(newZipStream);
 			IOUtils.closeQuietly(currentFileStream);
 			try {
-				logger.info("Deleting: " + fileToZip.getName());
-				fileToZip.delete();
+                logger.debug("Deleting: " + fileToZip.getName());
+                fileToZip.delete();
 			} catch (Exception e){
 				logger.error("Unable to delete file.  Check permissions.");
 			}

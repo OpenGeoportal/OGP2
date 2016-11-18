@@ -188,7 +188,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 	}
 	
 	private String getDefaultDownloadKey(JsonNode institutions, LayerRequest layer) throws Exception{
-		logger.info("Looking for default method...");
+		logger.debug("No override found. Looking for default method...");
 		JsonNode defaultNode = institutions.path("default");
 		if (!defaultNode.isArray()){
 			throw new Exception("No default defined!");

@@ -50,8 +50,8 @@ public class WfsGetFeature {
   			+ filter
   			+ "</wfs:Query>"
 			+ "</wfs:GetFeature>";
-		logger.info(getFeatureRequest);
-    	return getFeatureRequest;
+        logger.debug("GetFeature Request: " + getFeatureRequest);
+        return getFeatureRequest;
 	}
 	
 	public static String getMethod(){

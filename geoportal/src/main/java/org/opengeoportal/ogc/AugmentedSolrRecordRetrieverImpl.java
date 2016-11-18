@@ -42,7 +42,8 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	private LayerInfoRetriever layerInfoRetriever;
 	 
 	@Override
-	public OwsInfo getWmsInfo(String layerId) throws Exception{
+	public OwsInfo getWmsInfo(String layerId) throws Exception {
+		logger.info("WMS Info requested for [" + layerId + "]");
 		List<OwsInfo> info = this.getWmsPlusSolrInfo(layerId).getOwsInfo();
 		return OwsInfo.findWmsInfo(info);
 	}
@@ -55,6 +56,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	@Override
 	public OwsInfo getOgcDataInfo(String layerId) throws Exception {
+		logger.info("OWS Info requested for [" + layerId + "]");
 		List<OwsInfo> info = this.getOgcAugmentedSolrRecord(layerId).getOwsInfo();
 		for (OwsInfo infoBit: info){
 			if (infoBit.getOwsProtocol().type.equals(OwsType.DATA)){
@@ -93,7 +95,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 			} catch (Exception e){
 				//if the urls are substantively different, try the one retrieved from wms describeLayer
 				if (!storedUrlObj.getHost().equalsIgnoreCase(owsUrlObj.getHost()) || !storedUrlObj.getPath().equalsIgnoreCase(owsUrlObj.getPath())){
-				logger.info("trying retrieved URL: " + owsUrl);
+					logger.warn("Attempt using URL from Location field failed. Trying retrieved URL: " + owsUrl);
 					try {
 						dataInfo = getInfoAttempt(wfsRequester, DATA_ATTEMPTS, asr.getSolrRecord(), owsUrl);
 						asr.getOwsInfo().add(OwsInfo.findWfsInfo(dataInfo.getOwsInfo()));
@@ -112,7 +114,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 				//if the urls are substantively different, try the one retrieved from wms describeLayer
 				if (!storedUrlObj.getHost().equalsIgnoreCase(owsUrlObj.getHost()) || !storedUrlObj.getPath().equalsIgnoreCase(owsUrlObj.getPath())){
 					try {
-						logger.info("trying retrieved URL: " + owsUrl);
+						logger.warn("Attempt using URL from Location field failed. Trying retrieved URL: " + owsUrl);
 						dataInfo = getInfoAttempt(wcsRequester, DATA_ATTEMPTS, asr.getSolrRecord(), owsUrl);
 						asr.getOwsInfo().add(OwsInfo.findWcsInfo(dataInfo.getOwsInfo()));
 					} catch (Exception e1){
@@ -151,7 +153,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 		AugmentedSolrRecord asr = null;
 		sendServiceStart(solrRecord);
 		for (int i = 0; i < numAttempts; i++ ){
-			logger.info("Attempt " + (i + 1));
+			logger.debug("Attempt " + (i + 1));
 			try{
 				asr = requester.getOgcAugment(solrRecord);
 				if (asr == null){
@@ -176,7 +178,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 		AugmentedSolrRecord asr = null;
 		sendServiceStart(solrRecord);
 		for (int i = 0; i < numAttempts; i++ ){
-			logger.info("Attempt " + (i + 1));
+			logger.debug("Attempt " + (i + 1));
 
 			try{
 				asr = requester.getOgcAugment(solrRecord, url);
@@ -210,7 +212,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 				String name = solrRecord.getName();
 				//the HGL remote service starter does not use fully qualified names
 				name = name.substring(name.indexOf(".") + 1);
-				logger.info("Attempting to Start Service for ['" + solrRecord.getLayerId() + "']");
+				logger.info("Attempting to Start Service for [" + solrRecord.getLayerId() + "]");
 				is = httpRequester.sendRequest(serviceStart, "AddLayer=" + name + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
 			} catch (JsonParseException e) {
 				logger.error("Problem parsing ServiceStart parameter from ['" + location + "']");

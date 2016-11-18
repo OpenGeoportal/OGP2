@@ -36,9 +36,9 @@ public class UrlShortenerGoogle implements UrlShortener {
 	 * 
 	 * @param longUrl	a String containing the url to be shortened
 	 * @return a String containing the shortened Url, if the call to Google was successful.  
-	 * @throws Exception	
-	 * @see org.OpenGeoPortal.Utilities.UrlShortener#retrieveShortLink(java.lang.String)
-	 */
+	 * @throws Exception
+     * @see org.opengeoportal.utilities.UrlShortener#retrieveShortLink(java.lang.String)
+     */
 	public String retrieveShortLink(String longUrl) throws Exception{
 		/*
 		 * 	/*POST https://www.googleapis.com/urlshortener/v1/url

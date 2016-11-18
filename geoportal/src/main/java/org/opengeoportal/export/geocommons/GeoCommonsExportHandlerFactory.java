@@ -11,8 +11,8 @@ public class GeoCommonsExportHandlerFactory implements ApplicationContextAware {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public GeoCommonsExportHandler getObject() throws Exception {
-		logger.info("Creating GeoCommonsExportHandler bean");
-		return applicationContext.getBean(GeoCommonsExportHandler.class);
+        logger.debug("Creating GeoCommonsExportHandler bean");
+        return applicationContext.getBean(GeoCommonsExportHandler.class);
 	}
 
 	public Class<GeoCommonsExportHandler> getObjectType() {

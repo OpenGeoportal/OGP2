@@ -23,6 +23,7 @@ public class UrlShortenerController {
 	@RequestMapping(method=RequestMethod.GET, produces="application/json")
 	public @ResponseBody Map<String,String> shortenLink(@RequestParam("link") String link) throws Exception {
 		// return the shortened link, or the original if there was an error
+		logger.info("Shortened Link requested for [" + link + "]");
 		String shortLink;
 		try {
 			shortLink = urlShortener.retrieveShortLink(link);

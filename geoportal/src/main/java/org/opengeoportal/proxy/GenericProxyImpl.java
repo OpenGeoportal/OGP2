@@ -80,12 +80,12 @@ public class GenericProxyImpl implements GenericProxy {
 			}
 			
             try {
-                logger.info(proxyResponse.getStatusLine().getReasonPhrase());
+                logger.debug(proxyResponse.getStatusLine().getReasonPhrase());
                 IOUtils.copy(proxyResponse.getEntity().getContent(), response.getOutputStream());
             } finally {
                 proxyResponse.close();
             }
 
-	};
-	
+    }
+
 }

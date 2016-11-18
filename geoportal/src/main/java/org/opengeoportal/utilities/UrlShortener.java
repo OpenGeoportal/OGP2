@@ -6,5 +6,5 @@ package org.opengeoportal.utilities;
  * @author cbarne02
  */
 public interface UrlShortener {
-	 public String retrieveShortLink(String longUrl) throws Exception;
+    String retrieveShortLink(String longUrl) throws Exception;
 }

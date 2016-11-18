@@ -34,6 +34,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * Proxies the wms getcapabilities document, restricting the layers to those provided
+ */
 public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 	private GenericProxy genericProxy;
 	private LayerInfoRetriever layerInfoRetriever;

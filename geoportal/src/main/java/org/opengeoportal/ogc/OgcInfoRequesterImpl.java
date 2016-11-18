@@ -42,8 +42,8 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	}
 
 	private OwsInfo handleResponse(String contentType, InputStream inputStream) throws Exception{
-		logger.info(contentType);
-		Boolean contentMatch = contentType.toLowerCase().contains("xml");
+        logger.debug("Content type: " + contentType);
+        Boolean contentMatch = contentType.toLowerCase().contains("xml");
 		if (!contentMatch){
 			logger.error("Unexpected content type: " + contentType);
 			//If there is a mismatch with the expected content, but the response is text, we want to at least log the response

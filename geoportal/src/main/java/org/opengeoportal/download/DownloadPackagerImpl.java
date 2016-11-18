@@ -46,7 +46,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 		//first determine if all requests are complete
 		DownloadRequest downloadRequest = requestStatusManager.getDownloadRequest(requestId);
 		if (!downloadRequest.isReadyForPackaging()){
-			logger.info("Request is not yet complete; not ready to package.");
+			logger.debug("Request is not yet complete; not ready to package.");
 			return new AsyncResult<Boolean>(false);
 		}
 		List<LayerRequest> layerList = new ArrayList<LayerRequest>();
@@ -57,7 +57,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 		Set<File> filesToPackage = getFilesToPackage(layerList);
 
 		logger.debug(directory.getAbsolutePath());
-		logger.info("Packaging files");
+		logger.info("Packaging files...");
 		File zipArchive = new File(directory, "OGPDownload.zip");
 		ZipFilePackager.addFilesToArchive(filesToPackage, zipArchive);
 		downloadRequest.setDownloadPackage(zipArchive);
@@ -100,7 +100,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 	    	}
 	    }
 		if (filesToPackage.isEmpty()){
-			logger.info("No files to package");
+			logger.warn("No files to package");
 			throw new Exception("No files to package.");
 		}
 

@@ -32,25 +32,32 @@ public class MetadataDownloadController {
 	 */
 	@RequestMapping(value="/{format}", method=RequestMethod.GET)
 	public @ResponseBody void processMetadataDownload(@PathVariable String format, @RequestParam("download") Boolean download, @RequestParam("id") String id, HttpServletResponse response) throws Exception {
-
 		handleMetadataRequest(id, download, format, response);
 	}
 	
 	
 	@RequestMapping(method=RequestMethod.GET)
 	public @ResponseBody void processMetadataDownload(@RequestParam("id") String id, HttpServletResponse response) throws Exception {
-
 		handleMetadataRequest(id, false, "html", response);
 	}
 	
 	private void handleMetadataRequest(String id, Boolean download, String format, HttpServletResponse response) throws Exception{
 
+
 		String metadataString = getMetadataString(id, format);
 
 		response.setContentLength(metadataString.getBytes("UTF-8").length);
 
-		response.setHeader("Content-Disposition", getContentDisposition(download) + "; filename=\""
-				+ getFileName(id) + "." + format.toLowerCase().trim() + "\"");
+        String disposition = getContentDisposition(download);
+        if (disposition.equalsIgnoreCase("attachment")) {
+            logger.info("Metadata downloaded for layer [" + id + "]");
+
+        } else {
+            logger.info("Metadata viewed for layer [" + id + "]");
+
+        }
+        response.setHeader("Content-Disposition", disposition + "; filename=\""
+                + getFileName(id) + "." + format.toLowerCase().trim() + "\"");
 		response.setContentType(getContentType(format));
 		// return a link to the zip file, or info to create link
 		response.getWriter().write(metadataString);

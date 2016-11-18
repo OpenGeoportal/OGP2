@@ -35,6 +35,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * Proxies the wfs getcapabilities document, restricting the layers to those provided
+ */
 public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 	private GenericProxy genericProxy;
 	//private OgpAuthenticator ogpAuthenticator;
@@ -215,8 +218,8 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 			System.out.println("parser error");
 		}
 		Document document = builder.newDocument();
-	    Element root = (Element) document.createElement("rootElement"); 
-	    document.appendChild(root);
+        Element root = document.createElement("rootElement");
+        document.appendChild(root);
 	    return document;
 	}
 	

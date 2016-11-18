@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.WmcCreator;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
@@ -36,8 +37,8 @@ public class GetWmcController {
 		for (String layer: layerIds){					
 				layerMap.put(layer, requestedType);
 		}
-		
-		
+
+		logger.info("Web Map Context (WMC) requested for layers " + StringUtils.join(layerIds) + "");
 		String disposition = "attachment";
 		String contentType = "application/xml;charset=UTF-8";
 			

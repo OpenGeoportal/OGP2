@@ -78,11 +78,12 @@ public class GeoToolsDownloadMethod extends AbstractDownloadMethod implements Pe
 		ReferencedEnvelope nativeBounds = fsr.getFeatureSource().getBounds();
 		CoordinateReferenceSystem crs = DefaultGeographicCRS.WGS84;
 		ReferencedEnvelope currentEnv = ReferencedEnvelope.create(currentBounds, crs);
-		
-		logger.info(currentEnv.toString());
-		logger.info(currentEnv.getCoordinateReferenceSystem().toString());
-		logger.info(nativeBounds.toString());
-		logger.info(nativeBounds.getCoordinateReferenceSystem().toString());
+
+		logger.debug("Download parameters:");
+		logger.debug("- envelope: " + currentEnv.toString());
+		logger.debug("- crs: " + currentEnv.getCoordinateReferenceSystem().toString());
+		logger.debug("- native bounds: " + nativeBounds.toString());
+		logger.debug("- native crs: " + nativeBounds.getCoordinateReferenceSystem().toString());
 		/*if (!nativeBounds.intersects(currentBounds)){
 			//throw Exception?  bounds don't intersect
 			throw new Exception("Bounds don't intersect!");

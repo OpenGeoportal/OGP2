@@ -117,8 +117,8 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 	        this.restTemplate = new RestTemplate(factory);
 	        
 	        this.allTags = new HashSet<String>();
-	        logger.info("client initialized");
-	    }
+			logger.debug("client initialized");
+		}
 	    
 		public String getExistingLayer(String layerName){
 			SearchResponseJson searchResponse = this.searchForLayer(layerName);
@@ -141,9 +141,9 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 			createDataSetRequestJson.setType("wms");
 			
 	    	//String existingLayer = this.getExistingLayer(layerId);
-	    	
-	    	logger.info("Attempting to add wms data stream to GeoCommons");
-	    	try {
+
+			logger.info("Attempting to add wms data stream to GeoCommons for layer ['" + layerId + "']");
+			try {
 	    	    URI result = restTemplate.postForLocation(url, createDataSetRequestJson);
 	    	    resultString = result.toString();
 	    	} catch (HttpClientErrorException e1){
@@ -364,7 +364,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 	    		//+ bbox + "&srs=" + SRS + "&width=1&height=1";
 				//this.layerName = workspaceName + ":" + layerName;
 				//height and width don't seem to matter; should test with a raster layer
-				logger.info("WMS Url: " + wmsUrl);
+			logger.debug("WMS Url: " + wmsUrl);
 				createDataSetRequestJson.setUrl(wmsUrl);
 				String layerTitle = layerInfo.getTitle();
 				createDataSetRequestJson.setTitle(layerTitle);
@@ -421,7 +421,7 @@ public class GeoCommonsJsonClient implements GeoCommonsClient {
 		public void checkUser(String username){
 	    	String url = this.serverName + "/users/" + username + ".json";
 	    	String result = restTemplate.getForObject(url, String.class);
-	    	logger.info("checking user" + result);
+			logger.info("Checking user..." + result);
 		}
 		
 		public String createUser(String full_name, String login, String password, String password_confirmation, String email){

@@ -7,6 +7,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.download.RequestStatusManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,14 @@ public class ImageRetrievalController {
 			}
 		}
 		if (counter > 0){
-			logger.info("Milliseconds slept: " + Long.toString(counter));
+			logger.debug("Milliseconds slept: " + Long.toString(counter));
 		}
-		logger.info(downloadPackage.getName());
-		logger.info(downloadPackage.getAbsolutePath());
+		logger.debug(downloadPackage.getName());
+		logger.debug(downloadPackage.getAbsolutePath());
+
+		logger.info("Image request with id [" + requestId + "] completed.");
+
+
 		response.setContentLength((int) downloadPackage.length());
 		response.setContentType("application/octet-stream");
 		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());

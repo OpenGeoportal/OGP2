@@ -1,9 +1,11 @@
 package org.opengeoportal.download;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.download.methods.EmailDownloadMethod;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
@@ -49,11 +51,12 @@ public class EmailLayerDownloader implements LayerDownloader {
 
 		logger.debug("Trying to send email...");
 		Future<?> emailFuture = this.emailDownloadMethod.sendEmail(layerList);
-
+		List<String> layerReport = new ArrayList<>();
 		Boolean emailSent = (Boolean) emailFuture.get();
 		for (LayerRequest currentLayer: layerList){
 			if (emailSent){
 				currentLayer.setStatus(Status.SUCCESS);
+				layerReport.add(currentLayer.getId());
 			} else {
 				currentLayer.setStatus(Status.FAILED);
 			}
@@ -61,7 +64,7 @@ public class EmailLayerDownloader implements LayerDownloader {
 		if(emailSent){
 			DownloadRequest downloadRequest = requestStatusManager.getDownloadRequest(requestId);
 			downloadRequest.setEmailSent(emailSent);
-			logger.info("Email requested.");
+			logger.info("Email sent requesting layers: " + StringUtils.join(layerReport));
 		} else {
 			logger.error("Error requesting Email");
 		}

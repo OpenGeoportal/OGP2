@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
+/**
+ * Class to create a composite of images to match the previewed layers on the client.
+ */
 public class ImageCompositorImpl implements ImageCompositor {
 	private static final String FORMAT_SUFFIX = "png";
 
@@ -75,9 +78,9 @@ public class ImageCompositorImpl implements ImageCompositor {
 				}
 					
 					
-				try{	
-					logger.info("adding image to composite: " + layerImage.getLayerId());
-					addImageToComposite(imgFile, layerImage.getOpacity());
+				try{
+                    logger.debug("adding image to composite: " + layerImage.getLayerId());
+                    addImageToComposite(imgFile, layerImage.getOpacity());
 					layerImage.setImageStatus(ImageStatus.SUCCESS);
 				}  catch (Exception e){
 					//just skip it

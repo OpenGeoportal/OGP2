@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.download.methods.MultiLayerDownloadMethod;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
@@ -32,6 +33,7 @@ public class MultiLayerDownloader implements LayerDownloader {
 	@Override
 	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest request) throws Exception {
 		List<LayerRequest> layerList = request.getRequestList();
+		List<String> layerReport = new ArrayList<>();
 		for (LayerRequest currentLayer: layerList){
 			//this.downloadMethod.validate(currentLayer);
 				//check to see if the filename exists
@@ -39,6 +41,7 @@ public class MultiLayerDownloader implements LayerDownloader {
 			try {
 				Future<Set<File>> currentFile = this.multiLayerDownloadMethod.download(currentLayer);
 				downloadFutures.add(currentFile);
+				layerReport.add(currentLayer.getId());
 			} catch (Exception e){
 				//e.printStackTrace();
 				logger.error("an error downloading this layer: " + currentLayer.getLayerInfo().getName());
@@ -50,6 +53,7 @@ public class MultiLayerDownloader implements LayerDownloader {
 		for (Future<Set<File>> currentFuture: downloadFutures){
 			downloadedLayers.addAll(currentFuture.get());
 		}
+		logger.debug("Requested layers: " + StringUtils.join(layerReport));
 	}
 
 	public MultiLayerDownloadMethod getMultiLayerDownloadMethod() {

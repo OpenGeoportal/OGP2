@@ -59,11 +59,11 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		
 		Envelope env = describeLayerInfo.getLonLatEnvelope();
 		BoundingBox nativeBounds = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
-		logger.info("reqLatLon" + this.currentLayer.getRequestedBounds().toStringLatLon());
-		logger.info("natLatLon" + nativeBounds.toStringLatLon());
+        logger.debug("Requested LatLon: " + this.currentLayer.getRequestedBounds().toStringLatLon());
+        logger.debug("Nativ LatLon: " + nativeBounds.toStringLatLon());
 
 		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
-		logger.info("intLatLon" + bounds.toStringLatLon());
+        logger.debug("Intersection LatLon: " + bounds.toStringLatLon());
 
 		String layerName = this.currentLayer.getLayerNameNS();
 

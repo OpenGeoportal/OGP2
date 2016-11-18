@@ -40,8 +40,8 @@ public class WmsDescribeLayerImpl implements WmsDescribeLayer{
 		Map<String, String> vars = Collections.singletonMap("qualifiedLayerName", qualifiedLayerName);
 		WMSDescribeLayerResponse result = restTemplate.getForObject(baseUrl + "?service=WMS&version=" + VERSION + 
 				"&request=DescribeLayer&layers={qualifiedLayerName}", WMSDescribeLayerResponse.class, vars);
-
-    	return result;
+		logger.info("WMS DescribeLayer requested for ['" + qualifiedLayerName + "']");
+		return result;
 	}
 
 }

@@ -79,16 +79,16 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 			return false;
 		}
 	}
-	
-	public InputStream sendGetRequest(String url) throws MalformedURLException, IOException{
-		logger.debug("about to send url: " + url);
+
+    public InputStream sendGetRequest(String url) throws IOException {
+        logger.debug("about to send url: " + url);
 		HttpClient httpclient = ogpHttpClient.getCloseableHttpClient();
 		InputStream replyStream = null;
 		HttpResponse response = null;
 		try {
 			HttpGet httpget = new HttpGet(url);
 
-			logger.info("executing get request " + httpget.getURI());
+            logger.debug("Executing GET request: " + httpget.getURI());
 
 			response = httpclient.execute(httpget);
 			this.setStatus(response.getStatusLine().getStatusCode());
@@ -123,10 +123,10 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 		InputStream replyStream = null;
 		try{
 			HttpPost httppost = new HttpPost(serviceURL);
-			logger.info(requestBody);
-			StringEntity postEntity = new StringEntity(requestBody, ContentType.create(contentType, "UTF-8"));
+            logger.debug("Executing POST request to :" + httppost.getURI());
+            logger.debug(requestBody);
+            StringEntity postEntity = new StringEntity(requestBody, ContentType.create(contentType, "UTF-8"));
 			httppost.setEntity(postEntity);
-			logger.info("executing POST request to " + httppost.getURI());
 			HttpResponse response = httpclient.execute(httppost);
 
 			StatusLine status = response.getStatusLine();

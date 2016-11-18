@@ -6,13 +6,16 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+/**
+ * Factory to return instances of ImageDownloader
+ */
 public class ImageDownloaderFactory implements ApplicationContextAware {
     private ApplicationContext applicationContext;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public ImageDownloader getObject() throws Exception {
-		logger.info("Creating ImageDownloader bean");
-		return applicationContext.getBean(ImageDownloader.class);
+        logger.debug("Creating ImageDownloader bean");
+        return applicationContext.getBean(ImageDownloader.class);
 	}
 
 	public Class<ImageDownloader> getObjectType() {

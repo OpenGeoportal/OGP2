@@ -126,7 +126,7 @@ public class DownloadRequest {
 
 	public void setDownloadPackage(File downloadPackage) {
 		this.downloadPackage = downloadPackage;
-		logger.info("Download package: " + downloadPackage.getAbsolutePath());
+		logger.debug("Download package: " + downloadPackage.getAbsolutePath());
 		dlpackageSetCounter++;
 		this.downloadPackageSet = true;
 		if (dlpackageSetCounter > 1){
@@ -171,12 +171,8 @@ public class DownloadRequest {
 		}
 		
 		StatusSummary completionStatus = getStatusSummaryForList(layerList);
-		
-		if (completionStatus.equals(StatusSummary.COMPLETE_SUCCEEDED) || completionStatus.equals(StatusSummary.COMPLETE_PARTIAL)){
-			return true;
-		} else {
-			return false;
-		}
+
+		return completionStatus.equals(StatusSummary.COMPLETE_SUCCEEDED) || completionStatus.equals(StatusSummary.COMPLETE_PARTIAL);
 	}
 	
 	private StatusSummary getStatusSummaryForList(List<LayerRequest> layerList){

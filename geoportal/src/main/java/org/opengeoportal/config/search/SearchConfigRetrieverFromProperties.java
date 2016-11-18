@@ -53,6 +53,7 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 			try{
 				extUrl = new URL(extSearch);
 				searchConfig.setSearchUrl(extUrl);
+				logger.info("Search URL set to: " + extUrl);
 			} catch (MalformedURLException e){
 				throw new Exception("External Search URL ['property " + EXTERNAL_SEARCH_URL + "'] is malformed!");
 			}
@@ -84,10 +85,12 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 		
 		if (props.containsKey(SEARCH_REPOSITORIES)){
 			String reps = props.getProperty(SEARCH_REPOSITORIES);
+			logger.info("Search Repositories added: ");
 			for (String rep: StringUtils.split(reps, ",")){
 				SearchRepository sr = new SearchRepository();
-				sr.id = rep;
-				sr.selected = isSelectedByDefault(props, rep);
+				logger.info("- " + rep);
+				sr.setId(rep);
+				sr.setSelected(isSelectedByDefault(props, rep));
 				searchRep.add(sr);
 			}
 		}

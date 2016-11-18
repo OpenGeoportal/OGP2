@@ -10,6 +10,9 @@ import org.opengeoportal.config.ogp.OgpConfig.LoginConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Retrieves properties from ogp.properties
+ */
 public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	
 	//property keys
@@ -117,8 +120,8 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 		String urlVal = getPropertyWithDefault(LOGIN_URL, LOGIN_URL_DEFAULT);		
 		logConf.setUrl(urlVal);
 
-		String sdVal = getPropertyWithDefault(SECURE_DOMAIN, "");		; //should default to current domain with https:; for now let the client do this
-		logConf.setSecureDomain(sdVal);
+        String sdVal = getPropertyWithDefault(SECURE_DOMAIN, "");        //should default to current domain with https:; for now let the client do this
+        logConf.setSecureDomain(sdVal);
 
 
 		return ogpConfig;
@@ -129,10 +132,11 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 		String val = null;
 		if (props.containsKey(propertyName) && StringUtils.isNotEmpty(props.getProperty(propertyName))){
 			val = props.getProperty(propertyName);  //default to type form
-		} else {
-			
-			logger.warn(propertyName + " not set.  Using default value '" + defaultPropertyValue + "'.");
-			val = defaultPropertyValue;
+            logger.info("Property '" + propertyName + "' = '" + val + "'");
+        } else {
+
+            logger.warn("Property '" + propertyName + "' not set.  Using default value '" + defaultPropertyValue + "'.");
+            val = defaultPropertyValue;
 		}
 		
 		return val;

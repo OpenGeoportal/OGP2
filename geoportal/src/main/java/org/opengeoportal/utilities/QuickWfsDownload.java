@@ -49,8 +49,8 @@ public class QuickWfsDownload implements QuickDownload {
 	 * @param bounds	a BoundingBox with the desired selection bounds for the layer in EPSG:4326
 	 * @return a zip File containing the shape file
 	 * @throws Exception if the remote server does not response with status code 200 or returns an XML response (assumed to be an error)
-	 * @see org.OpenGeoPortal.Utilities.QuickDownload#downloadZipFile(java.lang.String, org.OpenGeoPortal.Layer.BoundingBox)
-	 */
+     * @see org.opengeoportal.utilities.QuickDownload#downloadZipFile(java.lang.String, org.opengeoportal.layer.BoundingBox)
+     */
 	@Override
 	public File downloadZipFile(String layerId, BoundingBox bounds) throws Exception{
 
@@ -79,19 +79,19 @@ public class QuickWfsDownload implements QuickDownload {
     	String wfsLocation = LocationFieldUtils.getWfsUrl(layerInfo.getLocation());
         HttpGet httpget = new HttpGet(wfsLocation + "?" + requestString);
 
-        logger.info("executing request " + httpget.getURI());
+        logger.debug("Executing request: " + httpget.getURI());
         
 		try {
 			HttpResponse response = httpclient.execute(httpget);
-			logger.info("Response code: " + Integer.toString(response.getStatusLine().getStatusCode()));
-			if (response.getStatusLine().getStatusCode() != 200){
+            logger.debug("Response code: " + Integer.toString(response.getStatusLine().getStatusCode()));
+            if (response.getStatusLine().getStatusCode() != 200){
 				throw new Exception("Attempt to download " + layerName + " failed.");
 			}
 			
 			HttpEntity entity = response.getEntity();
 			String contentType = entity.getContentType().getValue();
-			logger.info("returned content type:" + contentType);
-			if (contentType.toLowerCase().contains("xml")){
+            logger.debug("returned content type:" + contentType);
+            if (contentType.toLowerCase().contains("xml")){
 				String responseContent = EntityUtils.toString(entity);
 				logger.error(responseContent);
 				throw new Exception("Remote server reported an error");

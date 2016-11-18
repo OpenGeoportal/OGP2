@@ -58,7 +58,6 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	/**
 	 * set a FeatureCollection from a FeatureSource with a bbox query
 	 * 
-	 * @param typeName
 	 * @param bbox
 	 * @throws Exception 
 	 */
@@ -95,8 +94,9 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	
 	/**
 	 * Copy Features from a FeatureCollection to a feature store.
-	 * 
-	 * @param targetFeatureStore
+	 *
+	 * @param featureSource
+	 * @param targetSource
 	 * @throws IOException
 	 */
 	protected void copyFeatures(SimpleFeatureSource featureSource, SimpleFeatureSource targetSource) throws IOException {
@@ -119,10 +119,10 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
             try {
             	SimpleFeatureCollection collection = featureSource.getFeatures();
             	//SimpleFeatureIterator collIter = collection.features();
-            	
-            	logger.info(collection.getSchema().toString());
-            	logger.info(targetStore.getSchema().toString());
-            	/*
+				logger.debug("Source and Target schemas:");
+				logger.debug(collection.getSchema().toString());
+				logger.debug(targetStore.getSchema().toString());
+				/*
             	 * 2013-11-04 17:11:12 FeatureSourceToShapeImpl [INFO] SimpleFeatureTypeImpl http://massgis.state.ma.us/featuretype:massgis:GISDATA.MBTA_ARC identified extends Feature(LINE:LINE,ROUTE:ROUTE,GRADE:GRADE,SHAPE:SHAPE)
 2013-11-04 17:11:12 FeatureSourceToShapeImpl [INFO] SimpleFeatureTypeImpl GISDATA_MBTA_ARC identified extends lineFeature(the_geom:MultiLineString,LINE:LINE,ROUTE:ROUTE,GRADE:GRADE)
             	 */
@@ -182,13 +182,13 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
        // newDataStore.forceSchemaCRS(DefaultGeographicCRS.WGS84);
 	    String[] typeNames = shpDataStore.getTypeNames();
         SimpleFeatureSource shpFeatureSource =shpDataStore.getFeatureSource(typeNames[0]);
-        
-	    logger.info("created schema");
-	    logger.info("created feature store");
-	    copyFeatures(featureSource, shpFeatureSource);
-	    logger.info("copied features");
-	    	    
-	    Set<File> shapeFileSet = new HashSet<File>();
+
+		logger.debug("created schema");
+		logger.debug("created feature store");
+		copyFeatures(featureSource, shpFeatureSource);
+		logger.debug("copied features");
+
+		Set<File> shapeFileSet = new HashSet<File>();
 	    File fileDBF = new File(directory, fileName + ".dbf");
 	    File fileSHX = new File(directory, fileName + ".shx");
 	    File filePRJ = new File(directory, fileName + ".prj");

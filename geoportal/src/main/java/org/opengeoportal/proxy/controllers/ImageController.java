@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.proxy.ImageHandler;
 import org.opengeoportal.proxy.ImageHandlerFactory;
 
@@ -50,7 +51,9 @@ public class ImageController {
 		
 		ImageHandler imageHandler = imageHandlerFactory.getObject();
 		UUID requestId = imageHandler.requestImage(RequestContextHolder.currentRequestAttributes().getSessionId(), imageRequestObj);
-		logger.debug("Image requested.");
+
+
+		logger.info("Image requested for layers " + StringUtils.join(imageRequestObj.getLayerIds()) + " with id [" + requestId.toString() + "]");
 		
 		map.put("requestId", requestId.toString());
 		return map;

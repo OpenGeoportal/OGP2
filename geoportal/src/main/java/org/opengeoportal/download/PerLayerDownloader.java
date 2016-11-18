@@ -1,11 +1,13 @@
 package org.opengeoportal.download;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.download.methods.PerLayerDownloadMethod;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
@@ -33,28 +35,31 @@ public class PerLayerDownloader implements LayerDownloader {
 	@Async
 	@Override
 	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest downloadRequest) throws Exception {
-		//downloadStatusManager.addDownloadRequestStatus(requestId, sessionId, layerRequests);
 		List<LayerRequest> layerList = downloadRequest.getRequestList();
+		List<String> layerReport = new ArrayList<>();
 		for (LayerRequest currentLayer: layerList){
 			//this.downloadMethod.validate(currentLayer);
 				//check to see if the filename exists
 			try {
-				logger.info("Requesting download for: " + currentLayer.getLayerNameNS());
+				logger.debug("Requesting download for: " + currentLayer.getLayerNameNS());
 				currentLayer.setFutureValue(this.perLayerDownloadMethod.download(currentLayer));
+				layerReport.add(currentLayer.getId());
 			} catch (Exception e){
 				e.printStackTrace();
 				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
 				currentLayer.setStatus(Status.FAILED);
 				continue;
 			}
-		} 
+		}
+
+		logger.debug("Requested layers: " + StringUtils.join(layerReport));
 		int successCount = 0;
 		for (LayerRequest currentLayer: layerList){
 			try{
 				currentLayer.getDownloadedFiles().addAll((Set<File>) currentLayer.getFutureValue().get());
 				currentLayer.setStatus(Status.SUCCESS);
 				successCount++;
-				logger.info("finished download for: " + currentLayer.getLayerNameNS());
+				logger.debug("Finished download for: " + currentLayer.getLayerNameNS());
 			} catch (Exception e){
 				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
 				currentLayer.setStatus(Status.FAILED);	
@@ -65,7 +70,7 @@ public class PerLayerDownloader implements LayerDownloader {
 		if (successCount > 0){
 			Future<Boolean> ready = downloadPackager.packageFiles(requestId); //this is going to try to package files each time a download method is complete.
 			Boolean response = ready.get();
-			logger.info("Packager response: " + Boolean.toString(response));
+			logger.debug("Packager response: " + Boolean.toString(response));
 		} else {
 			logger.error("No Files to package.  Download failed.");
 		}

@@ -94,8 +94,8 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
     		}
 
     	if (dataSetStatusArray.isEmpty()){
-    		logger.warn("No info returned by dataset upload request.");
-    		geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);
+			logger.error("No info returned by dataset upload request.");
+			geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);
     		return;
     	} else {
     		
@@ -105,9 +105,9 @@ public class GeoCommonsExporterImpl implements GeoCommonsExporter {
     		String title = geoCommonsExportRequest.getTitle();
     		String description = geoCommonsExportRequest.getDescription();
     		try {
-    			logger.info("attempting to create Map...");
-    			
-    			mapId = this.geoCommonsClient.createMap(basemap, bbox, title, description);
+				logger.debug("Attempting to create Map...");
+
+				mapId = this.geoCommonsClient.createMap(basemap, bbox, title, description);
     		} catch (Exception e){
     			logger.error("Failed to create map with basemap: " + basemap + ",bbox: " + bbox + ",title:" + title + ",description: " + description);
         		geoCommonsExportRequest.setExportStatus(ExportStatus.FAILED);

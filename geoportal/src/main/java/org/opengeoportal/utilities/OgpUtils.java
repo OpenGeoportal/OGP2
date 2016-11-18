@@ -182,7 +182,7 @@ public class OgpUtils {
 
 
 		String combined = path + "?" + requestString;
-		logger.info("Combined URL: " + combined);
+		logger.debug("Combined URL: " + combined);
 		return combined;
 	}
 
@@ -195,8 +195,8 @@ public class OgpUtils {
 	 * @return Double as a String, with rounding
 	 */
 	public static String doubleToString(Double value){
-		logger.info(Double.toString(value));
-	    BigDecimal valDec = new BigDecimal(value);
+		logger.debug(Double.toString(value));
+		BigDecimal valDec = new BigDecimal(value);
 	    String valString = valDec.setScale(7, RoundingMode.HALF_UP).toPlainString();
 	    return valString;
 	}

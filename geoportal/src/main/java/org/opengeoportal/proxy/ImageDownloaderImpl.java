@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 
+/**
+ * Class that handles the download of an image file.
+ */
 public class ImageDownloaderImpl implements ImageDownloader {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 

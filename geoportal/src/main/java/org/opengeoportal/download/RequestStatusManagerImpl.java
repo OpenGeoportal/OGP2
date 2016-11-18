@@ -96,15 +96,15 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	
 	@Override
 	public synchronized void addDownloadRequest(DownloadRequest downloadRequest){
-		logger.info("Adding download request status object...");
-		globalDownloadRequestRegistry.add(downloadRequest);
+        logger.debug("Adding download request status object...");
+        globalDownloadRequestRegistry.add(downloadRequest);
 	}
 
 	@Override
 	public synchronized void addImageRequest(UUID requestId, String sessionId,
 			ImageRequest imageRequest) {
-		logger.info("Adding image request status object...");
-		imageRequest.setRequestId(requestId);
+        logger.debug("Adding image request status object...");
+        imageRequest.setRequestId(requestId);
 		imageRequest.setSessionId(sessionId);
 		globalImageRequestRegistry.add(imageRequest);
 		
@@ -135,8 +135,8 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	@Override
 	public void addExportRequest(UUID requestId, String sessionId,
 			GeoCommonsExportRequest exportRequest) {
-		logger.info("Adding export request status object...");
-		exportRequest.setRequestId(requestId);
+        logger.debug("Adding export request status object...");
+        exportRequest.setRequestId(requestId);
 		exportRequest.setSessionId(sessionId);
 		globalExportRequestRegistry.add(exportRequest);		
 	}

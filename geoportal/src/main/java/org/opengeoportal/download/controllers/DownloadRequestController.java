@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.download.DownloadHandler;
 import org.opengeoportal.download.DownloadHandlerFactory;
 import org.opengeoportal.download.DownloadRequest;
@@ -49,7 +50,11 @@ public class DownloadRequestController {
 		
 		DownloadHandler downloadHandler = downloadHandlerFactory.getObject();
 		UUID requestId = downloadHandler.requestLayers(submittedRequest);
-		
+
+		logger.info("Download requested for layers " + StringUtils.join(submittedRequest.getRequestedLayerIds())
+				+ " with id [" + requestId.toString() + "]");
+
+
 		Map<String,String> map = new HashMap<String,String>();
 		map.put("requestId", requestId.toString());
 		return map;

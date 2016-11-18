@@ -62,8 +62,9 @@ public class GetFeatureInfoController {
 	    wmsEndpoint = OgpUtils.filterQueryString(wmsEndpoint);
 
 	    String query = createRequestFromSolrRecord(layerInfo, xCoord, yCoord, bbox, height, width);
-	    
-		logger.info("executing WMS getFeatureRequest: " + wmsEndpoint + "?" + query);
+
+		logger.info("Feature Info Request for [" + layerInfo.getLayerId() + "]");
+		logger.debug("URL: " + wmsEndpoint + "?" + query);
 
 		sendGetRequest(wmsEndpoint, query, request, response);
 

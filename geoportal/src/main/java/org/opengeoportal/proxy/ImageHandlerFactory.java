@@ -7,13 +7,16 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+/**
+ * Factory class to produce ImageHandler prototype-scoped beans.
+ */
 public class ImageHandlerFactory implements ApplicationContextAware {
     private ApplicationContext applicationContext;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	public ImageHandler getObject() throws Exception {
-		logger.info("Creating ImageHandler bean");
-		return applicationContext.getBean(ImageHandler.class);
+        logger.debug("Creating ImageHandler bean");
+        return applicationContext.getBean(ImageHandler.class);
 	}
 
 	public Class<ImageHandler> getObjectType() {

@@ -45,7 +45,7 @@ public class FileDownloadMethod extends AbstractDownloadMethod implements PerLay
 	public List<String> getUrls(LayerRequest layer) throws MalformedURLException, JsonParseException{
 		List<String> urls = layer.getDownloadUrl();
 		for (String currentUrl: urls){
-			logger.info("download url:" + currentUrl);
+			logger.debug("Download url:" + currentUrl);
 			try {
 				this.checkUrl(currentUrl);
 			} catch (MalformedURLException e){
@@ -53,5 +53,5 @@ public class FileDownloadMethod extends AbstractDownloadMethod implements PerLay
 			}
 		}
 		return urls;
-	};
+	}
 }

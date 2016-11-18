@@ -39,7 +39,8 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 		 */
 		Node srsAttribute = lonLatEnvelopeNode.getAttributes().getNamedItem("srsName");
 		String srsName = srsAttribute.getNodeValue();
-		logger.info("srs: " + srsName);
+		logger.debug("LonLatEnvelope:");
+		logger.debug("srs: " + srsName);
 		NodeList gmlNodes = lonLatEnvelopeNode.getChildNodes();
 		List<String> x = new ArrayList<String>();
 		List<String> y = new ArrayList<String>();
@@ -48,10 +49,10 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 			Node currentNode = gmlNodes.item(i);
 			if (currentNode.getLocalName().equalsIgnoreCase("pos")){
 				String points = currentNode.getTextContent().trim();
-				logger.info("points: " + points);
+				logger.debug("points: " + points);
 				String[] pointArr = points.split(" ");
-				logger.info("x" + pointArr[0]);
-				logger.info("y" + pointArr[1]);
+				logger.debug("x" + pointArr[0]);
+				logger.debug("y" + pointArr[1]);
 
 				x.add(pointArr[0]); 
 				y.add(pointArr[1]);
@@ -111,7 +112,7 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 				String[] highArr = limits.get("high").split(" ");
 				int width = Math.abs(Integer.parseInt(lowArr[0]) - Integer.parseInt(highArr[0]));
 				int height = Math.abs(Integer.parseInt(lowArr[1]) - Integer.parseInt(highArr[1]));
-				logger.info(Integer.toString(height) + " " + Integer.toString(width));
+				logger.debug("Rectified Grid limits: " + Integer.toString(height) + " " + Integer.toString(width));
 				rectGrid.setHeight(height);
 				rectGrid.setWidth(width);
 			} else if (currentTag.equalsIgnoreCase("offsetVector")){
@@ -210,18 +211,19 @@ public class WcsDescribeCoverage1_0_0 implements OgcInfoRequest {
 		for (int k = 0; k < layerDetails.getLength(); k++){
 			Node currentDetail = layerDetails.item(k);
 			String nodeName = currentDetail.getLocalName();
-			logger.info("localName: " + nodeName);
+			logger.debug("CoverageOffering-");
+			logger.debug("LocalName: " + nodeName);
 			if (nodeName.equalsIgnoreCase("name")){
 				String name = currentDetail.getTextContent().trim();
-				logger.info(name);
+				logger.debug("Name: " + name);
 				coverageOffering.setName(name);
 			} else if (nodeName.equalsIgnoreCase("description")){
 				String description = currentDetail.getTextContent().trim();
-				logger.info(description);
+				logger.debug("Description: " + description);
 				coverageOffering.setDescription(description);
 			} else if (nodeName.equalsIgnoreCase("label")){
 				String label = currentDetail.getTextContent().trim();
-				logger.info(label);
+				logger.debug("Label: " + label);
 				coverageOffering.setLabel(label);
 			} else if (nodeName.equalsIgnoreCase("lonLatEnvelope")){
 				coverageOffering.setLonLatEnvelope(parseLonLatEnvelope(currentDetail));

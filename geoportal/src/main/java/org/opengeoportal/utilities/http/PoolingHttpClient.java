@@ -216,13 +216,13 @@ import org.apache.http.util.EntityUtils;
 	        				port = 443;
 	        			}
 	        		}
-	        		logger.info("credential info");
-	        		//logger.info(username);
-	        		//logger.info(password);
-	        		//logger.info(domain);
-	        		//logger.info(Integer.toString(port));
-	        		
-	        		credsProvider.setCredentials(
+                    logger.debug("credential info");
+                    logger.debug(username);
+                    //logger.info(password);
+                    logger.debug(domain);
+                    logger.debug(Integer.toString(port));
+
+                    credsProvider.setCredentials(
 	        				new AuthScope(domain, port),
 	        				new UsernamePasswordCredentials(username, password));
 				} catch (MalformedURLException e) {

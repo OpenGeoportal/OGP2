@@ -127,7 +127,8 @@ public class MetadataFromSolr implements MetadataRetriever {
 	
 	/**
 	 * given a layer name, retrieves the XML metadata string from the OGP Solr instance
-	 * @param layerName
+	 * @param identifier
+	 * @param descriptor
 	 * @return the XML metadata as a string
 	 * @throws Exception 
 	 */

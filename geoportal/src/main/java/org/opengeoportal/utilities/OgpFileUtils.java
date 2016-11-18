@@ -86,7 +86,7 @@ public class OgpFileUtils {
 	 */
 	public static String getFileExtensionFromMimeType(String contentType){
 		String responseContentType = contentType.toLowerCase();
-		logger.info("response MIME-Type: " + responseContentType);
+		logger.info("Response MIME-Type: " + responseContentType);
 		//get info from RequestedLayer object
 		if (responseContentType.indexOf(";") > -1){
 			responseContentType = responseContentType.substring(0, responseContentType.indexOf(";"));

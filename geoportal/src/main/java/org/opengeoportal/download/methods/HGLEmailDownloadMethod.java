@@ -108,13 +108,13 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 		} catch (JsonParseException e) {
 			logger.error(e.getMessage());
 		}
-		logger.info("Layer does not have required info for HGLEmailDownload");
+		logger.warn("Layer does not have required info for HGLEmailDownload");
 		return false;
-	};
-	
+	}
+
 	private String getUrl(LayerRequest layer) throws JsonParseException {
 
-		logger.info("Download URL: " + layer.getDownloadUrl());
+		logger.debug("Email URL: " + layer.getDownloadUrl());
 		return layer.getDownloadUrl().get(0);
 	}
 

@@ -19,9 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Class to request images via WMS
+ */
 public class ImageHandlerImpl implements ImageHandler {
-	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	@Autowired
+    final Logger logger = LoggerFactory.getLogger(ImageHandlerImpl.class);
+    @Autowired
 	private RequestStatusManager requestStatusManager;
 	@Autowired
 	private ImageCompositor imageCompositor;
@@ -64,8 +67,8 @@ public class ImageHandlerImpl implements ImageHandler {
 			//now we have everything we need to create a request
 			//this needs to be done for each image received
 			try {
-				logger.info(layerImage.getUrl().toString());
-				ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
+                logger.debug("Image URL:" + layerImage.getUrl().toString());
+                ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
 				Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl());
 				layerImage.setImageFileFuture(imgFile);
 
@@ -82,9 +85,9 @@ public class ImageHandlerImpl implements ImageHandler {
 	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
 		//only retrieve records the user has permission to access data for
 		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllowedRecords(imageRequest.getLayerIds());
-	    logger.info("Number of layers in image: " + Integer.toString(layerInfo.size()));
-		
-		for (LayerImage layerImage: imageRequest.getLayers()){
+        logger.debug("Number of layers in image: " + Integer.toString(layerInfo.size()));
+
+        for (LayerImage layerImage: imageRequest.getLayers()){
 			
 			String currentId = layerImage.getLayerId();
 			

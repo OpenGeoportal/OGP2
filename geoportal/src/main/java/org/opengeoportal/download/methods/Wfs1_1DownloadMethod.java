@@ -99,7 +99,7 @@ public class Wfs1_1DownloadMethod extends AbstractDownloadMethod implements PerL
 			 String layerName = this.currentLayer.getLayerNameNS();
 
 			 inputStream = this.httpRequester.sendRequest(this.getUrl(this.currentLayer), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
-			 logger.info(this.httpRequester.getContentType());//check content type before doing any parsing of xml?
+             logger.debug("Content-type returned: " + this.httpRequester.getContentType());//check content type before doing any parsing of xml?
 
 			 return ogcInfoRequest.parseResponse(inputStream);
 		 } finally {

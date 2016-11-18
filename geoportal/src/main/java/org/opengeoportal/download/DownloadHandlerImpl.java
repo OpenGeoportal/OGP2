@@ -77,9 +77,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 
 	/**
 	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
-	 *  
-	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
-	 * LayerRequest objects that can be downloaded using that concrete class.
+	 *
 	 */
 	@Async
 	public void submitDownloadRequest() {
@@ -116,7 +114,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 				//create a dummy LayerRequest so we can set status failed?
 				//layerRequest.setStatus(Status.FAILED);
 				//subclass LayerRequest as "AbortedLayerRequest" and add?
-				logger.info("User is not authorized to download: '" + layerId +"'");
+				logger.warn("User is not authorized to download: '" + layerId + "'");
 				continue;	
 			}
 			String requestedFormat = dlRequest.getRequestedFormatForLayerId(record.getLayerId());
@@ -126,10 +124,10 @@ public class DownloadHandlerImpl implements DownloadHandler {
 			
 			try {
 				currentClassKey = this.layerDownloaderProvider.getClassKey(layerRequest);
-				logger.info("DownloadKey: " + currentClassKey);
+				logger.debug("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
 				layerRequest.setStatus(Status.FAILED);
-				logger.info("No download method found for: '" + record.getLayerId() +"'");
+				logger.warn("No download method found for: '" + record.getLayerId() + "'");
 				continue;
 			}
 

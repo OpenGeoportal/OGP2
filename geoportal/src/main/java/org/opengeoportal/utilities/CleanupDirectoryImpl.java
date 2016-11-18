@@ -35,18 +35,19 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 		}
 		
 		if (file.canWrite() && !file.isHidden()){
-			logger.info("Deleting " + descriptor + ": " + file.getName());
-			return file.delete();
+            logger.debug("Deleting " + descriptor + ": " + file.getName());
+            return file.delete();
 
 		} else {
 			logger.warn("No permissions to delete "+ descriptor + ": " + file.getName());
 			return false;
 		}
-	};
-	/* (non-Javadoc)
-	 * @see org.OpenGeoPortal.Utilities.CleanupDirectory#cleanupDownloadDirectory()
-	 */
-	public void cleanupDownloadDirectory(){
+    }
+
+    /* (non-Javadoc)
+     * @see org.OpenGeoPortal.Utilities.CleanupDirectory#cleanupDownloadDirectory()
+     */
+    public void cleanupDownloadDirectory(){
 		logger.debug("Attempting to clean directory...");
 		//this is not great...only handles one level of directories
 		try {

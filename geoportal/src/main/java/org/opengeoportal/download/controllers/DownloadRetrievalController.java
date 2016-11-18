@@ -7,6 +7,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.download.DownloadRequest;
 import org.opengeoportal.download.MethodLevelDownloadRequest;
 import org.opengeoportal.download.RequestStatusManager;
@@ -54,9 +55,9 @@ public class DownloadRetrievalController {
 				}
 			}
 			if (counter > 0){
-				logger.info("Milliseconds slept: " + Long.toString(counter));
+				logger.warn("Milliseconds slept: " + Long.toString(counter));
 			}
-			
+			logger.info("Download with id [" + requestId.toString() + "] retrieved.");
 			response.setContentLength((int) downloadPackage.length());
 			response.setContentType("application/zip");
 			response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());

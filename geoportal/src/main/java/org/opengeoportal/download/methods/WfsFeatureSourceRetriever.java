@@ -75,8 +75,8 @@ Optional default of true. WFS implementations are terrible for actually obeying 
 		}
 		
 		// Step 4 - target
-		logger.info(typeName);
-		featureSource = data.getFeatureSource( typeName );
+        logger.debug("TypeName: " + typeName);
+        featureSource = data.getFeatureSource( typeName );
 	}
 
 	@Override
