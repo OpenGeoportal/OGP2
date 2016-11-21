@@ -57,18 +57,19 @@
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
-	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.proxy.ImageHandlerFactory" />
-	
-	<beans:bean id="imageHandler" class="org.opengeoportal.proxy.ImageHandlerImpl" scope="prototype" lazy-init="true" />
+	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.image.ImageHandlerFactory"/>
 
-	<beans:bean id="imageCompositor" class="org.opengeoportal.proxy.ImageCompositorImpl"
-		scope="prototype" >
+	<beans:bean id="imageHandler" class="org.opengeoportal.image.ImageHandlerImpl" scope="prototype" lazy-init="true"/>
+
+	<beans:bean id="imageCompositor" class="org.opengeoportal.image.ImageCompositorImpl"
+				scope="prototype" >
 		<beans:property name="maxSizeMB" value="${maxImageSize}" />
 	</beans:bean>
-	
-	<beans:bean id="imageDownloaderFactory" class="org.opengeoportal.proxy.ImageDownloaderFactory" />
 
-	<beans:bean id="imageDownloader" class="org.opengeoportal.proxy.ImageDownloaderImpl" scope="prototype" lazy-init="true" />
+	<beans:bean id="imageDownloaderFactory" class="org.opengeoportal.image.ImageDownloaderFactory"/>
+
+	<beans:bean id="imageDownloader" class="org.opengeoportal.image.ImageDownloaderImpl" scope="prototype"
+				lazy-init="true"/>
 
 	<beans:bean id="exportHandlerFactory.geocommons"
 		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerFactory" />

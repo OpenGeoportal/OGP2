@@ -1,4 +1,4 @@
-package org.opengeoportal.proxy.controllers;
+package org.opengeoportal.image.controller;
 
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -6,9 +6,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.opengeoportal.proxy.ImageHandler;
-import org.opengeoportal.proxy.ImageHandlerFactory;
 
+import org.opengeoportal.image.ImageHandler;
+import org.opengeoportal.image.ImageHandlerFactory;
+import org.opengeoportal.image.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

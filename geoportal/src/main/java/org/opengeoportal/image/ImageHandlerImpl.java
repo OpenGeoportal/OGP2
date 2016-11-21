@@ -1,4 +1,4 @@
-package org.opengeoportal.proxy;
+package org.opengeoportal.image;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -10,21 +10,19 @@ import java.util.concurrent.Future;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
+import org.opengeoportal.image.ImageRequest.ImageStatus;
+import org.opengeoportal.image.ImageRequest.LayerImage;
 import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.proxy.controllers.ImageRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
-import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
 import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.utilities.LocationFieldUtils;
+import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * Class to request images via WMS
- */
 public class ImageHandlerImpl implements ImageHandler {
-    final Logger logger = LoggerFactory.getLogger(ImageHandlerImpl.class);
-    @Autowired
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+	@Autowired
 	private RequestStatusManager requestStatusManager;
 	@Autowired
 	private ImageCompositor imageCompositor;
@@ -34,7 +32,9 @@ public class ImageHandlerImpl implements ImageHandler {
 	private LayerInfoRetriever layerInfoRetriever;
 	@Autowired
 	private ProxyConfigRetriever proxyConfigRetriever;
-	private String baseQuery;
+	private String baseWMSQuery;
+	private String baseAGServerQuery;
+
 	
 	@Override
 	public UUID requestImage(String sessionId, ImageRequest imageRequest) throws Exception {
@@ -56,9 +56,10 @@ public class ImageHandlerImpl implements ImageHandler {
 	
 	private void downloadLayerImages(ImageRequest imageRequest) throws Exception {
 
+		//populateImageRequest depends on setBaseQuery running first
 		setBaseQuery(imageRequest.getFormat(), imageRequest.getBbox(), imageRequest.getSrs(), 
 				imageRequest.getHeight(), imageRequest.getWidth());
-		//populateImageRequest depends on setBaseQuery running first
+
 		populateImageRequest(imageRequest);
 		
 		List<LayerImage> layerImageList = imageRequest.getLayers();
@@ -85,9 +86,9 @@ public class ImageHandlerImpl implements ImageHandler {
 	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
 		//only retrieve records the user has permission to access data for
 		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllowedRecords(imageRequest.getLayerIds());
-        logger.debug("Number of layers in image: " + Integer.toString(layerInfo.size()));
+		logger.info("Creating composite of {} image(s).", Integer.toString(layerInfo.size()));
 
-        for (LayerImage layerImage: imageRequest.getLayers()){
+		for (LayerImage layerImage : imageRequest.getLayers()) {
 			
 			String currentId = layerImage.getLayerId();
 			
@@ -103,14 +104,62 @@ public class ImageHandlerImpl implements ImageHandler {
 	}
 	
 	private void populateLayerUrl(LayerImage layerImage){
-		
+
 		SolrRecord solrRecord = layerImage.getSolrRecord();
+		String locationField = solrRecord.getLocation();
+		URL url = null;
+
+		if (LocationFieldUtils.hasWmsUrl(locationField)) {
+			url = getWMSUrl(solrRecord, layerImage.getSld());
+		} else if (LocationFieldUtils.hasArcGISRestUrl(locationField)) {
+			url = getAGServerUrl(solrRecord);
+		}
+
+		layerImage.setUrl(url);
+	}
+
+	private URL getAGServerUrl(SolrRecord solrRecord) {
+		String layerQueryString = "&LAYERS=show:" + solrRecord.getName();
+
+
+		String baseUrl = "";
+
+		URL url = null;
+		try {
+			baseUrl = proxyConfigRetriever.getInternalUrl("ArcGISRest",
+					solrRecord.getInstitution(), solrRecord.getAccess(),
+					solrRecord.getLocation());
+			// filter any query terms
+			baseUrl = OgpUtils.filterQueryString(baseUrl);
+			if (baseUrl.endsWith("/")) {
+				baseUrl = baseUrl.substring(0, baseUrl.length());
+			}
+
+			//look for "MapServer" path
+			int i = baseUrl.toLowerCase().indexOf("mapserver");
+			if (i > -1) {
+				baseUrl = baseUrl.substring(0, i - 1);
+			}
+
+			baseUrl += "/MapServer/export";
+
+			url = new URL(baseUrl + "?" + baseAGServerQuery + layerQueryString);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			logger.error("Problem retrieving a URL for this layer.");
+			//there's some problem retrieving a url.  skip the layer
+		}
+
+		return url;
+	}
+
+
+	private URL getWMSUrl(SolrRecord solrRecord, String sld) {
 		
 		String layerQueryString = "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName();
-		String currentSLD = layerImage.getSld();
-	   	if ((currentSLD != null)&&(!currentSLD.equals("null")&&(!currentSLD.isEmpty()))){
+		if ((sld != null) && (!sld.equals("null") && (!sld.isEmpty()))) {
 	   		try {
-				layerQueryString += "&sld_body=" + URLEncoder.encode(currentSLD, "UTF-8");
+				layerQueryString += "&sld_body=" + URLEncoder.encode(sld, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				//problem with the sld encoding...just ignore the sld.
 				logger.error("There was a problem with the SLD encoding.  Requesting image without SLD. ");
@@ -119,18 +168,26 @@ public class ImageHandlerImpl implements ImageHandler {
 
 	   	String baseUrl = "";
 
+		URL url = null;
 	   	try{
-	   		baseUrl = this.proxyConfigRetriever.getInternalUrl("wms", solrRecord.getInstitution(), solrRecord.getAccess(),solrRecord.getLocation());
-	   		layerImage.setUrl(new URL(baseUrl + "?" + baseQuery + layerQueryString));
-
+			baseUrl = this.proxyConfigRetriever.getInternalUrl("wms", solrRecord.getInstitution(), solrRecord.getAccess(), solrRecord.getLocation());
+			url = new URL(baseUrl + "?" + baseWMSQuery + layerQueryString);
 	   	} catch (Exception e1) {
 	   		e1.printStackTrace();
 	   		logger.error("Problem retrieving a URL for this layer.");
 	   		//there's some problem retrieving a url.  skip the layer
 	   	}
+
+		return url;
+	
 	}
 	
 	private void setBaseQuery(String format, String bbox, String srs, int height, int width){
+		setBaseWMSQuery(format, bbox, srs, height, width);
+		setBaseAGServerQuery(format, bbox, srs, height, width);
+	}
+
+	private void setBaseWMSQuery(String format, String bbox, String srs, int height, int width) {
 		
         String genericQueryString;
     	genericQueryString = "SERVICE=WMS&version=1.1.1&REQUEST=GetMap&FORMAT=" + format + "&SRS=" + srs;
@@ -147,7 +204,22 @@ public class ImageHandlerImpl implements ImageHandler {
     	} 
     	genericQueryString += "&HEIGHT=" + height + "&WIDTH=" + width;
     	logger.debug(genericQueryString);
-    	baseQuery = genericQueryString;
+		baseWMSQuery = genericQueryString;
+	}
+
+	private void setBaseAGServerQuery(String format, String bbox, String srs, int height, int width) {
+		//http://data1.commons.psu.edu/ArcGIS/rest/services/pasda/NaturalLandsTrust2010/MapServer/export?TRANSPARENT=true&DPI=91&LAYERS=show%3A15&FORMAT=png&BBOX=-7983694.729219%2C4539747.983281%2C-7827151.695312%2C4696291.017188&SIZE=256%2C256&F=image&BBOXSR=3857&IMAGESR=3857
+		String genericQueryString;
+		srs = srs.toLowerCase().replace("epsg:", "");
+		genericQueryString = "BBOXSR=" + srs + "&IMAGESR=" + srs + "&BBOX=" + bbox;
+
+		if (format.equals("image/png")) {
+			format = "png";
+			genericQueryString += "&F=image&FORMAT=" + format + "&TRANSPARENT=true";
+		}
+		genericQueryString += "&SIZE=" + width + "," + height + "&DPI=91";
+		logger.debug(genericQueryString);
+		baseAGServerQuery = genericQueryString;
 	}
 	
 

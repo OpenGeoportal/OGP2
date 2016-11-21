@@ -1,4 +1,4 @@
-package org.opengeoportal.proxy;
+package org.opengeoportal.image;
 
 import java.io.File;
 import java.io.InputStream;
