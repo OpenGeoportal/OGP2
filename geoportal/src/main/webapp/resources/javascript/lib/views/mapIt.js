@@ -26,7 +26,7 @@ OpenGeoportal.Views.MapIt = OpenGeoportal.Views.CartActionView.extend({
 		// public vector wms layers only. we can increase the complexity
 		// if other web mapping sites have different criteria
 		var isAvailable = false;
-		if (model.isPublic() && model.isVector() && model.hasOGCEndpoint("wms")) {
+        if (model.isPublic() && model.isVector() && model.hasOGCEndpoint("wms") && model.get("isChecked")) {
 			isAvailable = true;
 		}
 

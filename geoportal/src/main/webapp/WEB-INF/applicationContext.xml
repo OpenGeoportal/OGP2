@@ -36,28 +36,42 @@
 	<beans:bean id="properties.generalOgp" class="org.opengeoportal.config.PropertiesFile">
 		<beans:property name="resource" value="WEB-INF/ogp.properties" />
 	</beans:bean>
-	
+
 	<beans:bean id="properties.repositories" class="org.opengeoportal.config.PropertiesFile">
 		<beans:property name="resource" value="WEB-INF/repositories.properties" />
 	</beans:bean>
-	
+
 	<beans:bean id="config.ogp" class="org.opengeoportal.config.ogp.OgpConfigRetrieverFromProperties" init-method="load" >
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
-	
+
 	<beans:bean id="config.proxy" class="org.opengeoportal.config.proxy.ProxyConfigRetrieverFromProperties" init-method="load" >
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
-	
+
 	<beans:bean id="config.repositories" class="org.opengeoportal.config.repositories.RepositoryConfigRetrieverFromProperties" init-method="load" >
 		<beans:property name="propertiesFile" ref="properties.repositories" />
 	</beans:bean>
-	
+
 	<beans:bean id="config.search" class="org.opengeoportal.config.search.SearchConfigRetrieverFromProperties" init-method="load" >
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
-	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.image.ImageHandlerFactory"/>
+    <beans:bean id="properties.ogp" class="org.opengeoportal.config.XmlProperties" init-method="load">
+        <beans:property name="config_file" value="WEB-INF/ogp_config.xml"/>
+    </beans:bean>
+
+    <beans:bean id="properties.wro" class="org.opengeoportal.config.XmlProperties" init-method="load">
+        <beans:property name="config_file" value="WEB-INF/wro.xml"/>
+    </beans:bean>
+
+    <beans:bean id="config.topics" class="org.opengeoportal.config.topics.TopicsConfigRetriever" init-method="load"/>
+    <beans:bean id="config.datatypes" class="org.opengeoportal.config.datatypes.DatatypesConfigRetriever"
+                init-method="load"/>
+
+    <beans:bean id="config.wro" class="org.opengeoportal.config.wro.WroResourceRetriever"/>
+
+    <beans:bean id="imageHandlerFactory" class="org.opengeoportal.image.ImageHandlerFactory"/>
 
 	<beans:bean id="imageHandler" class="org.opengeoportal.image.ImageHandlerImpl" scope="prototype" lazy-init="true"/>
 
@@ -71,7 +85,19 @@
 	<beans:bean id="imageDownloader" class="org.opengeoportal.image.ImageDownloaderImpl" scope="prototype"
 				lazy-init="true"/>
 
-	<beans:bean id="exportHandlerFactory.geocommons"
+    <beans:bean id="transformerProvider" class="org.opengeoportal.metadata.CachingTransformerProvider"/>
+
+    <beans:bean id="xmlParserFactory" class="org.opengeoportal.metadata.XmlParserFactory"/>
+
+    <beans:bean id="xmlParser" factory-bean="xmlParserFactory" factory-method="getParser"
+                class="org.opengeoportal.metadata.XmlParserImpl" scope="prototype"/>
+
+    <beans:bean id="metadataParserFactory" class="org.opengeoportal.metadata.MetadataParserFactory"/>
+
+    <beans:bean id="fgdcParser" class="org.opengeoportal.metadata.FgdcMetadataParser" scope="prototype"/>
+
+
+    <beans:bean id="exportHandlerFactory.geocommons"
 		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerFactory" />
 		
 	<beans:bean id="exportHandler.geocommons"
@@ -101,10 +127,16 @@
 	<beans:bean id="layerInfoRetriever.solr"
 		class="org.opengeoportal.metadata.SolrLayerInfoRetriever" />
 
-	<beans:bean id="metadataRetriever.solr" class="org.opengeoportal.download.MetadataFromSolr" >
+    <beans:bean id="metadataRetriever.solr" class="org.opengeoportal.metadata.MetadataFromSolr">
 		<beans:property name="fgdcStyleSheet" value="${styleSheet.fgdc}"/>
 		<beans:property name="iso19139StyleSheet" value="${styleSheet.iso19139}"/>
 	</beans:bean>
+
+    <beans:bean id="attrDictionaryRetrieverFactory"
+                class="org.opengeoportal.metadata.AttributeDictionaryRetrieverFactory"/>
+
+    <beans:bean id="attrDictionaryRetriever" factory-bean="attrDictionaryRetrieverFactory"
+                factory-method="getAttributeDictionaryRetriever" scope="prototype"/>
 
 	<beans:bean id="configRetriever.download"
 		class="org.opengeoportal.download.config.OgpDownloadConfigRetriever">
@@ -256,7 +288,16 @@
 		<beans:property name="emailDownloadMethod" ref="downloadMethod.email.HGL" />
 	</beans:bean>
 
-	<beans:bean id="ogcInfoRequester.wms" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
+    <beans:bean id="getFeatureInfoFactory" class="org.opengeoportal.featureinfo.FeatureInfoFactory"/>
+
+    <beans:bean id="getFeatureInfo.wms" class="org.opengeoportal.featureinfo.WmsGetFeatureInfo" scope="prototype"
+                lazy-init="true"/>
+
+    <beans:bean id="getFeatureInfo.arcgis" class="org.opengeoportal.featureinfo.ArcGISIdentify" scope="prototype"
+                lazy-init="true"/>
+
+
+    <beans:bean id="ogcInfoRequester.wms" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
 		scope="prototype">
 		<beans:property name="ogcInfoRequest" ref="ogcInfoRequest.wms" />
 		<beans:property name="httpRequester" ref="httpRequester.generic" />

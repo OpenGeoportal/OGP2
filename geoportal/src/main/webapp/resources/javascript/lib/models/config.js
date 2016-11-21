@@ -51,8 +51,8 @@ OpenGeoportal.Config.ProxyCollection = Backbone.Collection.extend({
 });
 
 //[{"repositoryId":"tufts","accessLevels":["restricted"],"serverMapping":[{"type":"wms","externalUrl":"restricted/wms"},{"type":"wfs","externalUrl":"restricted/wfs"},{"type":"wcs","externalUrl":"restricted/wcs"}]}]
-OpenGeoportal.Config.Proxies = new OpenGeoportal.Config.ProxyCollection();
-OpenGeoportal.Config.Proxies.fetch();
+OpenGeoportal.Config.Proxies = new OpenGeoportal.Config.ProxyCollection(OpenGeoportal.Config.ProxyCollectionBootstrap);
+//OpenGeoportal.Config.Proxies.fetch();
 
 OpenGeoportal.Config.getWMSProxy = function(institution, accessLevel) {
 	var proxyConfig = OpenGeoportal.Config.Proxies.findWhere({
@@ -80,105 +80,22 @@ OpenGeoportal.Config.RepositoryCollection = Backbone.Collection.extend({
 });
 
 //"value" should be the value in solr; iconClass determines what icon shows via css
-OpenGeoportal.Config.Repositories = new OpenGeoportal.Config.RepositoryCollection();
-OpenGeoportal.Config.Repositories.fetch();
+OpenGeoportal.Config.Repositories = new OpenGeoportal.Config.RepositoryCollection(OpenGeoportal.Config.RepositoriesBootstrap);
+//OpenGeoportal.Config.Repositories.fetch();
 
 OpenGeoportal.Config.DataTypeCollection = Backbone.Collection.extend({});
 
-//"value" should be the value in solr; uiClass determines what icon shows via css
-//should get this from the server as well?
-OpenGeoportal.Config.DataTypes = new OpenGeoportal.Config.DataTypeCollection([
-		{
-			value : "Point",
-			displayName : "Point",
-			uiClass : "pointIcon",
-			selected : true
-		}, {
-			value : "Line",
-			displayName : "Line",
-			uiClass : "lineIcon",
-			selected : true
-		}, {
-			value : "Polygon",
-			displayName : "Polygon",
-			uiClass : "polygonIcon",
-			selected : true
-		}, {
-			value : "Raster",
-			displayName : "Raster",
-			uiClass : "rasterIcon",
-			selected : true
-		}, {
-			value : "Paper+Map",
-			displayName : "Scanned Map",
-			uiClass : "mapIcon",
-			selected : true
-		} ]);
+//"value" should be the value in solr; iconClass determines what icon shows via css
+OpenGeoportal.Config.DataTypes = new OpenGeoportal.Config.DataTypeCollection(OpenGeoportal.Config.DataTypesBootstrap);
+
 
 //Do I even need to extend this?
 OpenGeoportal.Config.TopicCollection = Backbone.Collection.extend({});
-OpenGeoportal.Config.IsoTopics = new OpenGeoportal.Config.TopicCollection([ 
-                                                                           {
-                                                                        	   topic : "",
-                                                                        	   label : "None",
-                                                                        	   selected : true
-                                                                           }, {
-                                                                        	   topic : "farming",
-                                                                        	   label : "Agriculture and Farming"
-                                                                           }, {
-                                                                        	   topic : "biota",
-                                                                        	   label : "Biology and Ecology"
-                                                                           }, {
-                                                                        	   topic : "boundaries",
-                                                                        	   label : "Administrative and Political Boundaries"
-                                                                           }, {
-                                                                        	   topic : "climatologyMeteorologyAtmosphere",
-                                                                        	   label : "Atmospheric and Climatic"
-                                                                           }, {
-                                                                        	   topic : "economy",
-                                                                        	   label : "Business and Economic"
-                                                                           }, {
-                                                                        	   topic : "elevation",
-                                                                        	   label : "Elevation and Derived Products"
-                                                                           }, {
-                                                                        	   topic : "environment",
-                                                                        	   label : "Environment and Conservation"
-                                                                           }, {
-                                                                        	   topic : "geoscientificinformation",
-                                                                        	   label : "Geological and Geophysical"
-                                                                           }, {
-                                                                        	   topic : "health",
-                                                                        	   label : "Human Health and Disease"
-                                                                           }, {
-                                                                        	   topic : "imageryBaseMapsEarthCover",
-                                                                        	   label : "Imagery and Base Maps"
-                                                                           }, {
-                                                                        	   topic : "intelligenceMilitary",
-                                                                        	   label : "Military"
-                                                                           }, {
-                                                                        	   topic : "inlandWaters",
-                                                                        	   label : "Inland Water Resources"
-                                                                           }, {
-                                                                        	   topic : "location",
-                                                                        	   label : "Locations and Geodetic Networks"
-                                                                           }, {
-                                                                        	   topic : "oceans",
-                                                                        	   label : "Oceans and Estuaries"
-                                                                           }, {
-                                                                        	   topic : "planningCadastre",
-                                                                        	   label : "Cadastral"
-                                                                           }, {
-                                                                        	   topic : "society",
-                                                                        	   label : "Cultural, Society, and Demographics"
-                                                                           }, {
-                                                                        	   topic : "structure",
-                                                                        	   label : "Facilities and Structure"
-                                                                           }, {
-                                                                        	   topic : "transportation",
-                                                                        	   label : "Transportation Networks"
-                                                                           }, {
-                                                                        	   topic : "utilitiesCommunication",
-                                                                        	   label : "Utilities and Communication"
-                                                                           } ]);
+OpenGeoportal.Config.TopicsBootstrap.unshift({
+    value: "",
+    displayName: "None",
+    selected: true
+});
+OpenGeoportal.Config.IsoTopics = new OpenGeoportal.Config.TopicCollection(OpenGeoportal.Config.TopicsBootstrap);
 
 

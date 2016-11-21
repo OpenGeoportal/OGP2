@@ -2,7 +2,10 @@
     <p><a href="http://www.opengeoportal.org">The
         Open Geoportal (OGP)</a> is a collaboratively developed, open source,
         federated web application to rapidly discover, preview, and retrieve
-        geospatial data from multiple organizations.</p>
+        geospatial data from multiple organizations. The Open Geoportal
+        Federation is a community of geospatial professionals, developers, information architects, librarians,
+        metadata specialists and enthusiasts working together to make geospatial data and maps available on the
+        web and contribute to global spatial data infrastructure.</p>
     <p>
         The community portal is located at <a href="http://data.opengeoportal.org">data.opengeoportal.org</a>.
     </p>

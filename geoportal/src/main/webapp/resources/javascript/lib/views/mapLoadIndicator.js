@@ -104,7 +104,7 @@ OpenGeoportal.Views.MapLoadIndicatorView = OpenGeoportal.Views.LoadIndicatorView
 	id: "mapLoadIndicator",
 	
 	render : function(){
-		var html = this.options.template.loadIndicator();
+        var html = this.options.template.get('loadIndicator')();
 		this.$el.html(html).appendTo(".olControlPanel");		
 		return this;
 	},
@@ -127,7 +127,7 @@ OpenGeoportal.Views.RequestQueueLoadIndicatorView = OpenGeoportal.Views.LoadIndi
 	},
 	
 	render : function(){
-		var html = this.options.template.requestIndicator();
+        var html = this.options.template.get('requestIndicator')();
 		this.$el.html(html).appendTo("body");
 		return this;
 	},

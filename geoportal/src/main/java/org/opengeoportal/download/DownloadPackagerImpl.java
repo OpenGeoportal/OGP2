@@ -8,11 +8,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import org.opengeoportal.download.DownloadRequest;
-import org.opengeoportal.download.MethodLevelDownloadRequest;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
 import org.opengeoportal.layer.GeometryType;
+import org.opengeoportal.metadata.MetadataRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.opengeoportal.utilities.ZipFilePackager;
 import org.slf4j.Logger;

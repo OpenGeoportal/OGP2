@@ -41,7 +41,7 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 							.lastIndexOf("/"));
 					var shareLink = path + "/";
 					var geodeticBbox = OpenGeoportal.ogp.map
-							.getGeodeticExtent().toBBOX();
+                        .getWGS84VisibleExtent().toBBOX();
 					var queryString = '?' + jQuery.param({
 						ogpids : arrIds.join(),
 						bbox : geodeticBbox
@@ -109,6 +109,13 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 										height : 'auto',
 										title : 'Share Cart',
 										resizable : false,
+                                        dragStart: function (event, ui) {
+                                            $(document).trigger('eventMaskOn');
+                                        },
+                                        dragStop: function (event, ui) {
+                                            $(document).trigger('eventMaskOff');
+
+                                        },
 										buttons : {
 											Close : function() {
 												jQuery(this).dialog('close');

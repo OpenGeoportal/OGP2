@@ -29,8 +29,7 @@ OpenGeoportal.Views.Query = Backbone.View
 		.extend({
 
 			initialize : function() {
-				jQuery("#whereField").attr("placeholder", this.model.get("whereExample"));
-				jQuery("#whatField").attr("placeholder", this.model.get("whatExample"));
+
 
 				this.widgets = OpenGeoportal.ogp.widgets;
 				this.tableControls = OpenGeoportal.ogp.tableControls;
@@ -74,10 +73,18 @@ OpenGeoportal.Views.Query = Backbone.View
 				jQuery(document).on("map.extentChanged", function(e, data) {
 					that.model.setMapExtent(data.mapExtent, data.mapCenter);
 				});
+
+                $("#whereField").focus();
 			},
 			
 			events : {
-				"blur input" : "setTextValue"
+                "blur input": "setTextValue",
+                "change #whereField": "doGeocode",
+                "keypress #whereField": "noteWhereChanged",
+                "change #whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged",
+                "search #whereField,#whatField,#advancedKeywordText,#advancedOriginatorText,#advancedDateFromText,#advancedDateToText": "noteSearchChanged",
+                "click .searchToggle": "toggleSearch"
+
 			},
 
 			/*******************************************************************
@@ -90,71 +97,91 @@ OpenGeoportal.Views.Query = Backbone.View
 			 */
 			mapInputsToModel : function() {
 				jQuery("#whatField").data({
-					queryAttr : "what"
-				});
+                    queryAttr: "what",
+                    fieldType: "text"
+                }).val(this.model.get("what")).attr("placeholder", this.model.get("whatExample"));
+
 				jQuery("#whereField").data({
-					queryAttr : "where"
-				});
+                    queryAttr: "where",
+                    fieldType: "text"
+                }).val(this.model.get("where")).attr("placeholder", this.model.get("whereExample"));
+
 				jQuery("#advancedKeywordText").data({
-					queryAttr : "keyword"
-				});
+                    queryAttr: "keyword",
+                    fieldType: "text"
+                }).val(this.model.get("keyword"));
+
+
 				jQuery("#advancedOriginatorText").data({
-					queryAttr : "originator"
-				});
+                    queryAttr: "originator",
+                    fieldType: "text"
+                }).val(this.model.get("originator"));
+
 				jQuery("#advancedDateFromText").data({
-					queryAttr : "dateFrom"
-				});
+                    queryAttr: "dateFrom",
+                    fieldType: "text"
+                }).val(this.model.get("dateFrom"));
+
 				jQuery("#advancedDateToText").data({
-					queryAttr : "dateTo"
-				});
+                    queryAttr: "dateTo",
+                    fieldType: "text"
+                }).val(this.model.get("dateTo"));
 			},
-			/**
+
+
+            /**
 			 * using the mapping in mapInputsToModel, sets the value of a model attribute from the dom value
 			 */
 			setTextValue : function(event) {
 				var target$ = jQuery(event.currentTarget);
 				var attr = target$.data().queryAttr;
-				var val = target$.val().trim();
+                var val = "";
+                if (_.has(target$.data(), "preferredValue") && target$.data().preferredValue.length > 0) {
+                    val = target$.data().preferredValue;
+                } else {
+                    val = target$.val().trim();
+                }
 				this.model.set(attr, val);
 
 				// map field to model attribute
 			},
 
-			geocodeBbox: null,
 			
 			handleGeocodeResults: function(geocode, where$){
+
+                var prevGeocode = where$.data().geocode || {};
+
+                where$.data("geocode", geocode);
+
 				var bbox = geocode.bbox;
 				if (typeof bbox !== "undefined") {
-					//console.log(bbox);
-					//console.log(this.geocodeBbox);
-					if (bbox == this.geocodeBbox){
-						//don't zoom if the geocode bbox doesn't change
-						this.fireSearch();
-						return;
-					} 
-						
-					this.geocodeBbox = bbox;	
-					
-					//clear left over listeners from last geocode
-					this.stopListening(this.model, "change:mapExtent",
-							this.clearWhere);
 					
 					where$.val(geocode.name);
-					// no need to fire search since it will be triggered by
-					// extent change
-					var that = this;
-					//wait for move to end before attaching handler
-					this.listenToOnce(this.model, "change:mapExtent", function(){
-						//console.log("listener added"); 
-						that.listenToOnce(that.model, "change:mapExtent",
-								that.clearWhere);
-					});
-					jQuery(document).trigger("map.zoomToLayerExtent", {
-						bbox : bbox
-					});
 
-					//clear the geocode value
-					where$.data().geocode = {};
+                    if (_.has(geocode, "fullResponse") && _.has(geocode.fullResponse, "address_components")) {
+                        var comp = geocode.fullResponse.address_components;
+                        if (comp.length > 0 && _.has(comp[0], "long_name")) {
+                            var name = comp[0].long_name;
+                            where$.data().preferredValue = name;
+                            this.model.set({where: name});
+                        }
+                    }
+
+
+                    this.model.set({geocodedBbox: geocode.bbox});
+
+                    if (this.checkWhereChanged()) {
+
+                        if (_.has(prevGeocode, "name") && _.has(geocode, "name")) {
+                            if (prevGeocode.name == geocode.name) {
+                                //console.log("geocode names match");
+                                //if the user has typed any keys, we should fire a geocode
+                                this.model.trigger("change:geocodedBbox");
+                            }
+                        }
+                    }
+
+
 				} else {
 					// console.log("zoomToWhere");
 					this.fireSearch();
@@ -162,68 +189,71 @@ OpenGeoportal.Views.Query = Backbone.View
 				
 
 			},
-			
-			zoomToWhere : function() {
-				var where$ = jQuery("#whereField");
-				var geocode = where$.data().geocode;
-				
-				if (typeof geocode !== "undefined" && _.size(geocode) > 0) {
 
-					this.handleGeocodeResults(geocode, where$);
-					
-				} else if (where$.val().trim().length > 0) {
-					// console.log("trying to geocode value");
-					// try to geocode the value in the where field if it doesn't
-					// come from the geocoder
-					var promise = this.geocoder.getGeocodePromise(where$.val()
-							.trim());
-					var that = this;
-					jQuery.when(promise).done(
-							function(message) {
-								// console.log("message");
-								// console.log(message);
-								if (message.values.length > 0) {
-									that.handleGeocodeResults(message.values[0], where$);
+            checkChanged: function (prop) {
+                var val = this[prop];
+                if (val) {
+                    this[prop] = false;
+                }
+                return val;
+            },
 
-								} else {
-									// console.log("geocode without messages");
-									that.fireSearch();
-								}
+            whereChanged: false,
 
-							});
-				} else {
-					// console.log("where box empty");
-					this.fireSearch();
-				}
+            noteWhereChanged: function () {
+                this.whereChanged = true;
+            },
 
+            checkWhereChanged: function () {
+                var check = this.checkChanged("whereChanged");
+                return check;
+            },
+
+            searchChanged: false,
+
+            checkSearchChanged: function () {
+                return this.checkChanged("searchChanged");
 			},
+
+            noteSearchChanged: function () {
+                this.searchChanged = true;
+            },
+
+            doGeocode: function () {
+                // try to geocode the value in the where field if it doesn't
+                // come from the geocoder
+                //console.log(arguments);
+                var geocodeField$ = jQuery("#whereField");
+                var promise = this.geocoder.getGeocodePromise(geocodeField$.val().trim());
+                var that = this;
+                jQuery.when(promise).done(
+                    function (message) {
+
+                        // console.log("message");
+                        // console.log(message);
+                        if (message.values.length > 0) {
+                            that.handleGeocodeResults(message.values[0], geocodeField$);
+
+                        } else {
+                            //console.log("geocode without messages");
+                            that.clearWhere();
+                            that.fireSearch();
+                        }
+
+                    });
+            },
 
 			clearWhere : function() {
 				//console.log("clear where");
 				var where$ = jQuery("#whereField");
 				//clear the geocode value
 				where$.data().geocode = {};
+                where$.data().preferredValue = "";
+
 				this.geocodeBbox = null;
-				
-				if (where$.val().trim().length > 0) {
-					
-					var currColor = where$.css("color");
-					where$.animate({
-						color : "#0755AC"
-					}, 125).animate({
-						color : currColor
-					}, 125).animate({
-						color : "#0755AC"
-					}, 125).animate({
-						color : currColor
-					}, 125).delay(300).animate({
-						color : "#FFFFFF"
-					}, 300, function() {
-						where$.val("").css({
-							color : currColor
-						});
-					});
-				}
+                this.model.set({where: ""});
+                where$.val("");
+
 			},
 			
 			fireSearchWithZoom : function() {
@@ -236,8 +266,22 @@ OpenGeoportal.Views.Query = Backbone.View
 						return;
 					}
 				}
+                //if where is empty, ignore zoom
+                var where$ = jQuery("#whereField");
 
-				this.zoomToWhere();
+                if (where$.val().trim().length === 0) {
+                    //console.log("just firing search");
+                    this.fireSearch();
+                    return;
+                }
+
+                //if extent hasn't changed, but other search values have, fire search
+                if (this.checkSearchChanged()) {
+                    //console.log("searchChanged");
+                    this.fireSearch();
+
+                }
+
 			},
 			
 			extentChangeQueue : [],
@@ -259,12 +303,14 @@ OpenGeoportal.Views.Query = Backbone.View
 
 			searchTypeHandler : function() {
 				var that = this;
-				jQuery(document).on("search.setBasic", function() {
+                jQuery(document).on("searchform.setBasic", function () {
+                    that.noteSearchChanged();
 					that.model.set({
 						searchType : "basic"
 					});
 				});
-				jQuery(document).on("search.setAdvanced", function() {
+                jQuery(document).on("searchform.setAdvanced", function () {
+                    that.noteSearchChanged();
 					that.model.set({
 						searchType : "advanced"
 					});
@@ -274,6 +320,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			mapFilterHandler : function() {
 				var that = this;
 				jQuery("#mapFilterCheck").on("change", function(event) {
+                    that.noteSearchChanged();
 					that.model.set({
 						ignoreSpatial : this.checked
 					});
@@ -283,19 +330,21 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 			
 			showRestrictedHandler : function() {
-				
-				var that = this;
-				jQuery("#restrictedCheck").on("change", function(event) {
-					var arrRestricted = [];
-					if (!this.checked) {
-						arrRestricted = that.model.get("displayRestrictedBasic");
-					} else {
-						arrRestricted = that.model.get("repositoryList").pluck("shortName");
-					}
-					that.model.set({
-						displayRestrictedAdvanced : arrRestricted
-					});
-				});
+
+                //initialize with model value
+                jQuery("#restrictedCheck").prop("checked", this.model.get("includeRestricted"));
+
+                var that = this;
+                jQuery("#restrictedCheck").on("change", function (event) {
+                    var checked = jQuery(this).prop("checked");
+
+                    that.model.set({
+                        includeRestricted: checked
+                    });
+
+                    that.noteSearchChanged();
+
+                });
 			},
 			
 			searchBoxKeypressHandler : function() {
@@ -328,7 +377,7 @@ OpenGeoportal.Views.Query = Backbone.View
 								collection : repositoryCollection,
 								el : "div#repositoryDropdown",
 								valueAttribute : "shortName",
-								displayAttribute : "shortName",
+                                displayAttribute: "fullName",
 								buttonLabel : "Select repositories",
 								itemClass : "repositoryMenuItem",
 								iconRenderer : iconRenderer,
@@ -336,13 +385,11 @@ OpenGeoportal.Views.Query = Backbone.View
 								showOnly: true
 							});
 					that.repositories = repositoryMenu;
-					that.model.set({
-						repository : that.repositories.getValueAsArray()
-					});
-					that.repositories.$el.on("change", function() {
-						that.model.set({
-							repository : that.repositories.getValueAsArray()
-						});
+
+
+                    that.repositories.$el.on("change", function() {
+                        that.noteSearchChanged();
+
 					});
 				};
 				if (repositoryCollection.length === 0) {
@@ -378,13 +425,10 @@ OpenGeoportal.Views.Query = Backbone.View
 						});
 
 				this.dataTypes = dataTypesMenu;
-				this.model.set({
-					dataType : this.dataTypes.getValueAsArray()
-				});
+
 				this.dataTypes.$el.on("change", function() {
-					that.model.set({
-						dataType : that.dataTypes.getValueAsArray()
-					});
+                    that.noteSearchChanged();
+
 				});
 
 			},
@@ -398,19 +442,16 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.topics = new OpenGeoportal.Views.CollectionSelect({
 					collection : isoTopics,
 					el : "div#topicDropdown",
-					valueAttribute : "topic",
-					displayAttribute : "label",
+                    valueAttribute: "value",
+                    displayAttribute: "displayName",
 					buttonLabel : "Select a topic",
 					itemClass : "isoTopicMenuItem"
 				});
-				this.model.set({
-					isoTopic : this.topics.getValue()
-				});
+
 				var that = this;
 				this.topics.$el.on("change", function() {
-					that.model.set({
-						isoTopic : that.topics.getValue()
-					});
+                    that.noteSearchChanged();
+
 				});
 
 			},
@@ -431,6 +472,8 @@ OpenGeoportal.Views.Query = Backbone.View
 				//reset datatype and repository dropdowns
 				this.dataTypes.selectAll();
 				this.repositories.selectAll();
+                this.noteSearchChanged();
+
 			},
 			
 			clearInput : function(divName) {
@@ -493,5 +536,154 @@ OpenGeoportal.Views.Query = Backbone.View
 								"ui-corner-all");
 					}
 				});
+            },
+
+
+            expandSearchBox: function (hght, stepTime) {
+                var $search = $("#searchForm");
+                $search.find(".basicSearch").hide();
+                $("#geosearchDiv").removeClass("basicSearch").addClass(
+                    "advancedSearch");
+                var $adv = $search.find(".advancedSearch");
+                $adv.filter(".searchRow1").show();
+
+                var $searchBox = $('#searchBox');
+                $searchBox.animate(
+                    {
+                        height: "+=" + hght
+                    },
+                    {
+                        queue: false,
+                        duration: stepTime,
+                        easing: "linear",
+                        complete: function () {
+                            $adv.filter(".searchRow2").show();
+                            $searchBox.animate(
+                                {
+                                    height: "+=" + hght
+                                },
+                                {
+                                    queue: false,
+                                    duration: stepTime,
+                                    easing: "linear",
+                                    complete: function () {
+                                        $adv.filter(".searchRow3").show();
+                                        $searchBox.animate(
+                                            {
+                                                height: "+=" + hght
+                                            },
+                                            {
+                                                queue: false,
+                                                duration: stepTime,
+                                                easing: "linear",
+                                                complete: function () {
+                                                    $adv.filter(".searchRow4").show();
+                                                    $("#lessSearchOptions").focus();
+                                                    $(document).trigger("searchform.setAdvanced");
+
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
+
+                $(".slideVertical").animate(
+                    {
+                        "margin-top": "+=" + hght * 3
+                    },
+                    {
+                        duration: stepTime * 3,
+                        easing: "linear",
+                        done: function () {
+                            $(document).trigger("searchform.resize");
+                        }
+                    });
+
+
+            },
+
+            shrinkSearchBox: function (hght, stepTime) {
+                $(".slideVertical").animate(
+                    {
+                        "margin-top": "-=" + hght * 3
+                    },
+                    {
+                        queue: false,
+                        duration: stepTime * 3,
+                        easing: "linear",
+                        done: function () {
+                            $(document).trigger("searchform.resize");
+                        }
+                    });
+
+                var $search = $("#searchForm");
+                var $adv = $search.find(".advancedSearch");
+                var $searchBox = $('#searchBox');
+
+                $adv.filter(".searchRow4").hide();
+
+                $searchBox.animate(
+                    {
+                        height: "-=" + hght
+                    },
+                    {
+                        queue: false,
+                        duration: stepTime,
+                        easing: "linear",
+                        complete: function () {
+                            // jQuery(".slideVertical").animate({"margin-top":
+                            // "-=" + hght, queue: false, duration: 100,
+                            // easing: "linear"});
+                            $adv.filter(".searchRow3").hide();
+                            $searchBox.animate(
+                                {
+                                    height: "-=" + hght
+                                },
+                                {
+                                    queue: false,
+                                    duration: stepTime,
+                                    easing: "linear",
+                                    complete: function () {
+                                        $adv.filter(".searchRow2").hide();
+                                        $searchBox.animate(
+                                            {
+                                                height: "-="
+                                                + hght
+                                            },
+                                            {
+                                                queue: false,
+                                                duration: stepTime,
+                                                easing: "linear",
+                                                complete: function () {
+                                                    $("#geosearchDiv").removeClass("advancedSearch")
+                                                        .addClass("basicSearch");
+                                                    $adv.filter(".searchRow1").hide();
+                                                    $search.find(".basicSearch").show();
+                                                    $("#moreSearchOptions").focus();
+                                                    $(document).trigger("searchform.setBasic");
+
+                                                }
+                                            });
+                                    }
+                                });
+                        }
+                    });
+
+            },
+
+            toggleSearch: function (e) {
+
+                var stepTime = 50;
+                var thisId = $(e.target).attr('id');
+                var hght = $(".searchFormRow").height();
+                $(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
+
+                if (thisId === 'moreSearchOptions') {
+                    this.expandSearchBox(hght, stepTime);
+
+                } else if (thisId === 'lessSearchOptions') {
+                    this.shrinkSearchBox(hght, stepTime);
+                }
 			}
 		});

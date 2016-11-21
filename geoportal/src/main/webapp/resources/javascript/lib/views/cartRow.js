@@ -18,31 +18,34 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 
 	subClassEvents : {
-		"click .cartCheckBox" : "toggleCheck"
+        "change .cartCheckBox > input": "syncCheck"
 	},
 
 	subClassInit: function(){
 		this.listenTo(this.model, "change:isChecked", this.checkedView);
 		this.listenTo(this.model, "change:actionAvailable", this.showActionAvailable);
 		var that = this;
-		jQuery(document).on("previewLayerOn previewLayerOff", this.$el, function(){that.updateView.apply(that, arguments);});
+        $(document).on("previewLayerOn previewLayerOff", this.$el, function () {
+            that.updateView.apply(that, arguments);
+        });
 
 	},
 
 	cleanUp: function(){
 		console.log("row view destroyed");
-		jQuery(document).off("previewLayerOn previewLayerOff", this.$el);
+        $(document).off("previewLayerOn previewLayerOff", this.$el);
 
 	},
-	
-	toggleCheck: function(){
-		this.model.set({isChecked : !this.model.get("isChecked")});
+
+    syncCheck: function (e) {
+        //'silent', so we don't trigger the change:isChecked listener and loop
+        this.model.set({isChecked: $(e.target).is(":checked")}, {silent: true});
 	},
 	
 	checkedView: function(){
 		var isChecked = this.model.get("isChecked");
 
-		this.$el.find("input.cartCheckBox").prop("checked", isChecked);		
+        this.$el.find("div.cartCheckBox > input").prop("checked", isChecked);
 	},
 
 	

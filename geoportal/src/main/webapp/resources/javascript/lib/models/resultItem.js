@@ -85,7 +85,10 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 					console.log([solrLayer["LayerId"], err]);
 				}
 				solrLayer.Location = locationParsed;
-				
+                var dType = solrLayer.DataType;
+                if (dType === "Paper Map" || dType === "Scanned Map") {
+                    solrLayer.DataType = "ScannedMap";
+                }
 				arrModels.push(solrLayer);
 			});
 			return arrModels;
@@ -105,6 +108,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		},
 		
 		pageParams: {
+            // these parameters are used directly by Solr, so we need to maintain the naming conventions
 			start: 0,
 			rows: 50
 		},

@@ -14,7 +14,7 @@ if (typeof OpenGeoportal == 'undefined') {
  *
  */
 OpenGeoportal.Structure = function() {
-	this.template = OpenGeoportal.ogp.template;
+	this.template = OpenGeoportal.Template;
 	var analytics = new OpenGeoportal.Analytics();
 
 	/**
@@ -29,17 +29,7 @@ OpenGeoportal.Structure = function() {
 		
 		this.resizeWindowHandler();
 
-		this.searchToggleHandler();
-
 		var model = new OpenGeoportal.Models.LeftPanel();
-
-		//make the default results pane width a percentage of the overall width
-		var defaultPercentWidth = .35;
-
-		this.openWidth = Math.max(model.get("openWidth"),
-			Math.ceil(jQuery(document).innerWidth() * defaultPercentWidth));
-
-		model.set("openWidth", this.openWidth);
 
 		this.panelView = new OpenGeoportal.Views.LeftPanel({
 			model : model,
@@ -75,12 +65,50 @@ OpenGeoportal.Structure = function() {
 	//clear info bubble prefs from local storage
 	this.resetShowInfo = function(){
 		OpenGeoportal.Utility.LocalStorage.resetItems(this.infoBubbleAttrs);
-	},
+	};
 	
 	this.doShowInfo = function(key){
 		return OpenGeoportal.Utility.LocalStorage.getBool(key, true);
-	},
-	
+	};
+
+	/**
+	 * should register event handlers that should interrupt the flow and initiate a search. If one of them is triggered, they should all be unregistered
+	 */
+
+
+	this.triggerInitialSearch = function () {
+		//trigger a search if a user clicks on the expand button, etc.
+		var initSearchEvents = [
+			{
+				selector: ".arrow_right",
+				event: "click"
+			},
+			{
+				selector: "#moreSearchOptions",
+				event: "click"
+			},
+			{
+				selector: ".olControlPanel > div",
+				event: "click"
+			}
+		];
+
+
+		var deregisterAll = function () {
+			_.each(initSearchEvents, function (item) {
+				$(item.selector).off(item.event + ".initial");
+			});
+		};
+
+		_.each(initSearchEvents, function (item) {
+			$(item.selector).on(item.event + ".initial", function () {
+				jQuery(document).trigger("fireSearch");
+				deregisterAll();
+			});
+		});
+
+
+	};
 
 	
 	this.introFlow = function(hasSharedLayers) {
@@ -88,6 +116,8 @@ OpenGeoportal.Structure = function() {
 
 		if (this.doShowInfo(bubble1) && !hasSharedLayers) {
 			var $bubble1 = this.showInfoBubble(bubble1);
+
+			this.triggerInitialSearch();
 
 			var that = this;
 			jQuery(document).one("fireSearch", function(event) {
@@ -218,206 +248,57 @@ OpenGeoportal.Structure = function() {
 
 
 	this.resizeWindowHandler = function() {
-
-		var minHeight = parseInt(jQuery("#container").css("min-height"));
-		var minWidth = parseInt(jQuery("#container").css("min-width"));
+		var $container = $("#container");
+		var minHeight = parseInt($container.css("min-height"));
+		var minWidth = parseInt($container.css("min-width"));
 		
 		var resizeElements = function() {
-			
-			var headerHeight = jQuery("#header").height();
-			var footerHeight = jQuery("#footer").height();
+
+			var headerHeight = $("#header").height();
+			var footerHeight = $("#footer").height();
 			var fixedHeights = headerHeight + footerHeight + 3;
-			var container$ = jQuery("#container");
-			
-			var oldContainerWidth = container$.width();
+
+
+			var oldContainerWidth = $container.width();
 			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
 
-			var oldContainerHeight = container$.height();
+			var oldContainerHeight = $container.height();
 			var newContainerHeight = Math.max(jQuery(window).height()
 					- fixedHeights, minHeight);
 			
 			//resize the container if there is a change.
 			if ((newContainerWidth !== oldContainerWidth)||(newContainerHeight !== oldContainerHeight)){
-				container$.height(newContainerHeight).width(newContainerWidth);
-				jQuery(document).trigger("container.resize", {ht: newContainerHeight, wd: newContainerWidth, minHt: minHeight, minWd: minWidth});
+				$container.height(newContainerHeight).width(newContainerWidth);
+				$(document).trigger("container.resize", {
+					ht: newContainerHeight,
+					wd: newContainerWidth,
+					minHt: minHeight,
+					minWd: minWidth
+				});
 			}
 			
 		};
 		resizeElements();
-		jQuery(window).resize(resizeElements);
+		$(window).resize(resizeElements);
 	};
 
 
-	this.searchToggleHandler = function() {
-		var that = this;
-		jQuery(".searchToggle").on("click", function() {
-			that.toggleSearch(this);
-		});
-	};
-	
-	//this should move to the search view
-	this.toggleSearch = function(thisObj) {
-		var stepTime = 50;
-		var thisId = jQuery(thisObj).attr('id');
-		var hght = jQuery(".searchFormRow").height();
-		jQuery(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
-		
-		if (thisId === 'moreSearchOptions') {
-
-			jQuery("#searchForm .basicSearch").hide();
-			jQuery("#geosearchDiv").removeClass("basicSearch").addClass(
-					"advancedSearch");
-			jQuery("#searchForm .advancedSearch.searchRow1").show();
-
-			jQuery('#searchBox').animate(
-							{
-								height : "+=" + hght
-							},
-							{
-								queue : false,
-								duration : stepTime,
-								easing : "linear",
-								complete : function() {
-									jQuery("#searchForm .advancedSearch.searchRow2").show();
-									jQuery('#searchBox').animate(
-													{
-														height : "+=" + hght
-													},
-													{
-														queue : false,
-														duration : stepTime,
-														easing : "linear",
-														complete : function() {
-															jQuery("#searchForm .advancedSearch.searchRow3").show();
-															jQuery('#searchBox').animate(
-																			{
-																				height : "+=" + hght
-																			},
-																			{
-																				queue : false,
-																				duration : stepTime,
-																				easing : "linear",
-																				complete : function() {
-																					jQuery("#searchForm .advancedSearch.searchRow4").show();
-																					jQuery("#lessSearchOptions").focus();
-																					jQuery(document).trigger("search.setAdvanced");
-
-																				}
-																			});
-														}
-													});
-								}
-							});
-
-			jQuery(".slideVertical").animate(
-					{
-						"margin-top" : "+=" + hght * 3
-					},
-					{
-						duration : stepTime * 3,
-						easing : "linear",
-						done : function() {
-							jQuery(document).trigger("search.resize");
-						}
-			});
-
-		} else if (thisId === 'lessSearchOptions') {
-			jQuery(".slideVertical").animate(
-					{
-						"margin-top" : "-=" + hght * 3
-					},
-					{
-						queue : false,
-						duration : stepTime * 3,
-						easing : "linear",
-						done : function() {
-							jQuery(document).trigger("search.resize");
-						}
-			});
-
-			jQuery("#searchForm .advancedSearch.searchRow4").hide();
-			jQuery('#searchBox')
-					.animate(
-							{
-								height : "-=" + hght
-							},
-							{
-								queue : false,
-								duration : stepTime,
-								easing : "linear",
-								complete : function() {
-									// jQuery(".slideVertical").animate({"margin-top":
-									// "-=" + hght, queue: false, duration: 100,
-									// easing: "linear"});
-									jQuery("#searchForm .advancedSearch.searchRow3").hide();
-									jQuery('#searchBox').animate(
-													{
-														height : "-=" + hght
-													},
-													{
-														queue : false,
-														duration : stepTime,
-														easing : "linear",
-														complete : function() {
-															jQuery("#searchForm .advancedSearch.searchRow2").hide();
-															jQuery('#searchBox').animate(
-																			{
-																				height : "-="
-																						+ hght
-																			},
-																			{
-																				queue : false,
-																				duration : stepTime,
-																				easing : "linear",
-																				complete : function() {
-																					// jQuery(".slideVertical").animate({"margin-top":
-																					// "-="
-																					// +
-																					// hght,
-																					// queue:
-																					// false,
-																					// duration:
-																					// 100,
-																					// easing:
-																					// "linear"});
-																					jQuery("#geosearchDiv").removeClass("advancedSearch")
-																							.addClass("basicSearch");
-																					jQuery("#searchForm .advancedSearch.searchRow1").hide();
-																					jQuery("#searchForm .basicSearch").show();
-																					jQuery("#moreSearchOptions").focus();
-																					jQuery(document).trigger("search.setBasic");
-
-																				}
-																			});
-														}
-													});
-								}
-							});
-
-		}
-	};
 
 	this.showInfoBubble = function(elId) {
 		var params = {
-			"height" : 335,
-			"width" : 700,
-			"top" : 259,
-			"left" : 269,
 			"arrow" : "top"
 		};
-		return this.infoBubble(elId, this.template.welcomeText(), params);
+		return this.infoBubble(elId, this.template.get('welcomeText')(), params);
 	};
 
 	this.showDirectionsBubble_1 = function(elId) {
+		//need to get the width of the left panel. based on this, reset 'width', 'left' of the element
 
 		var params = {
-			"height" : 250,
-			"width" : 600,
-			"top" : 259,
 			"left": this.openWidth + 40,
 			"arrow" : "left"
 		};
-		return this.infoBubble(elId, this.template.directionsText(), params);
+		return this.infoBubble(elId, this.template.get('directionsText')(), params);
 	};
 
 	this.showDowntimeNotice = function() {
@@ -433,39 +314,75 @@ OpenGeoportal.Structure = function() {
 			minWidth : 415,
 			autoOpen : false
 		});
-		jQuery("#downtimeNotice").dialog("open");
+		$("#downtimeNotice").dialog("open");
 
 	};
 	
 	this.infoBubble = function(bubbleId, infoHtml, optionsObj) {
 
-		var arrowDirection = "top-arrow";// default value
+		var arrowDirection = "";// default value is no arrow
 		if (optionsObj.arrow == 'top') {
 			arrowDirection = "top-arrow";
 		} else if (optionsObj.arrow == "left") {
 			arrowDirection = "left-arrow";
 		}
 
-		var infoBubbleMain = this.template.infoBubble({elId: bubbleId, arrowDirection: arrowDirection, content: infoHtml});
-		jQuery("#infoBubbles").append(infoBubbleMain);
-		jQuery("#" + bubbleId).height(optionsObj.height + 4).width(
-				optionsObj.width + 4).css("top", optionsObj.top - 2).css(
-				"left", optionsObj.left - 2);
-		jQuery("#" + bubbleId + " > .infoBubbleText").height(optionsObj.height)
-				.width(optionsObj.width);
-		var infoBubble$ = jQuery("#" + bubbleId);
-		infoBubble$.on("click", ".closeBubble", function() {
-			infoBubble$.fadeOut("slow");
+
+		var infoBubbleMain = this.template.get('infoBubble')({
+			elId: bubbleId,
+			arrowDirection: arrowDirection,
+			content: infoHtml,
+			isChecked: false
+		});
+		$("#infoBubbles").append(infoBubbleMain);
+		var $bubble = jQuery("#" + bubbleId);
+
+		var hght = $bubble.height();
+		var wdth = $bubble.width();
+		var left = $bubble.css("left");
+
+		//check the map size to see if we need to adjust sizes, since we don't want to cover the results.
+		var panelModel = this.panelView.model;
+		var xoffset = 0;
+		if (panelModel.get("mode") !== "closed") {
+			xoffset = panelModel.get("openWidth");
+		}
+		var fullwidth = jQuery("#container").width();
+		var marginright = 20;
+		var marginleft = 33;
+		var margins = marginright + marginleft;
+		var padding = parseInt($bubble.css("padding-left")) + parseInt($bubble.css("padding-right"));
+
+
+		if (wdth + margins + padding > fullwidth - xoffset) {
+			wdth = fullwidth - xoffset - margins - padding;
+			$bubble.width(wdth);
+		}
+
+		if (arrowDirection == "left-arrow") {
+			left = xoffset + marginleft;
+		} else {
+			//center
+			left = (fullwidth + xoffset - wdth) / 2;
+		}
+
+		$bubble.css("left", left);
+
+		var $inset = $bubble.find(".infoBubbleText");
+		$inset.height(hght - 4).width(wdth - 4);
+
+		$bubble.on("click", ".closeBubble", function () {
+			$bubble.fadeOut("slow");
 		}).fadeIn("slow");
 
-		infoBubble$.on("click", ".doNotShow", function(){
+		$bubble.on("click", ".doNotShow > input", function () {
 			var show = true;
-			if (jQuery(this).is("input:checked")){
+			if (jQuery(this).is(":checked")) {
 				show = false;
 			}
 			OpenGeoportal.Utility.LocalStorage.setBool(bubbleId, show);
 		});
-		return infoBubble$;
+		return $bubble;
 	};
 
 };

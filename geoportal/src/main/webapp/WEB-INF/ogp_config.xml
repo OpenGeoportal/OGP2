@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <datatypes>
+        <datatype selected="true">
+            <value>
+                Point
+            </value>
+            <displayName>
+                Point
+            </displayName>
+            <iconClass>
+                pointIcon
+            </iconClass>
+        </datatype>
+        <datatype selected="true">
+            <value>
+                Line
+            </value>
+            <displayName>
+                Line
+            </displayName>
+            <iconClass>
+                lineIcon
+            </iconClass>
+        </datatype>
+        <datatype selected="true">
+            <value>
+                Polygon
+            </value>
+            <displayName>
+                Polygon
+            </displayName>
+            <iconClass>
+                polygonIcon
+            </iconClass>
+        </datatype>
+        <datatype selected="true">
+            <value>
+                Raster
+            </value>
+            <displayName>
+                Raster
+            </displayName>
+            <iconClass>
+                rasterIcon
+            </iconClass>
+        </datatype>
+        <datatype selected="true">
+            <value>
+                ScannedMap
+            </value>
+            <displayName>
+                Scanned Map
+            </displayName>
+            <iconClass>
+                mapIcon
+            </iconClass>
+        </datatype>
+        <!-- <datatype selected="true"> <value> Tabular </value> <displayName>
+            Tabular </displayName> <iconClass> tabularIcon </iconClass> </datatype> <datatype
+            selected="true"> <value> Document </value> <displayName> Document </displayName>
+            <iconClass> documentIcon </iconClass> </datatype> -->
+    </datatypes>
+    <topics>
+        <topic>
+            <value>
+                farming
+            </value>
+            <displayName>
+                Agriculture and Farming
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                biota
+            </value>
+            <displayName>
+                Biology and Ecology
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                boundaries
+            </value>
+            <displayName>
+                Administrative and Political Boundaries
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                climatologyMeteorologyAtmosphere
+            </value>
+            <displayName>
+                Atmospheric and Climatic
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                economy
+            </value>
+            <displayName>
+                Business and Economic
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                elevation
+            </value>
+            <displayName>
+                Elevation and Derived Products
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                environment
+            </value>
+            <displayName>
+                Environment and Conservation
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                geoscientificinformation
+            </value>
+            <displayName>
+                Geological and Geophysical
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                health
+            </value>
+            <displayName>
+                Human Health and Disease
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                imageryBaseMapsEarthCover
+            </value>
+            <displayName>
+                Imagery and Base Maps
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                intelligenceMilitary
+            </value>
+            <displayName>
+                Military
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                inlandWaters
+            </value>
+            <displayName>
+                Inland Water Resources
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                location
+            </value>
+            <displayName>
+                Locations and Geodetic Networks
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                oceans
+            </value>
+            <displayName>
+                Oceans and Estuaries
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                planningCadastre
+            </value>
+            <displayName>
+                Cadastral
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                society
+            </value>
+            <displayName>
+                Cultural, Society, and Demographics
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                structure
+            </value>
+            <displayName>
+                Facilities and Structure
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                transportation
+            </value>
+            <displayName>
+                Transportation Networks
+            </displayName>
+        </topic>
+        <topic>
+            <value>
+                utilitiesCommunication
+            </value>
+            <displayName>Utilities and Communication</displayName>
+        </topic>
+    </topics>
+</config>                                                         
+
+

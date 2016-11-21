@@ -96,8 +96,7 @@ OpenGeoportal.Solr = function() {
 	};
 
 	this.getSearchParams = function() {
-		// TODO: this is not the greatest. It might be better if the solr object
-		// was a model/collection?
+
 		this.textParams = this.getOgpTextSearchParams();
 		this.spatialParams = {};
 		if (!this.ignoreSpatial) {
@@ -250,6 +249,15 @@ OpenGeoportal.Solr = function() {
 			fq : this.filters
 		};
 
+        if (this.where.length > 0) {
+            var whereParams = this.getWhereBoost();
+            params = this.combineParams(params, whereParams);
+        }
+
+        if (this.what.length > 0) {
+            var whatParams = this.getExactWhatBoost();
+            params = this.combineParams(params, whatParams);
+        }
 		return params;
 	};
 
@@ -276,13 +284,35 @@ OpenGeoportal.Solr = function() {
 		return terms;
 	};
 
+    this.what = "";
+
 	this.setWhat = function(what) {
 		this.what = what;
 	};
 
+    this.where = "";
 	this.setWhere = function(where) {
 		this.where = where;
 	};
+    /*
+     *
+     */
+    this.whereBoosts = {
+        titleBoost: 2,
+        titleSynonymsBoost: 1,
+        boost: 40
+    };
+
+
+    this.getWhereBoost = function () {
+        var params = {};
+        var term = this.where.trim();
+
+        params.where = '{!query}LayerDisplayNameSynonyms:' + term + '^' + this.whereBoosts.titleSynonymsBoost + ' LayerDisplayName:"' + term + '"^' + this.whereBoosts.titleBoost;
+        params.bf = ["map($where,.5,1000,1,0)^" + +this.whereBoosts.boost];
+
+        return params;
+    };
 
 	this.AdvancedKeywordString = null;
 
@@ -295,53 +325,74 @@ OpenGeoportal.Solr = function() {
 	};
 
 	// you can specify different solr fields and boosts for basic and advanced.
-	this.LayerDisplayNameTerm = {
+    this.LayerDisplayNameSynonymsTerm = {
 		basic : {
 			term : "LayerDisplayNameSynonyms",
-			boost : .2
+            boost: 2
 		},
 		advanced : {
 			term : "LayerDisplayNameSynonyms",
-			boost : .2
+            boost: 2
 		}
 	};
 
+    this.LayerDisplayNameTerm = {
+        term: "LayerDisplayName",
+        boost: 2
+    };
+
 	this.ThemeKeywordsTerm = {
 		term : "ThemeKeywordsSynonymsLcsh",
-		boost : .1
+        boost: 2
 	};
 
 	this.PlaceKeywordsTerm = {
-		term : "PlaceKeywordsSynonyms",
-		boost : .1
+        basic: {
+            term: "PlaceKeywordsSynonyms",
+            boost: .3
+        },
+        advanced: {
+            term: "PlaceKeywordsSynonyms",
+            boost: .5
+        }
 	};
 
 	this.PublisherTerm = {
 		term : "Publisher",
-		boost : .1
+        boost: 1
 	};
 
 	this.OriginatorTerm = {
 		term : "Originator",
-		boost : .1
+        boost: 1.2
 	};
 
 	this.IsoTopicTerm = {
 		term : "ThemeKeywordsSynonymsIso",
-		boost : .1
+        boost: 5
 	};
 
+    //if we don't boost exact match, rare matches are placed ahead
+    this.getExactWhatBoost = function () {
+        var params = {};
+        var term = this.what.trim();
+
+        params.what = '{!query}' + this.LayerDisplayNameTerm.term + ':' + term + '^' + this.LayerDisplayNameTerm.boost;
+        params.bf = ["map($what,.5,1000,1,0)^30"];
+
+        return params;
+    };
 	// Terms that will be searched in a basic search against the what field
 	// contents
 	// Search Title, theme keywords, place keywords, publisher, and originator
-	this.BasicKeywordTerms = [ this.LayerDisplayNameTerm, this.IsoTopicTerm,
+    this.BasicKeywordTerms = [this.LayerDisplayNameSynonymsTerm,
 			this.ThemeKeywordsTerm, this.PlaceKeywordsTerm, this.PublisherTerm,
 			this.OriginatorTerm ];
 
 	// Terms that will be searched in an advanced search against the keyword
 	// field contents
 	// Search Title, theme keywords, and place keywords
-	this.AdvancedKeywordTerms = [ this.LayerDisplayNameTerm,
+    this.AdvancedKeywordTerms = [this.LayerDisplayNameSynonymsTerm,
 			this.ThemeKeywordsTerm, this.PlaceKeywordsTerm ];
 
 	this.getKeywordTerms = function(termArr, termType) {
@@ -420,10 +471,14 @@ OpenGeoportal.Solr = function() {
 	 */
 	this.createAccessFilter = function(arrDisplayRestricted) {
 
-		var accessFilter = this.createFilter("Institution",
-				arrDisplayRestricted);
-		if (accessFilter.length > 0) {
-			accessFilter += " OR Access:Public";
+        arrDisplayRestricted = arrDisplayRestricted | [];
+
+        var accessFilter = this.createFilter("Access", "Public");
+
+        if (arrDisplayRestricted.length > 0) {
+            accessFilter += " OR ";
+            accessFilter += this.createFilter("Institution",
+                arrDisplayRestricted);
 		}
 		return accessFilter;
 	};
@@ -489,21 +544,21 @@ OpenGeoportal.Solr = function() {
 	// values in previous version.
 	this.LayerWithinMap = {
 		term : "LayerWithinMap",
-		boost : 80.0
+        boost: 40.0
 	};
 
 	this.LayerMatchesScale = {
 		term : "LayerMatchesScale",
-		boost : 70.0
+        boost: 120.0
 	};
 	this.LayerMatchesCenter = {
 		term : "LayerMatchesCenter",
-		boost : 15.0
+        boost: 20.0
 	};
 
 	this.LayerAreaIntersection = {
 		term : "LayerAreaIntersection",
-		boost : 30.0
+        boost: 35.0
 	};
 
 	// all we need is "bounds", which in the application is the map extent
@@ -518,16 +573,19 @@ OpenGeoportal.Solr = function() {
 		var bf_array = [
 				this.classicLayerMatchesArea(bounds) + "^"
 						+ this.LayerMatchesScale.boost,
-				this.classicLayerAreaIntersectionScore(bounds) + "^"
-						+ this.LayerAreaIntersection.boost,
-				this.classicCenterRelevancyClause() + "^"
-						+ this.LayerMatchesCenter.boost,
+            //this.classicLayerAreaIntersectionScore(bounds) + "^"
+            //		+ this.LayerAreaIntersection.boost,
+            // this.classicCenterRelevancyClause() + "^"
+            //		+ this.LayerMatchesCenter.boost,
 				this.classicLayerWithinMap(bounds) + "^"
 						+ this.LayerWithinMap.boost ];
 		var params = {
 			bf : bf_array,
 			fq : [ this.getIntersectionFilter() ],
-			intx : this.getIntersectionFunction(bounds)
+            y: this.getYRange(bounds),
+            intx: this.getIntersectionFunction(bounds),
+            dintx: this.getDLIntersectionFunction(bounds),
+            dl: this.getDatelineCrossIntersectionFilter()
 		};
 
 		return params;
@@ -541,7 +599,7 @@ OpenGeoportal.Solr = function() {
 	this.getIntersectionFilter = function() {
 		// this filter should not be cached, since it will be different each
 		// time
-		return "{!frange l=0 incl=false cache=false}$intx";
+        return "{!frange l=0 incl=false cache=false}if($dl,$dintx,$intx)";
 
 	};
 
@@ -551,32 +609,85 @@ OpenGeoportal.Solr = function() {
 	 * @return {string} Query string to calculate intersection
 	 */
 	this.getIntersectionFunction = function(bounds) {
-		// TODO: this needs work. have to account for dateline crossing properly
-		var getRangeClause = function(minVal, minTerm, maxVal, maxTerm) {
-
-			var rangeClause = "max(0,sub(min(" + maxVal + "," + maxTerm
-					+ "),max(" + minVal + "," + minTerm + ")))";
-			return rangeClause;
-		};
+        // this filter gets all results where MinX is greater than Maxx {!frange u=0 incu=false}sub(MaxX,MinX),
+        //which indicates crossing the dateline
 
 		var xRange;
+        var yRange = "$y";
+        var intersection;
+
 		if (bounds.minX > bounds.maxX) {
-			// crosses the dateline
-			var xRange1 = getRangeClause(bounds.minX, "MinX", 180, "MaxX");
-			var xRange2 = getRangeClause(-180, "MinX", bounds.maxX, "MaxX");
-			xRange = "sum(" + xRange1 + "," + xRange2 + ")";
+            //client extent crosses the dateline
+            var xRange1 = this.getRangeClause(bounds.minX, "MinX", 180, "MaxX");
+            var xRange2 = this.getRangeClause(-180, "MinX", bounds.maxX, "MaxX");
+            intersection = "product(sum(" + xRange1 + "," + xRange2 + ")," + yRange + ")";
 		} else {
-			xRange = getRangeClause(bounds.minX, "MinX", bounds.maxX, "MaxX");
+            xRange = this.getRangeClause(bounds.minX, "MinX", bounds.maxX, "MaxX");
+            intersection = "product(" + xRange + "," + yRange + ")";
 		}
 
-		var yRange = getRangeClause(bounds.minY, "MinY", bounds.maxY, "MaxY");
+        return intersection;
 
-		var intersection = "product(" + xRange + "," + yRange + ")";
+    };
+
+    /**
+     * Returns a filter that determines if the dateline is crossed
+     *
+     * @return {string} Query string to calculate intersection
+     */
+    this.getDatelineCrossIntersectionFilter = function () {
+        // this filter gets all results where MinX is greater than Maxx {!frange u=0 incu=false}sub(MaxX,MinX),
+        //which indicates crossing the dateline
+
+
+        return "{!frange u=0 incu=false}sub(MaxX,MinX)";
+
+    };
+
+    this.getRangeClause = function (minVal, minTerm, maxVal, maxTerm) {
+
+        var rangeClause = "max(sub(min(" + maxVal + "," + maxTerm
+            + "),max(" + minVal + "," + minTerm + ")),0)";
+        return rangeClause;
+    };
+
+    /**
+     * Returns the intersection area of the layer and map if the dateline is crossed (indexed bounds)
+     *
+     * @return {string} Query string to calculate intersection
+     */
+    this.getDLIntersectionFunction = function (bounds) {
+        // TODO: this needs work. have to account for dateline crossing properly
+        // this filter gets all results where MinX is greater than Maxx {!frange u=0 incu=false}sub(MaxX,MinX),
+        //which indicates crossing the dateline
+
+        var yRange = "$y";
+        var intersection;
+
+        if (bounds.minX > bounds.maxX) {
+            //client extent crosses the dateline
+            var xRangeA1 = this.getRangeClause(bounds.minX, "MinX", 180, 180);
+
+            var xRangeB1 = this.getRangeClause(-180, -180, bounds.maxX, "MaxX");
+
+            intersection = "product(sum(" + xRangeA1 + "," + xRangeB1 + ")," + yRange + ")";
+        } else {
+
+            var xRangeA = this.getRangeClause(bounds.minX, "MinX", bounds.maxX, 180);
+
+            var xRangeB = this.getRangeClause(bounds.minX, -180, bounds.maxX, "MaxX");
+            intersection = "product(sum(" + xRangeA + "," + xRangeB + ")," + yRange + ")";
+
+        }
 
 		return intersection;
 
 	};
 
+    this.getYRange = function (bounds) {
+        var yRange = this.getRangeClause(bounds.minY, "MinY", bounds.maxY, "MaxY");
+        return yRange;
+    };
 	/**
 	 * score layer based on how close map center latitude is to the layer's
 	 * center latitude
@@ -590,13 +701,14 @@ OpenGeoportal.Solr = function() {
 	};
 
 	this.classicCenterRelevancyClause = function() {
+        //need to adjust for MaxX < MinX (crosses dateline)
 		var center = this.getCenter();
 		var clause = "sum("
 				+ this.layerNearCenterClause(center.centerX, "MinX", "MaxX")
 				+ ",";
 		clause += this.layerNearCenterClause(center.centerY, "MinY", "MaxY")
 				+ ")";
-		return clause;
+        return "scale(" + clause + ",0,1)";
 	};
 
 	/**
@@ -605,9 +717,12 @@ OpenGeoportal.Solr = function() {
 	 */
 	this.classicLayerMatchesArea = function(bounds) {
 		var mapDeltaX = Math.abs(bounds.maxX - bounds.minX);
+        if (bounds.minX > bounds.maxX) {
+            mapDeltaX = 360 - mapDeltaX;
+        }
 		var mapDeltaY = Math.abs(bounds.maxY - bounds.minY);
 		var mapArea = (mapDeltaX * mapDeltaY);
-		var smoothingFactor = 1000;
+        var smoothingFactor = mapArea * 10;
 		var layerMatchesArea = "recip(sum(abs(sub(Area," + mapArea
 				+ ")),.01),1," + smoothingFactor + "," + smoothingFactor + ")";
 		return layerMatchesArea;
@@ -630,6 +745,11 @@ OpenGeoportal.Solr = function() {
 
 		var stepCount = 3; // use 3x3 grid
 		var mapDeltaX = Math.abs(mapMaxX - mapMinX);
+
+        //needs to account for dl cross
+        if (mapMinX > mapMaxX) {
+            mapDeltaX = 360 - mapDeltaX;
+        }
 		var mapXStepSize = mapDeltaX / (stepCount + 1.);
 
 		var mapDeltaY = Math.abs(mapMaxY - mapMinY);
@@ -682,6 +802,25 @@ OpenGeoportal.Solr = function() {
 		return clause;
 	};
 
+    this.boundTrim = function (val, min, max) {
+        if (val <= min) {
+            return min;
+        } else if (val >= max) {
+            return max;
+        } else {
+            return val;
+        }
+    };
+
+    this.xTrim = function (x) {
+        return this.boundTrim(x, -180, 180);
+    };
+
+    this.yTrim = function (y) {
+        return this.boundTrim(y, -90, 90);
+    };
+
+
 	/**
 	 * compute a score for layers within the current map the layer's MinX and
 	 * MaxX must be within the map extent in X and the layer's MinY and MaxY
@@ -693,19 +832,59 @@ OpenGeoportal.Solr = function() {
 	 * Finally, the product converts the 1 to LayerWithinMapBoost
 	 */
 	this.classicLayerWithinMap = function(bounds) {
+        //needs to account for dl cross, both for query bounds and result bounds
+        //one check would be to see if the center x is within
+
+
+        var margin = .2;
+        var getDelta = function (min, max) {
+            var delta = Math.abs(max - min);
+            if (min > max) {
+                delta = 360 - delta;
+            }
+            return delta;
+        };
+        //bounds from the map extent
+        //console.log(bounds);
+
+        var xDelta = getDelta(bounds.minX, bounds.maxX, margin);
+
+        var yDelta = getDelta(bounds.minY, bounds.maxY, margin);
+
+        var bufferX = false;
+        if (yDelta > xDelta) {
+            bufferX = true;
+        }
+
 		var mapMinX = bounds.minX;
-		var mapMaxX = bounds.maxX;
+        var mapMaxX = bounds.minX + xDelta;
 		var mapMinY = bounds.minY;
 		var mapMaxY = bounds.maxY;
 
-		var layerWithinMap = "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY)),";
 
-		layerWithinMap += "map(sum(";
-		layerWithinMap += "map(MinX," + mapMinX + "," + mapMaxX + ",1,0),";
-		layerWithinMap += "map(MaxX," + mapMinX + "," + mapMaxX + ",1,0),";
-		layerWithinMap += "map(MinY," + mapMinY + "," + mapMaxY + ",1,0),";
-		layerWithinMap += "map(MaxY," + mapMinY + "," + mapMaxY + ",1,0))";
-		layerWithinMap += ",4,4,1,0),0)";
+        //add a buffer the short side, because of the way zoom to extent works
+
+        if (bufferX) {
+            mapMinX = this.xTrim(mapMinX - xDelta * margin);
+            mapMaxX = this.xTrim(mapMaxX + xDelta * margin);
+
+        } else {
+            mapMinY = this.yTrim(mapMinY - yDelta * margin);
+            mapMaxY = this.yTrim(mapMaxY + yDelta * margin);
+        }
+
+        var layerWithinMap = "";
+
+        //if query bounds don't straddle the dateline, this should be fine.
+        layerWithinMap = "if(and(exists(MinX),exists(MaxX),exists(MinY),exists(MaxY)),";
+
+        layerWithinMap += "map(sum(";
+        layerWithinMap += "map(MinX," + mapMinX + "," + mapMaxX + ",1,0),";
+        layerWithinMap += "map(MaxX," + mapMinX + "," + mapMaxX + ",1,0),";
+        layerWithinMap += "map(MinY," + mapMinY + "," + mapMaxY + ",1,0),";
+        layerWithinMap += "map(MaxY," + mapMinY + "," + mapMaxY + ",1,0))";
+        layerWithinMap += ",4,4,1,0),0)";
+
 
 		return layerWithinMap;
 	};
@@ -860,9 +1039,8 @@ OpenGeoportal.Solr = function() {
 	this.getNewOgpSpatialQueryParams = function(bounds) {
 		var centerLon = this.getCenter(bounds.minX, bounds.maxX);
 		var centerLat = this.getCenter(bounds.minY, bounds.maxY);
-		console.log(centerLon);
-		console.log(centerLat);
-		// bf clauses are additive
+
+        // bf clauses are additive
 		var area = this.getBoundsArea(bounds);
 		var bf_array = [
 				this.getBoundsAreaRelevancyClause() + "^"

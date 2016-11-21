@@ -19,7 +19,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 
 			initialize : function() {
-				this.template = OpenGeoportal.ogp.template;
+                this.template = OpenGeoportal.Template;
 				this.tableControls = OpenGeoportal.ogp.tableControls;
 				this.tableConfig = this.createTableConfig();
 
@@ -66,7 +66,10 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 			},
 			
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: this.template.divNoId({elClass: "bottomSpacer"})}));
+                return jQuery(this.template.get('tableView')({
+                    tableHeader: this.template.get('tableHeader')(this.getHeaderInfo()),
+                    tableFooter: this.template.get('divNoId')({elClass: "bottomSpacer"})
+                }));
 			},
 			
 			
@@ -98,7 +101,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 			
 			closeAllSubview: function(){
 				_.each(this.subviews.rows, function(view){
-					//console.log("closing all");
 					view.close();
 				});
 				this.subviews.rows = [];
@@ -111,38 +113,47 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 				});
 				
 			},
-			
-			
+
+    createAllRows: function () {
+        var that = this;
+        var rows = [];
+
+        this.closeAllSubview();
+
+        this.collection.each(function (model) {
+            if (!that.shouldProcessRow(model)) {
+                return;
+            }
+
+            var newRow = that.createNewRow(model);
+            rows.push(newRow.el);
+
+        });
+
+        return rows;
+    },
+
+
 			renderHeaders: function(){
 
-				this.$el.children(".tableWrapper").children(".tableHeaders").first().replaceWith(this.template.tableHeader(this.getHeaderInfo()));
+                this.$el.children(".tableWrapper").children(".tableHeaders").first().replaceWith(this.template.get('tableHeader')(this.getHeaderInfo()));
 
 			},
 			
 			handleEmptyTable: function(table$){
-				table$.append(this.template.emptyTable({message: this.emptyTableMessage}));
+                table$.append(this.template.get('emptyTable')({message: this.emptyTableMessage}));
 			},
 			
 			shouldProcessRow: function(model){
 				return true;
 			},
-			
-			render : function() {
-				var that = this;
-				var template$ = this.getTable();
-				
-				
-				var rowcount = 0;
-				var rows = [];
 
-				this.collection.each(function(model) {
-					if (!that.shouldProcessRow(model)){return;}
-					var row = that.createNewRow(model);
-					rows.push(row.el);
-					rowcount++;
-				});
-				
-				if (rowcount === 0){
+    render: function (model) {
+
+        var rows = this.createAllRows();
+				var template$ = this.getTable();
+
+        if (rows.length === 0) {
 					this.handleEmptyTable(template$);
 					
 				} else {
@@ -312,6 +323,9 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 			},
 			
 			resizeColumns: function() {
+                //mark columns that are resizable and store selectors
+                //this.markResizableColumns();
+
 				var columns = this.tableConfig.where({resizable: true, visible: true});
 				// we need at least 2 columns for resizing to work
 				if (columns.length < 2) {
@@ -426,219 +440,226 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 			},
 			
 			addColumns: function(tableConfigCollection) {
-				var that = this;
 				tableConfigCollection
-						.add([
-								{
-									order : 0,
-									columnName : "expandControls",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "",
-									columnClass : "colExpand",
-									width : 10,
-									modelRender : function(model) {
-										var showControls = model.get("showControls");
-										return that.tableControls
-												.renderExpandControl(showControls);
-									}
-
-								},
-								{
-										order : 1,
-										columnName : "checkBox",
-										resizable : false,
-										organize : false,
-										visible : true,
-										hidable : false,
-										header : "<input type=\"checkbox\" id=\"downloadHeaderCheck\" checked />",
-										columnClass : "colChkBoxes",
-										width : 21,
-										modelRender : function(model) {
-											
-											return that.tableControls.renderDownloadControl(model.get("isChecked"));
-											
-										}
-									},
-									{
-										order : 2,
-										columnName : "DataType",
-										resizable : false,
-										organize : "group",
-										visible : true,
-										hidable : true,
-										displayName : "Data Type",
-										header : "Type",
-										columnClass : "colType",
-										width : 30,
-										modelRender : function(model) {
-											var dataType = model.get("DataType");
-											return that.tableControls.renderTypeIcon(dataType);
-										}
-
-									}, {
-										order : 3,
-										columnName : "score",
-										resizable : true,
-										minWidth : 27,
-										width : 27,
-										organize : "numeric",
-										visible : false,
-										hidable : false,
-										displayName : "Relevancy",
-										header : "Relev",
-										columnClass : "colScore"
-									}, {
-										order : 4,
-										columnName : "LayerDisplayName",
-										resizable : true,
-										minWidth : 35,
-										width : 200,
-										organize : "alpha",
-										visible : true,
-										hidable : false,
-										displayName : "Name",
-										header : "Name",
-										columnClass : "colTitle"
-									}, {
-										order : 5,
-										columnName : "Originator",
-										resizable : true,
-										minWidth : 62,
-										width : 86,
-										organize : "group",
-										visible : true,
-										hidable : true,
-										displayName : "Originator",
-										header : "Originator",
-										columnClass : "colOriginator"
-
-									}, {
-										order : 6,
-										columnName : "Publisher",
-										resizable : true,
-										minWidth : 58,
-										width : 80,
-										organize : "group",
-										visible : false,
-										hidable : true,
-										displayName : "Publisher",
-										header : "Publisher",
-										columnClass : "colPublisher"
-
-									}, {
-										order : 7,
-										columnName : "ContentDate",
-										organize : "numeric",
-										visible : false,
-										displayName : "Date",
-										resizable : true,
-										minWidth : 30,
-										width : 30,
-										hidable : true,
-										header : "Date",
-										columnClass : "colDate",
-										modelRender : function(model) {
-											var date = model.get("ContentDate");
-											return that.tableControls.renderDate(date);
-										}
-
-									}, {
-										order : 8,
-										columnName : "Institution",
-										organize : "alpha",
-										visible : true,
-										hidable : true,
-										resizable : false,
-										displayName : "Repository",
-										header : "Rep",
-										columnClass : "colSource",
-										width : 24,
-										modelRender : function(model) {
-											var repository = model.get("Institution");
-											return that.tableControls.renderRepositoryIcon(repository);
-
-										}
-
-									}, {
-										order : 9,
-										columnName : "Access",
-										resizable : false,
-										organize : false,
-										visible : false,
-										hidable : false,
-										header : "Access"
-									}, 
-								{
-									order : 10,
-									columnName : "Metadata",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "Meta",
-									columnClass : "colMetadata",
-									width : 30,
-									modelRender : function(model) {
-										return that.tableControls.renderMetadataControl();
-									}
-								},
-								{
-									order : 11,
-									columnName : "View",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "View",
-									columnClass : "colPreview",
-									width : 39,
-									modelRender : function(model) {
-										var layerId = model.get("LayerId");
-										var location = model.get("Location");
-										var access = model.get("Access").toLowerCase();
-										var institution = model.get("Institution").toLowerCase();
-
-										var stateVal = false;
-										var selModel =	that.previewed.findWhere({
-											LayerId : layerId
-										});
-										if (typeof selModel !== 'undefined') {
-											if (selModel.get("preview") === "on"){
-												stateVal = true;
-											}
-										}
-										
-										var canPreview = function(location){
-											//where is a good place to centralize this?
-											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
-										};
-										
-										var hasAccess = true;
-										var canLogin = true;
-										
-										var previewable = canPreview(location);
-										if (previewable){
-											var loginModel = OpenGeoportal.ogp.appState.get("login").model;
-											hasAccess = loginModel.hasAccessLogic(access, institution);
-											canLogin = loginModel.canLoginLogic(institution);
-										} 
-
-										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
-									}
-								} ]);
-			},
+                    .add(this.columnsTemplate());
+            },
 
 
-			createTableConfig: function() {
-				var that = this;
-				var tableConfigCollection = new OpenGeoportal.TableConfig();
-				this.addColumns(tableConfigCollection);
+    createTableConfig: function () {
+        var tableConfigCollection = new OpenGeoportal.TableConfig();
+        this.addColumns(tableConfigCollection);
 
-				return tableConfigCollection;
-			}
+        return tableConfigCollection;
+    },
+
+    columnsTemplate: function () {
+        var that = this;
+
+        return [
+            {
+                order: 0,
+                columnName: "expandControls",
+                resizable: false,
+                organize: false,
+                visible: true,
+                hidable: false,
+                header: "",
+                columnClass: "colExpand",
+                width: 10,
+                modelRender: function (model) {
+                    var showControls = model.get("showControls");
+                    return that.tableControls
+                        .renderExpandControl(showControls);
+                }
+
+            },
+            {
+                order: 1,
+                columnName: "checkBox",
+                resizable: false,
+                organize: false,
+                visible: true,
+                hidable: false,
+                header: that.tableControls.renderDownloadHeader(true),
+                columnClass: "colChkBoxes",
+                width: 21,
+                modelRender: function (model) {
+
+                    return that.tableControls.renderDownloadControl(model.get("isChecked"));
+
+                }
+            },
+            {
+                order: 2,
+                columnName: "DataType",
+                resizable: false,
+                organize: "group",
+                visible: true,
+                hidable: true,
+                displayName: "Data Type",
+                header: "Type",
+                columnClass: "colType",
+                width: 30,
+                modelRender: function (model) {
+                    var dataType = model.get("DataType");
+                    return that.tableControls.renderTypeIcon(dataType);
+                }
+
+            }, {
+                order: 3,
+                columnName: "score",
+                resizable: true,
+                minWidth: 27,
+                width: 27,
+                organize: "numeric",
+                visible: false,
+                hidable: false,
+                displayName: "Relevancy",
+                header: "Relev",
+                columnClass: "colScore"
+            }, {
+                order: 4,
+                columnName: "LayerDisplayName",
+                resizable: true,
+                minWidth: 35,
+                width: 200,
+                organize: "alpha",
+                visible: true,
+                hidable: false,
+                displayName: "Name",
+                header: "Name",
+                columnClass: "colTitle"
+            }, {
+                order: 5,
+                columnName: "Originator",
+                resizable: true,
+                minWidth: 62,
+                width: 86,
+                organize: "group",
+                visible: true,
+                hidable: true,
+                displayName: "Originator",
+                header: "Originator",
+                columnClass: "colOriginator"
+
+            }, {
+                order: 6,
+                columnName: "Publisher",
+                resizable: true,
+                minWidth: 58,
+                width: 80,
+                organize: "group",
+                visible: false,
+                hidable: true,
+                displayName: "Publisher",
+                header: "Publisher",
+                columnClass: "colPublisher"
+
+            }, {
+                order: 7,
+                columnName: "ContentDate",
+                organize: "numeric",
+                visible: false,
+                displayName: "Date",
+                resizable: true,
+                minWidth: 30,
+                width: 30,
+                hidable: true,
+                header: "Date",
+                columnClass: "colDate",
+                modelRender: function (model) {
+                    var date = model.get("ContentDate");
+                    return that.tableControls.renderDate(date);
+                }
+
+            }, {
+                order: 8,
+                columnName: "Institution",
+                organize: "alpha",
+                visible: true,
+                hidable: true,
+                resizable: false,
+                displayName: "Repository",
+                header: "Rep",
+                columnClass: "colSource",
+                width: 24,
+                modelRender: function (model) {
+                    var repository = model.get("Institution");
+                    return that.tableControls.renderRepositoryIcon(repository);
+
+                }
+
+            }, {
+                order: 9,
+                columnName: "Access",
+                resizable: false,
+                organize: false,
+                visible: false,
+                hidable: false,
+                header: "Access"
+            },
+            {
+                order: 10,
+                columnName: "Metadata",
+                resizable: false,
+                organize: false,
+                visible: true,
+                hidable: false,
+                header: "Meta",
+                columnClass: "colMetadata",
+                width: 30,
+                modelRender: function (model) {
+                    return that.tableControls.renderMetadataControl();
+                }
+            },
+            {
+                order: 11,
+                columnName: "View",
+                resizable: false,
+                organize: false,
+                visible: true,
+                hidable: false,
+                header: "View",
+                columnClass: "colPreview",
+                width: 39,
+                modelRender: function (model) {
+                    var layerId = model.get("LayerId");
+                    var location = model.get("Location");
+                    var access = model.get("Access").toLowerCase();
+                    var institution = model.get("Institution").toLowerCase();
+
+                    var stateVal = false;
+                    var selModel = that.previewed.findWhere({
+                        LayerId: layerId
+                    });
+                    if (typeof selModel !== 'undefined') {
+                        if (selModel.get("preview") === "on") {
+                            stateVal = true;
+                        }
+                    }
+
+                    var canPreview = function (location) {
+                        //where is a good place to centralize this?
+                        return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location,
+                            ["wms", "arcgisrest", "imagecollection", "iiif"]);
+                    };
+
+                    var hasAccess = false;
+                    var canLogin = false;
+
+                    var previewable = canPreview(location);
+                    if (previewable) {
+                        var loginModel = OpenGeoportal.ogp.appState.get("login").model;
+                        hasAccess = loginModel.hasAccessLogic(access, institution);
+                        canLogin = loginModel.canLoginLogic(institution);
+                    } else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["externallink"])) {
+                        return that.tableControls.renderLinkControl();
+                    }
+
+                    return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
+                }
+            }];
+    }
 
 
 		});

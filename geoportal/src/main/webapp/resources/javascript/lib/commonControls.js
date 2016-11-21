@@ -11,19 +11,20 @@ if (typeof OpenGeoportal === 'undefined') {
 }
 
 /**
- * A collection of Widgets common across the application
+ * Widgets constructor this object determines how to render controls
+ * common across the application
  * 
  */
 OpenGeoportal.Widgets = function Widgets() {
 
-	this.template = OpenGeoportal.ogp.template;
+    this.template = OpenGeoportal.Template;
 	
 
 	
 	// *
 	this.appendButton = function(parent$, buttonId, buttonLabel, clickHandler) {
 		// var that = this;
-		var html = this.template.genericButton({
+        var html = this.template.get('genericButton')({
 			buttonId : buttonId,
 			buttonLabel : buttonLabel
 		});
@@ -38,7 +39,7 @@ OpenGeoportal.Widgets = function Widgets() {
 	};
 	// * * *
 	this.prependButton = function(parent$, buttonId, buttonLabel, clickHandler) {
-		var html = this.template.genericButton({
+        var html = this.template.get('genericButton')({
 			buttonId : buttonId,
 			buttonLabel : buttonLabel
 		});
@@ -67,7 +68,20 @@ OpenGeoportal.Widgets = function Widgets() {
 			modal : true,
 			closeText: "",
 			minWidth : 415,
-			autoOpen : false
+            autoOpen: false,
+            dragStart: function (event, ui) {
+                $(document).trigger('eventMaskOn');
+            },
+            dragStop: function (event, ui) {
+                $(document).trigger('eventMaskOff');
+
+            },
+            resizeStart: function (event, ui) {
+                $(document).trigger('eventMaskOn');
+            },
+            resizeStop: function (event, ui) {
+                $(document).trigger('eventMaskOff');
+            }
 		});
 
 		return jQuery('#' + divId).dialog('open');
@@ -86,9 +100,21 @@ OpenGeoportal.Widgets = function Widgets() {
 				autoOpen : false,
 				width : 'auto',
 				title : dialogTitle,
-				closeText: "",
-				resizable: true,
-				buttons : buttonsObj
+                resizable: true,
+                buttons: buttonsObj,
+                dragStart: function (event, ui) {
+                    $(document).trigger('eventMaskOn');
+                },
+                dragStop: function (event, ui) {
+                    $(document).trigger('eventMaskOff');
+
+                },
+                resizeStart: function (event, ui) {
+                    $(document).trigger('eventMaskOn');
+                },
+                resizeStop: function (event, ui) {
+                    $(document).trigger('eventMaskOff');
+                }
 			});
 		} else {
 			// replace dialog text/controls & open the instance of 'dialog' that
@@ -100,7 +126,7 @@ OpenGeoportal.Widgets = function Widgets() {
 	};
 
 	this.iframeDownload = function(iframeClass, iframeSrc) {
-		var newIframe = this.template.iframeDownload({
+        var newIframe = this.template.get('iframeDownload')({
 			iframeClass : iframeClass,
 			iframeSrc : iframeSrc
 		});

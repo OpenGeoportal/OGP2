@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <groups xmlns="http://www.isdc.ro/wro">
-	<group name='ogpLib'>
+    <group name='lib'>
+        <js minimize="false">/resources/javascript/jquery.scrollTo-min.js</js>
+        <js minimize="false">/resources/javascript/spinners/spinners/spinners.min.js</js>
+        <js minimize="false">/resources/javascript/jquery.ba-postmessage.min.js</js>
+    </group>
+    <group name='ogp'>
+
+        <css>/resources/css/structure.css</css>
+        <css>/resources/css/header.css</css>
 		<css>/resources/css/google.css</css>
 		<css>/resources/css/mapDiv.css</css>
-		<css>/resources/css/structure.css</css>
-		<css>/resources/css/localize.css</css>
-		
-		<js>/resources/javascript/lib/models/config.js</js>
+        <css>/resources/css/footer.css</css>
+        <css>/resources/css/icons.css</css>
+        <css>/resources/css/dialogs.css</css>
+        <css>/resources/css/spinner.css</css>
+        <css>/resources/css/dropdown.css</css>
+        <css>/resources/css/infoBubble.css</css>
+        <css>/resources/css/search.css</css>
+        <css>/resources/css/layerTable.css</css>
+        <css>/resources/css/previewControls.css</css>
+        <css>/resources/css/attributeInfo.css</css>
+        <css>/resources/css/geocommons.css</css>
+        <css>/resources/css/metadata.css</css>
+        <css>/resources/css/localize/*.css</css>
+
+        <js>/resources/javascript/lib/models/config.js</js>
 		<js>/resources/javascript/lib/utility.js</js>
 		<js>/resources/javascript/lib/templates/template.js</js>
 		<js>/resources/javascript/lib/analytics.js</js>
@@ -16,6 +35,7 @@
 		<js>/resources/javascript/lib/metadata.js</js>
 		<js>/resources/javascript/lib/tableItems.js</js>
 		<js>/resources/javascript/lib/solr.js</js>
+
 		<js>/resources/javascript/lib/models/resultItem.js</js>
 		<js>/resources/javascript/lib/models/basemapModel.js</js>
 		<js>/resources/javascript/lib/models/tableConfig.js</js>
@@ -44,19 +64,25 @@
 		<js>/resources/javascript/lib/views/download.js</js>
 		<js>/resources/javascript/lib/views/shareCart.js</js>
 		<js>/resources/javascript/lib/views/mapIt.js</js>
-		<js>/resources/javascript/lib/views/dynamicWebServices.js</js>		
+        <js>/resources/javascript/lib/views/dynamicWebServices.js</js>
 		<js>/resources/javascript/lib/views/search.js</js>
+        <js>/resources/javascript/lib/views/colorPicker.js</js>
 		<js>/resources/javascript/lib/views/previewControls.js</js>
 		<js>/resources/javascript/lib/views/previewedLayersRow.js</js>
 		<js>/resources/javascript/lib/views/previewedLayersTable.js</js>
 		<js>/resources/javascript/lib/views/searchResultsRow.js</js>
 		<js>/resources/javascript/lib/views/searchResultsTable.js</js>
+        <js>/resources/javascript/lib/models/featureInfoModel.js</js>
+        <js>/resources/javascript/lib/views/featureInfoView.js</js>
 		<js>/resources/javascript/lib/geoCommonsExport.js</js>
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>
-	</group>
-	<group name='ogp'>
-		<group-ref>ogpLib</group-ref>
-		<js>/resources/javascript/lib/main.js</js>
+
+        <js>/resources/javascript/lib/localize/*.js</js>
+        <js>/resources/javascript/lib/models/localize/*.js</js>
+        <js>/resources/javascript/lib/views/localize/*.js</js>
+
+
+        <js>/resources/javascript/lib/main.js</js>
 	</group>
 </groups>

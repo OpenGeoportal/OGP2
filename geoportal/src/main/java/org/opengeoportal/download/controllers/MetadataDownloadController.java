@@ -2,7 +2,7 @@ package org.opengeoportal.download.controllers;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.opengeoportal.download.MetadataRetriever;
+import org.opengeoportal.metadata.MetadataRetriever;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class MetadataDownloadController {
 	private String getMetadataString(String layerId, String format) throws Exception{
 		String metadataString = "";
 		if (format.equalsIgnoreCase("xml")){
-			metadataString = this.metadataRetriever.getXMLStringFromId(layerId, "fgdc");
+            metadataString = this.metadataRetriever.getXMLStringFromId(layerId);
 
 		} else if (format.equalsIgnoreCase("html")){
 			metadataString = this.metadataRetriever.getMetadataAsHtml(layerId);

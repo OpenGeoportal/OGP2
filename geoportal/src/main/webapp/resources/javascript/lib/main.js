@@ -27,7 +27,6 @@ jQuery(document)
 					OpenGeoportal.ogp = {};
 					var ogp = OpenGeoportal.ogp; // an alias
 
-					ogp.template = new OpenGeoportal.Template();
 					ogp.widgets = new OpenGeoportal.Widgets();
 					ogp.tableControls = new OpenGeoportal.TableItems();
 					
@@ -43,20 +42,29 @@ jQuery(document)
 						requestQueue: new OpenGeoportal.RequestQueue(),
 						currentTab : 0
 					});
-					
-					
-					ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: ogp.appState.get("requestQueue"), template: ogp.template});
 
-				
-					
+
+                    ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({
+                        collection: ogp.appState.get("requestQueue"),
+                        template: OpenGeoportal.Template
+                    });
+
+
 					// handles behavior of "frame elements", like expansion of
 					// advanced search area, left panel
 					ogp.structure = new OpenGeoportal.Structure();
 					ogp.structure.init();
 
-					// create the map and handle map related functions
-					ogp.map = new OpenGeoportal.MapController();
-					ogp.map.initMap("map");
+                    try {
+                        // create the map and handle map related functions
+                        //the map needs a reference to the panel view for calculating extents, etc.
+                        ogp.map = new OpenGeoportal.MapController(ogp.structure.panelView);
+                        ogp.map.initMap("map");
+
+                    } catch (e) {
+                        console.log("problem creating the map...");
+                        console.log(e);
+                    }
 
 					// creating the cart
 					new OpenGeoportal.Views.CartHeader({
@@ -90,6 +98,9 @@ jQuery(document)
 										} catch (e){
 											console.log(e);
 										}
+
+                                        $(".introMask").fadeOut('fast');
+
 										// The search results table
 										
 										ogp.resultsTableObj = new OpenGeoportal.Views.SearchResultsTable(

@@ -31,8 +31,11 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
 		mapCenter: {centerX: 0, centerY: 0},
 		ignoreSpatial: false,
-		displayRestrictedAdvanced: [],
+        includeRestricted: true,
+        includeRestrictedBasic: false,
+        alwaysIncludeRestrictedFrom: [],
 
+        geocodedBbox: null,
 		isoTopicList: null,
 		dataTypeList: null,
 		repositoryList: null,
@@ -44,15 +47,55 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	}, 
 	
 	initialize: function(){
+        // Always show restricted layers for repositories you can log in to
 		var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
+        var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+        alwaysInclude.push(restricted);
 
-		this.set({displayRestrictedBasic: [restricted],
-			displayRestrictedAdvanced:  [restricted],
+        //show restricted layers from all repositories
+        //var repositories = OpenGeoportal.Config.Repositories.pluck("shortName")[0];
+
+        this.set({
+            alwaysIncludeRestrictedFrom: alwaysInclude,
 			isoTopicList: OpenGeoportal.Config.IsoTopics,
 			dataTypeList: OpenGeoportal.Config.DataTypes,
-			repositoryList: OpenGeoportal.Config.Repositories});
+            repositoryList: OpenGeoportal.Config.Repositories
+
+        });
+
+        this.listenTo(this, "change:geocodedBbox", function () {
+            //console.log("geocoder map zoom");
+            var geoBbox = this.get("geocodedBbox");
+            if (geoBbox !== null) {
+                jQuery(document).trigger("map.zoomToLayerExtent", {
+                    bbox: geoBbox
+                });
+            }
+        });
 	},
-	
+
+
+    getSelected: function (list) {
+        var selected = [];
+        this.get(list).each(function (item) {
+            if (item.has('selected') && item.get('selected')) {
+                selected.push(item.get('value'));
+            }
+        });
+        return selected;
+    },
+
+    getSelectedRepositories: function (list) {
+        var selected = [];
+        this.get("repositoryList").each(function (item) {
+            if (item.has('selected') && item.get('selected')) {
+                selected.push(item.get('shortName'));
+            }
+        });
+        return selected;
+    },
+
+
 	/*
 	 * adds spatial search params to solr object if pertinent
 	 */
@@ -147,12 +190,26 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		if ((what != null) && (what != "")) {
 			solr.setWhat(what);
 		}
-		/*
-		 * if ((whereField != null) && (whereField != "")){
-		 * solr.setWhere(whereField); }
-		 */
 
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedBasic")));
+        var where = this.get("where");
+        if ((where != null) && (where != "")) {
+            solr.setWhere(where);
+        }
+
+        var showRestricted = this.get("includeRestrictedBasic");
+
+        if (!showRestricted) {
+
+            //add filter for which restricted data to show by default (maybe for local layers)
+            var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+            var filter = "";
+            if (alwaysInclude.length > 0) {
+                filter = solr.createAccessFilter(alwaysInclude);
+            } else {
+                filter = solr.createAccessFilter();
+            }
+            solr.addFilter(filter);
+        }
 
 		/*
 		 * var institutionConfig =
@@ -189,27 +246,47 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		solr.addFilter(solr.createDateRangeFilter("ContentDate",
 				dateFrom, dateTo));
 
-		var dataTypes = this.get("dataType");// columnName,
+        var dataTypes = this.getSelected("dataTypeList");// columnName,
 		// values, joiner,
-		// prefix
+        // prefix //expand "Paper Map" filter
+        if (_.contains(dataTypes, "ScannedMap")) {
+            dataTypes.push("Scanned Map");
+            dataTypes.push("Paper Map");
+        }
 		solr.addFilter(solr.createFilter("DataType", dataTypes,
 				"{!tag=dt}"));
 
-		var repositories = this.get("repository");
+        var repositories = this.getSelectedRepositories();
 		//console.log(repositories);
 		solr.addFilter(solr.createFilter("Institution", repositories,
 				"{!tag=insf}"));
 
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedAdvanced")));
+        var showRestricted = this.get("includeRestricted");
+
+        if (!showRestricted) {
+
+            //add filter for which restricted data to show by default (maybe for local layers)
+            var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+            var filter = "";
+            if (alwaysInclude.length > 0) {
+                filter = solr.createAccessFilter(alwaysInclude);
+            } else {
+                filter = solr.createAccessFilter();
+            }
+            solr.addFilter(filter);
+        }
 
 		var originator = this.get("originator");
 		// TODO: should this be a filter?
 		solr.addFilter(solr.createFilter("Originator", originator,
 				null, "AND"));
 
-		var isoTopic = this.get("isoTopic");
-		solr.addFilter(solr.createFilter("ThemeKeywordsSynonymsIso",
-				isoTopic));
+        var isoTopic = this.getSelected("isoTopicList")[0];
+
+        if (isoTopic !== null && isoTopic.length > 0) {
+            solr.addFilter(solr.createFilter("ThemeKeywordsSynonymsIso",
+                isoTopic));
+        }
 
 		return solr;
 	},

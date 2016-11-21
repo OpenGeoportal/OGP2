@@ -20,7 +20,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	className : "tableRow",
 	events : {
 		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
+        "change .previewControl > input[type=checkbox]": "togglePreview",
 		"click .previewLink"	: "handlePreviewLink",
 		"click .colExpand" : "toggleExpand",
 		"click .colTitle" : "toggleExpand",
@@ -35,8 +35,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		  },
 		  
 	initialize : function() {
-		this.template = OpenGeoportal.ogp.template;
-		this.metadataViewer = new OpenGeoportal.MetadataViewer();
+        this.template = OpenGeoportal.Template;
 		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 
 		this.login = OpenGeoportal.ogp.appState.get("login").model;
@@ -47,7 +46,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			that.render.apply(that, arguments);
 		});
 		this.listenTo(this.model, "change:showControls change:hidden", this.render);
-		
+        this.listenTo(this.model, "change:selected", this.handleSelection);
 		this.subClassInit();
 		this.addSubClassEvents();
 		//console.log("init render");
@@ -76,9 +75,21 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		}
 	},
 
+    getMetadataViewer: function () {
+        if (typeof this.metadataViewer === "undefined") {
+            this.metadataViewer = new OpenGeoportal.MetadataViewer();
+        }
+        return this.metadataViewer;
+    },
+
 	viewMetadata : function() {
-		// console.log(arguments);
-		this.metadataViewer.viewMetadata(this.model);
+        //temporarily disable mouseout event listener. reenable once the dialog is open.
+        this.stopListening(this, "mouseout");
+        var promise = this.getMetadataViewer().viewMetadata(this.model);
+        var that = this;
+        $.when(promise).then(function () {
+            that.listenTo(that, "mouseout", that.doMouseoverOff);
+        });
 	},
 	
 	handlePreviewLink: function(){
@@ -104,6 +115,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			if (typeof this.model.get("Location").previewLink !== "undefined"){
 				//go to the previewLink url
 				url = this.model.get("Location").previewLink;
+            } else if (typeof this.model.get("Location").externalLink !== "undefined") {
+                url = this.model.get("Location").externalLink;
 			}
 		}
 		return url;
@@ -152,8 +165,14 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			} else if (nodeType == "geoweb"){
 
 					url += "/layer/" + model.get("LayerId");
-	
-			}
+
+            } else if (nodeType == "geoblacklight") {
+                var inst = model.get("Institution") + ".";
+                var id = model.get("LayerId");
+                url = "http://" + id.substring(inst.length);
+            } else {
+                throw new Error("Repository type is not defined.");
+            }
 			
 	
 		} else {
@@ -179,27 +198,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	togglePreview : function(e) {
-		var layerId = this.model.get("LayerId");
-		var model = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (typeof model === "undefined") {
-			var layerAttr = null;
-			try {
+        var model = this.previewed.getLayerModel(this.model);
 
-				layerAttr = this.model.attributes;
-				layerAttr.preview = "on";
-			} catch (err) {
-				console.log(err);
-			}
-			// add them to the previewed collection. Add them as attributes
-			// since we
-			// are using different models in the previewed collection, and we
-			// want
-			// "model" to be called
-			this.previewed.add(_.clone(layerAttr));
-
-		} else {
 			var update = "";
 			if (model.get("preview") === "on") {
 				update = "off";		
@@ -207,41 +207,11 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			} else {
 				update = "on";
 			}
-			
-			model.set({preview: update});	
 
-		}
+        model.set({preview: update});
 	
 	},
 
-	getModelFromPreviewed: function(){
-		var layerId = this.model.get("LayerId");
-		var model = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (typeof model === "undefined") {
-			// get the attributes for the layer retrieved from solr
-			var layerAttr = null;
-			try {
-
-				layerAttr = this.model.attributes;
-			} catch (e) {
-				console.log(e);
-			}
-			// add them to the previewed collection. Add them as attributes
-			// since we
-			// are using different models in the previewed collection, and we
-			// want
-			// "model" to be called
-			this.previewed.add(_.clone(layerAttr));
-			var newmodel = this.previewed.findWhere({
-				LayerId : layerId
-			});
-			return newmodel;
-		} else {
-			return model;
-		}
-	},
 	
 	toggleExpand : function() {
 		// console.log("toggleExpand");
@@ -276,6 +246,9 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 				view.stopListening();
 			}
 		});
+        if (this.expandView !== null) {
+            this.expandView.close();
+        }
 		this.subviews = [];
 	},
 
@@ -302,13 +275,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			var contents = "";
 			if (currCol.has("modelRender")) {
 				contents = currCol.get("modelRender")(model);
-				html += that.template.cartCell({
+                html += that.template.get('cartCell')({
 					colClass : currCol.get("columnClass"),
 					contents : contents
 				});
 			} else {
 				contents = model.get(currCol.get("columnName"));
-				html += that.template.textCartCell({
+                html += that.template.get('textCartCell')({
 					colClass : currCol.get("columnClass"),
 					contents : contents
 				});
@@ -334,33 +307,61 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		return this;
 
 	},
-	
+
+    expandView: null,
+
 	renderExpand: function(){
 		var expand$ = "";
-		this.closeSubviews();
 		if (this.model.get("showControls")) {
 
-				expand$ = jQuery(this.template.cartPreviewToolsContainer());
+            expand$ = jQuery(this.template.get('cartPreviewToolsContainer')());
 				// a view that watches expand state
 				// Open this row
 				var tools$ = expand$.find(".previewTools").first();
-				var previewModel = this.getModelFromPreviewed();
-				var view = new OpenGeoportal.Views.PreviewTools({
+
+            var previewModel = this.previewed.getLayerModel(this.model);
+
+
+            this.expandView = new OpenGeoportal.Views.PreviewTools({
 					model : previewModel,
 					el : tools$
 				});// render to the container
-				this.subviews.push(view);
-		
-		} 
+
+        } else {
+            if (this.expandView !== null) {
+
+                this.expandView.close();
+            }
+        }
+
 		return expand$;
 	},
-	
-	doMouseoverOn : function(){
+
+    handleSelection: function () {
+        if (this.model.get("selected")) {
+            //this.stopListening(this, ["mouseover", "mouseout"]);
+            this.doSelectionOn();
+        } else {
+            this.doSelectionOff();
+            //this.listenTo(this, "mouseover", this.doMouseoverOn);
+            //this.listenTo(this, "mouseout", this.doMouseoverOff);
+        }
+    },
+
+    doMouseoverOn: function () {
+        this.model.set({selected: true});
+    },
+
+    doMouseoverOff: function () {
+        this.model.set({selected: false});
+    },
+
+    doSelectionOn: function () {
 		this.highlightRow();
 		this.showBounds();
 	},
-	
-	doMouseoverOff: function(){
+
+    doSelectionOff: function () {
 		this.unHighlightRow();
 		this.hideBounds();
 	},
@@ -374,20 +375,26 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	unHighlightRow: function(){
 		this.$el.removeClass("rowHover");
 	},
-	
+
+    getBounds: function () {
+        var currModel = this.model;
+        var bbox = {};
+        bbox.south = currModel.get("MinY");
+        bbox.north = currModel.get("MaxY");
+        bbox.west = currModel.get("MinX");
+        bbox.east = currModel.get("MaxX");
+        return bbox;
+    },
+
 	showBounds : function() {
-		var currModel = this.model;
-		var bbox = {};
-		bbox.south = currModel.get("MinY");
-		bbox.north = currModel.get("MaxY");
-		bbox.west = currModel.get("MinX");
-		bbox.east = currModel.get("MaxX");
+        var bbox = this.getBounds();
 		jQuery(document).trigger("map.showBBox", bbox);
-		// console.log("triggered map.showBBox");
 
 	},
 	
 	hideBounds : function() {
-		jQuery(document).trigger("map.hideBBox");
-	}
+        var bbox = this.getBounds();
+        jQuery(document).trigger("map.hideBBox", bbox);
+
+    }
 });

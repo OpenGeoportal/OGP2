@@ -1,0 +1,74 @@
+table.attributeInfo {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    width: 100%;
+}
+
+table.attributeInfo td {
+    background: none repeat scroll 0 0 #DDD;
+    padding: 2px;
+}
+
+td.attributeName {
+    font-weight: bold;
+}
+
+td.attributeName:hover {
+    color: #417dc1;
+}
+
+.ui-dialog.attributesDialog .ui-dialog-content {
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.getFeatureTitle {
+    font-size: 14px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    text-align: left;
+    display: inline;
+}
+
+.featurePage {
+    display: inline-block;
+    padding: 5px;
+}
+
+.featurePage button {
+    background: none;
+    border: none;
+}
+
+.featurePage button.inactive {
+    color: lightgrey;
+}
+
+.attrHeader {
+    padding: 10px 0;
+}
+
+.attrContainer {
+    height: 100%;
+    overflow: auto;
+}
+
+.attrExtrasContainer {
+    float: right;
+    padding: 5px;
+}
+
+.attrPreview {
+    border: 1px solid #417dc1;
+}
+
+.attrPreview .loading {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.attrDownload {
+    padding: 5px;
+}

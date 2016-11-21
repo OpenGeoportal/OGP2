@@ -64,7 +64,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 			model : OpenGeoportal.Models.CartLayer,
 			
 			initialize : function() {
-				this.template = OpenGeoportal.ogp.template;
+                this.template = OpenGeoportal.Template;
 				this.listenTo(this, "invalid", function(model, error) {
 					console.log(error);
 				});
@@ -104,9 +104,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				});
 
 				if (typeof layerModel === "undefined") {
-					var cartItem = itemModel.clone();// Do I need to clone,
-					// since I am passing
-					// just the attributes?
+                    var cartItem = itemModel.clone();
 					this.addLayer(new OpenGeoportal.Models.CartLayer(
 							cartItem.attributes));
 
@@ -145,9 +143,10 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				var that = this;
 				var addToCartFunction = function() {
 					that.add(layerModel);
-					jQuery(this).dialog('close');
+                    $(this).dialog('close');
 
 				};
+                //TODO: move this stuff to a view
 
 				var loginAndAddFunction = function() {
 
@@ -171,7 +170,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 					loginView.listenToOnce(loginView.model,
 							"change:authenticated", deferredAdd);
 
-					jQuery(document).on(
+                    $(document).on(
 							"loginCancel",
 							function() {
 								dialog$.dialog("enable");
@@ -183,7 +182,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 
 				var cancelFunction = function() {
 
-					jQuery(this).dialog('close');
+                    $(this).dialog('close');
 				};
 
 				var institution = layerModel.get("Institution");
@@ -192,24 +191,29 @@ OpenGeoportal.CartCollection = Backbone.Collection
 				var lsProperty = "";
 
 				if (canLogin) {
-					localeWarning = this.template.restrictedWarningLocal();
+                    localeWarning = this.template.get('restrictedWarningLocal')();
 					buttons["Login & Add"] = loginAndAddFunction;
 					buttons["Add Only"] = addToCartFunction;
 					buttons["Cancel"] = cancelFunction;
 					lsProperty = this.getLocalProperty();
 				} else {
-					localeWarning = this.template.restrictedWarningExternal({repository: institution});
+                    localeWarning = this.template.get('restrictedWarningExternal')({repository: institution});
 					buttons["Add"] = addToCartFunction;
 					buttons["Cancel"] = cancelFunction;
 					lsProperty = this.getExternalProperty();
 				}
-				
-				var warningMessage = this.template.restrictedWarning({repository: institution, localeWarning: localeWarning});
+
+                var warningMessage = this.template.get('restrictedWarning')({
+                    repository: institution,
+                    localeWarning: localeWarning,
+                    elId: "restricted",
+                    isChecked: false
+                });
 				var dialog$ = OpenGeoportal.ogp.widgets.genericModalDialog(warningMessage, "Restricted Layer");
 				
 				dialog$.on("click", ".doNotShow", function(){
 					var show = true;
-					if (jQuery(this).is("input:checked")){
+                    if ($(this).is("input:checked")) {
 						show = false;
 					}
 
