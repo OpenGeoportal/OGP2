@@ -8,7 +8,7 @@
 	<link rel="stylesheet" href="resources/css/mapDiv.css" type="text/css" />
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="text/javascript"
-		src="resources/javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
+            src="resources/javascript/openlayers/OpenLayers-2.13.1/OpenLayers.js"></script>
 	<script type="text/javascript" src="resources/javascript/panZoom.js"></script>
 	<script type="text/javascript" src="resources/javascript/lib/unGeoreferencedWindow.js"></script>
 

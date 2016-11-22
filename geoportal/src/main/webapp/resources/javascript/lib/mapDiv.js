@@ -741,9 +741,17 @@ OpenGeoportal.MapController = function (panelView) {
 					$(document).trigger("mapReady");
 
 					// find the google logo and add class ".googleLogo",
-					// so we can make sure it always shows
-					$(".olForeignContainer").find('[title*="Click to see this area"]').parent()
-							.addClass("googleLogo");
+                    // so we can make sure it always shows... have to wait for it to appear first.
+                    var classifyLogo = function () {
+                        var $googleLogo = $(".olForeignContainer").find('[title*="Click to see this area"]').parent();
+                        if ($googleLogo.length === 0) {
+                            setTimeout(classifyLogo, 500);
+                        } else {
+                            $googleLogo.addClass("googleLogo");
+                        }
+                    };
+
+                    classifyLogo();
 
 				});
 	};

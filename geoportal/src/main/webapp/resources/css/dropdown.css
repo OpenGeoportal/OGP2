@@ -16,20 +16,43 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
     width: 136px;
 }
 
-.dropdown .ui-menu-item > div.showOnly {
+.dropdown .ui-menu-item > .ui-menu-item-wrapper > div.showOnly {
     font-size: 10px;
-    height: 20px;
-    vertical-align: top;
     visibility: hidden;
 }
 
-.dropdown .ui-menu-item.ui-state-focus > div.showOnly {
+.dropdown .ui-menu-item.selected {
+    color: #587CBC;
+}
+
+.dropdown .ui-menu-item > .ui-menu-item-wrapper div {
+    display: inline-block;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.dropdown .ui-menu-item.selected > .ui-menu-item-wrapper.ui-state-active {
+    color: #587CBC;
+}
+
+.dropdown .ui-menu-item > .ui-menu-item-wrapper.ui-state-active > div.showOnly {
     display: inline-block;
     visibility: visible;
 }
 
-.dropdown .ui-menu-item.ui-state-focus > div.showOnly:hover {
+.dropdown .ui-menu-item > .ui-menu-item-wrapper.ui-state-active > div.showOnly:hover {
     text-decoration: underline;
+}
+
+.ui-menu-item > .ui-menu-item-wrapper.ui-state-active {
+    background-color: #ebf6ff;
+    background-image: none;
+    border-bottom: #d8e8fa 1px solid !important;
+    border-top: #d8e8fa 1px solid !important;
+    border-left: none;
+    border-right: none;
+    padding-bottom: 4px;
+    padding-top: 4px;
 }
 
 .dropdown .showAll {
@@ -49,7 +72,7 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
     height: 12px;
 }
 
-.dropdown .ui-menu-item.ui-state-focus div.sortArrows {
+.dropdown .ui-menu-item.ui-state-active div.sortArrows {
     background: url("/resources/media/sorting.png") no-repeat scroll 0 0 transparent;
 }
 
@@ -80,19 +103,39 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 
 .searchFormInput.dropdown ul {
     min-width: 196px;
+    width: 100%;
+    max-width: 500px;
 }
 
 .searchFormInput > .styledSelect {
     width: 255px;
 }
 
+.dropdown .ui-menu-item {
+    list-style-image: none;
+}
+
 .dropdown .ui-menu-item > div {
     display: inline-block;
+    padding: 5px 1.5em;
+    width: 100%;
+    vertical-align: middle;
+}
+
+.menuItemSuffix {
+    padding: 0 5px;
 }
 
 .selectText {
-    vertical-align: top;
     width: calc(100% - 55px);
+}
+
+span.button-text {
+    white-space: nowrap;
+    overflow: hidden;
+    width: calc(100% - 16px);
+    display: inline-block;
+    vertical-align: middle;
 }
 
 #dataTypeDropdown .selectText, #repositoryDropdown .selectText {

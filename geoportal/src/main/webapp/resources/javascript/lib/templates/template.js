@@ -65,25 +65,25 @@ OpenGeoportal.Template = {
         styledSelectBody: [
             '<div class="styledSelect">',
             "<div>",
-            '<button class="select">{{ obj.buttonLabel }}</button>{{ obj.caption }}',
+            '<button class="select"><span class="button-text">{{ obj.buttonLabel }}</span></button>{{ obj.caption }}',
             "</div>", "<ul>{{ obj.menuHtml }}</ul>", '</div>'].join('\n'),
 
         selectAllCaption: '<div class="showAll offsetColor button">select all</div>',
 
-        simpleMenuItem: ['<li class="{{ className }}"><div class="selectText">{{ name }}</div>',
-            '<input type="hidden" value="{{ value }}" />', '</li>']
+        simpleMenuItem: ['<li class="{{ className }}"><div><div class="selectText">{{ name }}</div>',
+            '<input type="hidden" value="{{ value }}" /></div>', '</li>']
             .join('\n'),
 
-        simpleMenuItemSuffix: ['<li class="{{ className }}"><div class="selectText">{{ name }}</div>',
+        simpleMenuItemSuffix: ['<li class="{{ className }}"><div><div class="selectText">{{ name }}</div>',
             '<div class="menuItemSuffix">{{ suffix }}</div>',
-            '<input type="hidden" value="{{ value }}" />', '</li>']
+            '<input type="hidden" value="{{ value }}" />', '</div></li>']
             .join('\n'),
 
         showOnlyControl: '<div class="showOnly button offsetColor">only</div>',
 
-        controlMenuItem: ['<li class="{{ className }}">', '<div class="menuIcon">{{ icon }}</div>',
+        controlMenuItem: ['<li class="{{ className }}"><div>', '<div class="menuIcon">{{ icon }}</div>',
             '<div class="selectText">{{ name }}</div>', '{{ control }}',
-            '<input type="hidden" value="{{ value }}" />', '</li>']
+            '<input type="hidden" value="{{ value }}" />', '</div></li>']
             .join('\n'),
 
         genericButton: '<button id="{{ buttonId }}" class="button">{{ buttonLabel }}</button>',

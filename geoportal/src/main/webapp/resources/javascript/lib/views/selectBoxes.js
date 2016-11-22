@@ -56,7 +56,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		  },
 		  events: {
 			  "click .select" : "toggleMenu",
-			  "blur .ui-menu" : "hideMenu"
+              "blur .styledSelect": "hideMenu"
 		  },
 	uiInit: function(selectFunction){
 		var that = this;
@@ -95,7 +95,8 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
                 menu$.find(".ui-menu-item:first").focus();
                 $(document).on("focusin.dropdown click.dropdown", function (e) {
                     if (!$(e.target).parents(menu$).is(menu$) && !$(e.target).is(menu$)
-                        && !$(e.target).parent().siblings(menu$).is(menu$)) {
+                        && !$(e.target).parent().siblings(menu$).is(menu$) && !$(e.target).is($(".button-text"))) {
+                        console.log(e.target);
                         that.hideMenu();
                     }
                 });
@@ -113,7 +114,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		}
 	},
 	getButtonLabel: function(){
-		return this.getAttributeName(this.options.buttonLabel, "Select one");
+        return this.getAttributeName(this.options.buttonLabel, 'Select one');
 	},
 	getSelectionAttribute: function(){
 		return this.getAttributeName(this.options.selectionAttribute, "selected");
@@ -243,7 +244,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 				that.uiItemDeselected(this);
 			}
 		});
-		this.$el.find(".ui-button-text").text(display);
+        this.$el.find(".ui-button span.button-text").text(display);
 
 		return this;
 	}

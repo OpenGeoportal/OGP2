@@ -11,8 +11,10 @@
     right: 69px !important;
 }
 
-.googleLogo {
-    margin-bottom: 19px !important;
+div.googleLogo a > div {
+    position: relative;
+    bottom: 20px;
+    left: 30px;
 }
 
 .poweredByGoogleAttr {

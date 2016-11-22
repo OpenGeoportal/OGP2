@@ -142,7 +142,7 @@
     top: 97px;
 }
 
-@media screen and (max-width: 1050px) {
+/*@media screen and (max-width: 1050px) {
 
     .advancedSearch.searchCol2 {
         left: 382px;
@@ -152,7 +152,7 @@
         left: 710px;
     }
 
-}
+}*/
 
 .searchToggle {
     background: none;
