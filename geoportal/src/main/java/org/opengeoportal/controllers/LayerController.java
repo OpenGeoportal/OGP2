@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +28,7 @@ public class LayerController {
     @Autowired
     private AttributeDictionaryRetriever attributeDictionaryRetriever;
 
-    final Logger logger = LoggerFactory.getLogger(this.getClass());
+    final Logger logger = LoggerFactory.getLogger(LayerController.class);
 
     /**
      * if you want to keep extension management, set the useRegisteredSuffixPatternMatch property of
@@ -38,24 +36,23 @@ public class LayerController {
      * limited to registered extensions.
      */
     /**
-     * @param request
      * @return
      * @throws Exception
      */
-    @RequestMapping(value = "/**", method = RequestMethod.GET)
+    @RequestMapping(value = "/{layerId}/metadata", method = RequestMethod.GET)
     public
     @ResponseBody
     ResponseEntity getMetadata(@RequestHeader(value = "X-Requested-With", defaultValue = "standalone") String requestedWith,
-                               HttpServletRequest request) throws Exception {
+                               @PathVariable String layerId) throws Exception {
         //TODO: offer other response formats?;
-        String uri$ = extractPathPrefix(request.getRequestURI());
+        //String uri$ = extractPathPrefix(request.getRequestURI());
         boolean embedded = true;
         if (requestedWith.equalsIgnoreCase("standalone")) {
             //if not from an ajax request, inject metadata.css
             embedded = false;
         }
 
-        String metadataString = this.metadataRetriever.getMetadataAsHtml(uri$, embedded);
+        String metadataString = this.metadataRetriever.getMetadataAsHtml(layerId, embedded);
         if (metadataString.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -67,20 +64,13 @@ public class LayerController {
 
     }
 
-    private String extractPathPrefix(String uri) {
-        String path = "/layer/";
-        uri = uri.substring(uri.indexOf(path) + path.length());
-        return uri;
-    }
 
-    @RequestMapping(value = "/**/attributes", method = RequestMethod.GET)
+    @RequestMapping(value = "/{layerId}/metadata/attributes", method = RequestMethod.GET)
     public
     @ResponseBody
-    AttributeDictionary getAttributeDictionary(HttpServletRequest request) throws Exception {
-        String uri$ = extractPathPrefix(request.getRequestURI());
-        uri$ = uri$.substring(0, uri$.indexOf("/attributes"));
-        logger.info(uri$);
-        AttributeDictionary attributeDictionary = attributeDictionaryRetriever.getAttributeDictionary(uri$);
+    AttributeDictionary getAttributeDictionary(@PathVariable String layerId) throws Exception {
+
+        AttributeDictionary attributeDictionary = attributeDictionaryRetriever.getAttributeDictionary(layerId);
         return attributeDictionary;
     }
 

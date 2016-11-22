@@ -97,7 +97,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
             var metadata = null;
             var that = this;
 			var params = {
-                url: "layer/" + layerId,
+                url: "layer/" + layerId + "/metadata",
                 async: false,
                 success: function (data) {
                     if (typeof data.error !== "undefined") {
