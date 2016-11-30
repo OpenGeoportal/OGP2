@@ -61,7 +61,9 @@
 		<js>/resources/javascript/lib/views/leftPanel.js</js>
 		<js>/resources/javascript/lib/models/externalPreviewWindowsCollection.js</js>
 		<js>/resources/javascript/lib/views/abstractCartAction.js</js>
-		<js>/resources/javascript/lib/views/download.js</js>
+        <js>/resources/javascript/lib/views/geoCommonsRequestView.js</js>
+        <js>/resources/javascript/lib/views/downloadRequestView.js</js>
+        <js>/resources/javascript/lib/views/download.js</js>
 		<js>/resources/javascript/lib/views/shareCart.js</js>
 		<js>/resources/javascript/lib/views/mapIt.js</js>
         <js>/resources/javascript/lib/views/dynamicWebServices.js</js>
@@ -77,6 +79,9 @@
 		<js>/resources/javascript/lib/geoCommonsExport.js</js>
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>
+        <js>/resources/javascript/lib/userState.js</js>
+        <js>/resources/javascript/lib/bootstrapModels.js</js>
+
 
         <js>/resources/javascript/lib/localize/*.js</js>
         <js>/resources/javascript/lib/models/localize/*.js</js>

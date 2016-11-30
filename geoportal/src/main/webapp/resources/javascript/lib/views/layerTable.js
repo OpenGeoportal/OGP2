@@ -18,32 +18,32 @@ if (typeof OpenGeoportal.Views === 'undefined') {
  */
 OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 
-			initialize : function() {
-                this.template = OpenGeoportal.Template;
-				this.tableControls = OpenGeoportal.ogp.tableControls;
+    initialize: function (options) {
+        _.extend(this, _.pick(options, "template", "tableControls", "userAuth", "layerState"));
+
 				this.tableConfig = this.createTableConfig();
 
-				this.previewed = OpenGeoportal.ogp.appState.get("previewed");
 				this.adjustColumnsHandler();
 
                 //resizable appears not to work correctly if the panel is not visible
                 var self = this;
-                jQuery(document).on("panelOpen", function () {
+        $(document).on("panelOpen", function () {
                     self.resizeColumns();
                 });
 
-				this.initSubClass();
+        this.initSubClass(options);
 				this.subviewStorage();
 				this.render();
 				this.afterRender();
 
 			},
-			initSubClass: function(){
+    initSubClass: function (options) {
 				//nop
 			},
 			afterRender: function(){
 				//nop
 			},
+
 			emptyTableMessage: 	"No data layers have been added to the collection.",
 
 			adjustColumnsHandler: function() {
@@ -440,16 +440,19 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 			},
 			
 			addColumns: function(tableConfigCollection) {
-				tableConfigCollection
-                    .add(this.columnsTemplate());
+                tableConfigCollection.add(this.columnsTemplate());
             },
 
 
     createTableConfig: function () {
-        var tableConfigCollection = new OpenGeoportal.TableConfig();
-        this.addColumns(tableConfigCollection);
+        try {
+            var tableConfigCollection = new OpenGeoportal.TableConfig();
+            this.addColumns(tableConfigCollection);
 
-        return tableConfigCollection;
+            return tableConfigCollection;
+        } catch (e) {
+            console.log(e);
+        }
     },
 
     columnsTemplate: function () {
@@ -468,8 +471,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
                 width: 10,
                 modelRender: function (model) {
                     var showControls = model.get("showControls");
-                    return that.tableControls
-                        .renderExpandControl(showControls);
+                    return that.tableControls.renderExpandControl(showControls);
                 }
 
             },
@@ -623,19 +625,25 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
                 columnClass: "colPreview",
                 width: 39,
                 modelRender: function (model) {
-                    var layerId = model.get("LayerId");
-                    var location = model.get("Location");
-                    var access = model.get("Access").toLowerCase();
-                    var institution = model.get("Institution").toLowerCase();
+                    //  console.log(model);
 
                     var stateVal = false;
-                    var selModel = that.previewed.findWhere({
-                        LayerId: layerId
-                    });
-                    if (typeof selModel !== 'undefined') {
-                        if (selModel.get("preview") === "on") {
-                            stateVal = true;
+                    if (model.has("LayerId")) {
+                        var layerId = model.get("LayerId");
+
+                        if (!_.has(that, "previewed")) {
+                            throw new Error("No previewed layers collection found.");
                         }
+                        var selModel = that.previewed.findWhere({
+                            LayerId: layerId
+                        });
+                        if (typeof selModel !== 'undefined' && selModel.has("preview")) {
+                            if (selModel.get("preview") === "on") {
+                                stateVal = true;
+                            }
+                        }
+                    } else {
+                        console.log("No LayerId found in layer model....");
                     }
 
                     var canPreview = function (location) {
@@ -647,11 +655,19 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
                     var hasAccess = false;
                     var canLogin = false;
 
-                    var previewable = canPreview(location);
+                    var previewable = false;
+                    if (model.has("Location")) {
+                        var location = model.get("Location");
+                        previewable = canPreview(location);
+                    }
+
                     if (previewable) {
-                        var loginModel = OpenGeoportal.ogp.appState.get("login").model;
-                        hasAccess = loginModel.hasAccessLogic(access, institution);
-                        canLogin = loginModel.canLoginLogic(institution);
+                        if (_.has(that, "userAuth") && model.has("Access") && model.has("Institution")) {
+                            var access = model.get("Access").toLowerCase();
+                            var institution = model.get("Institution").toLowerCase();
+                            hasAccess = that.userAuth.hasAccessLogic(access, institution);
+                            canLogin = that.userAuth.canLoginLogic(institution);
+                        }
                     } else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["externallink"])) {
                         return that.tableControls.renderLinkControl();
                     }

@@ -96,7 +96,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
                 $(document).on("focusin.dropdown click.dropdown", function (e) {
                     if (!$(e.target).parents(menu$).is(menu$) && !$(e.target).is(menu$)
                         && !$(e.target).parent().siblings(menu$).is(menu$) && !$(e.target).is($(".button-text"))) {
-                        console.log(e.target);
+                        //console.log(e.target);
                         that.hideMenu();
                     }
                 });

@@ -30,18 +30,14 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	
 	constructor: function (options) {
 		//allow options to be passed in the constructor argument as in previous Backbone versions.
-		    this.options = options;
+        _.extend(this, _.pick(options, "userAuth", "template", "previewed", "cart", "config", "layerState", "tableConfig"));
 		    Backbone.View.apply(this, arguments);
 		  },
 		  
 	initialize : function() {
-        this.template = OpenGeoportal.Template;
-		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-
-		this.login = OpenGeoportal.ogp.appState.get("login").model;
 
 		var that = this;
-		this.login.listenTo(this.login, "change:authenticated", function() {
+        this.userAuth.listenTo(this.userAuth, "change:authenticated", function () {
 			that.removeOnLogout.apply(that, arguments);
 			that.render.apply(that, arguments);
 		});
@@ -68,7 +64,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	removeOnLogout : function(loginView) {
-		if (!this.login.hasAccess(this.model)) {
+        if (!this.userAuth.hasAccess(this.model)) {
 			this.model.set({
 				preview : "off"
 			});
@@ -126,7 +122,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		var url = null;
 		var model = this.model;
 		//try to assemble a link from the config
-		var rep = OpenGeoportal.Config.Repositories.findWhere({id: model.get("Institution").toLowerCase()});
+        var rep = this.config.Repositories.findWhere({id: model.get("Institution").toLowerCase()});
 				
 		if (typeof rep == "undefined"){
 				throw new Error("Repository could not be found");
@@ -266,9 +262,12 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		var model = this.model;
 		// determine which td elements are visible from the the
 		// tableConfig model
-		var visibleColumns = this.options.tableConfig.where({
+        if (_.isUndefined(this.tableConfig)) {
+            throw new Error("Table Config is not defined");
+        }
+        var visibleColumns = this.tableConfig.where({
 			visible : true
-		});
+            }) || [];
 
 		_.each(visibleColumns, function(currCol){
 			
@@ -296,8 +295,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		} else {
 			this.$el.html(html);
 		}
-		
-		this.options.tableConfig.each(
+
+        this.tableConfig.each(
 				function(model){
 					var width = model.get("width");
 					var cclass = model.get("columnClass"); 
@@ -314,7 +313,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		var expand$ = "";
 		if (this.model.get("showControls")) {
 
-            expand$ = jQuery(this.template.get('cartPreviewToolsContainer')());
+            expand$ = $(this.template.get('cartPreviewToolsContainer')());
 				// a view that watches expand state
 				// Open this row
 				var tools$ = expand$.find(".previewTools").first();
@@ -388,13 +387,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 
 	showBounds : function() {
         var bbox = this.getBounds();
-		jQuery(document).trigger("map.showBBox", bbox);
+        $(document).trigger("map.showBBox", bbox);
 
 	},
 	
 	hideBounds : function() {
         var bbox = this.getBounds();
-        jQuery(document).trigger("map.hideBBox", bbox);
+        $(document).trigger("map.hideBBox", bbox);
 
     }
 });

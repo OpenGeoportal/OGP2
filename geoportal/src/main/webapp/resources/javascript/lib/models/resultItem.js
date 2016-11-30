@@ -30,16 +30,16 @@ OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
 //collection for the bbview results table (to replace above)
 OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem,
-	initialize: function(){
-		if (this.searcher === null){
-			this.searcher = OpenGeoportal.ogp.appState.get("queryTerms"); 
-		}
-	},
+    initialize: function (options) {
+        _.extend(this, _.pick(options, "previewed", "queryTerms", "sort"));
+        this.queryTerms.setSortInfo(this.sort);
+
+    },
 	
     fetchOn: false,
-	searcher: null,
+    queryTerms: null,
 	url : function(){
-		return this.searcher.getSearchRequest();
+        return this.queryTerms.getSearchRequest();
 		},
 
 	totalResults: 0,
@@ -53,7 +53,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			var start = dataObj.response.start;
 			var solrLayers = dataObj.response.docs;
 			var ids = [];
-			var previewed = OpenGeoportal.ogp.appState.get("previewed").each(function(model){
+        var previewed = this.previewed.each(function (model) {
 				if (model.get("preview") === "on"){
 					ids.push(model.get("LayerId"));
 				}

@@ -335,6 +335,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 
     addPreview: function (model, val, options) {
+        // console.log("add preview called.");
         // console.log(arguments);
         var preview = model.get("preview");
         var layerId = model.get("LayerId");

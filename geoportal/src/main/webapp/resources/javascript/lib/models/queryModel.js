@@ -14,6 +14,11 @@ if (typeof OpenGeoportal.Models == 'undefined'){
  * @type {any}
  */
 OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
+    constructor: function (attributes, options) {
+        _.extend(this, _.pick(options, "config"));
+        Backbone.Model.apply(this, arguments);
+    },
+
 	defaults: {
 
 		what: "",
@@ -34,7 +39,8 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
         includeRestricted: true,
         includeRestrictedBasic: false,
         alwaysIncludeRestrictedFrom: [],
-
+        initialQuery: {},
+        firstQueryFired: false,
         geocodedBbox: null,
 		isoTopicList: null,
 		dataTypeList: null,
@@ -44,11 +50,12 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		whereExample:"(Example: Boston, MA)",
 		searchType: "basic",
 		history: []
-	}, 
-	
-	initialize: function(){
+	},
+
+    initialize: function (options) {
+
         // Always show restricted layers for repositories you can log in to
-		var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
+        var restricted = this.config.General.get("loginConfig").repositoryId;
         var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
         alwaysInclude.push(restricted);
 
@@ -57,9 +64,9 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 
         this.set({
             alwaysIncludeRestrictedFrom: alwaysInclude,
-			isoTopicList: OpenGeoportal.Config.IsoTopics,
-			dataTypeList: OpenGeoportal.Config.DataTypes,
-            repositoryList: OpenGeoportal.Config.Repositories
+            isoTopicList: this.config.IsoTopics,
+            dataTypeList: this.config.DataTypes,
+            repositoryList: this.config.Repositories
 
         });
 
@@ -155,25 +162,50 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 
 		var solr = null;
 
-		var searchType = this.get("searchType");
+        if (this.has("firstQueryFired") && !this.get("firstQueryFired")
+            && this.has("initialQuery" && !_.isEmpty(this.get("initialQuery")))) {
+            solr = this.getInitialQuery();
+        } else {
+            var searchType = this.get("searchType");
 
-		if (searchType === 'basic') {
-			solr = this.getBasicSearchQuery();
-		} else if (searchType === 'advanced') {
-			solr = this.getAdvancedSearchQuery();
-		} else {
-			// fall through
-			solr = this.getBasicSearchQuery();
-		}
+            if (searchType === 'basic') {
+                solr = this.getBasicSearchQuery();
+            } else if (searchType === 'advanced') {
+                solr = this.getAdvancedSearchQuery();
+            } else {
+                // fall through
+                solr = this.getBasicSearchQuery();
+            }
+        }
 
-		this.addToHistory(solr);
+        this.addToHistory(solr);
+        this.set("firstQueryFired", true);
 		// console.log(solr.getURL());
 		return solr.getURL();
 	},
-	getSortInfo : function() {
-		return OpenGeoportal.ogp.resultsTableObj.tableOrganize;
 
-	},
+    sort: null,
+    setSortInfo: function (sortModel) {
+        this.sort = sortModel;
+    },
+
+    getSortInfo: function () {
+        if (this.sort !== null) {
+            return this.sort;
+        } else {
+            throw new Error("Must associate results table with the Query Model.");
+        }
+
+    },
+
+    getInitialQuery: function () {
+        var solr = new OpenGeoportal.Solr();
+        var initQuery = this.get("initialQuery");
+        if (!_.has(initQuery, "ExternalLayerId")) {
+            throw new Error("Initial Query can only handle ExternalLayerId queries at this time.");
+        }
+        solr.addFilter(solr.createFilter("ExternalLayerId", initQuery["ExternalLayerId"]));
+    },
 	/**
 	 * add elements specific to basic search
 	 */
@@ -211,13 +243,8 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
             solr.addFilter(filter);
         }
 
-		/*
-		 * var institutionConfig =
-		 * OpenGeoportal.InstitutionInfo.getInstitutionInfo();
-		 * 
-		 * for (var institution in institutionConfig){
-		 * solr.addInstitution(institution); }
-		 */
+        var repositories = this.config.Repositories.pluck("id");
+        solr.addFilter(solr.createFilter("Institution", repositories, "{!tag=insf}"));
 		return solr;
 	},
 

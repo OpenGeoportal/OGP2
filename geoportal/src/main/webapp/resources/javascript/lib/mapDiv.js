@@ -25,15 +25,38 @@ if (typeof OpenGeoportal === 'undefined') {
  * @requires OpenGeoportal.Analytics
  * 
  */
-OpenGeoportal.MapController = function (panelView) {
-	// dependencies
-	this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
+OpenGeoportal.MapController = function (params) {
+    var self = this;
 
-	this.template = OpenGeoportal.Template;
+    var validateParams = function (params) {
+        var valid = true;
+        var required = ["previewed", "requestQueue", "template", "config", "panel"];
+        _.each(required, function (prop) {
+            valid = valid && _.has(params, prop);
+        });
+
+        if (!valid) {
+            throw new Error("MapController is missing parameters!");
+        }
+    };
+
+	// dependencies
+    validateParams(params);
+    this.previewed = params.previewed;
+    this.requestQueue = params.requestQueue;
+    this.template = params.template;
+    this.config = params.config;
+    this.panel = params.panel;
+
+
+    var mapready = $.Deferred();
+
+    this.ready = mapready.promise();
+
+
 	var analytics = new OpenGeoportal.Analytics();
 
-	this.panelView = panelView;
+
 
 	/**
 	 * initialization function for the map
@@ -734,12 +757,10 @@ OpenGeoportal.MapController = function (panelView) {
 		this.ol.render(this.mapDiv);
 
 		var bgMap = this.ol.getLayersBy("basemapType", type)[0];
-
 		google.maps.event.addListenerOnce(bgMap.mapObject, "tilesloaded",
 				function() {
 					// let the application know that the map is ready
-					$(document).trigger("mapReady");
-
+                    mapready.resolve();
 					// find the google logo and add class ".googleLogo",
                     // so we can make sure it always shows... have to wait for it to appear first.
                     var classifyLogo = function () {
@@ -764,7 +785,7 @@ OpenGeoportal.MapController = function (panelView) {
 		bgMap.events.register(bgMap, "loadend", function () {
 			// console.log("Tiles loaded");
 			// let the application know that the map is ready
-			$(document).trigger("mapReady");
+            mapready.resolve();
 			// really should only fire the first time
 			bgMap.events.unregister(bgMap, "loadend");
 
@@ -1360,8 +1381,8 @@ OpenGeoportal.MapController = function (panelView) {
 
 	this.getFutureMapOffset = function () {
 		var offset = this.getCssOffset();
-		if (this.panelView !== null) {
-			offset.x = this.panelView.model.get("openWidth");
+        if (_.has(this.panel, "openWidth")) {
+            offset.x = this.panel.get("openWidth");
 		}
 		return new OpenLayers.Pixel(offset.x, offset.y);
 	};
@@ -2024,7 +2045,7 @@ OpenGeoportal.MapController = function (panelView) {
 		if (model.has("dictionary")) {
 			def.resolve(model.get("dictionary"));
 		} else {
-			var url = "layer/" + layerId + "/attributes";
+            var url = "layer/" + layerId + "/metadata/attributes";
 			$.get(url, function (data) {
 				var dictionary = data.attributeTable;
 				model.set({dictionary: dictionary});
@@ -2112,7 +2133,7 @@ OpenGeoportal.MapController = function (panelView) {
 		};
 
 		// check for a proxy here
-		var proxy = OpenGeoportal.Config.getWMSProxy(layerModel
+        var proxy = self.config.getWMSProxy(layerModel
 			.get("Institution"), layerModel.get("Access"));
 		if (proxy) {
 			layerModel.set({

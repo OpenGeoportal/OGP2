@@ -15,14 +15,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
  */
 OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 		.extend({
-			constructor: function (options) {
-				//allow options to be passed in the constructor argument as in previous Backbone versions.
-				    this.options = options;
-				    Backbone.View.apply(this, arguments);
-			},
-					
-			initSubClass: function(){
-				this.tableConfig = this.options.tableConfig;
+
+            initSubClass: function (options) {
+                _.extend(this, _.pick(options, "cart", "tableConfig"));
+                this.previewed = this.collection;
                 this.listenTo(this.collection, "change:preview add remove", this.render);
 				var that = this;
 				this.tableConfig.listenTo(this.collection, "change:visible", function(model){ that.updateSubviews.call(that);});
@@ -43,8 +39,15 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 				var row = new OpenGeoportal.Views.PreviewedLayersRow(
 						{
 							model : model,
-							tableConfig: this.tableConfig
-						});
+                            tableConfig: this.tableConfig,
+                            template: this.template,
+                            cart: this.cart,
+                            userAuth: this.userAuth,
+                            config: this.config,
+                            layerState: this.layerState,
+                            previewed: this.collection
+
+                        });
                 this.appendSubview(row);
 
 				return row;

@@ -16,6 +16,7 @@ import org.opengeoportal.config.topics.TopicsConfigRetriever;
 import org.opengeoportal.config.wro.WroConfig;
 import org.opengeoportal.config.wro.WroResourceRetriever;
 import org.opengeoportal.security.LoginService;
+import org.opengeoportal.user.UserState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,9 @@ public class HomeController {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    UserState userState;
 
     @Autowired
     private RepositoryConfigRetriever repositoryConfigRetriever;
@@ -127,6 +131,9 @@ public class HomeController {
         mav.addObject("proxies", toJsonString(proxyConfigRetriever.getPublicConfig()));
 
         mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
+
+
+        mav.addObject("userState", toJsonString(userState.getStateMap()));
 
         if (isDev) {
             Set<WroConfig> wroSet = wroResourceRetriever.getWroConfigSets();

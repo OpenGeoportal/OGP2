@@ -15,9 +15,9 @@ if (typeof OpenGeoportal === 'undefined') {
  * common across the application
  * 
  */
-OpenGeoportal.Widgets = function Widgets() {
+OpenGeoportal.Widgets = function Widgets(template) {
 
-    this.template = OpenGeoportal.Template;
+    this.template = template;
 	
 
 	

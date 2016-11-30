@@ -17,22 +17,51 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 OpenGeoportal.Views.LeftPanel = Backbone.View
 		.extend({
 			initialize : function() {
-
+                //TODO: account for mode open on initial load
+                this.initializeTabs();
 				this.listenTo(this.model, "change:mode", this.showPanel);
-
+                this.listenTo(this.model, "change:currentTab", this.changeTab);
 				var width = this.model.get("openWidth");
                 this.$rollRight = $("#roll_right");
                 this.$leftCol = $("#left_col");
                 var margin = width - this.$rollRight.width();
                 this.$leftCol.show().width(width).css({
-					"margin-left" : "-" + margin  + "px"
-				});
+                    "margin-left": "-" + margin + "px"
+                });
+                if (this.model.get("mode") == "open") {
+                    this.showPanelMidRight(true);
+                }
 
 			},
 			events : {
 				"click .arrow_right" : "goRight",
 				"click .arrow_left" : "goLeft"
 			},
+
+            changeTab: function (model) {
+                $("#tabs").tabs("active", model.get("currentTab"));
+            },
+            initializeTabs: function () {
+                var self = this;
+                $("#tabs").tabs(
+                    {
+                        active: self.model.get("currentTab"),
+
+                        activate: function (event, ui) {
+
+                            $(self).trigger("adjustContents");
+
+                            var label, idx = ui.index;
+
+                            label = (idx == 1) && "Cart Tab" || (idx == 0)
+                                && "Search Tab" || "Getting Started Tab";
+                            //analytics.track("Interface", "Change Tab", label);
+                        }
+
+                    });
+
+            },
+
 			// these are really controllers
 			goRight : function() {
 				// analytics.track("Interface", "Expand/Collapse Buttons",
@@ -67,11 +96,12 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
              * some displayed items (map controls, etc.) should move with the panel so they are not obscured. Add a css class
              * to these so they can all be selected and moved easily with jQuery
              */
+            alsoMoves: [".olControlPanel", ".olControlModPanZoomBar", ".olControlMousePosition"
+                , ".googleLogo"],
 			setAlsoMoves : function() {
-				if (!jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
-						.hasClass("slideHorizontal")) {
-					jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
-							.addClass("slideHorizontal");
+                var ams = this.alsoMoves.join();
+                if (!$(ams).hasClass("slideHorizontal")) {
+                    $(ams).addClass("slideHorizontal");
 				}
 				// beyond extent arrows "#nwCorner" and "#swCorner" also have
 				// class "slideHorizontal"
@@ -93,8 +123,14 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				}
 			},
 
-			showPanelMidRight : function() {
-                var $slide = jQuery(".slideHorizontal");
+            showPanelMidRight: function (immediate) {
+                var time = 500;
+                if (typeof immediate != "undefined") {
+                    if (immediate) {
+                        time = 0;
+                    }
+                }
+                var $slide = $(".slideHorizontal");
                 if ($slide.is(":hidden")) {
 					// extent arrows need to move, but shouldn't be made visible
 					// when the the panel opens
@@ -116,7 +152,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					'margin-left' : '+=' + panelOffset
 				}, {
 					queue : false,
-					duration : 500,
+                    duration: time,
 					complete : function() {
 
                         $(this).trigger("adjustContents");

@@ -17,9 +17,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
  */
 OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 
-	initialize: function(){
-        this.template = OpenGeoportal.Template;
-		this.widgets = OpenGeoportal.ogp.widgets;
+    initialize: function (options) {
+        _.extend(this, _.pick(options, "widgets", "template"));
+
 		this.render();
 		this.createCartButtons();
 	},

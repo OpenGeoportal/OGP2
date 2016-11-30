@@ -60,11 +60,15 @@ OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 OpenGeoportal.CartCollection = Backbone.Collection
 		.extend({
-			
+            constructor: function (attributes, options) {
+                _.extend(this, _.pick(options, "userAuth", "template", "widgets"));
+                Backbone.Collection.apply(this, arguments);
+            },
+
 			model : OpenGeoportal.Models.CartLayer,
-			
-			initialize : function() {
-                this.template = OpenGeoportal.Template;
+
+            initialize: function (options) {
+
 				this.listenTo(this, "invalid", function(model, error) {
 					console.log(error);
 				});
@@ -80,7 +84,8 @@ OpenGeoportal.CartCollection = Backbone.Collection
 			
 			addLayer : function(model, options) {
 				// check the login object
-				var loginModel = OpenGeoportal.ogp.appState.get("login").model; 
+
+                var loginModel = this.userAuth;
 				var hasAccess = loginModel.hasAccess(model);
 
 				if (!hasAccess) {
@@ -150,7 +155,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
 
 				var loginAndAddFunction = function() {
 
-					var loginView = OpenGeoportal.ogp.appState.get("login");
+                    var loginView = this.login;
 					loginView.promptLogin();
 
 					// pass some info to the loginDialog
@@ -209,7 +214,7 @@ OpenGeoportal.CartCollection = Backbone.Collection
                     elId: "restricted",
                     isChecked: false
                 });
-				var dialog$ = OpenGeoportal.ogp.widgets.genericModalDialog(warningMessage, "Restricted Layer");
+                var dialog$ = this.widgets.genericModalDialog(warningMessage, "Restricted Layer");
 				
 				dialog$.on("click", ".doNotShow", function(){
 					var show = true;

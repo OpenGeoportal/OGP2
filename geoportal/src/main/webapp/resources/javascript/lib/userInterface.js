@@ -13,9 +13,33 @@ if (typeof OpenGeoportal == 'undefined') {
  * LeftPanel model and view.
  *
  */
-OpenGeoportal.Structure = function() {
+OpenGeoportal.Structure = function (params) {
+    var validateParams = function (params) {
+        var valid = true;
+        var required = ["template", "panelModel"];
+        _.each(required, function (prop) {
+            valid = valid && _.has(params, prop);
+        });
+
+        if (!valid) {
+            throw new Error("Structure is missing parameters!");
+        }
+    };
+
+    // dependencies
+    validateParams(params);
+
+    this.template = params.template;
+    this.panelModel = params.panelModel;
+
+
 	this.template = OpenGeoportal.Template;
 	var analytics = new OpenGeoportal.Analytics();
+
+    this.panelView = new OpenGeoportal.Views.LeftPanel({
+        model: this.panelModel,
+        el: "div#left_col"
+    });
 
 	/**
 	 * init function
@@ -29,14 +53,8 @@ OpenGeoportal.Structure = function() {
 		
 		this.resizeWindowHandler();
 
-		var model = new OpenGeoportal.Models.LeftPanel();
 
-		this.panelView = new OpenGeoportal.Views.LeftPanel({
-			model : model,
-			el : "div#left_col"
-		});
-
-		this.initializeTabs();
+        //this.initializeTabs();
 
 		this.resetHandler();
 		
@@ -110,11 +128,13 @@ OpenGeoportal.Structure = function() {
 
 	};
 
-	
-	this.introFlow = function(hasSharedLayers) {
+
+    this.introFlow = function (initObj) {
 		var bubble1 = "welcomeBubble";
 
-		if (this.doShowInfo(bubble1) && !hasSharedLayers) {
+        var doIntro = !(initObj.sharedLayers || initObj.userState);
+
+        if (this.doShowInfo(bubble1) && doIntro) {
 			var $bubble1 = this.showInfoBubble(bubble1);
 
 			this.triggerInitialSearch();
@@ -149,12 +169,13 @@ OpenGeoportal.Structure = function() {
 			this.panelView.model.set({
 				mode : "open"
 			});
-			
-			if (hasSharedLayers){
+
+            if (initObj.sharedLayers) {
 				// set tab to the "cart" tab if there are shared layers
 				jQuery("#tabs").tabs({
 					active : 1
 				});
+
 			} else {
 				//fire a search
 				jQuery(document).trigger("fireSearch");
@@ -163,7 +184,7 @@ OpenGeoportal.Structure = function() {
 		}
 	};
 
-	this.initializeTabs = function() {
+    /*	this.initializeTabs = function() {
 		jQuery("#tabs").tabs(
 				{
 					active : 0,
@@ -180,7 +201,7 @@ OpenGeoportal.Structure = function() {
 
 				});
 
-	};
+     };*/
 
 	this.aboutHandler = function() {
 		jQuery('#about').dialog({

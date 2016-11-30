@@ -23,10 +23,13 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			emptyTableMessage: "No data layers have been added to the cart.",
-			
-			initSubClass: function(){
-				this.listenTo(this.collection, "add", this.addedToCart);
+
+            initSubClass: function (options) {
+                _.extend(this, _.pick(options, "previewed", "config"));
+                this.cart = this.collection;
+                this.listenTo(this.collection, "add", this.addedToCart);
 				this.listenTo(this.collection, "remove", this.removedFromCart);
+                this.updateSavedLayersNumber();
 			},
 			
 			setChecks: function(e){
@@ -66,7 +69,11 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				var row = new OpenGeoportal.Views.CartRow(
 						{
 							model : model,
-							tableConfig: this.tableConfig
+                            tableConfig: this.tableConfig,
+                            previewed: this.previewed,
+                            userAuth: this.userAuth,
+                            config: this.config,
+                            template: this.template
 						});
                 this.appendSubview(row);
 
@@ -74,10 +81,10 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			addSharedLayers: function() {
-				if (OpenGeoportal.Config.shareIds.length > 0) {
+                if (_.has(this.config, "shareIds") && this.config.shareIds.length > 0) {
 					var solr = new OpenGeoportal.Solr();
 					var that = this;
-					solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds,
+                    solr.getLayerInfoFromSolr(this.config.shareIds,
 							function(){that.getLayerInfoSuccess.apply(that, arguments);}, 
 							function(){that.getLayerInfoError.apply(that, arguments);});
 					return true;
@@ -94,9 +101,9 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				this.previewed.each(function(model){
 					model.set({previewed: "on"});
 				});
-
+                var self = this;
 				jQuery(document).trigger("map.zoomToLayerExtent", {
-					bbox : OpenGeoportal.Config.shareBbox
+                    bbox: self.config.shareBbox
 				});
 
 			},

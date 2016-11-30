@@ -22,18 +22,16 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				"render" : "attachEvents",
 				"topmodel" : "renderPrevPage"
 			},
-			
-			initSubClass: function(){
-				
-				this.cart = OpenGeoportal.ogp.appState.get("cart");
-				
-				this.tableOrganize = new OpenGeoportal.TableSortSettings();
+
+            initSubClass: function (options) {
+                _.extend(this, _.pick(options, "cart", "previewed", "layerState"));
 
 				this.sortView = new OpenGeoportal.Views.Sort({
-					model : this.tableOrganize,
+                    model: this.collection.sort,
 					el : $("#sortDropdown"),
 					headings: this.tableConfig
 				});
+
 				var that = this;
 				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.newSearch();});
 				
@@ -80,7 +78,13 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
                     this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({
                         el: previewed$[0],
                         collection: this.previewed,
-                        tableConfig: this.tableConfig
+                        tableConfig: this.tableConfig,
+                        userAuth: this.userAuth,
+                        config: this.config,
+                        layerState: this.layerState,
+                        template: this.template,
+                        tableConfig: this.tableConfig,
+                        cart: this.cart
                     });
                 }
 				var that = this;
@@ -207,7 +211,13 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var row = new OpenGeoportal.Views.SearchResultsRow(
 						{
 							model : model,
-							tableConfig: this.tableConfig
+                            tableConfig: this.tableConfig,
+                            previewed: this.previewed,
+                            userAuth: this.userAuth,
+                            config: this.config,
+                            layerState: this.layerState,
+                            template: this.template,
+                            cart: this.cart
 						});
 				if (typeof toTop !== "undefined" && toTop){
 					this.prependSubview(row);

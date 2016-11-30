@@ -23,6 +23,7 @@ OpenGeoportal.Models.LeftPanel = Backbone.Model.extend({
 		mode : "closed",
         openWidth: 500,
 		panelMinWidth : 390,
-		mapMinWidth : 550
+        mapMinWidth: 550,
+        currentTab: 0
 	}
 });

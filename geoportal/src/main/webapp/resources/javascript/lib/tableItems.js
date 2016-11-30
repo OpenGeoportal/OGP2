@@ -16,11 +16,26 @@ if (typeof OpenGeoportal === 'undefined') {
  * 
  * @requires OpenGeoportal.Config, OpenGeoportal.Template
  */
-OpenGeoportal.TableItems = function TableItems() {
+OpenGeoportal.TableItems = function TableItems(params) {
 
-    var template = OpenGeoportal.Template;
+    var template = params.template;
+    var config = params.config;
 
-	/***************************************************************************
+    var validateParams = function (params) {
+        var valid = true;
+        var required = ["template", "config"];
+        _.each(required, function (prop) {
+            valid = valid && _.has(params, prop);
+        });
+
+        if (!valid) {
+            throw new Error("TableItems is missing parameters!");
+        }
+    };
+
+    validateParams(params);
+
+    /***************************************************************************
 	 * 
 	 * Render table columns
 	 **************************************************************************/
@@ -28,7 +43,7 @@ OpenGeoportal.TableItems = function TableItems() {
 	// maps returned data type to appropriate image
 	this.renderTypeIcon = function(dataType) {
 
-		var typeIcon = OpenGeoportal.Config.DataTypes;
+        var typeIcon = config.DataTypes;
 		var params = {};
 		params.controlClass = "typeIcon";
 
@@ -176,7 +191,7 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.displayClass = "undefinedInstitution";
 		params.controlClass = "repositoryIcon";
 		params.text = "?";
-		var repositoryModel = OpenGeoportal.Config.Repositories.get(repository);
+        var repositoryModel = config.Repositories.get(repository);
 		if (typeof repositoryModel === 'undefined') {
 			//
 		} else {

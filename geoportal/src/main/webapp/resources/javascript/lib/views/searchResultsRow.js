@@ -25,10 +25,8 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 	subClassInit: function(){
 		//since the results collection is by nature transient, we have to store some state externally
 		//listen for saved items (in cart collection)
-		this.cart = OpenGeoportal.ogp.appState.get("cart");
-		
-		this.expandState = OpenGeoportal.ogp.appState.get("layerState");
-		var layerState = this.expandState.findWhere({LayerId: this.model.get("LayerId")});
+
+        var layerState = this.layerState.findWhere({LayerId: this.model.get("LayerId")});
 		if (typeof layerState !== "undefined"){
 			this.model.set({showControls: layerState.get("expanded")});
 		}
@@ -106,8 +104,8 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		this.model.set({
 			showControls : !controls
 		});
-		
-		this.expandState.setExpandState(this.model.get("LayerId"), !controls);
+
+        this.layerState.setExpandState(this.model.get("LayerId"), !controls);
 	},
 
     expandView: null,

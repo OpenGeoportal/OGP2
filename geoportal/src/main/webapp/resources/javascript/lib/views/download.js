@@ -57,7 +57,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				// check permissions
 				if (!isAvailable) {
-					isAvailable = OpenGeoportal.ogp.appState.get("login").model
+                    isAvailable = OpenGeoportal.ogp.login.model
 							.hasAccess(model);
 				}
 
@@ -638,7 +638,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var layers = this.downloadRequest.get("layers");
 				var emailLayers = [];
 				var dlLayers = [];
-				var requestQ = OpenGeoportal.ogp.appState.get("requestQueue");
+                var requestQ = OpenGeoportal.ogp.requestQueue;
 				
 				_.each(layers, function(model){
 					if (model.has("requiresEmail") && model.get("requiresEmail")){
