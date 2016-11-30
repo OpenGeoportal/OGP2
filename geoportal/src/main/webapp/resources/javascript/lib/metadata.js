@@ -92,46 +92,47 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
     this.viewMetadataFromOgp = function (model) {
         var layerId = model.get("LayerId");
 
-		try {
+        try {
 
             var metadata = null;
             var that = this;
-			var params = {
+            var params = {
                 url: "layer/" + layerId + "/metadata",
-                async: false,
+                timeout: 2000,
                 success: function (data) {
                     if (typeof data.error !== "undefined") {
                         that.errorDialog(data.error);
                     } else {
                         metadata = data;
-					}
+                    }
 
                 },
                 error: function () {
-                    that.errorDialog("No additional metadata found.");
+                    that.errorDialog("No additional metadata found, or there was a problem retrieving the metadata.");
                 }
-			};
-			jQuery.ajax(params);
+            };
+            jQuery.ajax(params).then(function () {
 
-            if (metadata === null) {
-                return;
-            }
+                if (metadata === null) {
+                    return;
+                }
 
-            var $dialog = this.renderMetadataDialog(layerId, metadata);
-            this.addMetadataDownloadButton($dialog, layerId);
-            //this.addFullscreenButton($dialog);
-            //this.addPagingButtons($dialog);
-			this.addScrollMetadataToTop();
+                var $dialog = that.renderMetadataDialog(layerId, metadata);
+                that.addMetadataDownloadButton($dialog, layerId);
+                //this.addFullscreenButton($dialog);
+                //this.addPagingButtons($dialog);
+                that.addScrollMetadataToTop();
 
-            $dialog.dialog("open");
-            this.ellipsisHandler($dialog);
+                $dialog.dialog("open");
+                that.ellipsisHandler($dialog);
+            });
 
-		} catch (e) {
+        } catch (e) {
             this.model.set("selected", false);
-			console.log(e);
-			throw new Error("Error opening the metadata dialog.");
-		}
-	};
+            console.log(e);
+            throw new Error("Error opening the metadata dialog.");
+        }
+    };
 
     this.ellipsisHandler = function ($dialog) {
         var $desc = $dialog.find(".metadataDescription");
