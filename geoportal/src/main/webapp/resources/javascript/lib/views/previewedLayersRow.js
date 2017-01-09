@@ -20,8 +20,6 @@ OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 	},
 	subClassInit: function(){
 		//listen for saved items (in cart collection)
-        this.cart = OpenGeoportal.ogp.cart;
-		
 		var that = this;
 		jQuery(document).on("cartUpdated", this.$el, function(){that.updateView.apply(that, arguments);});
 	},

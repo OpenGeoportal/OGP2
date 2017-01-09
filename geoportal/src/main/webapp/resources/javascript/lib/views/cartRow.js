@@ -22,10 +22,15 @@ OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 	},
 
 	subClassInit: function(){
+        this.checkedView();
 		this.listenTo(this.model, "change:isChecked", this.checkedView);
 		this.listenTo(this.model, "change:actionAvailable", this.showActionAvailable);
 		var that = this;
         $(document).on("previewLayerOn previewLayerOff", this.$el, function () {
+            that.updateView.apply(that, arguments);
+        });
+
+        $(document).on("updateRow", this.$el, function () {
             that.updateView.apply(that, arguments);
         });
 
@@ -36,6 +41,7 @@ OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
         $(document).off("previewLayerOn previewLayerOff", this.$el);
 
 	},
+
 
     syncCheck: function (e) {
         //'silent', so we don't trigger the change:isChecked listener and loop

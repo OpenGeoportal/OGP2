@@ -23,29 +23,61 @@ OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
 
 });
 
-/*OpenGeoportal.ResultCollection = Backbone.Collection.extend({
-	model: OpenGeoportal.Models.ResultItem
- });*/
 
-//collection for the bbview results table (to replace above)
 OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem,
-    initialize: function (options) {
-        _.extend(this, _.pick(options, "previewed", "queryTerms", "sort"));
-        this.queryTerms.setSortInfo(this.sort);
 
+    constructor: function (attributes, options) {
+        _.extend(this, _.pick(options, "previewed", "queryTerms", "sort", "facets"));
+        Backbone.Collection.apply(this, arguments);
+    },
+
+    initialize: function () {
+        this.queryTerms.setSortInfo(this.sort);
     },
 	
     fetchOn: false,
+
     queryTerms: null,
+
 	url : function(){
         return this.queryTerms.getSearchRequest();
 		},
 
 	totalResults: 0,
+
     parse: function(resp) {
         return this.solrToCollection(resp);
       },
+
+    parseFacets: function (facetResponse) {
+        var facets = [];
+        _.each(facetResponse.facet_fields, function (v, k) {
+            var f = {
+                field_id: k
+            };
+            for (var i = 0; i < v.length; i += 2) {
+                f[v[i]] = v[i + 1];
+            }
+            facets.push(f);
+        });
+
+        return facets;
+    },
+
+    updateFacets: function (facetResponse) {
+        var updatedFacets = this.parseFacets(facetResponse);
+        var self = this;
+        _.each(updatedFacets, function (facet) {
+            var f = self.facets.findWhere({field_id: facet.field_id});
+            if (_.isUndefined(f)) {
+                self.facets.add(facet);
+            } else {
+                f.set(facet);
+            }
+        });
+
+    },
 		// converts solr response object to backbone models
 	solrToCollection: function(dataObj) {
 			// dataObj is a Javascript object (usually) returned by Solr
@@ -54,11 +86,11 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			var solrLayers = dataObj.response.docs;
 			var ids = [];
         var previewed = this.previewed.each(function (model) {
-				if (model.get("preview") === "on"){
-					ids.push(model.get("LayerId"));
-				}
-			});
-
+            if (model.get("preview") === "on") {
+                ids.push(model.get("LayerId"));
+            }
+        });
+        this.updateFacets(dataObj.facet_counts);
 			// solr docs holds an array of hashtables, each hashtable contains a
 			// layer
 			var arrModels = [];

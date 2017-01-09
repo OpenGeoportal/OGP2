@@ -17,7 +17,9 @@ if (typeof OpenGeoportal.Models === 'undefined') {
  */
 OpenGeoportal.Models.CartLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
-	defaults : {},
+    defaults: {
+        isChecked: true
+    },
 
 	intersectsBounds : function(bounds) {
 

@@ -50,8 +50,9 @@ public class ImageRetrievalController {
 
 
 		response.setContentLength((int) downloadPackage.length());
-		response.setContentType("application/octet-stream");
+		response.setContentType("image/png");
 		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());
+		response.setHeader("X-Frame-Options", "SAMEORIGIN");
 		FileUtils.copyFile(downloadPackage, response.getOutputStream());
 	}
 }

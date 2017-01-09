@@ -49,7 +49,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 
                         activate: function (event, ui) {
 
-                            $(self).trigger("adjustContents");
+                            self.$el.trigger("adjustContents");
 
                             var label, idx = ui.index;
 
@@ -124,6 +124,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
             showPanelMidRight: function (immediate) {
+                this.setAlsoMoves();
                 var time = 500;
                 if (typeof immediate != "undefined") {
                     if (immediate) {
@@ -148,24 +149,24 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					"margin-left" : -1 * panelOffset
 				});
 				var that = this;
+                var element = this.$el;
+                var hasFired = false;
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '+=' + panelOffset
 				}, {
 					queue : false,
                     duration: time,
 					complete : function() {
-
-                        $(this).trigger("adjustContents");
-						that.resizablePanel();
-                        $(document).trigger("panelOpen");
-					}
-				});
-				try {
-					this.$el.resizable( "enable" );
-				} catch (e){
-					//console.log(e);
-				}
-
+                        //we don't want this to fire for each animated element...just once
+                        if (!hasFired) {
+                            hasFired = true;
+                            that.resizablePanel();
+                            $(document).trigger("panelOpen");
+                            element.resizable("enable");
+                            element.trigger("adjustContents");
+                        }
+                    }
+                });
 
 			},
 

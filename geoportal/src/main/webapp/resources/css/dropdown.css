@@ -126,7 +126,7 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
     padding: 0 5px;
 }
 
-.selectText {
+.selectTextWrapper {
     width: calc(100% - 55px);
 }
 
@@ -138,7 +138,12 @@ span.button-text {
     vertical-align: middle;
 }
 
-#dataTypeDropdown .selectText, #repositoryDropdown .selectText {
+#dataTypeDropdown .selectTextWrapper, #repositoryDropdown .selectTextWrapper {
     padding-left: 15px;
     width: calc(100% - 117px);
+}
+
+.facetCount {
+    color: #666666;
+    font-size: .9em;
 }

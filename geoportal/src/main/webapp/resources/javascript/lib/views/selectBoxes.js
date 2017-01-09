@@ -389,6 +389,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		var itemClass = this.getItemClass();
 		var iconRenderer = this.options.iconRenderer;
 		var controlClass = this.options.controlClass;
+        var countClass = this.options.countClass;
 		var selectionAttr = this.getSelectionAttribute();
 
 
@@ -431,6 +432,8 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
                 icon: icon,
                 control: control,
                 name: name,
+                count: '',
+                countClass: countClass + ' facetValue_' + value,
                 value: value,
                 className: itemClass
             });

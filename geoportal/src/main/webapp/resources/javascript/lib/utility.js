@@ -345,6 +345,27 @@ OpenGeoportal.Utility.hasLocationValueIgnoreCase = function(location, keyArr) {
     return hasKey;
 };
 
+OpenGeoportal.Utility.StringHash = function (str) {
+
+    /*    var hval = 0x811c9dc5;
+     var fnv_32_prime = 0x01000193;
+     var uint32_max = 2 * * 32;
+     for (var i=0; i < str.length; i++) {
+     hval = hval ^ ord(str.charAt(i));
+     hval = (hval * fnv_32_prime) % uint32_max;
+     }
+     return hval*/
+
+    var hash = 0;
+
+    for (var i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return hash;
+
+};
+
 OpenGeoportal.Utility.getLocationValueIgnoreCase = function (location, key) {
     var locKeys = _.keys(location);
     var locKeysLower = OpenGeoportal.Utility.getArrayToLower(locKeys);

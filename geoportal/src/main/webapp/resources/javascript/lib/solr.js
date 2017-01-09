@@ -105,12 +105,9 @@ OpenGeoportal.Solr = function() {
 
 		this.baseParams = {
 			wt : "json",
-			/*
-			 * facet: true, "facet.field": [ "{!ex=dt,insf}InstitutionSort",
-			 * "{!ex=dt,insf}DataTypeSort", "{!ex=dt,insf}PlaceKeywordsSort" ],
-			 * "f.PlaceKeywordsSort.facet.mincount": 1,
-			 * "f.PlaceKeywordsSort.facet.limit": 10,
-			 */
+            facet: true,
+            'facet.field': ['{!ex=f_institution}InstitutionSort', '{!ex=f_datatype}DataTypeSort'],
+            'facet.method': 'enum',
 			defType : "edismax",
 			fl : this.getReturnedColumns(this.SearchRequest),
 			sort : this.getSortClause()
@@ -228,6 +225,7 @@ OpenGeoportal.Solr = function() {
 		return this.getServerName() + "?" + query;
 
 	};
+
 
 	/***************************************************************************
 	 * Keyword/text components
@@ -447,7 +445,7 @@ OpenGeoportal.Solr = function() {
 
 		}
 		var filter = temp.join(" " + joiner + " ");
-
+        filter = '{!tag=f_' + columnName.toLowerCase() + '}' + filter;
 		return filter;
 	};
 

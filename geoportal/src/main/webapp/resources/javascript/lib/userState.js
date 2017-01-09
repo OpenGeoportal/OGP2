@@ -17,21 +17,14 @@ if (typeof OpenGeoportal == 'undefined') {
  * @constructor
  */
 OpenGeoportal.UserState = function () {
-    var instance;
     var self = this;
-
-    /**
-     * set the OGP instance
-     * @param appInstance
-     */
-    self.setInstance = function (appInstance) {
-        instance = appInstance;
-    };
 
     /**
      * Save user state to the user/state endpoint
      */
     self.save = function () {
+
+
         var stateObj = self.gatherState();
         var callback = function () {
             console.log(arguments)
@@ -58,14 +51,38 @@ OpenGeoportal.UserState = function () {
         };
         return $.get("user/state", callback)
             .done(function () {
-                alert("second success");
+                // alert("second success");
             })
             .fail(function () {
                 alert("error");
             })
             .always(function () {
-                alert("finished");
+                //  alert("finished");
             });
+    };
+
+    var models_and_collections = {};
+
+    self.getWatched = function () {
+        return models_and_collections;
+    };
+
+    self.listenForUpdates = function (collections) {
+        var valid = true;
+        var vals = ["cart", "previewed", "requestQueue", "panel"];
+        _.each(vals, function (k) {
+            valid = valid && _.has(collections, k);
+        });
+        if (!valid) {
+            throw new Error("missing properties!");
+        }
+
+        models_and_collections = collections;
+
+        collections.cart.listenTo(collections.cart, "add remove", self.save);
+        collections.previewed.listenTo(collections.previewed, "add remove", self.save);
+        collections.requestQueue.listenTo(collections.requestQueue, "add remove", self.save);
+        collections.panel.listenTo(collections.panel, "change:currentTab", self.save);
     };
 
     /**
@@ -82,28 +99,13 @@ OpenGeoportal.UserState = function () {
         //query terms?
         //ui settings? columns shown, widths, pane width, map extent, basemap, search type,
         // displayed dialogs?
-        /*
-         ogp.appState = new OpenGeoportal.Models.OgpSettings({
-         queryTerms : new OpenGeoportal.Models.QueryTerms(),
-         previewed : new OpenGeoportal.PreviewedLayers(),
-         cart : new OpenGeoportal.CartCollection(),
-         layerState: new OpenGeoportal.TableRowSettings(),
-         login : new OpenGeoportal.Views.Login({
-         model : new OpenGeoportal.Models.User()
-         }),
-         requestQueue: new OpenGeoportal.RequestQueue(),
-         currentTab : 0
-         });
-         */
 
-        //throw an error if instance is not defined
-        if (_.isUndefined(instance) || _.isNull(instance)) {
-            throw new Error("OGP Instance must be set.");
-        }
-        state.cart = instance.cart.toJSON();
-        state.previewed = instance.previewed.toJSON();
-        state.requests = instance.requestQueue.toJSON();
-        state.tabId = instance.panel.get("currentTab");
+        var coll = self.getWatched();
+
+        state.cart = coll.cart.toJSON();
+        state.previewed = coll.previewed.toJSON();
+        state.requests = coll.requestQueue.toJSON();
+        state.tabId = coll.panel.get("currentTab");
         return state;
     };
 

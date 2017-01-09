@@ -382,6 +382,7 @@ OpenGeoportal.Views.Query = Backbone.View
 								itemClass : "repositoryMenuItem",
 								iconRenderer : iconRenderer,
 								controlClass : "repositoryCheck",
+                                countClass: "facet_InstitutionSort",
 								showOnly: true
 							});
 					that.repositories = repositoryMenu;
@@ -421,7 +422,8 @@ OpenGeoportal.Views.Query = Backbone.View
 							itemClass : "dataTypeMenuItem",
 							iconRenderer : iconRenderer,
 							controlClass : "dataTypeCheck",
-							showOnly: true
+                            countClass: "facet_DataTypeSort",
+                            showOnly: true
 						});
 
 				this.dataTypes = dataTypesMenu;

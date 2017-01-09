@@ -15,7 +15,7 @@ if (typeof OpenGeoportal.Models === 'undefined') {
  */
 OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 		.extend({
-			initialize : function() {
+            initialize: function () {
 				this.assignAttributes();
 			},
 

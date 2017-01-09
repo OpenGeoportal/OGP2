@@ -40,7 +40,6 @@ $(document)
 
             //Initialize user state object. Holds client info that gets saved to the session
             ogp.userState = new OpenGeoportal.UserState();
-            ogp.userState.setInstance(ogp);
 
             var userState = OpenGeoportal.Config.userStateBootstrap || {};
             var hasUserState = !_.isEmpty(userState);
@@ -59,9 +58,24 @@ $(document)
 
 
             //Collection of previewed layers
-            ogp.previewed = new OpenGeoportal.PreviewedLayers();
+            var prev = null;
+            if (_.has(userState, "previewed")) {
+                prev = userState.previewed;
+            }
+            ogp.previewed = new OpenGeoportal.PreviewedLayers(prev);
 
             ogp.requestQueue = new OpenGeoportal.RequestQueue();
+
+            var cart = null;
+            if (_.has(userState, "cart")) {
+                cart = userState.cart;
+            }
+            ogp.cart = new OpenGeoportal.CartCollection(cart, {
+                userAuth: ogp.login.model,
+                template: OpenGeoportal.Template,
+                widgets: OpenGeoportal.Widgets
+            });
+
 
 
             ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({
@@ -77,6 +91,13 @@ $(document)
             if (hasUserState) {
                 ogp.panel.set("mode", "open");
             }
+
+            ogp.userState.listenForUpdates({
+                panel: ogp.panel,
+                cart: ogp.cart,
+                previewed: ogp.previewed,
+                requestQueue: ogp.requestQueue
+            });
 
             /*
              Create the map
@@ -108,20 +129,11 @@ $(document)
             });
             ogp.structure.init();
 
-            /*
-             If there is user state passed from the session, bootstrap here.
-             */
-            var bootstrapModels = new OpenGeoportal.BootstrapModels(ogp);
-            bootstrapModels.bootstrapUserState(userState);
 
             /*
-             create the cart collections and views
+             create the cart views
              */
-            ogp.cart = new OpenGeoportal.CartCollection([], {
-                userAuth: ogp.login.model,
-                template: OpenGeoportal.Template,
-                widgets: OpenGeoportal.Widgets
-            });
+
 
             new OpenGeoportal.Views.CartHeader({
                 collection: ogp.cart,
@@ -149,24 +161,31 @@ $(document)
                 config: OpenGeoportal.Config
             });
 
+
+            /*
+             If there is user state passed from the session, bootstrap here.
+             */
+            //TODO: is there a more elegant way to handle this? pass collections in to constructors?
+            var bootstrapModels = new OpenGeoportal.BootstrapModels(ogp);
+            bootstrapModels.bootstrapUserState(userState);
+
+
             ogp.search = new OpenGeoportal.Views.Query({
                 model: ogp.queryTerms,
                 el: "form#searchForm"
             });
 
+            ogp.facets = new OpenGeoportal.FacetCollection();
             // The collection that holds search
             // results
-            try {
 
-                var resParams = {
-                    previewed: ogp.previewed,
-                    queryTerms: ogp.queryTerms,
-                    sort: new OpenGeoportal.TableSortSettings()
-                };
-                ogp.results = new OpenGeoportal.ResultsCollection(resParams);
-            } catch (e) {
-                console.log(e);
-            }
+            ogp.results = new OpenGeoportal.ResultsCollection(null, {
+                previewed: ogp.previewed,
+                facets: ogp.facets,
+                queryTerms: ogp.queryTerms,
+                sort: new OpenGeoportal.TableSortSettings()
+            });
+
 
             //Holds app-wide state for previewed layers... opacity, color, etc.
             ogp.layerState = new OpenGeoportal.TableRowSettings();

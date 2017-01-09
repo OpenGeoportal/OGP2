@@ -71,6 +71,24 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		}
 	},
 
+    mouseon: true,
+
+    pauseMouseEvents: function () {
+        if (this.mouseon) {
+            this.off("mouseover");
+            this.off("mouseout");
+            this.mouseon = false;
+        }
+    },
+
+    resumeMouseEvents: function () {
+        if (!this.mouseon) {
+            this.on("mouseover", this.doMouseoverOn);
+            this.on("mouseout", this.doMouseoverOff);
+            this.mouseon = true;
+        }
+    },
+
     getMetadataViewer: function () {
         if (typeof this.metadataViewer === "undefined") {
             this.metadataViewer = new OpenGeoportal.MetadataViewer();

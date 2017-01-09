@@ -100,7 +100,20 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var that = this;
 				this.setFrameHeight();
 				var scrollTarget$ = this.$el.children(".tableWrapper").children(".rowContainer");
-				scrollTarget$.off("scroll").on("scroll", function(){that.watchScroll.apply(that, arguments);});
+                scrollTarget$.off("scroll").on("scroll", function () {
+                    that.watchScroll.apply(that, arguments);
+
+                    _.each(that.subviews.rows, function (view) {
+                        view.pauseMouseEvents();
+                    });
+
+                    clearTimeout($.data(this, 'scrollTimer'));
+                    $.data(this, 'scrollTimer', setTimeout(function () {
+                        _.each(that.subviews.rows, function (view) {
+                            view.resumeMouseEvents();
+                        });
+                    }, 500));
+                });
 				   
 			},
 			prevScrollY: 0,

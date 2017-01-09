@@ -192,12 +192,13 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 		return previewType;
 	},
 
-	assignAttributes : function() {
-		// do some categorization
-		var previewType = this.setPreviewType();
-		var attr = this.getAttributesByType(previewType);
+    assignAttributes: function () {
+        // do some categorization
+        var previewType = this.setPreviewType();
+        var attr = _.omit(this.getAttributesByType(previewType), _.keys(this.attributes));
+
         this.set(attr, {silent: true});
-	}
+    }
 });
 
 OpenGeoportal.Models.Attribute = Backbone.Model.extend({});
