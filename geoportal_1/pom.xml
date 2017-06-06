@@ -199,6 +199,13 @@
 			<artifactId>solr-solrj</artifactId>
 			<version>4.5.1</version>
 		</dependency>
+		<!-- solr proxy -->
+		<dependency>
+			<groupId>org.mitre.dsmiley.httpproxy</groupId>
+			<artifactId>smiley-http-proxy-servlet</artifactId>
+			<version>1.9</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
