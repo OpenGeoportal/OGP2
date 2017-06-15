@@ -103,7 +103,7 @@ OpenGeoportal.Config.DataTypes = new OpenGeoportal.Config.DataTypeCollection([
 			uiClass : "rasterIcon",
 			selected : true
 		}, {
-			value : "Paper+Map",
+        value: "Paper Map",
 			displayName : "Scanned Map",
 			uiClass : "mapIcon",
 			selected : true

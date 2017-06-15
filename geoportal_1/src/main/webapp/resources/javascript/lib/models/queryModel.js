@@ -189,6 +189,18 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		var dataTypes = this.get("dataType");// columnName,
 		// values, joiner,
 		// prefix
+
+        var altVals = ["\"Paper Map\"", "\"Scanned Map\"", "ScannedMap"];
+        // shim to support proliferation of Scanned Map values.
+        if (_.contains(dataTypes, "Paper Map")) {
+            _.each(altVals, function (val) {
+                if (!_.contains(dataTypes, val)) {
+                    dataTypes.push(val);
+                }
+            });
+            dataTypes = _.without(dataTypes, "Paper Map");
+        }
+
 		solr.addFilter(solr.createFilter("DataType", dataTypes,
 				"{!tag=dt}"));
 

@@ -37,11 +37,8 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.tooltip = "Unspecified";
 			params.text = "?";
 		} else {
-			// dataType = dataType.toLowerCase();
-			if (dataType == "Paper Map") {
-				dataType = "Paper+Map";
-			}
-			var iconModel = typeIcon.findWhere({
+
+            var iconModel = typeIcon.findWhere({
 				value : dataType
 			});
 			if (typeof iconModel == 'undefined') {
