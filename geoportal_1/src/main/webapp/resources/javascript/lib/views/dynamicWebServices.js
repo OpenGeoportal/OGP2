@@ -140,9 +140,6 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				serviceTypes.wmc = wmcService;
 				
 				var that = this;
-				//remove existing click handlers for the button
-				jQuery(document).off("click", "#" + wmcButtonId);
-					
 				jQuery(document).on("click", "#" + wmcButtonId, function(){
 					//generate and return the wmc
 					//var bbox = jQuery("#" + bboxId).val();

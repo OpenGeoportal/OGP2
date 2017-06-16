@@ -9,4 +9,11 @@
 			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 1},
 			{"classKey": "layerDownloader.wms", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 3},
 			{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["raster", "vector"],"outputFormats":["kml", "kmz"], "preference": 4},
-			{"classKey": "layerDownloader.file", "accessLevel":["public"],"dataType":["vector", "raster"],"outputFormats":["shp", "geotiff"], "preference": 2}]}}} 
+			{"classKey": "layerDownloader.file", "accessLevel":["public"],"dataType":["vector", "raster"],"outputFormats":["shp", "geotiff"], "preference": 2},
+			{"classKey": "layerDownloader.ftpfile", "accessLevel":["public"],"dataType":["vector", "raster"],"outputFormats":["shp", "geotiff"], "preference": 2}],
+		"minnesota":[
+			{"classKey": "layerDownloader.wfs.proxied", "accessLevel":["restricted"],"dataType":["vector"], "outputFormats":["shp"]},
+			{"classKey": "layerDownloader.wcs.proxied", "accessLevel":["restricted"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"]}]		
+		}
+	}
+} 

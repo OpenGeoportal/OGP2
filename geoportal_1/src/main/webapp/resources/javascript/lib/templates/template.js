@@ -182,7 +182,7 @@ OpenGeoportal.Template = function() {
 	formatControlHtml += '</select><br/>';
 	this.formatSelectionControl = _.template(formatControlHtml);
 
-	var clipControlHtml = '<input id="<%= elId %>" type="checkbox" <% if (isClipped){ %>checked="checked" <% } %>/><label for="<%= elId %>">Clip data to map extent</label><br/> \n';
+	var clipControlHtml = '<input id="checkClip" type="checkbox" checked="checked" /><label for="checkClip" id="checkClipLabel">Clip data to map extent</label><br/> \n';
 	this.clipControl = _.template(clipControlHtml);
 
 	var addEmailHtml = '<div><label for="emailAddress">You have selected some layers that require an email address. Please enter your email to receive a download link:</label><br />\n';
@@ -221,23 +221,11 @@ OpenGeoportal.Template = function() {
 
 	this.webServicesDialogContent = _.template(webServicesDialogContentHtml);
 	
-	var doNotShowHtml = '<label><input type="checkbox" class="doNotShow" />Do not show again</label>';
-	
-	var restrictedWarningHtml = '<span>This layer is restricted by licensing agreement to the <%= repository %> community. </span><%= localeWarning %><br /><span class="ignoreWarning">' + doNotShowHtml + '</span>';
-	this.restrictedWarning = _.template(restrictedWarningHtml);
-	
-	var restrictedWarningLocalHtml = '<span class="notice">Restricted layers can be added to the Cart, but you must login before you can preview or download restricted layers.</span>';
-	this.restrictedWarningLocal = _.template(restrictedWarningLocalHtml);
-	
-	var restrictedWarningExternalHtml = '<span class="notice">Restricted layers can be added to the Cart here, but you must use <%= repository %>\'s site and login to preview or download restricted layers.</span>';
-	this.restrictedWarningExternal = _.template(restrictedWarningExternalHtml);
-	
-	
+
 	var infoBubbleHtml = '<div id="<%= elId %>" class="infoBubbleBackground triangle-isoscelesBackground '
 			+ '<%= arrowDirection %>Background"><div class="infoBubbleText triangle-isosceles '
 			+ '<%= arrowDirection %>"><button class="closeBubble button"></button><%= content %>' 
-			+ doNotShowHtml
-			+ '</div></div>';
+			+ '<label><input type="checkbox"/>Do not show this screen again</label></div></div>';
 	this.infoBubble = _.template(infoBubbleHtml);
 	
 	var welcomeTextHtml = '<div id="welcomeText" class="welcomeText">'

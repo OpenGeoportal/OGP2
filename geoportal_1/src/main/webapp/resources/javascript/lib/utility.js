@@ -83,42 +83,6 @@ OpenGeoportal.Utility.CurrentTab = 0;
 	}
 	return searchInfo;
 };*/
-OpenGeoportal.Utility.LocalStorage = {};
-OpenGeoportal.Utility.LocalStorage.setBool = function(key, boolVal){
-
-	if (window.localStorage){
-		var val = "false";
-		if (boolVal){
-			val = "true";
-		} 
-		window.localStorage.setItem(key, val);
-	} 
-
-};
-
-OpenGeoportal.Utility.LocalStorage.getBool = function(key, defaultVal){
-	var bool = false;
-	if (typeof defaultVal !== "undefined"){
-		bool = defaultVal;
-	}
-	if (window.localStorage){
-		var item = window.localStorage.getItem(key);
-		if (item !== null){
-			bool = item == "true";
-		}
-	}
-	
-	return bool;
-};
-
-OpenGeoportal.Utility.LocalStorage.resetItems = function(arrKeys){
-	if (window.localStorage){
-		_.each(arrKeys, function(item){
-			window.localStorage.removeItem(item);
-		});
-	}
-};
-
 
 OpenGeoportal.Utility.rgb2hex = function(rgb) {
 	rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);

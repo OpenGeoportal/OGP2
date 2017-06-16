@@ -25,7 +25,6 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 				var that = this;
 				this.tableConfig.listenTo(this.collection, "change:visible", function(model){ that.updateSubviews.call(that);});
 				this.listenTo(this.collection, "change:showControls", function(){jQuery(document).trigger("previewRow.expand");});
-				this.listenTo(this.collection, "change:zIndex", this.render);
 
 			},
 			

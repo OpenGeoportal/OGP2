@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns:beans="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
-	xmlns:oxm="http://www.springframework.org/schema/oxm" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:oxm="http://www.springframework.org/schema/oxm"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
        		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
            	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd
@@ -204,6 +206,9 @@
 		<beans:property name="featureSourceToShape" ref="featureSourceToShape.wfs" />
 	</beans:bean>
 
+	<beans:bean id="downloadMethod.ftpfile"
+		class="org.opengeoportal.download.methods.FtpFileDownloadMethod">
+	</beans:bean>
 
 	<!-- LayerDownloader -->
 	<beans:bean id="layerDownloader.wfs"
@@ -241,6 +246,10 @@
 	<beans:bean id="layerDownloader.geotools.wfs"
 		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.geotools.wfs" />
+	</beans:bean>
+	<beans:bean id="layerDownloader.ftpfile"
+		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">
+		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.ftpfile" />
 	</beans:bean>
 
 	<!-- HGL specific -->
@@ -306,5 +315,4 @@
 		<task:scheduled ref="cleanupDirectory.download" method="cleanupDownloadDirectory"
 			fixed-rate="${cleanupInterval}" />
 	</task:scheduled-tasks>
-
 </beans:beans>

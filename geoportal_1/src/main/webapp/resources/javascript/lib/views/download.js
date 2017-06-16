@@ -258,7 +258,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					jQuery(document).on("change", "#" + rasterControlId,
 							function() {
 								var uiValue = jQuery(this).val();
-								that.preferences.set({
+								this.preferences.set({
 									rasterChoice : uiValue
 								});
 
@@ -272,19 +272,19 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				} else {
 					// create the clip control
-					var clipControlId = "downloadClipControl";
 					html += this.template.clipControl({
-						elId : clipControlId,
+						id : "downloadClipControl",
 						isClipped : this.preferences.get("isClipped")
 					});
 
 					// update the preferences model when the ui element changes
 
-					jQuery(document).on("change", "#" + clipControlId,
+					jQuery(document).on("change", "#downloadClipControl",
 							function() {
-								that.preferences.set({
+								this.preferences.set({
 									isClipped : jQuery(this).is(":checked")
 								});
+
 							});
 				}
 
