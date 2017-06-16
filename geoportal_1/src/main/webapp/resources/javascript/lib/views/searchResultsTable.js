@@ -70,7 +70,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var previewed$ = this.$(".previewedLayers");
 				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({el: previewed$[0], collection: this.previewed, tableConfig: this.tableConfig});
 				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
-					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
+					that.previewedLayersTable.render();that.adjustColumnSizes();});
 
 			},
 			
@@ -475,7 +475,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 										
 										var canPreview = function(location){
 											//where is a good place to centralize this?
-											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
+											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection","download"]);
 										};
 										
 										var hasAccess = true;

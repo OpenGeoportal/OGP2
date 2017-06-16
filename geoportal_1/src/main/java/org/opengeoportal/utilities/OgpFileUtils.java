@@ -96,7 +96,7 @@ public class OgpFileUtils {
 			fileExtension = ".xml";
 		} else if ((responseContentType.contains("text/html")||responseContentType.contains("application/html"))){
 			fileExtension = ".html";
-		} else if (responseContentType.contains("application/zip")){
+		} else if (responseContentType.contains("application")&&responseContentType.contains("zip")){
 			fileExtension = ".zip";
 		} else if (responseContentType.contains("tiff")||responseContentType.contains("geotiff")){ 
 			fileExtension = ".tif";

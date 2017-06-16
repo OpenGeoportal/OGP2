@@ -60,7 +60,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 			// "model" to be called
 			var that = this;
 			this.$el.css("opacity", ".5");
-			var to$ = jQuery(".previewedLayers").find(".tableRow").first();
+			var to$ = jQuery(".previewedLayers").find(".tableRow").last();
 			if (to$.length === 0){
 				to$ = jQuery(".previewedLayers");
 			}
@@ -77,7 +77,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 				update.showControls = true;
 				var that = this;
 				this.$el.css("opacity", ".5");
-				var to$ = jQuery(".previewedLayers").find(".tableRow").first();
+				var to$ = jQuery(".previewedLayers").find(".tableRow").last();
 				if (to$.length === 0){
 					to$ = jQuery(".previewedLayers");
 				}
@@ -154,14 +154,32 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 	},
 	
 	toggleSave: function(e){
-		//if not in cart, add it.  if in cart, remove it.
-		var match = this.cart.findWhere({LayerId: this.model.get("LayerId")});
-		if (typeof match === "undefined"){
-			var that = this;
-			jQuery(e.currentTarget).effect("transfer", { to: ".shoppingCartIcon", easing: "swing", className: "ui-effects-transfer-to-cart inCart" }, 400, function(){that.cart.toggleCartState(that.model);});
-		} else {
-			this.cart.toggleCartState(this.model);
+		//First check if it's externalDownload, if yes. Open don't add it to cart
+		if (this.model.get("Location").externalDownload){
+			var dialogText = "To download this layer, please visit this <a href='" + this.model.get("Location").externalDownload + "' target='_blank'>link</a>.<br/>";
+			var dialogDiv = "<div id='no-preview-dialog'><p>" + dialogText + "</p></div>";
+			jQuery(dialogDiv).dialog({
+				modal: true,
+				draggable: false,
+				buttons: [
+					{
+					  text: "OK",
+					  click: function() {
+					$( this ).dialog( "close" );
+					  }
+					}
+				  ]
+			});
 		}
-		
+		else{
+		    //if not in cart, add it.  if in cart, remove it.
+			var match = this.cart.findWhere({LayerId: this.model.get("LayerId")});
+			if (typeof match === "undefined"){
+				var that = this;
+				jQuery(e.currentTarget).effect("transfer", { to: ".shoppingCartIcon", easing: "swing", className: "ui-effects-transfer-to-cart inCart" }, 400, function(){that.cart.toggleCartState(that.model);});
+			} else {
+				this.cart.toggleCartState(this.model);
+			}
+		}		
 	}
 });

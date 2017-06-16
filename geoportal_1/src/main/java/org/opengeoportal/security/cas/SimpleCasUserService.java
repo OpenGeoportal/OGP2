@@ -48,7 +48,7 @@ public final class SimpleCasUserService extends AbstractCasAssertionUserDetailsS
 
     private static final String NON_EXISTENT_PASSWORD_VALUE = "NO_PASSWORD";
 
-    private final String[] attributes;
+    //private final String[] attributes;
 
     private boolean convertToUpperCase = true;
     
@@ -61,13 +61,19 @@ public final class SimpleCasUserService extends AbstractCasAssertionUserDetailsS
 		return ArrayUtils.contains(adminList, username);
 	}
 	
-	//public SimpleCasUserService() {}
+	public SimpleCasUserService() {
+		//This is a temporary solution to satisfy the final attributes.. Need further discussion of how the CAS Admin would work
+	}
 	
-    public SimpleCasUserService(final String[] attributes) {
-        Assert.notNull(attributes, "attributes cannot be null.");//should null attributes be allowed, since we are not using CAS attributes for our roles?
-       // Assert.isTrue(attributes.length > 0, "At least one attribute is required to retrieve roles from.");
-        this.attributes = attributes;
-    }
+	/*
+	 * Comment this non-zero-argument constructor out due to Chris and Allen's email on 1/15/2014
+	 */
+	
+//    public SimpleCasUserService(final String[] attributes) {
+//        Assert.notNull(attributes, "attributes cannot be null.");//should null attributes be allowed, since we are not using CAS attributes for our roles?
+//       // Assert.isTrue(attributes.length > 0, "At least one attribute is required to retrieve roles from.");
+//        this.attributes = attributes;
+//    }
 
     /**
      * Converts the returned attribute values to uppercase values.
