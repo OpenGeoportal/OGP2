@@ -1,12 +1,10 @@
 package org.opengeoportal.download;
 
-import java.util.Iterator;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opengeoportal.download.config.DownloadConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
+import org.opengeoportal.layer.GeometryType;
 import org.opengeoportal.solr.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,17 +13,34 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class LayerDownloaderProvider implements BeanFactoryAware {
-	private BeanFactory beanFactory;
+	protected BeanFactory beanFactory;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	final static Logger slogger = LoggerFactory.getLogger(LayerDownloaderProvider.class.getName());
-	
+
 	@Autowired
 	private DownloadConfigRetriever downloadConfigRetriever;
-		
+
+	private JsonNode downloadConfig;
+
+	@PostConstruct
+	public void init() throws IOException {
+		downloadConfig = downloadConfigRetriever.getDownloadConfig().path("institutions");
+	}
+
+	public void setDownloadConfigRetriever(DownloadConfigRetriever downloadConfigRetriever) {
+		this.downloadConfigRetriever = downloadConfigRetriever;
+	}
+
+	public DownloadConfigRetriever getDownloadConfigRetriever() {
+		return downloadConfigRetriever;
+	}
 
 	public LayerDownloader build(LayerRequest layer) throws Exception{
 		String classKey = getClassKey(layer);
@@ -47,9 +62,17 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 		}
 		return downloadable;
 	}
+
+	public JsonNode getDownloadConfig() {
+		return downloadConfig;
+	}
+
+	public void setDownloadConfig(JsonNode downloadConfig) {
+		this.downloadConfig = downloadConfig;
+	}
 	
 	public String getClassKey(LayerRequest layer) throws Exception {
-		JsonNode institutions = downloadConfigRetriever.getDownloadConfig().path("institutions");
+		JsonNode institutions = getDownloadConfig();
 		
 		SolrRecord record = layer.getLayerInfo();
 		JsonNode methods = institutions.path(record.getInstitution().trim().toLowerCase());
@@ -103,7 +126,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 
 	}
 
-	private Boolean matchAllCriteria(JsonNode currentNode, LayerRequest layer){
+	protected Boolean matchAllCriteria(JsonNode currentNode, LayerRequest layer) {
 		SolrRecord record = layer.getLayerInfo();
 		logger.debug(record.getAccess().toLowerCase());
 		logger.debug(record.getDataType().toLowerCase());
@@ -150,15 +173,27 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 		}
 		return layerDownloader;
 	}
-	
-	private static String getGeneralizedDataType(String dataType){
-		if (dataType.equals("point")||dataType.equals("line")||dataType.equals("polygon")){
-			dataType = "vector";
+
+	/**
+	 * Get a generalized data type to help make the determination of what download method to use. For historical reasons,
+	 * 'Paper Map', 'Scanned Map', and 'ScannedMap' map to 'paper map' in ogpDownloadConfig.json. This should be changed
+	 * in future versions.
+	 *
+	 * @param dataType
+	 * @return
+	 */
+	protected static String getGeneralizedDataType(String dataType) {
+		GeometryType geometryType = GeometryType.parseGeometryType(dataType);
+		if (geometryType == GeometryType.PaperMap || geometryType == GeometryType.ScannedMap) {
+			return "paper map";
 		}
-		return dataType;
+
+		String generalizedDataType = geometryType.getGeneralizedDataTypeString().toLowerCase();
+
+		return generalizedDataType;
 	}
-	
-	private static Boolean matchNode(JsonNode parentNode, String path, String value){
+
+	protected static Boolean matchNode(JsonNode parentNode, String path, String value){
 		Boolean match = false;
 		JsonNode matchNode = parentNode.path(path);
 		if (matchNode.isArray()){
@@ -179,15 +214,15 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 		slogger.debug("path: " + path + ", value: " + value + " match: " + match.toString());
 		return match;
 	}
-	
-	private Boolean hasRequirements(String classKey, LayerRequest layer){
+
+	protected Boolean hasRequirements(String classKey, LayerRequest layer){
 		//query the download method to see if it has the info it needs
 		LayerDownloader testDownloader = getLayerDownloader(classKey);
 		Boolean hasInfo = testDownloader.hasRequiredInfo(layer);
 		return hasInfo;
 	}
-	
-	private String getDefaultDownloadKey(JsonNode institutions, LayerRequest layer) throws Exception{
+
+	protected String getDefaultDownloadKey(JsonNode institutions, LayerRequest layer) throws Exception{
 		logger.info("Looking for default method...");
 		JsonNode defaultNode = institutions.path("default");
 		if (!defaultNode.isArray()){

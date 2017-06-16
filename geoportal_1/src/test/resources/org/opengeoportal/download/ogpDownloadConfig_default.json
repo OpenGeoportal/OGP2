@@ -1,0 +1,122 @@
+{
+  "config": {
+    "institutions": {
+      "tufts": [
+        {
+          "classKey": "layerDownloader.wfs.proxied",
+          "accessLevel": [
+            "restricted"
+          ],
+          "dataType": [
+            "vector"
+          ],
+          "outputFormats": [
+            "shp"
+          ]
+        },
+        {
+          "classKey": "layerDownloader.wcs.proxied",
+          "accessLevel": [
+            "restricted"
+          ],
+          "dataType": [
+            "raster",
+            "paper map"
+          ],
+          "outputFormats": [
+            "geotiff"
+          ]
+        }
+      ],
+      "harvard": [
+        {
+          "classKey": "layerDownloader.email.HGL",
+          "accessLevel": [
+            "public",
+            "restricted"
+          ],
+          "dataType": [
+            "raster",
+            "paper map"
+          ],
+          "outputFormats": [
+            "geotiff"
+          ]
+        }
+      ],
+      "default": [
+        {
+          "classKey": "layerDownloader.wfs",
+          "accessLevel": [
+            "public"
+          ],
+          "dataType": [
+            "vector"
+          ],
+          "outputFormats": [
+            "shp"
+          ],
+          "preference": 1
+        },
+        {
+          "classKey": "layerDownloader.wcs",
+          "accessLevel": [
+            "public"
+          ],
+          "dataType": [
+            "raster",
+            "paper map"
+          ],
+          "outputFormats": [
+            "geotiff"
+          ],
+          "preference": 1
+        },
+        {
+          "classKey": "layerDownloader.wms",
+          "accessLevel": [
+            "public"
+          ],
+          "dataType": [
+            "raster",
+            "paper map"
+          ],
+          "outputFormats": [
+            "geotiff"
+          ],
+          "preference": 3
+        },
+        {
+          "classKey": "layerDownloader.kml",
+          "accessLevel": [
+            "public"
+          ],
+          "dataType": [
+            "raster",
+            "vector"
+          ],
+          "outputFormats": [
+            "kml",
+            "kmz"
+          ],
+          "preference": 4
+        },
+        {
+          "classKey": "layerDownloader.file",
+          "accessLevel": [
+            "public"
+          ],
+          "dataType": [
+            "vector",
+            "raster"
+          ],
+          "outputFormats": [
+            "shp",
+            "geotiff"
+          ],
+          "preference": 2
+        }
+      ]
+    }
+  }
+}

@@ -1,12 +1,6 @@
 package org.opengeoportal.ogc;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
+import com.fasterxml.jackson.core.JsonParseException;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.opengeoportal.solr.SolrRecord;
@@ -17,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
 
 public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetriever {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -149,7 +145,6 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, SolrRecord solrRecord) throws Exception{
 		AugmentedSolrRecord asr = null;
-		sendServiceStart(solrRecord);
 		for (int i = 0; i < numAttempts; i++ ){
 			logger.info("Attempt " + (i + 1));
 			try{
@@ -174,7 +169,6 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, SolrRecord solrRecord, String url) throws Exception{
 		AugmentedSolrRecord asr = null;
-		sendServiceStart(solrRecord);
 		for (int i = 0; i < numAttempts; i++ ){
 			logger.info("Attempt " + (i + 1));
 
@@ -195,30 +189,6 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 			throw new Exception("Error reaching the OGC server.");
 		} else {
 			return asr;
-		}
-	}
-
-	@Override
-	public void sendServiceStart(SolrRecord solrRecord) {
-		String location = solrRecord.getLocation();
-
-		if (LocationFieldUtils.hasServiceStart(location)){
-			String serviceStart = "";
-			InputStream is = null;
-			try {
-				serviceStart = LocationFieldUtils.getServiceStartUrl(location);
-				String name = solrRecord.getName();
-				//the HGL remote service starter does not use fully qualified names
-				name = name.substring(name.indexOf(".") + 1);
-				logger.info("Attempting to Start Service for ['" + solrRecord.getLayerId() + "']");
-				is = httpRequester.sendRequest(serviceStart, "AddLayer=" + name + "&ValidationKey=OPENGEOPORTALROCKS", "GET");
-			} catch (JsonParseException e) {
-				logger.error("Problem parsing ServiceStart parameter from ['" + location + "']");
-			} catch (IOException e) {
-				logger.error("Problem sending ServiceStart request to : ['" + serviceStart + "']");
-			} finally {
-				IOUtils.closeQuietly(is);
-			}
 		}
 	}
 }

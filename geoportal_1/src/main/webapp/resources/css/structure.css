@@ -1359,6 +1359,10 @@ Repositories
                 -36px transparent;
 }
 
+.polimiIcon {
+	background: url("../media/ogp-institutions.png") no-repeat scroll -78px -35px transparent;
+}
+
 
 /**************
 Backbone table view
