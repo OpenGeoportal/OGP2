@@ -16,6 +16,4 @@ public interface AugmentedSolrRecordRetriever {
 	AugmentedSolrRecord getOgcAugmentedSolrRecord(SolrRecord solrRecord)
 			throws Exception;
 
-	void sendServiceStart(SolrRecord solrRecord);
-
 }
