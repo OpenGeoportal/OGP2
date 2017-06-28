@@ -138,7 +138,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
                                                 function(event, ui) {
                                                         var numPreviewedLayers = $(".previewedLayers .rowContainer").length;
                                                         $(".previewedLayers .rowContainer").children(".tableRow").each( function(){
-                                                                var layerId = $(this).attr("id")
+                                                                var layerId = $(this).attr("layerid")
                                                                 var index = $(this).index();
 
                                                                 var zindex = (numPreviewedLayers - index) * 5 + 335  //openLayers2 sets start of layer index to 335 and increments by 5. Using this to stay equation to consistent.
