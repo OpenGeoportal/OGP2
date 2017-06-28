@@ -13,6 +13,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	tagName : "div",
 	className : "tableRow",
+	attributes : function() { return {"layerid": this.model.get("LayerId") } },
 	events : {
 		"click .viewMetadataControl" : "viewMetadata",
 		"click .previewControl" : "togglePreview",
