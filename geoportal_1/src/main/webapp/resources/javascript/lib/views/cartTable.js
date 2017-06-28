@@ -67,7 +67,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 						});
 				return row;
 			},
-			
+
 			addSharedLayers: function() {
 				if (OpenGeoportal.Config.shareIds.length > 0) {
 					var solr = new OpenGeoportal.Solr();
@@ -82,18 +82,30 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 
 			getLayerInfoSuccess: function(data) {
-
+				var bbox
 				var arr = this.solrToCollection(data);
 				this.collection.add(arr);
 				this.previewed.add(arr);
 				this.previewed.each(function(model){
-					model.set({previewed: "on"});
+					model.set({preview: "on"});
 				});
 
-				jQuery(document).trigger("map.zoomToLayerExtent", {
-					bbox : OpenGeoportal.Config.shareBbox
-				});
-
+				if (OpenGeoportal.Config.shareBbox !== "-180,-90,180,90") {
+					jQuery(document).trigger("map.zoomToLayerExtent", {
+						bbox : OpenGeoportal.Config.shareBbox
+					});
+				} else {
+					this.previewed.each(function(model){
+						var extent = [];
+						extent.push(model.get("MinX"));
+						extent.push(model.get("MinY"));
+						extent.push(model.get("MaxX"));
+						extent.push(model.get("MaxY"));
+						
+						bbox = extent.join();
+					});
+					jQuery(document).trigger( "map.zoomToLayerExtent", { bbox: bbox } );
+				};
 			},
 
 			getLayerInfoJsonpError:function() {
