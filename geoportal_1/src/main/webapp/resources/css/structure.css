@@ -1824,9 +1824,13 @@ zoom: 1;
 	-moz-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);
 	-o-transform: rotate(45deg);
-	tranform: rotate(45deg);
+	transform: rotate(45deg);
 	background-color: #4B8ACF;
 	/*border-bottom: 8px solid #4B8ACF;*/
 	top: -11px;
 	z-index: 999;
+}
+
+.previewedLayers .tableRow.rowHover {
+        cursor: all-scroll;
 }
