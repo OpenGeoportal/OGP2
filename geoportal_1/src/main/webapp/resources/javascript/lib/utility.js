@@ -437,4 +437,140 @@ OpenGeoportal.Utility.anchorsToNiceScroll = function(affectedDiv, offsetHash) {
 	});
 };
 
+OpenGeoportal.Utility.createSLD = function(sldParams) {
+        var layerName = sldParams.layerName;
+	var layerType = sldParams.layerType;
+	var fillColor = sldParams.fillColor;
+	var strokeColor = sldParams.strokeColor;
+	var strokeWidth = sldParams.strokeWidth;
+
+        var baseXML = '<sld:StyledLayerDescriptor xmlns:sld="http://www.opengis.net/sld" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/sld http://schemas.opengis.net/sld/1.0.0/StyledLayerDescriptor.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"></sld:StyledLayerDescriptor>';
+       
+        parser = new DOMParser();
+       
+        xmlDoc = parser.parseFromString(baseXML, "text/xml");
+
+        var namedLayerTag = xmlDoc.createElement("sld:NamedLayer")
+        rootTag = xmlDoc.getElementsByTagName("sld:StyledLayerDescriptor")[0];
+
+        var nameTag = xmlDoc.createElement("sld:Name");
+       
+        var nameValue = xmlDoc.createTextNode(sldParams.layerName);
+        nameTag.appendChild(nameValue);
+       
+        var userStyleTag = xmlDoc.createElement("sld:UserStyle");
+        namedLayerTag.appendChild(nameTag);
+        namedLayerTag.appendChild(userStyleTag);
+       
+        var featureStyleTypeTag = xmlDoc.createElement("sld:FeatureTypeStyle");
+        userStyleTag.appendChild(featureStyleTypeTag);
+       
+        var ruleTag = xmlDoc.createElement("sld:Rule");
+        featureStyleTypeTag.appendChild(ruleTag);
+       
+        if (layerType == "point") {
+            var pointSymbolizerTag = xmlDoc.createElement("sld:PointSymbolizer");
+            ruleTag.appendChild(pointSymbolizerTag);
+           
+            var graphicTag = xmlDoc.createElement("sld:Graphic");
+            pointSymbolizerTag.appendChild(graphicTag);
+           
+            var markTag = xmlDoc.createElement("sld:Mark");
+            graphicTag.appendChild(markTag);
+           
+            var wellKnownNameTag = xmlDoc.createElement("sld:WellKnownName");
+            wellKnownNameValue = xmlDoc.createTextNode("circle");
+            wellKnownNameTag.appendChild(wellKnownNameValue);
+            markTag.appendChild(wellKnownNameTag);
+           
+            var fillTag = xmlDoc.createElement("sld:Fill");
+            markTag.appendChild(fillTag);
+           
+            var cssParameterTag_Fill = xmlDoc.createElement("sld:CssParameter");
+            cssParameterTag_Fill.setAttribute("name","fill");
+            cssParameterTag_FillValue = xmlDoc.createTextNode(sldParams.fillColor);
+            cssParameterTag_Fill.appendChild(cssParameterTag_FillValue);
+            fillTag.appendChild(cssParameterTag_Fill);
+           
+            if (sldParams.strokeWidth > 2) {
+		var strokeWidth = 1;
+                var strokeTag = xmlDoc.createElement("sld:Stroke");
+                markTag.appendChild(strokeTag);
+                var cssParameterTag_Stroke = xmlDoc.createElement("sld:CssParameter");
+		cssParameterTag_Stroke.setAttribute("name", "stroke");
+                cssParameterTag_StrokeValue = xmlDoc.createTextNode(sldParams.strokeColor);
+                cssParameterTag_Stroke.appendChild(cssParameterTag_StrokeValue);
+                strokeTag.appendChild(cssParameterTag_Stroke);
+           
+           
+                var cssParameterTag_StrokeWidth = xmlDoc.createElement("sld:CssParameter");
+                cssParameterTag_StrokeWidth.setAttribute("name", "stroke-width");
+                cssParameterTag_StrokeWidthValue = xmlDoc.createTextNode(strokeWidth);
+                cssParameterTag_StrokeWidth.appendChild(cssParameterTag_StrokeWidthValue)
+                strokeTag.appendChild(cssParameterTag_StrokeWidth);
+            }
+           
+            var sizeTag = xmlDoc.createElement("sld:Size");
+            sizeTagValue = xmlDoc.createTextNode(sldParams.strokeWidth);
+            sizeTag.appendChild(sizeTagValue);
+            graphicTag.appendChild(sizeTag);
+        }
+       
+        else if (layerType == "line") {
+            var lineSymbolizerTag = xmlDoc.createElement("sld:LineSymbolizer");
+            ruleTag.appendChild(lineSymbolizerTag);
+           
+            var strokeTag = xmlDoc.createElement("sld:Stroke");
+            lineSymbolizerTag.appendChild(strokeTag);
+           
+            var cssParameterTag_Stroke = xmlDoc.createElement("sld:CssParameter")
+            cssParameterTag_Stroke.setAttribute("name","stroke");
+            cssParameterTag_StrokeValue = xmlDoc.createTextNode(sldParams.strokeColor);
+            cssParameterTag_Stroke.appendChild(cssParameterTag_StrokeValue);
+            strokeTag.appendChild(cssParameterTag_Stroke);
+           
+            var cssParameterTag_StrokeWidth = xmlDoc.createElement("sld:CssParameter");
+            cssParameterTag_StrokeWidth.setAttribute("name","stroke-width");
+            cssParameterTag_StrokeWidthValue = xmlDoc.createTextNode(sldParams.strokeWidth);
+            cssParameterTag_StrokeWidth.appendChild(cssParameterTag_StrokeWidthValue);
+            strokeTag.appendChild(cssParameterTag_StrokeWidth);
+           
+        }
+       
+        else if (layerType == "polygon") {
+            var polygonSymbolizerTag = xmlDoc.createElement("sld:PolygonSymbolizer");
+            ruleTag.appendChild(polygonSymbolizerTag);
+           
+            var fillTag = xmlDoc.createElement("sld:Fill");
+            polygonSymbolizerTag.appendChild(fillTag);
+           
+            var cssParameterTag_Fill = xmlDoc.createElement("sld:CssParameter");
+            cssParameterTag_Fill.setAttribute("name","fill");
+            var cssParameterTag_FillValue = xmlDoc.createTextNode(sldParams.fillColor);
+            cssParameterTag_Fill.appendChild(cssParameterTag_FillValue);
+            fillTag.appendChild(cssParameterTag_Fill);
+           
+            var strokeTag = xmlDoc.createElement("sld:Stroke");
+            polygonSymbolizerTag.appendChild(strokeTag);
+           
+            var cssParameterTag_Stroke = xmlDoc.createElement("sld:CssParameter");
+            var cssParameterTag_StrokeWidth = xmlDoc.createElement("sld:CssParameter");
+            cssParameterTag_Stroke.setAttribute("name","stroke");
+            cssParameterTag_StrokeWidth.setAttribute("name","stroke-width");
+            cssParameterTag_StrokeValue = xmlDoc.createTextNode(sldParams.strokeColor);
+            cssParameterTag_StrokeWidthValue = xmlDoc.createTextNode(sldParams.strokeWidth);
+            cssParameterTag_Stroke.appendChild(cssParameterTag_StrokeValue);
+            cssParameterTag_StrokeWidth.appendChild(cssParameterTag_StrokeWidthValue);
+            strokeTag.appendChild(cssParameterTag_Stroke);
+            strokeTag.appendChild(cssParameterTag_StrokeWidth);       
+        }
+       
+        rootTag.appendChild(namedLayerTag);
+           
+        var serializer = new XMLSerializer();
+        var xmlString = serializer.serializeToString(xmlDoc)
+             
+        return xmlString;
+}
+
 

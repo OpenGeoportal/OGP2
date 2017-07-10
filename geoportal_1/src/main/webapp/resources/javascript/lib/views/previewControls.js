@@ -49,7 +49,6 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	
 	setGetFeatureTitle : function(model) {
 		if (model.get("getFeature")) {
-			// console.log(model.get("LayerDisplayName"));
 			this.getFeatureTitle = model.get("LayerDisplayName");
 		}
 	},
@@ -85,10 +84,10 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			});
 
 		}
-		// console.log(this.model);
 		if (this.model.has("graphicWidth")) {
 			var label = "";
 			var type = this.model.get("DataType").toLowerCase();
+                        var labelValue = this.model.get("graphicWidth");
 			if (type === "point") {
 				// render sizeControl; different for point, line, and polygon
 				label = "Pt size";
@@ -99,12 +98,13 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 			} else {
 				// generic vector layer
 				label = "Width";
-			}
+			};
+			
 			var tooltip = "Adjust size";
 			markup += template.sliderControl({
 				controlClass : "sizeControlCell",
 				label : label,
-				value : this.model.get("graphicWidth"),
+				value : labelValue,
 				units : "px",
 				tooltip : tooltip
 			});
@@ -115,10 +115,10 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 				color : this.model.get("color")
 			});
 		}
-		// if (this.model.getBounds().isValid()){
+		
 		// render a zoom to layer control
 		markup += template.zoomControl();
-		// }
+		
 		if (this.model.has("getFeature")) {
 			// render getFeature control
 			var toolClass = "attributeInfoControl";
@@ -175,12 +175,8 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		
 		var minSize = 1;
 		var maxSize = 6;
-		if (this.model.get("DataType").toLowerCase() == "polygon") {
-			minSize = 0;
-			maxSize = 5;
-		}
-		var that = this;
 		var widthVal = this.model.get("graphicWidth");
+		var that = this;
 		var slider = size$.find(".previewToolsSlider").slider(
 				{
 					min : minSize,
@@ -270,16 +266,10 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 	},
 
 	zoomToLayerExtent : function() {
-		var extent = [];
-		extent.push(this.model.get("MinX"));
-		extent.push(this.model.get("MinY"));
-		extent.push(this.model.get("MaxX"));
-		extent.push(this.model.get("MaxY"));
-
-		var bbox = extent.join();
-		jQuery(document).trigger("map.zoomToLayerExtent", {
-			bbox : bbox
-		});
+		var southwest = [this.model.get("MinY"),this.model.get("MinX")];
+		var northeast = [this.model.get("MaxY"),this.model.get("MaxX")]
+		var bounds = new L.latLngBounds(southwest,northeast);
+		OpenGeoportal.ogp.map.fitBounds(bounds)
 	},
 	colorPickerToggle : function(model) {
 		var val = this.model.get("colorPickerOn");

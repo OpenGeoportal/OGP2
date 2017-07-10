@@ -128,7 +128,7 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.AbstractQueueItem.ex
 	defaults : {
 		requestId : "",
 		layers : [],
-		bbox : new OpenLayers.Bounds(-180,-90,180,90),
+		bbox : new L.latLngBounds([-90,-180],[90,180]),
 		email : "",
 		status : "REQUESTING",
 		requestUrl: "requestDownload",
@@ -164,8 +164,8 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.AbstractQueueItem.ex
 
 			requestObj.layers = layerRequests;
 
-			requestObj.bbox = requestObj.bbox.toBBOX();
-
+			requestObj.bbox = requestObj.bbox.toBBoxString();
+			
 			return JSON.stringify(requestObj);
 
 		} catch (e){

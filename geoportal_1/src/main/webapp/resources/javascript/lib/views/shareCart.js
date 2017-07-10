@@ -39,11 +39,10 @@ OpenGeoportal.Views.ShareCart = OpenGeoportal.Views.CartActionView
 					var path = top.location.href.substring(0, top.location.href
 							.lastIndexOf("/"));
 					var shareLink = path + "/";
-					var geodeticBbox = OpenGeoportal.ogp.map
-							.getGeodeticExtent().toBBOX();
+					var visibleExtent = OpenGeoportal.ogp.map.getBounds().toBBoxString();
 					var queryString = '?' + jQuery.param({
 						ogpids : arrIds.join(),
-						bbox : geodeticBbox
+						bbox : visibleExtent
 					});
 					shareLink += queryString;
 

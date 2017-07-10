@@ -329,7 +329,7 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 
 #map {
 	opacity: 0;
-	min-width: 1050px;
+	min-width: 1100px;
 	
 }
 /* left column panel */
@@ -1834,3 +1834,93 @@ zoom: 1;
 .previewedLayers .tableRow.rowHover {
         cursor: all-scroll;
 }
+
+.bBox {
+        opacity:0;
+}
+
+#mapToolBar {
+        z-index:1000;
+        right:30px;
+        top:5px;
+}
+
+#navControls {
+        display: inline-block;
+        height:30px;
+        box-shadow:0px 1px 5px rgba(0,0,0,0.65);
+        width:88px;
+        border-radius: 4px;
+        background-color: rgba(204,204,204,0.85);
+        position:absolute;
+        margin-top: 10px;
+        z-index:1000;
+        left: 80px;
+}
+
+.mapFilterFlag, #restrictedCheck {
+        position:relative;
+        top:2px;
+}
+
+#sortDropdown .ui-menu {
+        width:114px;
+}
+
+.ui-state-default .ui-corner-top {
+        background-color:#98b9cd;
+}
+
+.ui-state-default {
+        box-shadow:none;
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+        background-color:#227db2;
+}
+
+.ui-tabs .ui-tabs-nav li {
+        background-color: #98b9cd;
+}
+
+.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited, .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
+        color:white;
+}
+
+.ui-menu .ui-menu-item a {
+        line-height:1.5em;
+        font-size:1.2em;
+}
+
+.ui-button .ui-button-text {
+        font-size:1.2em;
+}
+
+.leaflet-zoom-box-control {
+        position: inherit;
+        left: 60px;
+        top: 2px;
+        box-shadow:none;
+}
+
+.history-control {
+        left: 2px;
+        top: 2px;
+}
+
+.leaflet-left {
+        left:29px;
+}
+
+.viewport {
+        position:absolute;
+        height: 100%;
+        width: 100%;
+        right: 0px;
+        bottom: 0px;
+}
+
+#roll_right:hover {
+        background-color: #A5A5A5;
+}
+                                 

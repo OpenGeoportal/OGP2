@@ -379,8 +379,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		bbox.west = currModel.get("MinX");
 		bbox.east = currModel.get("MaxX");
 		jQuery(document).trigger("map.showBBox", bbox);
-		// console.log("triggered map.showBBox");
-
 	},
 	
 	hideBounds : function() {

@@ -66,16 +66,13 @@ OpenGeoportal.Geocoder = function Geocoder() {
 		// var labelArr = [];
 
 		if (status === "OK") {
-
 			for ( var i in results) {
 				var viewPort = results[i].geometry.viewport;
-				var extent = [];
-				extent.push(viewPort.getSouthWest().lng());
-				extent.push(viewPort.getSouthWest().lat());
-				extent.push(viewPort.getNorthEast().lng());
-				extent.push(viewPort.getNorthEast().lat());
 
-				var bbox = extent.join();
+				var southWest = L.latLng(viewPort.getSouthWest().lat(), viewPort.getSouthWest().lng());
+				var northEast = L.latLng(viewPort.getNorthEast().lat(), viewPort.getNorthEast().lng());
+				var bbox = L.latLngBounds(southWest, northEast);
+;
 				var currentAddress = results[i].formatted_address;
 				var currentResponse = {};
 				currentResponse.name = currentAddress;

@@ -82,7 +82,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 
 			getLayerInfoSuccess: function(data) {
-
+				var southwest, northeast
 				var arr = this.solrToCollection(data);
 				this.collection.add(arr);
 				this.previewed.add(arr);
@@ -94,6 +94,21 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 					bbox : OpenGeoportal.Config.shareBbox
 				});
 
+				if (OpenGeoportal.Config.shareBbox !== "-180,-90,180,90") {
+					bounds = OpenGeoportal.Config.shareBbox;
+					southwest = [bounds.split(',')[1], bounds.split(',')[0]];
+					northeast = [bounds.split(',')[3], bounds.split(',')[2]]
+				} else {
+					this.previewed.each(function(model){
+						southwest = [model.get("MinY"), model.get("MinX")];
+	                                        northeast = [model.get("MaxY"), model.get("MaxX")]
+					});
+				};
+
+				var bbox = new L.latLngBounds(southwest,northeast);
+				setTimeout( function() {
+			                OpenGeoportal.ogp.map.fitBounds(bbox)
+				}, 550);
 			},
 
 			getLayerInfoJsonpError:function() {

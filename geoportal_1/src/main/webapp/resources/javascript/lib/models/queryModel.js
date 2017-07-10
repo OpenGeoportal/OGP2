@@ -55,11 +55,10 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 */
 	setMapExtent : function(extent, center) {
 		// make sure we're getting the right values for the extent
-
-		var minX = extent.left;
-		var maxX = extent.right;
-		var minY = extent.bottom;
-		var maxY = extent.top;
+		var minX = extent.getSouthWest().lng;
+		var maxX = extent.getNorthEast().lng;
+		var minY = extent.getSouthWest().lat;
+		var maxY = extent.getNorthEast().lat;
 		var mapDeltaX = Math.abs(maxX - minX);
 		var mapDeltaY = Math.abs(maxY - minY);
 		if (mapDeltaX > 350) {
@@ -76,13 +75,11 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 			minY : minY,
 			maxY : maxY
 		};
-
 		//var center = data.mapCenter;
 		var mapCenter = {
-			centerX : center.lon,
+			centerX : center.lng,
 			centerY : center.lat
 		};
-
 		this.set({
 			mapExtent : mapExtent,
 			mapCenter : mapCenter

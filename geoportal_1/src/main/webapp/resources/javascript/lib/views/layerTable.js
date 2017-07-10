@@ -39,7 +39,7 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 				var that = this;
 
 				jQuery(document).on("panelResizing adjustContents", "#left_col", function() {
-					// console.log("adjustColumns triggered");
+					$(".viewport").width( $("#container").width() - $("#left_col").width());
 					that.adjustColumnSizes();
 				});
 			},
@@ -174,7 +174,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 			// dynamically size the table depending on visible columns & the width of
 			// the container
 			adjustColumnSizes: function() {
-
 				/*
 				 * determine which fields are showing, set widths from header object if
 				 * they add up to the total width, we're done. otherwise we need to

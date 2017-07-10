@@ -68,10 +68,18 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			afterRender: function(){
 				var that = this;
 				var previewed$ = this.$(".previewedLayers");
-				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({el: previewed$[0], collection: this.previewed, tableConfig: this.tableConfig});
-				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
-					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
-
+				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({
+					el: previewed$[0],
+					collection: this.previewed,
+					tableConfig: this.tableConfig
+				});
+				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model) {
+					that.renderHeaders.apply(that, arguments);
+					that.updateSubviews.call(that);
+					that.previewedLayersTable.render();
+					that.adjustColumnSizes();
+					that.resizeColumns();
+				});
 			},
 			
 			scrollOffset: 200,
@@ -119,9 +127,10 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				}
 				var previewedHeight = 0;
 				if (this.$("previewedLayers").length > 0){
-					previewedHeight = this.$("previewedLayers").height();
-				}
-				var ht = Math.ceil(jQuery(document).height() - $scrollTarget.offset().top - previewedHeight - jQuery("#footer").height());
+					previewedHeight = this.$("previewedLayers").outerHeight(true);
+				};
+
+				var ht = Math.floor(jQuery(document).outerHeight(true) - $scrollTarget.offset().top - previewedHeight - jQuery("#footer").outerHeight(true) );
 				$scrollTarget.height(ht);
 			},
 			
@@ -263,7 +272,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			render : function() {
-				//console.log("full render");
+				// console.log("full render");
 				var that = this;
 				var previewedTable = null;
 				if (this.$(".previewedLayers").length > 0){

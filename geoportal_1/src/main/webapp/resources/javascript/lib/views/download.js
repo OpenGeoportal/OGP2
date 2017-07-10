@@ -408,7 +408,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// set the bounds on the request object if "clipped" is checked
 				if (this.preferences.get("isClipped")) {
 					// set bounds in the downloadRequest model
-					var extent = OpenGeoportal.ogp.map.getGeodeticExtent();
+					var extent = OpenGeoportal.ogp.map.getBounds();
 					this.downloadRequest.set({
 						bbox : extent
 					});
