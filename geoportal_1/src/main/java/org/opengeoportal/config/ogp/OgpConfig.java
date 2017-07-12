@@ -21,8 +21,8 @@ public class OgpConfig {
 		return pageTitlePrimary;
 	}
 
-	public void setPageTitlePrimary(String pageTitle) {
-		this.pageTitlePrimary = pageTitle;
+	public void setPageTitlePrimary(String pageTitlePrimary) {
+		this.pageTitlePrimary = pageTitlePrimary;
 	}
 	
 	public String getPageTitleOffset() {
