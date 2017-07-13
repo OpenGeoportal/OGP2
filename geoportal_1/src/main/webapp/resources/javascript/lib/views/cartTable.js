@@ -87,7 +87,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				this.collection.add(arr);
 				this.previewed.add(arr);
 				this.previewed.each(function(model){
-					model.set({previewed: "on"});
+					model.set({preview: "on"});
 				});
 
 				jQuery(document).trigger("map.zoomToLayerExtent", {
@@ -99,10 +99,15 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 					southwest = [bounds.split(',')[1], bounds.split(',')[0]];
 					northeast = [bounds.split(',')[3], bounds.split(',')[2]]
 				} else {
-					this.previewed.each(function(model){
-						southwest = [model.get("MinY"), model.get("MinX")];
-	                                        northeast = [model.get("MaxY"), model.get("MaxX")]
+					var minX = Infinity; maxX = -Infinity; minY = Infinity; maxY = -Infinity;
+					this.collection.each( function (model) {
+	                                	minX = Math.min(model.attributes.MinX, minX);
+						maxX = Math.max(model.attributes.MaxX, maxX);
+						minY = Math.min(model.attributes.MinY, minY);
+						maxY = Math.max(model.attributes.MaxY, maxY);
 					});
+					southwest = [minY,minX];
+					northeast = [maxY,maxX];
 				};
 
 				var bbox = new L.latLngBounds(southwest,northeast);
