@@ -83,16 +83,38 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 
 			getLayerInfoSuccess: function(data) {
 
+				var bbox
 				var arr = this.solrToCollection(data);
 				this.collection.add(arr);
 				this.previewed.add(arr);
 				this.previewed.each(function(model){
-					model.set({previewed: "on"});
+					model.set({preview: "on"});
 				});
 
-				jQuery(document).trigger("map.zoomToLayerExtent", {
-					bbox : OpenGeoportal.Config.shareBbox
-				});
+				if (OpenGeoportal.Config.shareBbox !== "-180,-90,180,90") {
+					jQuery(document).trigger("map.zoomToLayerExtent", {
+						bbox : OpenGeoportal.Config.share
+					});
+				} else {
+					var minX = Infinity; maxX = -Infinity; minY = Infinity; maxY = -Infinity;
+					this.collection.each(function(model){
+						minX = Math.min(model.attributes.MinX, minX);
+						maxX = Math.max(model.attributes.MaxX, maxX);
+						minY = Math.min(model.attributes.MinY, minY);
+						maxY = Math.max(model.attributes.MaxY, maxY);
+
+						var extent = [];
+						extent.push(minX);
+						extent.push(minY);
+						extent.push(maxX);
+						extent.push(maxY);
+						
+						bbox = extent.join();
+						
+					});
+					
+					jQuery(document).trigger( "map.zoomToLayerExtent", { bbox: bbox } )
+				};
 
 			},
 
