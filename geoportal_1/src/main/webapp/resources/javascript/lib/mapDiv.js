@@ -2,7 +2,7 @@
  * 
  * This javascript module includes functions for dealing with the map defined
  * under the object MapController. MapController inherits from the
- * OpenLayers.Map object
+ * L.Map object
  * 
  * @authors Chris Barnett, Ben Hickson
  */
@@ -12,8 +12,6 @@ if (typeof OpenGeoportal === 'undefined') {
 } else if (typeof OpenGeoportal !== "object") {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
-
-// some code to test presence of OpenLayers, check version?
 
 /**
  * MapController constructor
@@ -153,11 +151,11 @@ OpenGeoportal.MapController = function() {
 	 * initial view and active area. Add controls
 	 * 
 	 * @param {object}
-	 *            userOptions - options to pass through to the OpenLayers Map
+	 *            userOptions - options to pass through to the Leaflet Map
 	 *            object
 	 */
 	this.createLeafletMap = function() {
-		// set default OpenLayers map options
+		// set default Leaflet map options
 		this.mapDiv = this.containerDiv;
 
 	        this.controls = this.createLeafletControls();
@@ -283,7 +281,6 @@ OpenGeoportal.MapController = function() {
 		});
 
                 var zoomBoxListener = function() {
-                        $('#map').css('cursor', "-moz-zoom-in");
                         that.previewed.clearGetFeature();
                 };
 
@@ -1330,10 +1327,6 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.layerExists = function(layerModel) {
-		// otherwise, do a wms describe layer to make sure the layer is there before
-		// attempting to add it to the map (must be proxied). handling wms
-		// errors is non-trivial, since, by design, OpenLayers requires an error of type 'image' from the wms
-		// server (OpenLayers is merely dynamically setting the src attribute of img tags)
 		if (typeof layerModel.get("Location").wms !== "undefined") {
 			this.setWmsLayerInfo(layerModel);
 		} else {
