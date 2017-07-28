@@ -451,8 +451,12 @@ OpenGeoportal.Utility.createSLD = function(sldParams) {
         xmlDoc = parser.parseFromString(baseXML, "text/xml");
 
         var namedLayerTag = xmlDoc.createElement("sld:NamedLayer")
-        rootTag = xmlDoc.getElementsByTagName("sld:StyledLayerDescriptor")[0];
 
+        var rootTag = xmlDoc.getElementsByTagName("sld:StyledLayerDescriptor")[0];
+	//Chrome not identifying element with it's namespace
+	if (rootTag == null || !rootTag) {
+		rootTag = xmlDoc.getElementsByTagName("StyledLayerDescriptor");
+	}
         var nameTag = xmlDoc.createElement("sld:Name");
        
         var nameValue = xmlDoc.createTextNode(sldParams.layerName);
@@ -467,7 +471,7 @@ OpenGeoportal.Utility.createSLD = function(sldParams) {
        
         var ruleTag = xmlDoc.createElement("sld:Rule");
         featureStyleTypeTag.appendChild(ruleTag);
-       
+
         if (layerType == "point") {
             var pointSymbolizerTag = xmlDoc.createElement("sld:PointSymbolizer");
             ruleTag.appendChild(pointSymbolizerTag);
@@ -564,9 +568,7 @@ OpenGeoportal.Utility.createSLD = function(sldParams) {
             strokeTag.appendChild(cssParameterTag_Stroke);
             strokeTag.appendChild(cssParameterTag_StrokeWidth);       
         }
-       
-        rootTag.appendChild(namedLayerTag);
-           
+	$(rootTag).append(namedLayerTag);
         var serializer = new XMLSerializer();
         var xmlString = serializer.serializeToString(xmlDoc)
              
