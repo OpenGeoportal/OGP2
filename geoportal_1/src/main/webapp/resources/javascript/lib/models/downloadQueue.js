@@ -384,8 +384,6 @@ OpenGeoportal.Models.ImageRequest = OpenGeoportal.Models.AbstractQueueItem.exten
 
 OpenGeoportal.RequestQueue = Backbone.Collection
 .extend({
-	model : OpenGeoportal.Models.QueueItem,
-
 	poll: {
 		id : "",
 		isRunning : false,

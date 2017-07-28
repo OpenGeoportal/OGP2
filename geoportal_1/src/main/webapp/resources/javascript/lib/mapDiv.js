@@ -190,6 +190,8 @@ OpenGeoportal.MapController = function() {
 		for (i = 0; i < this.controls.length; i++) {
 			this.controls[i].addTo(this);
 		};
+		OpenGeoportal.ogp.structure.panelView.setAlsoMoves();
+
 
 	};
 
@@ -407,11 +409,8 @@ OpenGeoportal.MapController = function() {
 	 **************************************************************************/
 
 	this.getLayerByOGPId = function (group, layerId) {
-		console.log("getLayerByOGPId FIRED");
-		console.log("group",group,"layerId",layerId);
 		var layerMatch;
 		group.eachLayer(function (layer) {
-			console.log("layer",layer);
 			if (layer.options.id == layerId) {
 				layerMatch = layer;
 			} else {
@@ -460,10 +459,8 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.styleChangeHandler = function() {
-		console.log("styleChangedHandler FIRED");
 		var that = this;
 		jQuery(document).on("map.styleChange", function(event, data) {
-			console.log("data",data);
 			that.setStyle(data.LayerId);
 		});
 	};
@@ -1322,8 +1319,6 @@ OpenGeoportal.MapController = function() {
 		//for now, don't wait for wmsinfo response to start loading the layer; perhaps only call if there is an error
 		jQuery("body").trigger(model.get("LayerId") + 'Exists');
 
-		//jQuery(document).trigger({type: "showLoadIndicator", loadType: "getWmsInfo", layerId: model.get("LayerId")});
-
 	};
 
 	this.layerExists = function(layerModel) {
@@ -1340,7 +1335,6 @@ OpenGeoportal.MapController = function() {
 	 **************************************************************************/
 
 	this.setStyle = function(layerId) {
-		console.log("SET STYLE FIRED",layerId)
 		var layerModel = this.previewed.findWhere({
 			LayerId : layerId
 		});
@@ -1381,7 +1375,6 @@ OpenGeoportal.MapController = function() {
 		
 		try {
 			var layer = this.getLayerByOGPId(this.previewLayerGroup, layerId);
-			console.log("layer",layer);
 			layer.setParams(newSLD);
                 } catch (e) {
 			console.log("not yet in previewLayerGroup");
@@ -1579,7 +1572,7 @@ OpenGeoportal.MapController = function() {
 					});
 					
 					var defaultColor = layerModel.get("color");
-					if (layerModel.isVector() && defaultColor != "#d58080") { //"#aaaaaa") {
+					if (layerModel.isVector() && defaultColor != "#003300") {
 						style = that.setStyle(layerId);
 						newLayer.setParams(style);
 					}

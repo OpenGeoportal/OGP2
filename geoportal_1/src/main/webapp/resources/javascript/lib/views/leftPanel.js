@@ -70,8 +70,6 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				if (!$(".leaflet-top").hasClass("slideVertical")) {
 					$(".leaflet-top").addClass("slideVertical")
 				}
-				// beyond extent arrows "#nwCorner" and "#swCorner" also have
-				// class "slideHorizontal"
 			},
 
 			showPanel : function() {

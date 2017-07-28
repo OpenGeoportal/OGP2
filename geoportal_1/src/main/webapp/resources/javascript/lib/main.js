@@ -44,13 +44,11 @@ $(window)
 						currentTab : 0
 					});
 					
-					
 					ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: ogp.appState.get("requestQueue"), template: ogp.template});
 
 					// handles behavior of "frame elements", like expansion of
 					// advanced search area, left panel
 					ogp.structure = new OpenGeoportal.Structure();
-					ogp.structure.init();
 
 					// create the map and handle map related functions
 					ogp.map = new OpenGeoportal.MapController();
@@ -107,6 +105,7 @@ $(window)
 
 									});
 
+					ogp.structure.init();
 					ogp.map.initMap("map");
 
 					/* downtime notice --does this still work? */

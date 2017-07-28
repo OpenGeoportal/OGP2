@@ -67,7 +67,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					isAvailable = OpenGeoportal.Utility.hasLocationValueIgnoreCase(model
 							.get("Location"), this.downloadKeys);
 				}
-
 				return isAvailable;
 
 			},
@@ -78,11 +77,10 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			
 			cartAction : function() {
 				
-
-				
 				var sortedLayers = this.sortLayersByDownloadType();
 
 				var hasServerLayers = _.has(sortedLayers, "ogpServer") && sortedLayers.ogpServer.length > 0;
+
 				if (hasServerLayers) {
 					// get user input and form a request to send to the ogp
 					// server
@@ -90,7 +88,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					this.downloadRequest.set({
 						layers : sortedLayers.ogpServer
 					});
-
 					this.preferences = new OpenGeoportal.Models.DownloadPreferences();
 					var that = this;
 					this.setPreferences().then(this.finalizeRequest,
@@ -108,7 +105,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				
 				if (!hasServerLayers && !hasClientLayers)  {
 					if (this.collection.length === 0){
-						console.log("cart collection is empty.");
 					} else {
 						throw new Error("No valid layers in the cart collection!");
 					}
@@ -421,7 +417,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			 */
 
 			finalizeRequest : function() {
-				//console.log("starting finalize request");
 				var finalizeRequestDeferred = jQuery.Deferred();
 				var dialogDonePromise = this.openFinalizeRequestDialog();
 
@@ -537,8 +532,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					jQuery(this).dialog('close');
 					jQuery("#optionDetails").html("");
 					jQuery(".downloadSelection, .downloadUnselection")
-							.removeClass(
-									"downloadSelection downloadUnselection");
+							.removeClass("downloadSelection downloadUnselection");
 					deferred.rejectWith(that);
 				};
 
@@ -548,10 +542,8 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 						// update the models with the selected formats,
 						// then resolve the promise returned by this dialog
 						// function
-						deferred.resolveWith(that, [ dialog$ ]);
-
+						deferred.resolveWith(that, [ dialog$ ]);	
 					}
-
 				};
 
 				var params = {
@@ -604,7 +596,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			},
 			
 			updateRequestFromFinalize : function() {
-
 				// validate the email address
 				var email$ = jQuery("#emailAddress");
 				if (email$.length > 0) {
@@ -615,7 +606,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 						validate : true
 					});
 				}
-
 			},
 
 			sendDownloadRequest : function($dialog) {
@@ -653,7 +643,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				} else {
 					requestQ.add(this.downloadRequest.clone());
 				}
-
 				//this.deferred.resolve();
 			}
 
