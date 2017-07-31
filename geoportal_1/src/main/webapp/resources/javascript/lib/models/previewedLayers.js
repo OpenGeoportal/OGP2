@@ -70,16 +70,15 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 				colorPickerOn : false,
 				sld : "",
 				color : "#0000ff",
-				graphicWidth : 1
+				graphicWidth : 2
 			},
 			polygon : {
 				getFeature : false,
-				opacity : 100,
 				colorPickerOn : false,
 				sld : "",
 				opacity : 80,
-				color : "#aaaaaa",
-				graphicWidth : 1
+				color : "#003300",
+				graphicWidth : 2 
 			},
 			"undefined" : {
 				getFeature : false,

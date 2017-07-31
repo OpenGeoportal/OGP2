@@ -826,12 +826,16 @@ OpenGeoportal.Solr = function() {
 	};
 
 	// returns the solr query params to obtain a layer info from the Solr server
-	// given
-	// a layerId or array of layerId's
-	this.getInfoFromLayerIdParams = function getInfoFromLayerIdQuery(layerId) {
+	// given a layerId, array of layerId's, or solr collectionId
+	this.getInfoFromIdParams = function getInfoFromLayerIdQuery(type, value) {
+		if (type === "layers") {
+			var filter = this.createFilter("LayerId", value)
+		} else if (type === "collection") {
+			var filter = this.createFilter("CollectionId", value)
+		}
 
 		var infoParams = {
-			q : this.createFilter("LayerId", layerId),
+			q : filter,
 			wt : "json",
 			fl : this.getReturnedColumns(this.SearchRequest),
 			rows : 10000
@@ -839,12 +843,11 @@ OpenGeoportal.Solr = function() {
 		return infoParams;
 	};
 
-	this.getLayerInfoFromSolr = function(layerIds, successFunction,
+	this.getLayerInfoFromSolr = function(type, value, successFunction,
 			errorFunction) {
 		var url = this.getServerName();
-
-		var query = jQuery.param(this.getInfoFromLayerIdParams(layerIds), true);
-
+		var query = jQuery.param(this.getInfoFromIdParams(type, value), true);
+	
 		this.sendToSolr(url + "?" + query, successFunction, errorFunction);
 	};
 

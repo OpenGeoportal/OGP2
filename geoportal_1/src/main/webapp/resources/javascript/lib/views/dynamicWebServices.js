@@ -91,7 +91,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 			generateWmc: function(arrIds, protocolPref, bbox){
 				var wmcSource = "wmc?ogpids=" + arrIds.join();
 				wmcSource += "&type=" + protocolPref;
-				wmcSource += "&minx=" + bbox.left + "&miny=" + bbox.bottom + "&maxx=" + bbox.right + "&maxy=" + bbox.top;
+				wmcSource += "&minx=" + bbox.getWest() + "&miny=" + bbox.getSouth() + "&maxx=" + bbox.getEast() + "&maxy=" + bbox.getNorth();
 				OpenGeoportal.ogp.widgets.iframeDownload("wmcDownloadIframe", wmcSource);
 			},
 			
@@ -146,7 +146,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 				jQuery(document).on("click", "#" + wmcButtonId, function(){
 					//generate and return the wmc
 					//var bbox = jQuery("#" + bboxId).val();
-					var bbox = new OpenLayers.Bounds(-180,-90,180,90);
+					var bbox = new L.latLngBounds([-90,-180],[90,180]);
 					var pref = jQuery("#" + wmcPreferenceId).val();
 					//use wms ids; server side will pick the appropriate service based on preference and availability
 					that.generateWmc(arrWmsIds, pref, bbox);

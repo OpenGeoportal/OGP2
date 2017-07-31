@@ -68,31 +68,18 @@ OpenGeoportal.Views.LoadIndicatorView = Backbone.View.extend({
 			}	
 		}
 
-	},
+	},	
 
-	spinner: null,
-	
 	startSpinner : function(){
-		if (this.spinner === null) {
-			// create new spinner
-			var selector;
-			if (this.$el.hasClass("loadIndicator")){
-				selector = this.el;
-			} else {
-				var li$ = this.$el.find(".loadIndicator").first();
-				
-				selector = li$[0];
-			}
-			this.spinner = Spinners.create(selector, this.spinnerParams);
-		}
+		var loadIndicator = $(".leaflet-control-loading");
 		
-		this.spinner.play();
+		loadIndicator.addClass("is-loading");
 	},
 	
 	stopSpinner : function(){
-		if (typeof this.spinner !== "undefined") {
-			this.spinner.stop();
-		}
+		var loadIndicator = $(".leaflet-control-loading");
+
+		loadIndicator.removeClass("is-loading");
 	}
 });
 

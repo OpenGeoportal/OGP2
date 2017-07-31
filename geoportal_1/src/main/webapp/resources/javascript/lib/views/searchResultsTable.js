@@ -68,10 +68,18 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			afterRender: function(){
 				var that = this;
 				var previewed$ = this.$(".previewedLayers");
-				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({el: previewed$[0], collection: this.previewed, tableConfig: this.tableConfig});
-				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
-					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
-
+				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({
+					el: previewed$[0],
+					collection: this.previewed,
+					tableConfig: this.tableConfig
+				});
+				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model) {
+					that.renderHeaders.apply(that, arguments);
+					that.updateSubviews.call(that);
+					that.previewedLayersTable.render();
+					that.adjustColumnSizes();
+					that.resizeColumns();
+				});
 			},
 			
 			scrollOffset: 200,
@@ -113,46 +121,49 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			setFrameHeight: function(){
+				var cartContainer = $("#cartTab .rowContainer");
 				var $scrollTarget = this.$el.children(".tableWrapper").children(".rowContainer");
 				if ($scrollTarget.length === 0){
 					return;
 				}
 				var previewedHeight = 0;
 				if (this.$("previewedLayers").length > 0){
-					previewedHeight = this.$("previewedLayers").height();
-				}
-				var ht = Math.ceil(jQuery(document).height() - $scrollTarget.offset().top - previewedHeight - jQuery("#footer").height());
-				$scrollTarget.height(ht);
+					previewedHeight = this.$("previewedLayers").outerHeight(true);
+				};
+
+				var ht = Math.floor($("#map").height() - ($scrollTarget.offset().top - $("#container").offset().top));
+
+				cartContainer.height(ht);
+				$scrollTarget.height(ht - previewedHeight);
 			},
 			
 			setSortableLayers: function(){
-                                if (this.$(".previewedLayers .rowContainer").children().size() > 0) {
-                                        this.$(".previewedLayers").css("border", "1px solid #828282");
-                                } else {
-                                        this.$(".previewedLayers").css("border", "none");
-                                };
+				if (this.$(".previewedLayers .rowContainer").children().size() > 0) {
+					this.$(".previewedLayers").css("border", "1px solid #828282"); 
+				} else {
+					this.$(".previewedLayers").css("border", "none");
+				};
 
-                                this.$(".previewedLayers .rowContainer").sortable({
-                                        connectWith: ".sortable",
-                                        stop:
-                                                function(event, ui) {
-                                                        var numPreviewedLayers = $(".previewedLayers .rowContainer").length;
-                                                        $(".previewedLayers .rowContainer").children(".tableRow").each( function(){
-                                                                var layerId = $(this).attr("layerid")
-                                                                var index = $(this).index();
+				this.$(".previewedLayers .rowContainer").sortable({
+					connectWith: ".sortable",
+					stop:
+						function(event, ui) {
+							var numPreviewedLayers = OpenGeoportal.ogp.map.previewLayerGroup.getLayers().length;
+							$(".previewedLayers .rowContainer").children(".tableRow").each( function(){
+								var layerId = $(this).attr("id")
+								var index = $(this).index();
+								var zindex = (numPreviewedLayers - index) + 200;
 
-                                                                var zindex = (numPreviewedLayers - index) * 5 + 335  //openLayers2 sets start of layer index to 335 and increments by 5. Using this to stay equation to consistent.
-
-                                                                jQuery(document).trigger("map.zIndexChange", {
-                                                                        zIndex : zindex,
-                                                                        LayerId: layerId
-                                                                });
-                                                         });
-                                                }
-
-                                        });
-                                this.$(".previewedLayers .rowContainer").disableSelection();
-                        },
+								jQuery(document).trigger("map.zIndexChange", {
+									zIndex : zindex,
+									LayerId: layerId
+								});
+							 });
+						}
+                               		
+                                	}); 
+				this.$(".previewedLayers .rowContainer").disableSelection();
+			},
 			
 			fireSearchHandler: function(){
 				var that = this;
@@ -263,7 +274,6 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			render : function() {
-				//console.log("full render");
 				var that = this;
 				var previewedTable = null;
 				if (this.$(".previewedLayers").length > 0){

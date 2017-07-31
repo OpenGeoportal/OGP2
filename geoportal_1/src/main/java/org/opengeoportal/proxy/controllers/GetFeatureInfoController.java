@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class GetFeatureInfoController {
 	private static final int NUMBER_OF_FEATURES = 1;
 	//private static final int BUFFER_MULTIPLIER = 5;
-	private static final String SRS_CODE = "EPSG:900913";
+	private static final String SRS_CODE = "EPSG:4326";
 
 	//unfortunately, not every source supports gml response
 	private static final String RESPONSE_FORMAT = "text/html";

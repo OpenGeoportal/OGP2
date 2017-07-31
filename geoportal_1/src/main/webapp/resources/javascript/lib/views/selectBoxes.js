@@ -53,13 +53,14 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		//allow options to be passed in the constructor argument as in previous Backbone versions.
 		    this.options = options;
 		    Backbone.View.apply(this, arguments);
-		  },
-		  events: {
-			  "click .select" : "toggleMenu",
-			  "blur .ui-menu" : "hideMenu"
-		  },
+	},
+	events: {
+		"click .select" : "toggleMenu",
+		"blur .ui-menu" : "hideMenu"
+	},
 	uiInit: function(selectFunction){
 		var that = this;
+		//this.$el.css("min-width",$(this.$el).parent().width()+"px");
 		this.$el.addClass("dropdown").attr("ogpSelectMenu", true);
 		this.$el.find(".select").first().button({
 			icons: {
@@ -81,7 +82,9 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	},
 	hideMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");
-		menu$.slideUp({duration: 100});
+		if (!menu$.is(":hover")) {
+			menu$.slideUp({duration: 100});
+		}
 	},
 	showMenu: function(){
 		var menu$ = this.$el.find(".ui-menu");

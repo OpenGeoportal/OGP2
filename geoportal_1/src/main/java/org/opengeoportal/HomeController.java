@@ -23,6 +23,7 @@ public class HomeController {
 
 	@RequestMapping(value={"/index", "/"}, method=RequestMethod.GET)
 	public ModelAndView getHomePage(@RequestParam(value="ogpids", defaultValue = "") Set<String> layerIds,
+			@RequestParam(value="collectionId", defaultValue = "") String collectionId,
 			@RequestParam(value="bbox", defaultValue = "-180,-90,180,90") String bbox,
 			@RequestParam(value="layer[]", defaultValue = "") Set<String> layers,
 			@RequestParam(value="minX", defaultValue = "-180") String minx,
@@ -39,13 +40,16 @@ public class HomeController {
 		//if ogpids exists, add them to the Model
 		
 		if (!layerIds.isEmpty()){
-
 			mav.addObject("shareIds", getQuotedSet(layerIds));
 			mav.addObject("shareBbox", bbox);
 		} else if (!layers.isEmpty()){
 			//support old style share just in case
 			mav.addObject("shareIds", getQuotedSet(layers));
 			mav.addObject("shareBbox", minx + "," + miny + "," + maxx + "," + maxy);
+		} else if (!collectionId.isEmpty()){
+			mav.addObject("shareIds", layerIds);
+			mav.addObject("collectionId", collectionId);
+			mav.addObject("shareBbox", bbox);
 		} else {
 			//default values
 			mav.addObject("shareIds", layerIds);
