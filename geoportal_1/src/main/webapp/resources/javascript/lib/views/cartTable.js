@@ -22,15 +22,15 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			initSubClass: function(){
 				this.listenTo(this.collection, "add", this.addedToCart);
 				this.listenTo(this.collection, "remove", this.removedFromCart);
+				this.listenTo(this.collection, "update", this.updateTable);
 			},
-			
+
 			setChecks: function(e){
 				var isChecked = jQuery(e.target).is(':checked');
 				
 					this.collection.each(function(model){
 						model.set({isChecked: isChecked});
 					});
-				
 			},
 			
 			addedToCart : function(model) {
@@ -40,13 +40,15 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				});
 
 				this.updateSavedLayersNumber();
-				this.render();
 			},
 			
 			removedFromCart : function(model) {
 				var layerId = model.get("LayerId");
 
 				this.updateSavedLayersNumber();
+			},
+
+			updateTable: function() {
 				this.render();
 			},
 			
@@ -54,9 +56,6 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				var number$ = jQuery('.savedLayersNumber');
 
 				number$.text('(' + this.collection.length + ')');
-
-				OpenGeoportal.Utility.elementFlash(number$.parent());
-
 			},
 
 			createNewRow: function(model){
@@ -69,10 +68,19 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			addSharedLayers: function() {
+				var solr = new OpenGeoportal.Solr();
+				var that = this;
+
 				if (OpenGeoportal.Config.shareIds.length > 0) {
-					var solr = new OpenGeoportal.Solr();
-					var that = this;
-					solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds,
+					var groupType = "layers";
+					var value  = OpenGeoportal.Config.shareIds
+				} else if ( OpenGeoportal.Config.collectionId.length > 0 ) {
+					var groupType = "collection";
+					var value = OpenGeoportal.Config.collectionId;
+				}
+
+				if (groupType != undefined) {
+					solr.getLayerInfoFromSolr(groupType, value,
 							function(){that.getLayerInfoSuccess.apply(that, arguments);}, 
 							function(){that.getLayerInfoError.apply(that, arguments);});
 					return true;
@@ -85,10 +93,13 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 				var southwest, northeast
 				var arr = this.solrToCollection(data);
 				this.collection.add(arr);
-				this.previewed.add(arr);
-				this.previewed.each(function(model){
-					model.set({preview: "on"});
-				});
+
+				if (data.response.numFound < 6) {
+					this.previewed.add(arr);
+					this.previewed.each(function(model){
+						model.set({preview: "on"});
+					});
+				};
 
 				jQuery(document).trigger("map.zoomToLayerExtent", {
 					bbox : OpenGeoportal.Config.shareBbox
