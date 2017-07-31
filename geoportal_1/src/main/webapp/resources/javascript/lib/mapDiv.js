@@ -708,8 +708,8 @@ OpenGeoportal.MapController = function() {
 			this.bBoxes.addTo(this);
 		}
 
-		bottomLeft = L.latLng([mapObj.south, mapObj.west]);
-		topRight   = L.latLng([mapObj.north, mapObj.east]);
+		bottomLeft = L.latLng([mapObj.attributes.MinY, mapObj.attributesMinX]);
+		topRight   = L.latLng([mapObj.attributes.MaxY, mapObj.attributesMaxX]);
 		
 		/* if pixel distance b/w topRight and bottomLeft falls below a certain threshold, 
 		* add a marker(fixed pixel size) in the center, so the user can see where the layer is*/
@@ -1214,8 +1214,8 @@ OpenGeoportal.MapController = function() {
 			var containerHeight = jQuery("#container").height();
 			var linecount = jQuery("#featureInfo tr").length;
 			var dataHeight = linecount * 20;
-			if (dataHeight > containerHeight) {
-				dataHeight = containerHeight;
+			if (dataHeight > containerHeight * 0.7) {
+				dataHeight = containerHeight * 0.7;
 			} else {
 				dataHeight = "auto";
 			}
@@ -1245,7 +1245,7 @@ OpenGeoportal.MapController = function() {
 						cells$.each(function() {
 							var cellText = jQuery(this).text().trim();
 							if (cellText.indexOf('http') === 0) {
-								cellText = '<a href="' + cellText + '">'
+								cellText = '<a href="' + cellText + '" + target="_blank">'
 										+ cellText + '</a>';
 							}
 							rowArr.push(cellText);
