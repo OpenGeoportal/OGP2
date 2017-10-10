@@ -148,9 +148,8 @@ OpenGeoportal.Views.Query = Backbone.View
 						that.listenToOnce(that.model, "change:mapExtent",
 								that.clearWhere);
 					});
-					jQuery(document).trigger("map.zoomToLayerExtent", {
-						bbox : bbox
-					});
+
+					OpenGeoportal.ogp.map.fitBounds(bbox);
 
 					//clear the geocode value
 					where$.data().geocode = {};

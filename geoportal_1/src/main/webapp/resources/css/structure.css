@@ -67,12 +67,6 @@ h4 {
 	box-shadow: 0px 3px 4px -1px #888888 inset;
 }
 
-.shadowDownOuter {
-	-moz-box-shadow: 0px 4px 6px -2px #888888;
-	-webkit-box-shadow: 0px 4px 6px -2px #888888;
-	box-shadow: 0px 4px 6px -2px #888888;
-}
-
 .shadowRight {
 	-moz-box-shadow: 3px 0px 4px 1px #888888 inset;
 	-webkit-box-shadow: 3px 0px 4px 1px #888888 inset;
@@ -96,18 +90,27 @@ background: linear-gradient(#6B91D5, #577CBE);
 filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
 zoom: 1;
     border: 1px solid #6B91D5;
+    border-radius: 2px;
     color: #FFFFFF;
+    height: 23px;
+    margin-top: 2px;
 }
 
-li.searchAttribution.ui-widget-content.ui-menu-divider {
+li.searchAttribution {
     border: medium none;
     margin: 0;
+    float: right;
+    margin-right: 5px;
 }
 
 #mapClearButton {
 	float: right;
 	margin-top: 1px;
 	right: 17px;
+}
+
+#advancedSearchClear {
+	margin-top: 2px;
 }
 
 #sortDropdown {
@@ -199,12 +202,11 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 
 /* Header */
 #header {
-	height: 120px;
+	height: 137px;
 	background-color: #ffffff;
 	/*border-right: #CCCCCC solid 1px;
 	border-left: #CCCCCC solid 1px;*/
 	border-bottom: #999999 solid 1px;
-	min-width: 1050px;
 }
 
 #logo {
@@ -323,13 +325,12 @@ li.searchAttribution.ui-widget-content.ui-menu-divider {
 	background-color: #fff;
 	overflow: hidden;
 	min-height: 512px;
-	min-width: 1050px;
 	position: relative;
 }
 
 #map {
 	opacity: 0;
-	min-width: 1050px;
+	min-width: 1100px;
 	
 }
 /* left column panel */
@@ -371,9 +372,12 @@ th >.ui-resizable-e {
 #left_col>.ui-resizable-se {
 	cursor: col-resize;
 	height: 100% !important;
-	right: 0;
-	width: 7px !important;
-	z-index: 2147483647 !important
+	right: -4px;
+	width: 5px !important;
+	z-index: 2147483647 !important;
+	top: 0px;
+	background: -webkit-linear-gradient(left, white, #7d7d7d);
+	background: -o-linear-gradient(right, white, #7d7d7d);
 }
 
 .tableHeader {
@@ -576,18 +580,19 @@ textarea:focus {
 
 .searchBox {
 	background: none repeat scroll 0 0 white;
-	border-bottom: 1px solid #CCCCCC;
+	border-bottom: 1px solid #727272;
 	font-family: arial, sans-serif;
 	font-size: 12px;
-	height: 30px;
-	padding-bottom: 23px;
+	height: 63px;
 	padding-top: 2px;
 	position: absolute;
-	top: 65px;
+	top: 72px;
 	width: 100%;
 	z-index: 1500;
-	min-width: 1050px;
-	
+}
+
+#searchBox {
+	color: #999999;
 }
 
 .scrollFiller {
@@ -620,6 +625,10 @@ textarea:focus {
 	width: 306px;
 }
 
+.basicSearch label {
+	55px;
+}
+
 .labelText {
 	padding-right: 5px;
 }
@@ -646,7 +655,9 @@ textarea:focus {
 }
 
 .basicSearch.basicSearchButtons.searchFormRow {
-    margin-left: -105px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
 }
 
 #basicSearchBox {
@@ -660,19 +671,30 @@ textarea:focus {
 	visibility: hidden;
 }
 
+#geosearchDiv input {
+	width: 220px;
+}
+
+.basicSearch.searchRow2 {
+	display: block;
+}
+
 .searchFormRow {
 	line-height: 27px;
 }
 
 .searchFormRow > label {
 	display: inline-block;
-	width: 76px;
-    font-family: arial;
-    font-size: 14px;
+	width: auto;
+    	font-family: arial;
+ 	font-size: 16px;
+	font-weight: 500;
+	color: #0755AC;
+	margin-right: 7px;
 }
 
 .searchFormRow.advancedSearch>label {
-	width: 77px;
+	width: 78px;
 }
 
 .searchFormRow.advancedSearch>input[type="search"] {
@@ -685,43 +707,60 @@ textarea:focus {
 }
 
 #searchForm {
-	display: inline-block;
+	display: table;
+	width: auto;
+	height: 56px;
+	padding-left: 56px;
 }
 
 .searchCol {
-	position: absolute;
+	position: relative;
 	/*width: 340px;*/
-	margin-right: 42px;
+	top: 3px;
+	margin-right: 15px;
+	display: inline-block;
+	vertical-align: top;
+	overflow: inherit;
 }
 
 #searchCol1 {
-	left: 50px;
+	left: 0px;
 }
 
 #searchCol2 {
-	left: 400px;
+	left: 0px;
 }
 
 #searchCol3 {
-	left: 750px;
+	left: 0px;
+	margin: 0px;
+	width: auto;
+}
+
+#searchCol2 label {
+	width: 56px;
+}
+
+#searchCol3 .basicSearch {
+	width: auto;
 }
 
 .searchToggle {
 	background: none;
-    border: none;
-	text-decoration: underline;
+ 	border: none;
+	text-decoration: none;
 	white-space: nowrap;
 	font-size: 11px;
 	display: inline-block;
 }
 
-.searchToggle span:hover {
-	color: yellow;
+.searchToggle hover {
+	text-decoration: underline;
 }
 
 .whereBox {
 	color: #0755AC;
-	font-weight: bold;
+	font-weight: normal;
 }
 
 .whatBox {
@@ -831,7 +870,6 @@ textarea:focus {
 	border-right: none;
 	font-size: 13px;
 	width: 100%;
-	min-width: 1050px;
 }
 
 #footerLogos {
@@ -1833,4 +1871,101 @@ zoom: 1;
 
 .previewedLayers .tableRow.rowHover {
         cursor: all-scroll;
+}
+
+.bBox {
+        opacity:0;
+}
+
+#mapToolBar {
+        z-index:1000;
+        right:30px;
+        top:5px;
+}
+
+#navControls {
+        display: inline-block;
+        height:30px;
+        box-shadow:0px 1px 5px rgba(0,0,0,0.65);
+        width:88px;
+        border-radius: 4px;
+        background-color: rgba(204,204,204,0.85);
+        position:absolute;
+        margin-top: 10px;
+        z-index:1000;
+        left: 80px;
+}
+
+.mapFilterFlag, #restrictedCheck {
+        position:relative;
+        top:2px;
+}
+
+#sortDropdown .ui-menu {
+        width:114px;
+}
+
+.ui-state-default .ui-corner-top {
+        background-color:#98b9cd;
+}
+
+.ui-state-default {
+        box-shadow:none;
+}
+
+.ui-tabs .ui-tabs-nav li.ui-tabs-active {
+        background-color:#227db2;
+}
+
+.ui-tabs .ui-tabs-nav li {
+        background-color: #98b9cd;
+}
+
+.ui-state-active a, .ui-state-active a:link, .ui-state-active a:visited, .ui-state-default a, .ui-state-default a:link, .ui-state-default a:visited {
+        color:white;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+	text-shadow: none;
+}
+
+.ui-menu .ui-menu-item a {
+        line-height:1.5em;
+        font-size:1.2em;
+}
+
+.ui-button .ui-button-text {
+        font-size:1.2em;
+}
+
+.leaflet-zoom-box-control {
+        position: inherit;
+        left: 60px;
+        top: 2px;
+        box-shadow:none;
+}
+
+.history-control {
+        left: 2px;
+        top: 2px;
+}
+
+.leaflet-left {
+        left:29px;
+}
+
+.viewport {
+        position:absolute;
+        height: 100%;
+        width: 100%;
+        right: 0px;
+        bottom: 0px;
+}
+
+#roll_right:hover {
+        background-color: #A5A5A5;
+}
+
+#header, #container, #searchBox, #footer {
+	min-width: 1060px;
 }

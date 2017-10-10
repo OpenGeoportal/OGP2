@@ -70,7 +70,6 @@ OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 	createCartButtons: function() {
 
 		var that = this;
-		var mapItHtml = "Open highlighted layers in GeoCommons to create maps.";
 		var shareHtml = "Create a link to share this Cart.";
 		var webServiceHtml = "Stream highlighted layers into an application.";
 		var downloadHtml = "Download highlighted layers to your computer.";
@@ -151,18 +150,6 @@ OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 			viewHover(view);
 		};
 		
-		var mapItClick = function(model) {
-			//create a view instance
-			var view = new OpenGeoportal.Views.MapIt({collection: that.collection});
-			viewClick(view);
-
-		};
-		var mapItHover = function(){
-			var view = new OpenGeoportal.Views.MapIt({collection: that.collection});
-			viewHover(view);
-
-		};
-		
 		this.addCartHeaderButton("removeFromCartButton", "Remove", removeHtml,
 				"removeFromCart", removeClick, removeHover);
 		this.addCartHeaderButton("downloadButton", "Download", downloadHtml,
@@ -172,8 +159,6 @@ OpenGeoportal.Views.CartHeader = Backbone.View.extend({
 				webServicesHover);
 		this.addCartHeaderButton("shareButton", "Share", shareHtml,
 				"shareLink", shareCartClick, shareCartHover);
-		this.addCartHeaderButton("mapItButton", "MapIt", mapItHtml, "mapIt",
-				mapItClick, mapItHover);
 
 		// Hover handler
 		var hideDetails = function() {

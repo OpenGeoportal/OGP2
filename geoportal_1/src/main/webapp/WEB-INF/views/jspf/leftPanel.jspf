@@ -2,7 +2,7 @@
 	<div class="arrow_buttons">
 		<button class="arrow_left button" title="collapse left"></button>
 		<div class="arrow_separator"></div>
-		<button class="arrow_right button" title="expand right"></button>
+		<button id="expandRight" class="arrow_right button" title="expand right"></button>
 	</div>
 	<div id="tabs">
 		<ul>
@@ -31,7 +31,7 @@
 		</div>
 	</div>
 </div>
-<div id="roll_right" class="slideVertical">
-	<button class="arrow_right button"></button>
+<div id="roll_right" class="slideVertical button">
+	<button id="showSearchResults" class="arrow_right button" title="show search results"></button>
 </div>
 

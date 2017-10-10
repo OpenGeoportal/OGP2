@@ -1,15 +1,30 @@
 <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="//cdn.jsdelivr.net/backbonejs/1.1.2/backbone-min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/backbonejs/1.2.0/backbone-min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 <script src="resources/javascript/jquery.scrollTo-min.js"></script>
-<script src="resources/javascript/spinners/spinners/spinners.min.js"></script>
 <script src="resources/javascript/jquery.ba-postmessage.min.js"></script>
 <script src="//maps.google.com/maps/api/js?v=3.10&sensor=false"></script>
-<script src="resources/javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
-<script src="resources/javascript/panZoom.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/leaflet.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/Leaflet.Loading/Control.Loading.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/leaflet-history-master/leaflet-history-src.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/leaflet-zoomBox/L.Control.ZoomBox.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/Leaflet-coordinates-0.1.5/Leaflet.Coordinates-0.1.5.min.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/esri-leaflet-2.0.0/dist/esri-leaflet-debug.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/Leaflet-active-area-leaflet-1.0/leaflet.activearea.js"></script>
+<script src="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/leaflet-control-geocoder-1.5.3/dist/Control.Geocoder.js"></script>
 
 <link rel="stylesheet" href="resources/css/jquery-ui-ogpTheme.custom.css" type="text/css" />
+<link rel="stylesheet" href="resources/javascript/leaflet/leaflet_1.0.0-rc1/leaflet.css"/>
+<link rel="stylesheet" href="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/Leaflet.Loading/Control.Loading.css" type="text/css" />
+<link rel="stylesheet" href="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/leaflet-history-master/leaflet-history-src.css" />
+<link rel="stylesheet" href="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/leaflet-zoomBox/L.Control.ZoomBox.css" />
+<link rel="stylesheet" href="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/Leaflet-coordinates-0.1.5/Leaflet.Coordinates-0.1.5.css" />
+<link rel="stylesheet" href="resources/javascript/leaflet/leaflet_1.0.0-rc1/plugins/leaflet-control-geocoder-1.5.3/dist/Control.Geocoder.css" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+<link rel="icon" type="image/png" href="../resources/media/ua_favicon-color.png" size="16x16">
+<link rel="icon" type="image/png" href="../resources/media/ua_favicon-color.png" size="32x32">
+
 
 <script>
 if (!Object.create) {

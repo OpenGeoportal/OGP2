@@ -13,19 +13,25 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 OpenGeoportal.Views.LeftPanel = Backbone.View
 		.extend({
 			initialize : function() {
-
 				this.listenTo(this.model, "change:mode", this.showPanel);
 
-				var width = this.model.get("openWidth");
+				var setWidth = this.model.get("openWidth");
+				var calcWidth = $("#container").width() * 0.35;
+				var width = Math.max(setWidth, calcWidth);
+
+				this.model.set({openWidth: width});
 				var margin = width - jQuery("#roll_right").width();
 				jQuery("#left_col").show().width(width).css({
 					"margin-left" : "-" + margin  + "px"
 				});
+				var rollRightMarginTop = $("#roll_right").height() * 0.45 + "px";
+				$("#showSearchResults").css({'margin-top': rollRightMarginTop});
 
 			},
 			events : {
-				"click .arrow_right" : "goRight",
-				"click .arrow_left" : "goLeft"
+				"click #expandRight" : "goRight",
+				"click #roll_right"  : "goRight",
+				"click .arrow_left"  : "goLeft"
 			},
 			// these are really controllers
 			goRight : function() {
@@ -58,25 +64,25 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
 			setAlsoMoves : function() {
-				if (!jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
-						.hasClass("slideHorizontal")) {
-					jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
-							.addClass("slideHorizontal");
+				if (!$(".leaflet-left").hasClass("slideHorizontal")) {
+					$(".leaflet-left").addClass("slideHorizontal")	
 				}
-				// beyond extent arrows "#nwCorner" and "#swCorner" also have
-				// class "slideHorizontal"
+				if (!$(".leaflet-top").hasClass("slideVertical")) {
+					$(".leaflet-top").addClass("slideVertical")
+				}
 			},
 
 			showPanel : function() {
 				this.setAlsoMoves();
 				var mode = this.model.get("mode");
 				if (mode === "open") {
+
 					if (this.model.previous("mode") === "closed") {
 						this.showPanelMidRight();
 					} else {
 						this.showPanelMidLeft();
-					}
-				} else if (mode === "closed") {
+					};
+                               	} else if (mode === "closed") {
 					this.showPanelClosed();
 				} else if (mode === "fullscreen") {
 					this.showPanelFullScreen();
@@ -90,47 +96,53 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					jQuery(".slideHorizontal").not(".corner").show();
 				}
 
-				if (jQuery("#roll_right").is(":visible")) {
-					jQuery("#roll_right").hide();
-				}
-
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
 
+				var panelOffset = panelWidth - jQuery("#roll_right").width();
 				this.$el.show().width(panelWidth).css({
 					"margin-left" : -1 * panelOffset
 				});
 				var that = this;
-				this.$el.add(".slideHorizontal").animate({
-					'margin-left' : '+=' + panelOffset
-				}, {
-					queue : false,
-					duration : 500,
-					complete : function() {
+				var oldCenter = OpenGeoportal.ogp.map.getCenter();
 
-						jQuery(this).trigger("adjustContents");
-						that.resizablePanel();
-						jQuery(document).trigger("panelOpen");
-					}
-				});
+				if (jQuery("#roll_right").is(":visible")) {
+                                        jQuery("#showSearchResults").animate({
+        	                                 marginTop: $(".arrow_left").css('marginTop')
+                                        },{
+						duration: 250,
+                                        	complete: function(){
+							$("#roll_right").hide();
+							that.$el.add(".slideHorizontal").animate({
+								'margin-left' : '+=' + panelOffset
+							}, {
+								queue: false,
+								duration : 500,
+								complete : function() {
+									OpenGeoportal.ogp.map.panTo(oldCenter);
+									jQuery(this).trigger("adjustContents");
+									that.resizablePanel();
+									jQuery(document).trigger("panelOpen");
+								}
+							})
+						}
+			        	})
+                                };
+
 				try {
 					this.$el.resizable( "enable" );
 				} catch (e){
 					//console.log(e);
 				}
-
-
 			},
 
 			showPanelMidLeft : function() {
-
 				var panelWidth = this.model.get("openWidth");
 				var panelOffset = panelWidth - jQuery("#roll_right").width();
 				var that = this;
 				
 				this.$el.show().animate({
 					width : panelWidth
-				}, {
+					}, {
 					queue : false,
 					duration : 500,
 					complete : function() {
@@ -142,7 +154,6 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 						that.resizablePanel();
 					}
 				});
-
 			},
 
 			showPanelClosed : function() {
@@ -153,17 +164,28 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				var that = this;
 				var panelWidth = this.model.get("openWidth");
 				var panelOffset = panelWidth - jQuery("#roll_right").width();
-				
+				var oldCenter = OpenGeoportal.ogp.map.getCenter();	
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '-=' + panelOffset
 				}, {
 					queue : false,
 					duration : 500,
 					complete : function() {
+						$("#roll_right").show();
+						var newMargin = $("#roll_right").height() * 0.45 + "px";
 
-						jQuery("#roll_right").show();
-					}
-				});
+						$(".viewport").width( $("#container").width() - $("#roll_right").width());
+
+	                                        jQuery("#showSearchResults").animate({
+	                                                marginTop: newMargin 
+		                                },{
+                	        	        	duration: 250,
+							complete: function() {
+								OpenGeoportal.ogp.map.panTo(oldCenter);	
+                		                	}
+						})
+        	                	}
+				})
 				
 				this.$el.resizable( "disable" );
 			},
@@ -227,7 +249,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					},
 					
 					stop : function(event, ui) {
-						// console.log("resize stop");
+						//console.log("resize stop");
 						var newWidth = ui.size.width;
 						that.model.set({
 							openWidth : newWidth

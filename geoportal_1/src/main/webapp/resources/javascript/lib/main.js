@@ -11,11 +11,19 @@ if (typeof OpenGeoportal == 'undefined') {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
-jQuery(document)
-		.ready(
-				function() {
+
+ /* For reasons unknown, if there is a localized CSS file specified with new heights
+  *  for #header and #footer, with a document ready event Chrome won't recognize 
+  *  the localized Css in time for the container height calculations in 
+  *  resizeWindowHandler (userInterface.js).  Need to wait until the whole DOM is ready.
+ */
+
+$(window)
+	.load(
+			function() {
 
 					// ogp will hold instances
+					
 					OpenGeoportal.ogp = {};
 					var ogp = OpenGeoportal.ogp; // an alias
 
@@ -36,19 +44,14 @@ jQuery(document)
 						currentTab : 0
 					});
 					
-					
 					ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({collection: ogp.appState.get("requestQueue"), template: ogp.template});
 
-				
-					
 					// handles behavior of "frame elements", like expansion of
 					// advanced search area, left panel
 					ogp.structure = new OpenGeoportal.Structure();
-					ogp.structure.init();
 
 					// create the map and handle map related functions
 					ogp.map = new OpenGeoportal.MapController();
-					ogp.map.initMap("map");
 
 					// creating the cart
 					new OpenGeoportal.Views.CartHeader({
@@ -72,14 +75,14 @@ jQuery(document)
 
 										// The collection that holds search
 										// results
-										try{
+										try {
 											ogp.search = new OpenGeoportal.Views.Query({
 												model : OpenGeoportal.ogp.appState.get("queryTerms"),
 												el : "form#searchForm"
 											});
 											
 											ogp.results = new OpenGeoportal.ResultsCollection();
-										} catch (e){
+										} catch (e) {
 											console.log(e);
 										}
 										// The search results table
@@ -90,7 +93,7 @@ jQuery(document)
 													el: $("#searchResults")
 													});
 									
-
+										
 										// if the url is a share link, add the
 										// shared layers to the cart
 										var hasSharedLayers = ogp.cartView.addSharedLayers();
@@ -99,7 +102,11 @@ jQuery(document)
 										// bubbles, first search opens Search
 										// Results, etc.
 										ogp.structure.introFlow(hasSharedLayers);
+
 									});
+
+					ogp.structure.init();
+					ogp.map.initMap("map");
 
 					/* downtime notice --does this still work? */
 					// ogp.ui.showDowntimeNotice();
