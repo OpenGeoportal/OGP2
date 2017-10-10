@@ -2,10 +2,9 @@
 <%@ page language="java" contentType="text/xml; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <WFS_Capabilities version="1.0.0" xmlns="http://www.opengis.net/wfs"
-	xmlns:sde="http://geoserver.sf.net"
-	xmlns:ogc="http://www.opengis.net/ogc"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.opengis.net/wfs http://geoserver01.uit.tufts.edu/schemas/wfs/1.0.0/WFS-capabilities.xsd">
+                  xmlns:ogc="http://www.opengis.net/ogc"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://www.opengis.net/wfs http://geoserver01.uit.tufts.edu/schemas/wfs/1.0.0/WFS-capabilities.xsd">
 <Service> <Name>WFS</Name> <Title>OpenGeoportal Web
 Feature Service</Title> <Abstract>A dynamically created capabilites
 document including only certain layers. For use in a mapping client that

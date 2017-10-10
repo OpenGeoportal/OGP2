@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema targetNamespace="http://www.opengis.net/context"
-	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sld="http://www.opengis.net/sld"
-	xmlns:context="http://www.opengis.net/context" xmlns:xs="http://www.w3.org/2001/XMLSchema"
-	elementFormDefault="qualified" version="1.1.0.2">
+           xmlns:sld="http://www.opengis.net/sld"
+           xmlns:context="http://www.opengis.net/context" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified" version="1.1.0.2">
 	<!-- This version of context/1.1 was previously labeled as 1.1.1 . -->
 	<xs:annotation>
 		<xs:appinfo>context.xsd</xs:appinfo>
