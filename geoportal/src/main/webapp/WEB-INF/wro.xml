@@ -2,11 +2,11 @@
 
 <groups xmlns="http://www.isdc.ro/wro">
 	<group name="leaflet">
-		<css>/resources/javascript/leaflet/leaflet/leaflet.css</css>
-		<css>/resources/javascript/leaflet/plugins/*.css</css>
+		<css minimize="false">/resources/javascript/leaflet/leaflet/leaflet.css</css>
+		<css minimize="false">/resources/javascript/leaflet/plugins/*.css</css>
 
-		<js>/resources/javascript/leaflet/leaflet/leaflet.js</js>
-		<js>/resources/javascript/leaflet/plugins/*.js</js>
+		<js minimize="false">/resources/javascript/leaflet/leaflet/leaflet.js</js>
+		<js minimize="false">/resources/javascript/leaflet/plugins/*.js</js>
 	</group>
     <group name='lib'>
 		<group-ref>leaflet</group-ref>
@@ -86,6 +86,8 @@
         <js>/resources/javascript/lib/models/featureInfoModel.js</js>
         <js>/resources/javascript/lib/views/featureInfoView.js</js>
 		<js>/resources/javascript/lib/geoCommonsExport.js</js>
+		<js>/resources/javascript/lib/leafletWrapper.js</js>
+		<js>/resources/javascript/lib/featureAttributeHandler.js</js>
 		<js>/resources/javascript/lib/mapDiv.js</js>
 		<js>/resources/javascript/lib/userInterface.js</js>
         <js>/resources/javascript/lib/userState.js</js>

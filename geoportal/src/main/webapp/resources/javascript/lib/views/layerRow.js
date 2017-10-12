@@ -396,10 +396,10 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
     getBounds: function () {
         var currModel = this.model;
         var bbox = {};
-        bbox.south = currModel.get("MinY");
-        bbox.north = currModel.get("MaxY");
-        bbox.west = currModel.get("MinX");
-        bbox.east = currModel.get("MaxX");
+        bbox.minY = currModel.get("MinY");
+        bbox.maxY = currModel.get("MaxY");
+        bbox.minX = currModel.get("MinX");
+        bbox.maxX = currModel.get("MaxX");
         return bbox;
     },
 

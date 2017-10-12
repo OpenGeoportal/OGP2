@@ -107,38 +107,11 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * adds spatial search params to solr object if pertinent
 	 */
 	setMapExtent : function(extent, center) {
-		// make sure we're getting the right values for the extent
-
-		var minX = extent.left;
-		var maxX = extent.right;
-		var minY = extent.bottom;
-		var maxY = extent.top;
-		var mapDeltaX = Math.abs(maxX - minX);
-		var mapDeltaY = Math.abs(maxY - minY);
-		if (mapDeltaX > 350) {
-			minX = -180.0;
-			maxX = 180.0;
-		}
-		if (mapDeltaY > 165) {
-			minY = -90;
-			maxY = 90;
-		}
-		var mapExtent = {
-			minX : minX,
-			maxX : maxX,
-			minY : minY,
-			maxY : maxY
-		};
-
-		//var center = data.mapCenter;
-		var mapCenter = {
-			centerX : center.lon,
-			centerY : center.lat
-		};
+        // make sure we're getting the right values for the extent
 
 		this.set({
-			mapExtent : mapExtent,
-			mapCenter : mapCenter
+			mapExtent : extent,
+			mapCenter : center
 		}, {
 			silent : true
 		});
