@@ -61,14 +61,14 @@ OpenGeoportal.LeafletWrapper = function() {
      */
 
     this.createLeafletControls = function() {
-        var extentHistory = L.control.historyControl({
-            position: "topleft"
+        var extentHistory = new L.HistoryControl({
+           position: "topleft"
         });
 
-        var zoomBox = L.control.zoomBox({
+/*        var zoomBox = L.control.zoomBox({
             modal:false,
             position:"topleft"
-        });
+        });*/
 
         var scaleBar = L.control.scale({
             position:"bottomright"
@@ -84,11 +84,11 @@ OpenGeoportal.LeafletWrapper = function() {
             labelTemplateLat:"Latitude: {y}"
         });
 
-        var loadingControl = L.Control.loading({
+/*        var loadingControl = L.Control.loading({
             separate: true
-        });
+        });*/
 
-        var mapControls = [extentHistory, zoomBox, mouseCoords, scaleBar, loadingControl];
+        var mapControls = [scaleBar];
 
         return mapControls;
     };
@@ -107,7 +107,7 @@ OpenGeoportal.LeafletWrapper = function() {
         initialZoom = initialZoom || 1;
 
         // set default Leaflet map options
-        //this.controls = this.createLeafletControls();
+        this.controls = this.createLeafletControls();
 
         var options = {
             maxZoom: 18
@@ -119,21 +119,25 @@ OpenGeoportal.LeafletWrapper = function() {
 
         var map = L.map(mapDiv, options);
 
-        map.on('load', function() {
-            $(document).trigger("mapReady");
-        } );
+        // add controls to map
+        _.each(this.controls, function(c){
+            c.addTo(map);
+        });
 
-        map.setView(new L.LatLng(0,0), initialZoom);
+/*        map.on('load', function() {
+            $(document).trigger("mapReady");
+        } );*/
+
 
         // set the visible area of the map to be the active area
         // creates a div with class viewport
         map.setActiveArea('viewport');
 
 
-        /*		for (i = 0; i < this.controls.length; i++) {
-                    this.controls[i].addTo(this);
-                }*/
         //OpenGeoportal.ogp.structure.panelView.setAlsoMoves();
+        map.setView(new L.LatLng(0,0), initialZoom);
+
+
         return map;
     };
 
@@ -155,55 +159,30 @@ OpenGeoportal.LeafletWrapper = function() {
     this.createBasemaps = function() {
         var that = this;
 
-        var mapBoxAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-            mapBoxUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiYmhpY2tzb24iLCJhIjoiY2lqb25jazdqMDB1OHRobTVwcWZlbGl0NyJ9.CPm_-v_36RGkZMV-5Un2sg';
+        // values are injected to OpenGeoportal.Config.BasemapsBootstrap on page load from ogp_config.json
+        var basemaps = OpenGeoportal.Config.BasemapsBootstrap;
 
-        var mapBox_Light = L.tileLayer(mapBoxUrl, {
-            id: 'mapbox.light',
-            attribution: mapBoxAttr
-        }).on('load', that.mapLoaded);
+        var map_map = {};
+        _.each(basemaps, function(map){
+            var params = {};
+            if (_.has(map, "attribution")){
+                params.attribution = map.attribution;
+            }
 
-        var mapBox_Streets  = L.tileLayer(mapBoxUrl, {
-            id: 'mapbox.streets',   attribution: mapBoxAttr
-        }).on('load', that.mapLoaded);
+            if (_.has(map, "id")){
+                params.id = map.id;
+            }
+            var layer = L.tileLayer(map.url, params);//.on('load', that.leafletMap.mapLoaded);
+            map_map[map.displayName] = layer;
 
-        var mapBox_Dark  = L.tileLayer(mapBoxUrl, {
-            id: 'mapbox.dark',   attribution: mapBoxAttr
-        }).on('load', that.mapLoaded);
-
-        var mapBox_StreetsSatellite = L.tileLayer(mapBoxUrl, {
-            id: 'mapbox.streets-satellite',   attribution: mapBoxAttr
-        }).on('load', that.mapLoaded);
-
-        var mapBox_Satellite = L.tileLayer(mapBoxUrl, {
-            id: 'mapbox.satellite',   attribution: mapBoxAttr
-        }).on('load', that.mapLoaded);
-
-        var MapBox_Outdoors = L.tileLayer(mapBoxUrl, {
-            id: 'mapbox.outdoors', attribution: mapBoxAttr
-        }).on('load', that.mapLoaded);
-
-        var esri_WorldImagery = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-        }).on('load', that.mapLoaded);
-
-
-        // Set Default Basemap
-        esri_WorldImagery.addTo(this.leafletMap).setZIndex(50);
-
-        var baseMaps = {
-            "Grayscale - MapBox": mapBox_Light,
-            "Streets - MapBox": mapBox_Streets,
-            "Dark - MapBox": mapBox_Dark,
-            "Streets/Satellite - MapBox": mapBox_StreetsSatellite,
-            "Outdoors - MapBox" : MapBox_Outdoors,
-            "World Imagery - Esri": esri_WorldImagery
-        };
+            // Set Default Basemap
+            if (_.has(map, "default") && map["default"]){
+                layer.addTo(that.leafletMap).setZIndex(50);
+            }
+        });
 
         // create an instance of the basemap collection
-        var collection = new L.control.layers(baseMaps);
-
-        return collection;
+        return new L.control.layers(map_map);
 
     };
 

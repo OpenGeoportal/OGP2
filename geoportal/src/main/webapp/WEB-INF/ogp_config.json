@@ -1,0 +1,175 @@
+{
+    "datatypes": [
+        {
+            "value": "Point",
+            "displayName": "Point",
+            "iconClass": "pointIcon",
+            "selected": true
+        },
+        {
+            "value": "Line",
+            "displayName": "Line",
+            "iconClass": "lineIcon",
+            "selected": true
+        },
+        {
+            "value": "Polygon",
+            "displayName": "Polygon",
+            "iconClass": "polygonIcon",
+            "selected": true
+        },
+        {
+            "value": "Raster",
+            "displayName": "Raster",
+            "iconClass": "rasterIcon",
+            "selected": true
+        },
+        {
+            "value": "ScannedMap",
+            "displayName": "Scanned Map",
+            "iconClass": "mapIcon",
+            "selected": true
+        }
+    ],
+    "topics": [
+        {
+            "value": "farming",
+            "displayName": "Agriculture and Farming"
+        },
+        {
+            "value": "biota",
+            "displayName": "Biology and Ecology"
+        },
+        {
+            "value": "boundaries",
+            "displayName": "Administrative and Political Boundaries"
+        },
+        {
+            "value": "climatologyMeteorologyAtmosphere",
+            "displayName": "Atmospheric and Climatic"
+        },
+        {
+            "value": "economy",
+            "displayName": "Business and Economic"
+        },
+        {
+            "value": "elevation",
+            "displayName": "Elevation and Derived Products"
+        },
+        {
+            "value": "environment",
+            "displayName": "Environment and Conservation"
+        },
+        {
+            "value": "geoscientificinformation",
+            "displayName": "Geological and Geophysical"
+        },
+        {
+            "value": "health",
+            "displayName": "Human Health and Disease"
+        },
+        {
+            "value": "imageryBaseMapsEarthCover",
+            "displayName": "Imagery and Base Maps"
+        },
+        {
+            "value": "intelligenceMilitary",
+            "displayName": "Military"
+        },
+        {
+            "value": "inlandWaters",
+            "displayName": "Inland Water Resources"
+        },
+        {
+            "value": "location",
+            "displayName": "Locations and Geodetic Networks"
+        },
+        {
+            "value": "oceans",
+            "displayName": "Oceans and Estuaries"
+        },
+        {
+            "value": "planningCadastre",
+            "displayName": "Cadastral"
+        },
+        {
+            "value": "society",
+            "displayName": "Cultural, Society, and Demographics"
+        },
+        {
+            "value": "structure",
+            "displayName": "Facilities and Structure"
+        },
+        {
+            "value": "transportation",
+            "displayName": "Transportation Networks"
+        },
+        {
+            "value": "utilitiesCommunication",
+            "displayName": "Utilities and Communication"
+        }
+    ],
+    "repositories": [
+        {
+            "id": "tufts",
+            "shortName": "Tufts",
+            "fullName": "Tufts University",
+            "iconClass": "tuftsIcon",
+            "nodeType": "ogp2",
+            "url": "https://geodata.tufts.edu",
+            "selected": true
+        },
+        {
+            "id": "harvard",
+            "shortName": "Harvard",
+            "fullName": "Harvard Geospatial Library",
+            "iconClass": "harvardIcon",
+            "nodeType": "ogp2",
+            "url": "http://hgl.harvard.edu:8080/opengeoportal/",
+            "selected": true
+        },
+        {
+            "id": "mit",
+            "shortName": "MIT",
+            "fullName": "Massachusetts Institute of Technology",
+            "iconClass": "mitIcon",
+            "nodeType": "geoweb",
+            "url": "https://arrowsmith.mit.edu",
+            "selected": true
+        },
+        {
+            "id": "massgis",
+            "shortName": "MassGIS",
+            "fullName": "MassGIS",
+            "iconClass": "massgisIcon",
+            "nodeType": "other",
+            "url": "https://www.mass.gov/orgs/massgis-bureau-of-geographic-information",
+            "selected": true
+        },
+        {
+            "id": "uarizona",
+            "shortName": "UArizona",
+            "fullName": "University of Arizona",
+            "iconClass": "uarizonaIcon",
+            "nodeType": "ogp2",
+            "url": "https://geo.library.arizona.edu",
+            "selected": true
+        }
+    ],
+    "basemaps": [
+        {
+            "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "maxZoom": 19,
+            "attribution": "&copy; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
+            "default": true
+        },
+        {
+            "displayName": "World Imagery - Esri",
+            "attribution": "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+            "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        }
+    ]
+}
+
+
+

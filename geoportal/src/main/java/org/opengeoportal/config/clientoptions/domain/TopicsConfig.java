@@ -1,4 +1,4 @@
-package org.opengeoportal.config.topics;
+package org.opengeoportal.config.clientoptions.domain;
 
 /**
  * object to contain info about iso topics needed by the client
@@ -6,14 +6,7 @@ package org.opengeoportal.config.topics;
  * @author cbarne02
  */
 public class TopicsConfig {
-    /*			<topic>
-                <value>
-                    farming
-                </value>
-                <displayName>
-                    Agriculture and Farming
-                </displayName>
-            </topic>*/
+
     String value;
     String displayName;
 

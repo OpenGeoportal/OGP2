@@ -32,6 +32,7 @@
         OpenGeoportal.Config.DataTypesBootstrap = ${dataTypes};
         OpenGeoportal.Config.ProxyCollectionBootstrap = ${proxies};
         OpenGeoportal.Config.RepositoriesBootstrap = ${repositories};
+        OpenGeoportal.Config.BasemapsBootstrap = ${basemaps};
         OpenGeoportal.Config.userStateBootstrap = ${userState};
 
 

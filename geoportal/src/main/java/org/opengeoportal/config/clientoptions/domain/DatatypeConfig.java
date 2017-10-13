@@ -1,4 +1,4 @@
-package org.opengeoportal.config.datatypes;
+package org.opengeoportal.config.clientoptions.domain;
 
 /**
  * object to contain info about datatypes needed by the client
@@ -6,22 +6,11 @@ package org.opengeoportal.config.datatypes;
  * @author cbarne02
  */
 public class DatatypeConfig {
-    /*	<datatype selected="true">
-        <value>
-            Point
-        </value>
-        <displayName>
-            Point
-        </displayName>
-        <uiClass>
-            pointIcon
-        </uiClass>
-    </datatype>,*/
+
     String value;
     String displayName;
     String iconClass;
     Boolean selected;
-
 
     public String getValue() {
         return value;

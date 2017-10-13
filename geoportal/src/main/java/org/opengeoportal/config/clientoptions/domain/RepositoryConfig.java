@@ -1,14 +1,9 @@
-package org.opengeoportal.config.repositories;
+package org.opengeoportal.config.clientoptions.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class RepositoryConfig {
-	/*{"id": "harvard",
-		"shortName": "Harvard",
-		"fullName": "Harvard Geospatial Library",
-		"sourceIconClass": "harvardIcon",
-		"selected": true
-		},*/
+
 	String id;
 	String shortName;
 	String fullName;

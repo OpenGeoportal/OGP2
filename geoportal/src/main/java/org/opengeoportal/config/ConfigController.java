@@ -2,12 +2,12 @@ package org.opengeoportal.config;
 
 import java.util.List;
 
+import org.opengeoportal.config.clientoptions.OgpClientConfigRetriever;
 import org.opengeoportal.config.ogp.OgpConfig;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.proxy.ProxyConfig;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
-import org.opengeoportal.config.repositories.RepositoryConfig;
-import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
+import org.opengeoportal.config.clientoptions.domain.RepositoryConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class ConfigController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
-	RepositoryConfigRetriever repositoryConfigRetriever;
+	OgpClientConfigRetriever clientConfigRetriever;
 	
 	@Autowired
 	OgpConfigRetriever ogpConfigRetriever;
@@ -34,7 +34,7 @@ public class ConfigController {
 	@RequestMapping(value="repositories", method=RequestMethod.GET, produces="application/json")
 	public @ResponseBody List<RepositoryConfig> getRepositoryConfig() throws Exception {
 
-		return repositoryConfigRetriever.getConfig();
+		return clientConfigRetriever.getConfig().getRepositories();
 	}
 	
 	@RequestMapping(value="general", method=RequestMethod.GET, produces="application/json")

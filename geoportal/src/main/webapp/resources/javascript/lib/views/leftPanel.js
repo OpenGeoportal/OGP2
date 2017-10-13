@@ -12,6 +12,7 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 
 /**
  * This View handles resizing behavior of the results pane.
+ * TODO: handle Leaflet viewport and controls. see Ben's code in branch leaflet-dev
  * @type {any}
  */
 OpenGeoportal.Views.LeftPanel = Backbone.View
@@ -97,7 +98,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
              * to these so they can all be selected and moved easily with jQuery
              */
             alsoMoves: [".olControlPanel", ".olControlModPanZoomBar", ".olControlMousePosition"
-                , ".googleLogo"],
+                , ".googleLogo", ".viewport", ".leaflet-left"],
 			setAlsoMoves : function() {
                 var ams = this.alsoMoves.join();
                 if (!$(ams).hasClass("slideHorizontal")) {

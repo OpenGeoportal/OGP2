@@ -1,9 +1,11 @@
 package org.opengeoportal.admin;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 
+import org.opengeoportal.config.clientoptions.OgpClientConfigRetriever;
 import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,9 @@ public class AdminController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
+	OgpClientConfigRetriever ogpClientConfigRetriever;
+
+/*	@Autowired
 	SearchConfigRetriever searchConfigRetriever;
 	
 	@RequestMapping(value="setSearch", method=RequestMethod.GET, produces="application/json")
@@ -35,6 +40,22 @@ public class AdminController {
 		Map<String,Object> responseMap = new LinkedHashMap<String,Object>();
 		responseMap.put("success", success);
 		return responseMap;
-	}
+	}*/
 
+	@RequestMapping(value="reloadClientConfig", method = RequestMethod.GET, produces = "application/json")
+	public @ResponseBody Map<String, Object> reloadClientConfig() throws IOException {
+		String message = "unknown reason";
+		String status = "failed";
+		Map<String,Object> responseMap = new LinkedHashMap<String,Object>();
+		try {
+			ogpClientConfigRetriever.reload();
+			status = "succeeded";
+			message = "Client Config reloaded.";
+		} catch (Exception e){
+			logger.error("Problem reloading Client Config");
+		}
+		responseMap.put("status", status);
+		responseMap.put("message", message);
+		return responseMap;
+	}
 }

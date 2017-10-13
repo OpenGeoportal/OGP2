@@ -306,6 +306,10 @@ div.olControlMousePosition {
     box-shadow: 3px 0 5px -1px #777777;
 }
 
+.viewport {
+	position: absolute;
+}
+
 .olHandlerBoxZoomBox {
 	border: 2px solid red;
 	position: absolute;

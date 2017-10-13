@@ -36,6 +36,9 @@ OpenGeoportal.FeatureAttributeHandler = function(layerModel) {
          *
          * @param e
          */
+
+            //TODO: checkgetfeaturestate in previewedlayers is complaining... find the cause
+            //"cannot read property length of undefined"
         var attrDictionaryPromise = this.getAttributeDictionaryPromise();
 
 

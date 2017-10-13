@@ -7,12 +7,11 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.opengeoportal.config.datatypes.DatatypesConfigRetriever;
+import org.opengeoportal.config.clientoptions.OgpClientConfigRetriever;
+import org.opengeoportal.config.clientoptions.domain.OgpClientConfig;
 import org.opengeoportal.config.ogp.OgpConfig;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
-import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
-import org.opengeoportal.config.topics.TopicsConfigRetriever;
 import org.opengeoportal.config.wro.WroConfig;
 import org.opengeoportal.config.wro.WroResourceRetriever;
 import org.opengeoportal.security.LoginService;
@@ -31,11 +30,9 @@ public class HomeController {
 	@Autowired
 	private OgpConfigRetriever ogpConfigRetriever;
 
-    @Autowired
-    private TopicsConfigRetriever topicsConfigRetriever;
+	@Autowired
+    private OgpClientConfigRetriever ogpClientConfigRetriever;
 
-    @Autowired
-    private DatatypesConfigRetriever dataTypesConfigRetriever;
 
     @Autowired
     private ProxyConfigRetriever proxyConfigRetriever;
@@ -49,8 +46,6 @@ public class HomeController {
     @Autowired
     UserState userState;
 
-    @Autowired
-    private RepositoryConfigRetriever repositoryConfigRetriever;
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@RequestMapping(value={"/index", "/"}, method=RequestMethod.GET)
@@ -109,6 +104,8 @@ public class HomeController {
 	}
 
     private void addConfig(ModelAndView mav, Boolean isDev) throws IOException {
+
+        OgpClientConfig clientConfig = ogpClientConfigRetriever.getConfig();
         OgpConfig conf = ogpConfigRetriever.getConfig();
 
         mav.addObject("titlePrimary", conf.getPageTitlePrimary());
@@ -125,12 +122,13 @@ public class HomeController {
 		mav.addObject("loginUrl", conf.getLoginConfig().getUrl());
 		mav.addObject("secureDomain", conf.getLoginConfig().getSecureDomain());
         mav.addObject("loginStatus", toJsonString(loginService.getStatus()));
-        mav.addObject("topics", toJsonString(topicsConfigRetriever.getConfig()));
+        mav.addObject("topics", toJsonString(clientConfig.getTopics()));
 
-        mav.addObject("dataTypes", toJsonString(dataTypesConfigRetriever.getConfig()));
+        mav.addObject("dataTypes", toJsonString(clientConfig.getDatatypes()));
         mav.addObject("proxies", toJsonString(proxyConfigRetriever.getPublicConfig()));
 
-        mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
+        mav.addObject("repositories", toJsonString(clientConfig.getRepositories()));
+        mav.addObject("basemaps", toJsonString(clientConfig.getBasemaps()));
 
 
         mav.addObject("userState", toJsonString(userState.getStateMap()));

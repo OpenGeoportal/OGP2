@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;
 
 /**
- * Interface for dealing with xml config files
+ * Interface for dealing with config files
  *
  * @author cbarne02
  */
@@ -22,9 +22,9 @@ public interface ConfigRetriever {
     /**
      * Reloads info from the config file, in case it changed
      *
-     * @throws ConfigurationException
+     * @throws IOException
      */
-    void reload() throws ConfigurationException;
+    void reload() throws IOException;
 
     /**
      * Loads the info from the config file into memory
