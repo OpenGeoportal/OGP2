@@ -679,7 +679,7 @@ OpenGeoportal.Views.Query = Backbone.View
                 var stepTime = 50;
                 var thisId = $(e.target).attr('id');
                 var hght = $(".searchFormRow").height();
-                $(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner").addClass("slideVertical");
+                $(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner, .leaflet-top").addClass("slideVertical");
 
                 if (thisId === 'moreSearchOptions') {
                     this.expandSearchBox(hght, stepTime);

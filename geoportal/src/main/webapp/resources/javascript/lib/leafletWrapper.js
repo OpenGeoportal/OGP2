@@ -172,7 +172,9 @@ OpenGeoportal.LeafletWrapper = function() {
             if (_.has(map, "id")){
                 params.id = map.id;
             }
-            var layer = L.tileLayer(map.url, params);//.on('load', that.leafletMap.mapLoaded);
+            var layer = L.tileLayer(map.url, params);
+            // this throws an Error. maybe changed with new Leaflet version
+            //.on('load', that.leafletMap.mapLoaded);
             map_map[map.displayName] = layer;
 
             // Set Default Basemap

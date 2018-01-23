@@ -97,8 +97,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
              * some displayed items (map controls, etc.) should move with the panel so they are not obscured. Add a css class
              * to these so they can all be selected and moved easily with jQuery
              */
-            alsoMoves: [".olControlPanel", ".olControlModPanZoomBar", ".olControlMousePosition"
-                , ".googleLogo", ".viewport", ".leaflet-left"],
+            alsoMoves: [".leaflet-left"],
 			setAlsoMoves : function() {
                 var ams = this.alsoMoves.join();
                 if (!$(ams).hasClass("slideHorizontal")) {
