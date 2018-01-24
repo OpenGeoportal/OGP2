@@ -22,6 +22,8 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	private static final String EXTRA_JS = "ogp.jsLocalized";
 	private static final String EXTRA_CSS = "ogp.cssLocalized";
 	private static final String EXTERNAL_SEARCH_URL = "solr.url.external";
+	private static final String USE_SOLR_PROXY = "solr.proxy.enabled";
+	private static final String SOLR_PROXY_PATH = "solr.proxy.path";
 	private static final String LOGIN_REPOSITORY = "login.repository";
 	private static final String LOGIN_TYPE = "login.type";
 	private static final String LOGIN_URL = "login.url";
@@ -59,7 +61,19 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	public void setOgpConfig(OgpConfig ogpConfig) {
 		this.ogpConfig = ogpConfig;
 	}
- 
+
+
+	private String processSearchUrlString(String searchUrl) {
+		//add /select, remove trailing slash
+		if (searchUrl.endsWith("/")){
+			searchUrl = searchUrl.substring(0, searchUrl.lastIndexOf("/"));
+		}
+		if (!searchUrl.endsWith("select")){
+			searchUrl += "/select";
+		}
+		return searchUrl;
+	}
+
 	@Override
 	public OgpConfig load() throws Exception {
 		props = propertiesFile.getProperties();
@@ -67,19 +81,23 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 		ogpConfig = new OgpConfig();
 		
 		URL extUrl = null;
-		if (props.containsKey(EXTERNAL_SEARCH_URL)){
+
+		// calculate the search url passed to the client
+		if (props.containsKey(USE_SOLR_PROXY)) {
+			// proxy the value in solr.url.internal
+			if (props.containsKey(SOLR_PROXY_PATH)) {
+				ogpConfig.setSearchUrl(processSearchUrlString(props.getProperty(SOLR_PROXY_PATH)));
+			} else {
+				throw new Exception("Must set a solr proxy path ({0})if proxy is enabled!".format(SOLR_PROXY_PATH));
+			}
+
+		} else if (props.containsKey(EXTERNAL_SEARCH_URL)){
+			// use the value set in solr.url.external
 			String extSearch = props.getProperty(EXTERNAL_SEARCH_URL);	
-			//add /select, remove trailing slash		
-			if (extSearch.endsWith("/")){
-				extSearch = extSearch.substring(0, extSearch.lastIndexOf("/"));
-			}
-			if (!extSearch.endsWith("select")){
-				extSearch += "/select";
-			}
-			
+
 			try{
-				extUrl = new URL(extSearch);
-				ogpConfig.setSearchUrl(extUrl);
+				extUrl = new URL(processSearchUrlString(extSearch));
+				ogpConfig.setSearchUrl(extUrl.toString());
 			} catch (MalformedURLException e){
 				throw new Exception("External Search URL ['property " + EXTERNAL_SEARCH_URL + "'] is malformed!");
 			}

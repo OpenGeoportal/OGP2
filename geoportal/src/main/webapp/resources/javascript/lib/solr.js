@@ -16,75 +16,13 @@ if (typeof OpenGeoportal === 'undefined') {
 OpenGeoportal.Solr = function() {
 	// constructor code
 
-	/**
-	 * config element from ogpConfig.json can contain either a single server or
-	 * all the shards on which to run queries we always send the query to the
-	 * first server in the list the way the jsonp call works, server name needs
-	 * the protocol (http://) also, it must end in "/select" for Solr. this
-	 * function adds them if they aren't there this function is inefficient
-	 * because it re-processes the shards every time it is called
-	 */
+    /**
+     * retrieve the solr endpoint injected into the client on page load. could be a url or a relative path.
+     */
 	this.getServerName = function getServerName() {
-		var configInfo = OpenGeoportal.Config.General.get("searchUrl");
-		var elements = configInfo.split(",");
-		var primaryServer = elements[0];
-		if (!(primaryServer.indexOf("http://") == 0 || primaryServer
-				.indexOf("https://") == 0)) {
-			primaryServer = "http://" + primaryServer;
-		}
-		var select = "select";
-		if ((primaryServer.substring(primaryServer.length - select.length) == select) == false) {
-			// here if the server name does not end in select
-			primaryServer = primaryServer + "select";
-		}
-		return primaryServer;
+		return OpenGeoportal.Config.General.get("searchUrl");
 	};
 
-	/**
-	 * return the shard argument for a Solr search command config element from
-	 * ogpConfig.json can contain a single server or all the shards on which to
-	 * run queries the returned Solr argument should not contain any protocol
-	 * specification ("http://") nor should the urls end in "/select". this
-	 * function removes these elements as needed this function is inefficient
-	 * because it re-processes the shards every time it is called
-	 * 
-	 * @return
-	 */
-	this.getShardServerNames = function getShardNames() {
-		var configInfo = OpenGeoportal.Config.General.get("searchUrl");
-		var elements = configInfo.split(",");
-		var shards = "";
-		if (elements.length == 1) {
-			// here if there really aren't any shards, only a single primary
-			// server listed
-			return shards;
-		}
-		// otherwise, we build the Solr shard string
-		var protocol = "http://";
-		var select = "select";
-		for (var i = 0; i < elements.length; i++) {
-
-			if (elements[i].indexOf(protocol) == 0) {
-				// shards can not specify protocol
-				elements[i] = elements[i].substr(protocol.length);
-			}
-
-			if ((elements[i].substring(elements[i].length - select.length) == select) == true) {
-				// here if the current element ends in "select", we must strip
-				// it from shards
-				elements[i] = elements[i].substring(0, elements[i].length
-						- select.length);
-			}
-
-			if (shards.length > 0) {
-				shards = shards + ",";
-			}
-
-			shards = shards + elements[i];
-		}
-		shards = "shards=" + shards;
-		return shards;
-	};
 
 	/***************************************************************************
 	 * Base Query

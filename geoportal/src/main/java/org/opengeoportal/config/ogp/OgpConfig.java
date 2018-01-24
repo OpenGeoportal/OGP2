@@ -13,7 +13,7 @@ public class OgpConfig {
 	String pageTitleOffset;
 	String jsLocalized;
 	String cssLocalized;
-	URL searchUrl;
+	String searchUrl;
 	String analyticsId;
 	LoginConfig loginConfig = new LoginConfig();
 	
@@ -49,11 +49,11 @@ public class OgpConfig {
 		this.cssLocalized = cssLocalized;
 	}
 
-	public URL getSearchUrl() {
+	public String getSearchUrl() {
 		return searchUrl;
 	}
 
-	public void setSearchUrl(URL searchUrl) {
+	public void setSearchUrl(String searchUrl) {
 		this.searchUrl = searchUrl;
 	}
 
