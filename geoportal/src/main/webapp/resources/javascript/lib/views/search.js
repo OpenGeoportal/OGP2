@@ -541,11 +541,20 @@ OpenGeoportal.Views.Query = Backbone.View
             },
 
 
+            /**
+			 * expand search box height to accommodate advanced search.
+             * @param hght  searchRow height
+             * @param stepTime speed to show each row
+             */
             expandSearchBox: function (hght, stepTime) {
                 var $search = $("#searchForm");
+
+                // hide basic search controls
                 $search.find(".basicSearch").hide();
                 $("#geosearchDiv").removeClass("basicSearch").addClass(
                     "advancedSearch");
+
+                // animate expansion of each row
                 var $adv = $search.find(".advancedSearch");
                 $adv.filter(".searchRow1").show();
 
@@ -581,6 +590,7 @@ OpenGeoportal.Views.Query = Backbone.View
                                                 complete: function () {
                                                     $adv.filter(".searchRow4").show();
                                                     $("#lessSearchOptions").focus();
+                                                    // let the application know which search to perform
                                                     $(document).trigger("searchform.setAdvanced");
 
                                                 }
@@ -590,6 +600,7 @@ OpenGeoportal.Views.Query = Backbone.View
                         }
                     });
 
+                // move other items that need to slide down
                 $(".slideVertical").animate(
                     {
                         "margin-top": "+=" + hght * 3
@@ -597,15 +608,21 @@ OpenGeoportal.Views.Query = Backbone.View
                     {
                         duration: stepTime * 3,
                         easing: "linear",
-                        done: function () {
-                            $(document).trigger("searchform.resize");
+                        complete: function () {
+                            $(document).trigger("searchform.resize", {"delta": hght * 3});
                         }
                     });
 
 
             },
 
+            /**
+			 * Shrink search box size for basic search
+             * @param hght  searchRow height
+             * @param stepTime  speed to hide each row
+             */
             shrinkSearchBox: function (hght, stepTime) {
+            	// move other items that need to slide up
                 $(".slideVertical").animate(
                     {
                         "margin-top": "-=" + hght * 3
@@ -614,8 +631,8 @@ OpenGeoportal.Views.Query = Backbone.View
                         queue: false,
                         duration: stepTime * 3,
                         easing: "linear",
-                        done: function () {
-                            $(document).trigger("searchform.resize");
+                        complete: function () {
+                            $(document).trigger("searchform.resize", {"delta": hght * -3});
                         }
                     });
 
@@ -663,6 +680,7 @@ OpenGeoportal.Views.Query = Backbone.View
                                                     $adv.filter(".searchRow1").hide();
                                                     $search.find(".basicSearch").show();
                                                     $("#moreSearchOptions").focus();
+                                                    // let the application know which search to perform
                                                     $(document).trigger("searchform.setBasic");
 
                                                 }
@@ -674,6 +692,10 @@ OpenGeoportal.Views.Query = Backbone.View
 
             },
 
+            /**
+			 * toggle which search form to show, including animated resize.
+             * @param e
+             */
             toggleSearch: function (e) {
 
                 var stepTime = 50;

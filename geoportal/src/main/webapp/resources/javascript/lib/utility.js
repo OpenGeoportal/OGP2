@@ -211,8 +211,18 @@ OpenGeoportal.Utility.pluralSuffix = function(totalNumber) {
 };
 
 OpenGeoportal.Utility.doPrint = function() {
+
+	// create a style element with a print media query that adjusts the container position
+	// to match the map viewport offset
+	var $style = $('<style></style>').appendTo('head');
+    var offset = $('.viewport').css('left');
+    $style.text("@media print { #container { margin-left: -" + offset + " !important; } }");
+
+    // call the browser print function
 	window.print();
-	// jQuery('head > link[href="css/print.css"]').remove();
+
+	// remove the generated style element
+	$style.remove();
 };
 
 OpenGeoportal.Utility.elementFlash = function(el$, offsetColor) {
@@ -487,7 +497,7 @@ OpenGeoportal.Utility.createSLD = function(sldParams) {
         graphicTag.appendChild(sizeTag);
     }
 
-    else if (layerType == "line") {
+    else if (layerType === "line") {
         var lineSymbolizerTag = xmlDoc.createElement("sld:LineSymbolizer");
         ruleTag.appendChild(lineSymbolizerTag);
 
@@ -508,7 +518,7 @@ OpenGeoportal.Utility.createSLD = function(sldParams) {
 
     }
 
-    else if (layerType == "polygon") {
+    else if (layerType === "polygon") {
         var polygonSymbolizerTag = xmlDoc.createElement("sld:PolygonSymbolizer");
         ruleTag.appendChild(polygonSymbolizerTag);
 
@@ -540,7 +550,7 @@ OpenGeoportal.Utility.createSLD = function(sldParams) {
     var xmlString = serializer.serializeToString(xmlDoc);
 
     return xmlString;
-}
+};
 
 
 

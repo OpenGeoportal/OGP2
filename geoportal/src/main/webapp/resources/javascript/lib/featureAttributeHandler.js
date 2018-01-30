@@ -25,9 +25,8 @@ OpenGeoportal.FeatureAttributeHandler = function(layerModel) {
      **************************************/
 
     /**
-     * turns on the getFeatureAttribute function by registering the click handler for a layer
-     * @param e
-     * @param data
+     * request feature info given a param object
+     * @param params
      */
     this.getFeatureAttributes = function (params) {
 
@@ -37,8 +36,24 @@ OpenGeoportal.FeatureAttributeHandler = function(layerModel) {
          * @param e
          */
 
-            //TODO: checkgetfeaturestate in previewedlayers is complaining... find the cause
-            //"cannot read property length of undefined"
+/*        bbox
+            :
+            "-87.20947265625001,28.01380137638074,-67.10449218750001,50.93073802371819"
+        coord
+            :
+            "43.389081939117496,-74.39941406250001"
+        ogpid
+            :
+            "Tufts.NYProtectedAreas0511"
+        pixel
+            :
+            "1607,506"
+        size
+            :
+            "915,1373"
+        srs
+            :
+            "EPSG:4326"*/
         var attrDictionaryPromise = this.getAttributeDictionaryPromise();
 
 

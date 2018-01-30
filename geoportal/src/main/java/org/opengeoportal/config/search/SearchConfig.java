@@ -20,17 +20,8 @@ solr.url.external=http://geodata.tufts.edu/solr
  * 
  * 
  */
-	URL searchUrl;
 	URL internalSearchUrl;
 	List<SearchRepository> searchRepositories;
-
-	public URL getSearchUrl() {
-		return searchUrl;
-	}
-
-	public void setSearchUrl(URL searchUrl) {
-		this.searchUrl = searchUrl;
-	}
 
 	public URL getInternalSearchUrl() {
 		return internalSearchUrl;

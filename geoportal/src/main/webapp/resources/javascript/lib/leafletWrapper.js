@@ -21,6 +21,7 @@ if (typeof OpenGeoportal === 'undefined') {
 OpenGeoportal.LeafletWrapper = function() {
     var self = this;
 
+    var $viewport = [];
     /**
      * initialization function for the map
      *
@@ -110,7 +111,9 @@ OpenGeoportal.LeafletWrapper = function() {
         this.controls = this.createLeafletControls();
 
         var options = {
-            maxZoom: 18
+            minZoom: 1,
+            maxZoom: 18,
+            worldCopyJump: true
         };
 
         // merge default options and user specified options into 'options'--not
@@ -131,14 +134,44 @@ OpenGeoportal.LeafletWrapper = function() {
 
         // set the visible area of the map to be the active area
         // creates a div with class viewport
-        map.setActiveArea('viewport');
+        map.setActiveArea('viewport', true, true);
 
 
-        //OpenGeoportal.ogp.structure.panelView.setAlsoMoves();
         map.setView(new L.LatLng(0,0), initialZoom);
 
 
+        // handle search form expansion and contraction
+        $(document).on("searchform.resize", function(event, data){
+            // will need to be modified if 'top' for viewport is not 0
+            var top = 0;
+            if (data.delta > 0){
+                top = data.delta;
+            }
+            $(".viewport").css("top", top + 'px');
+        });
+
+        // when the results pane resizes, resize the view port
+        $(document).on("results-pane.resize", function(event, data){
+
+            $(".viewport").css("left", data.width + 'px');
+
+            // optional 'recenter' property resets the map center when the viewport changes size.
+            if (_.has(data, "recenter")) {
+                if (data.recenter) {
+                    map.setView([0,0]);
+                    // TODO: make this more sophisticated. center y val on actual extent, etc.
+                }
+            }
+        });
+
         return map;
+    };
+
+    this.$getViewport = function(){
+        if ($viewport.length === 0){
+            $viewport = $('.viewport');
+        }
+        return $viewport;
     };
 
     /**
@@ -205,40 +238,63 @@ OpenGeoportal.LeafletWrapper = function() {
     };
 
     this.getSearchBounds = function(){
-        var leafletBounds = this.leafletMap.getBounds();
-        return {
-            "minX": this.clamp(leafletBounds.getWest(), -180, 180),
-            "maxX": this.clamp(leafletBounds.getEast(), -180, 180),
+        var leafletBounds = this.leafletMap.wrapLatLngBounds(this.leafletMap.getBounds());
+        // console.log('leaflet bounds');
+        // console.log(leafletBounds);
+        var minX = leafletBounds.getWest();
+        var maxX = leafletBounds.getEast();
+
+        if (maxX - minX >= 360) {
+            minX = -180;
+            maxX = 180;
+        }
+
+        if (minX < -180) {
+            // console.log('crosses date line min');
+
+            minX = 180 - Math.abs(minX + 180);
+
+        }
+
+        if (maxX > 180){
+            // console.log('crosses date line max');
+
+            maxX = -180 + (maxX - 180)
+        }
+
+
+        var bounds =  {
+            "minX": minX,
+            "maxX": maxX,
             "minY": this.clamp(leafletBounds.getSouth(), -90, 90),
             "maxY": this.clamp(leafletBounds.getNorth(), -90, 90)
         };
 
+        // console.log(bounds);
+        return bounds;
+
     };
 
     this.getLocationParamsFromClickEvent = function(e){
-        console.log("click event");
-        console.log(e);
+        var point = e.containerPoint;
+        var latlng = this.leafletMap.containerPointToLatLng(e.containerPoint);
+        var offsetLatLng = this.leafletMap.containerPointToLatLng({x: point.x + 1, y: point.y - 1});
 
-        var pt = e.containerPoint;
-        var latlng = e.latlng;
-
-        return this.getLocationParams(pt, latlng);
-    };
-
-    this.getLocationParams = function(pt, latlng){
-        var mapExtent = this.leafletMap.getBounds();
-
-        var topLeftPoint = this.leafletMap.latLngToContainerPoint(mapExtent.getNorthWest());
-        var bottomRightPoint = this.leafletMap.latLngToContainerPoint(mapExtent.getSouthEast());
-        var pixelBounds = new L.Bounds(topLeftPoint, bottomRightPoint);
-        return {
+        var params = {
             coord: latlng.lat + ',' + latlng.lng,
-            bbox: mapExtent.toBBoxString(),
+            bbox: latlng.lng + ',' + latlng.lat + ',' + offsetLatLng.lng + ',' + offsetLatLng.lat,
             srs: "EPSG:4326",
-            pixel: Math.round(pt.x) + ',' + Math.round(pt.y),
-            size: pixelBounds.getSize().x + ',' + pixelBounds.getSize().y
+            pixel: '0,0',
+            size: '1,1'
         };
+
+        return params;
     };
+
+    this.getCenter = function(){
+        return this.leafletMap.getCenter();
+    };
+
     // add layers to map
     this.hideLayerBBox = function(layers) {
         this.bBoxes.clearLayers();
@@ -246,12 +302,33 @@ OpenGeoportal.LeafletWrapper = function() {
         $(".corner").hide();
     };
 
+    this.redrawMap = function(){
+      this.leafletMap.invalidateSize();
+    };
+
+    this.mapClick = function(callback){
+      this.leafletMap.on('click', callback);
+    };
+
+    this.mapMoveEnd = function(callback){
+        this.leafletMap.on('moveend', callback);
+    };
+
+    this.deactivateZoomBoxControl = function(){
+        // TODO: implement zoombox control
+        console.log("implement zoombox control");
+        if (_.has(this.leafletMap, 'zoomBoxControl')) {
+            this.leafletMap.zoomBoxControl.disable();
+        }
+    };
+
     /**
      * show a bounding box on the map.
      * @param ogpBounds 	obj with 'minX', 'maxX', 'minY', 'maxY'
      */
     this.showLayerBBox = function(ogpBounds) {
-
+        console.log('showlayerbbox');
+        console.log(ogpBounds);
         // add a layer with a vector representing the selected feature bounding box
 
         if (typeof this.bBoxes !== "undefined") {
@@ -409,6 +486,13 @@ OpenGeoportal.LeafletWrapper = function() {
         }
     };
 
+    this.zoomToExtent = function(bbox){
+        console.log('leaflet zoom to extent');
+        console.log(bbox);
+
+        this.leafletMap.fitBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
+    };
+
 
     /***************************************************************************
      * style (SLD) handling
@@ -439,12 +523,14 @@ OpenGeoportal.LeafletWrapper = function() {
         } else {
             console.log("Unknown Data Type");
         }
+
+        var xmlSLD = this.createSLDFromParams(userSLD)
         var newSLD = {
             layers : wmsName,
-            sld_body : this.createSLDFromParams(userSLD)
+            sld_body : xmlSLD
         };
         layerModel.set({
-            sld: userSLD
+            sld: xmlSLD
         });
 
         try {
@@ -592,7 +678,85 @@ OpenGeoportal.LeafletWrapper = function() {
 
     };
 
+    /**
+     * Generate the parameters for an image request.
+     *
+     * @param previewed PreviewedLayers collection
+     * @returns {{}}
+     */
+    this.generateImageRequestParams = function(previewed){
+        var requestObj = {};
+        requestObj.layers = this.generateImageRequestLayers(previewed);
 
+        if (requestObj.layers.length === 0) { return; }
+
+        var extent = this.leafletMap.getViewportLatLngBounds();
+
+
+        requestObj.bbox = extent.toBBoxString();
+
+        requestObj.srs = 'EPSG:4326';
+
+
+        requestObj.width = this.$getViewport().width();
+        requestObj.height = this.$getViewport().height();
+
+        // TODO: with larger extents, this request distorts. bounds decimal precision?
+        // TODO: sld is not read correctly by the server.
+        return requestObj;
+    };
+
+    /**
+     * gather params for each layer for an image request
+     *
+     * @param previewed
+     * @returns {Array}
+     */
+    this.generateImageRequestLayers = function(previewed){
+        var layers = [];
+        this.previewLayerGroup.eachLayer( function(layer) {
+            if (!layer.getContainer().classList.contains("tiles-loaded")) {
+                return;
+            }
+            if (layer.getContainer().style.display === 'none') {
+                return;
+            }
+            var layerModel = previewed.findWhere({
+                LayerId : layer.options.id
+            });
+            if (typeof layerModel === "undefined") {
+                throw new Error(
+                    "Layer ['"
+                    + layer.ogpLayerId
+                    + "'] could not be found in the PreviewedLayers collection.");
+            }
+            var opacity = layerModel.get("opacity");
+            if (opacity === 0) {
+                return;
+            }
+            // insert this opacity value into the sld to pass to the wms server
+            var layerObj = {};
+            var storedName = layerModel.get("qualifiedName");
+            if (storedName === '') {
+                layerObj.name = layer.options.id;
+            } else {
+                layerObj.name = storedName;
+            }
+            layerObj.opacity = opacity;
+            layerObj.zIndex = layer.options.zIndex;
+
+            var sld = layerModel.get("sld");
+            if ((typeof sld !== 'undefined') && (sld !== null) && (sld !== "")) {
+                layerObj.sld = sld
+            } else {
+                layerObj.sld = "";
+            }
+            layerObj.layerId = layerModel.get("LayerId");
+            layers.push(layerObj);
+        });
+
+        return layers;
+    };
 
     this.getLayerName = function(layerModel, url) {
         var layerName = layerModel.get("Name");

@@ -46,20 +46,6 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 		List<SearchRepository> searchRepositories;*/
 		
 		searchConfig = new SearchConfig();
-		
-		URL extUrl = null;
-		if (props.containsKey(EXTERNAL_SEARCH_URL)){
-			String extSearch = props.getProperty(EXTERNAL_SEARCH_URL);	
-			try{
-				extUrl = new URL(extSearch);
-				searchConfig.setSearchUrl(extUrl);
-				logger.info("Search URL set to: " + extUrl);
-			} catch (MalformedURLException e){
-				throw new Exception("External Search URL ['property " + EXTERNAL_SEARCH_URL + "'] is malformed!");
-			}
-		} else {
-			throw new Exception("Must set a search URL!");
-		}
 
 
 		URL intUrl = null;
@@ -68,12 +54,23 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 			try{
 				intUrl = new URL(intSearch);
 			} catch (MalformedURLException e){
-				logger.warn("Internal Search URL ['property " + INTERNAL_SEARCH_URL + "'] is malformed!");
-				intUrl = extUrl;
+				throw new Exception("Internal Search URL ['property " + INTERNAL_SEARCH_URL + "'] is malformed!");
 			}
 		} else {
 			//use the external facing solr url internally if no internal url is set 
-			intUrl = extUrl;
+			if (props.containsKey(EXTERNAL_SEARCH_URL)){
+				String extSearch = props.getProperty(EXTERNAL_SEARCH_URL);
+				try{
+					intUrl = new URL(extSearch);
+					logger.info("{0} is missing or invalid. Using {1} for internal queries".format(INTERNAL_SEARCH_URL, intUrl.toString()));
+				} catch (MalformedURLException e){
+					throw new Exception("External Search URL ['property " + EXTERNAL_SEARCH_URL + "'] is malformed!");
+				}
+
+
+			} else {
+				throw new Exception("Must set a search URL!");
+			}
 			logger.debug("the internal url is set to the same value as the external url");
 		}
 		
@@ -115,11 +112,6 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 	@Override
 	public List<SearchRepository> getSearchRepositories() {
 		return getConfig().getSearchRepositories();
-	}
-
-	@Override
-	public URL getSearchUrl() {
-		return getConfig().getSearchUrl();
 	}
 
 	@Override

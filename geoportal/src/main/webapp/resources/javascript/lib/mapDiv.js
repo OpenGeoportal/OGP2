@@ -184,15 +184,15 @@ OpenGeoportal.MapController = function(params) {
 
             if (newHeight !== oldHeight || newWidth !== oldWidth){
                 $map.height(newHeight).width(newWidth);
-                that.wrapper.leafletMap.invalidateSize();
+                that.wrapper.redrawMap();
             }
 
         });
 
 
-		this.wrapper.leafletMap.on('moveend', function() {
+		this.wrapper.mapMoveEnd(function() {
 			var newExtent = that.wrapper.getSearchBounds();
-			var c = that.wrapper.leafletMap.getCenter();
+			var c = that.wrapper.getCenter();
 			var newCenter = {
 				"centerX": c.lng,
 				"centerY": c.lat
@@ -230,6 +230,7 @@ OpenGeoportal.MapController = function(params) {
 			that.previewed.clearGetFeature();
 		};
 
+		// TODO: look at this. if needed, refactor.
 		$('leaflet-zoom-box-control').click(zoomBoxListener);
 
 
@@ -241,6 +242,7 @@ OpenGeoportal.MapController = function(params) {
 		this.getFeatureInfoHandler();
 		this.clearLayersHandler();
 		this.mouseCursorHandler();
+        this.zoomToExtentHandler();
 	};
 
 	/**
@@ -290,7 +292,16 @@ OpenGeoportal.MapController = function(params) {
 	/***************************************************************************
 	 * map event handlers
 	 **************************************************************************/
-
+    /**
+	 * listen for zoom to layer extent event, and have the map zoom to the passed extent.
+     */
+	this.zoomToExtentHandler = function (){
+		var that = this;
+        $(document).on("map.zoomToLayerExtent", function(event, data) {
+            var bbox = data.bbox;
+            that.wrapper.zoomToExtent(bbox);
+        });
+	};
 
 	this.getLayerModelByOGPId = function(layerId){
         var previewModel = this.previewed.findWhere({
@@ -354,19 +365,45 @@ OpenGeoportal.MapController = function(params) {
     this.getFeatureInfoHandler = function() {
     	var fh = null;
         var that = this;
+
         $(document).on(
             "map.getFeatureInfoOn",
             function (e, data) {
+            	console.log('getfeatureinfoon handler');
+            	// layerId to get feature info for
             	var layerId = data.LayerId;
+            	// retrieve the layer model with that id
             	var model = that.getLayerModelByOGPId(layerId);
+            	// create a new FeatureAttributeHandler with that model
                 fh = new OpenGeoportal.FeatureAttributeHandler(model);
 
-                that.wrapper.leafletMap.on('click', function(ev){
+                console.log(fh);
+
+                // register a click handler on the map to get the parameters for a feature attribute request
+                that.wrapper.mapClick(function(ev){
+                	console.log('feature info map click');
                     var params = that.wrapper.getLocationParamsFromClickEvent(ev);
+
+/*                    bbox
+                        :
+                        "-87.20947265625001,28.01380137638074,-67.10449218750001,50.93073802371819"
+                    coord
+                        :
+                        "43.389081939117496,-74.39941406250001"
+                    ogpid
+                        :
+                        "Tufts.NYProtectedAreas0511"
+                    pixel
+                        :
+                        "1607,506"
+                    size
+                        :
+                        "915,1373"
+                    srs
+                        :
+                        "EPSG:4326"*/
                     fh.getFeatureAttributes(params);
-
 				});
-
             });
 
         $(document).on(
@@ -383,17 +420,7 @@ OpenGeoportal.MapController = function(params) {
 			function() {
 				jQuery("#map").css('cursor', "crosshair");
 				// also deactivate regular map controls
-				var zoomControl;
-				for (i = 0; i < that.controls.length; i++) {
-					if (that.controls[i].getContainer().classList.contains('leaflet-zoom-box-control')) {
-						zoomControl = that.controls[i];
-						break;
-					}
-				}
-
-				if (zoomControl._active) {
-					zoomControl.deactivate();
-				}
+				that.wrapper.deactivateZoomBoxControl();
 			}
 		);
 		jQuery(document).on("map.attributeInfoOff",
@@ -548,72 +575,11 @@ OpenGeoportal.MapController = function(params) {
 	 *            resolution
 	 */
 	this.saveImage = function() {
-		// TODO: add html5 canvas stuff
-		var request = this.createImageRequest();
-		this.requestQueue.add(request);
+        var requestObj = this.wrapper.generateImageRequestParams(this.previewed);
+        console.log(requestObj);
+        console.log(new OpenGeoportal.Models.ImageRequest(requestObj));
+		this.requestQueue.add(new OpenGeoportal.Models.ImageRequest(requestObj));
 	};
-	
-	this.createImageRequest = function(){
-		var that = this;
-		var requestObj = {};
-		requestObj.layers = [];
-
-		this.previewLayerGroup.eachLayer( function(layer) {
-			if (!layer.getContainer().classList.contains("tiles-loaded")) {
-				return;
-			};
-			if (layer.getContainer().style.display == 'none') {
-				return;
-			};
-			var layerModel = that.previewed.findWhere({
-				LayerId : layer.options.id
-			});
-			if (typeof layerModel == "undefined") {
-				throw new Error(
-						"Layer ['"
-								+ layer.ogpLayerId
-								+ "'] could not be found in the PreviewedLayers collection.");
-			};
-			var sld = layerModel.get("sld");
-			var opacity = layerModel.get("opacity");
-			if (opacity == 0) {
-				return;
-			}
-			// insert this opacity value into the sld to pass to the wms server
-			var layerObj = {};
-			var storedName = layerModel.get("qualifiedName");
-			if (storedName == '') {
-				layerObj.name = layer.options.id;
-			} else {
-				layerObj.name = storedName;
-			}
-			layerObj.opacity = opacity;
-			layerObj.zIndex = layer.options.zIndex;
-			if ((typeof sld != 'undefined') && (sld !== null) && (sld != "")) {
-				var sldParams = [ {
-					wmsName : layerObj.name,
-					layerStyle : sld
-				} ];
-				layerObj.sld = that.createSLDFromParams(sldParams);
-			}
-			layerObj.layerId = layerModel.get("LayerId");
-			requestObj.layers.push(layerObj);
-		});
-
-		if (requestObj.layers.length == 0) { return };
-
-		var extent = this.getBounds();
-
-		requestObj.bbox = extent.toBBoxString();
-		requestObj.srs = 'EPSG:4326';
-		var offset = this.getMapOffset();
-
-		requestObj.width = this.getSize().x - offset.x;
-		requestObj.height = this.getSize().y;
-
-		return new OpenGeoportal.Models.ImageRequest(requestObj);
-	};
-
 
 
 	/***************************************************************************

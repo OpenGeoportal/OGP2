@@ -75,11 +75,10 @@ OpenGeoportal.Geocoder = function Geocoder() {
 				extent.push(viewPort.getNorthEast().lng());
 				extent.push(viewPort.getNorthEast().lat());
 
-				var bbox = extent.join();
 				var currentAddress = results[i].formatted_address;
 				var currentResponse = {};
 				currentResponse.name = currentAddress;
-				currentResponse.bbox = bbox;
+				currentResponse.bbox = extent;
 				currentResponse.fullResponse = results[i];
 				geocodeResponse.values.push(currentResponse);
 				geocodeResponse.labels.push(currentAddress);

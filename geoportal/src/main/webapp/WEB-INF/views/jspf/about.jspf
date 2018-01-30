@@ -12,8 +12,8 @@
 	<p>
         OGP 2.0 is the most current release. which includes a new enhanced interface,
         interoperability for several web mapping platforms, etc.
-        The project’s code repository is hosted on github.
-        Installation instructions are in the repository’s README.
+        The project's code repository is hosted on github.
+        Installation instructions are in the repository's README.
 	</p>
 	<p>
 		<%@include file="mailto.jspf"%>

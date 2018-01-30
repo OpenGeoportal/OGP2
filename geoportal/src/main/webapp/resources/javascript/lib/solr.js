@@ -511,10 +511,11 @@ OpenGeoportal.Solr = function() {
 						+ this.LayerMatchesScale.boost,
             //this.classicLayerAreaIntersectionScore(bounds) + "^"
             //		+ this.LayerAreaIntersection.boost,
-            // this.classicCenterRelevancyClause() + "^"
-            //		+ this.LayerMatchesCenter.boost,
+             this.classicCenterRelevancyClause() + "^"
+            		+ this.LayerMatchesCenter.boost,
 				this.classicLayerWithinMap(bounds) + "^"
 						+ this.LayerWithinMap.boost ];
+
 		var params = {
 			bf : bf_array,
 			fq : [ this.getIntersectionFilter() ],
@@ -523,6 +524,7 @@ OpenGeoportal.Solr = function() {
             dintx: this.getDLIntersectionFunction(bounds),
             dl: this.getDatelineCrossIntersectionFilter()
 		};
+
 
 		return params;
 	};
@@ -554,9 +556,12 @@ OpenGeoportal.Solr = function() {
 
 		if (bounds.minX > bounds.maxX) {
             //client extent crosses the dateline
+            // divide query x coords into 2 ranges
             var xRange1 = this.getRangeClause(bounds.minX, "MinX", 180, "MaxX");
             var xRange2 = this.getRangeClause(-180, "MinX", bounds.maxX, "MaxX");
+
             intersection = "product(sum(" + xRange1 + "," + xRange2 + ")," + yRange + ")";
+
 		} else {
             xRange = this.getRangeClause(bounds.minX, "MinX", bounds.maxX, "MaxX");
             intersection = "product(" + xRange + "," + yRange + ")";
@@ -575,7 +580,7 @@ OpenGeoportal.Solr = function() {
         // this filter gets all results where MinX is greater than Maxx {!frange u=0 incu=false}sub(MaxX,MinX),
         //which indicates crossing the dateline
 
-
+        // subtract MinX from MaxX, upper bounds (u) = 0, upper bounds not included (so, MaxX - MinX is negative)
         return "{!frange u=0 incu=false}sub(MaxX,MinX)";
 
     };
@@ -601,6 +606,7 @@ OpenGeoportal.Solr = function() {
         var intersection;
 
         if (bounds.minX > bounds.maxX) {
+            // console.log('solr dateline crossing');
             //client extent crosses the dateline
             var xRangeA1 = this.getRangeClause(bounds.minX, "MinX", 180, 180);
 
@@ -615,6 +621,7 @@ OpenGeoportal.Solr = function() {
             intersection = "product(sum(" + xRangeA + "," + xRangeB + ")," + yRange + ")";
 
         }
+        // console.log(intersection);
 
 		return intersection;
 

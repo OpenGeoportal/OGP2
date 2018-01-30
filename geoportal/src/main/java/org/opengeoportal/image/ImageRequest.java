@@ -150,6 +150,7 @@ public class ImageRequest {
 		int zIndex;
 		@JsonProperty("layerId")
 		String layerId;
+		@JsonProperty("sld")
 		String sld;
 		@JsonIgnore
 		SolrRecord solrRecord;

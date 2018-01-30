@@ -12,7 +12,7 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 
 /**
  * This View handles resizing behavior of the results pane.
- * TODO: handle Leaflet viewport and controls. see Ben's code in branch leaflet-dev
+ * TODO: handle Leaflet controls.
  * @type {any}
  */
 OpenGeoportal.Views.LeftPanel = Backbone.View
@@ -25,11 +25,15 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				var width = this.model.get("openWidth");
                 this.$rollRight = $("#roll_right");
                 this.$leftCol = $("#left_col");
+
+                // this.sendWidth(width, true);
+
                 var margin = width - this.$rollRight.width();
                 this.$leftCol.show().width(width).css({
                     "margin-left": "-" + margin + "px"
                 });
-                if (this.model.get("mode") == "open") {
+
+                if (this.model.get("mode") === "open") {
                     this.showPanelMidRight(true);
                 }
 
@@ -37,6 +41,15 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			events : {
 				"click .arrow_right" : "goRight",
 				"click .arrow_left" : "goLeft"
+			},
+
+            /**
+			 * sends a custom event that lets the rest of the application know that the view has resized, and passes the
+			 * width value
+             * @param width
+             */
+			sendWidth: function(width, recenter){
+				$(document).trigger('results-pane.resize', {width: width, recenter: recenter});
 			},
 
             changeTab: function (model) {
@@ -54,7 +67,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 
                             var label, idx = ui.index;
 
-                            label = (idx == 1) && "Cart Tab" || (idx == 0)
+                            label = (idx === 1) && "Cart Tab" || (idx === 0)
                                 && "Search Tab" || "Getting Started Tab";
                             //analytics.track("Interface", "Change Tab", label);
                         }
@@ -126,7 +139,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
             showPanelMidRight: function (immediate) {
                 this.setAlsoMoves();
                 var time = 500;
-                if (typeof immediate != "undefined") {
+                if (typeof immediate !== "undefined") {
                     if (immediate) {
                         time = 0;
                     }
@@ -157,6 +170,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					queue : false,
                     duration: time,
 					complete : function() {
+                        // set the map viewport
+						that.sendWidth(panelWidth, true);
                         //we don't want this to fire for each animated element...just once
                         if (!hasFired) {
                             hasFired = true;
@@ -185,7 +200,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
                         $(".slideHorizontal").css({
 							'margin-left' : panelOffset
 						}).not(".corner").fadeIn();
-
+                        // set the map viewport
+                        that.sendWidth(panelWidth, true);
                         $(this).trigger("adjustContents");
 						that.resizablePanel();
 					}
@@ -201,16 +217,18 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				}
 				var panelWidth = this.model.get("openWidth");
                 var panelOffset = panelWidth - this.$rollRight.width();
-				
+				var that = this;
+
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '-=' + panelOffset
 				}, {
 					queue : false,
 					duration : 500,
 					complete : function() {
-
-                        $("#roll_right").show();
-					}
+                        that.$rollRight.show();
+                        // set the map viewport
+                        that.sendWidth(that.$rollRight.width().true);
+                    }
 				});
 				
 				this.$el.resizable( "disable" );
@@ -284,6 +302,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
                             openWidth: newWidth
                         });
 
+                        // set the map viewport
+						that.sendWidth(newWidth, false);
 
                         $(this).trigger("adjustContents");
                         //if the size difference is more than 10 percent, fire a search

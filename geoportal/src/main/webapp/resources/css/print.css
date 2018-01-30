@@ -13,36 +13,26 @@ svg {
 }
 
 #header {
-	display: none;
+	display: none !important;
 }
 
-#menu {
-	display: none;
-}
-
-#map_tabs {
-	display: none;
+#searchBox {
+	display: none !important;
 }
 
 #footer {
-	display: none;
+	display: none !important;
 }
 
 #left_col {
-	display: none;
+	display: none !important;
 }
 
 #roll_right {
-	display: none;
+	display: none !important;
 }
 
-#roll_right>img {
-	display: none;
-}
 
-#geosearchDiv {
-	display: none;
-}
 
 #mapToolBar {
 	display: none;
@@ -50,27 +40,7 @@ svg {
 
 #container {
 	border: none;
+	position: absolute !important;
 }
 
-#map {
-	position: absolute;
-	left: 0px;
-	top: 0px;
-}
-
-.olControlModPanZoomBar {
-	display: none;
-}
-
-.olControlOverviewMap {
-	display: none;
-}
-
-.olControlPanel {
-	display: none;
-}
-
-.olControlMousePosition {
-	display: none;
-}
 }

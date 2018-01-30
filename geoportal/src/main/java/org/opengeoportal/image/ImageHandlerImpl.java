@@ -35,7 +35,13 @@ public class ImageHandlerImpl implements ImageHandler {
 	private String baseWMSQuery;
 	private String baseAGServerQuery;
 
-	
+	/**
+	 * register the request, download the requested layers, composite them
+	 * @param sessionId
+	 * @param imageRequest
+	 * @return
+	 * @throws Exception
+	 */
 	@Override
 	public UUID requestImage(String sessionId, ImageRequest imageRequest) throws Exception {
 
@@ -46,14 +52,24 @@ public class ImageHandlerImpl implements ImageHandler {
 		
 		return requestId;
 	}
-	
+
+	/**
+	 * register the request to the RequestStatusManager with the user's session ID as the key
+	 * @param sessionId
+	 * @param imageRequest
+	 * @return
+	 */
 	private UUID registerRequest(String sessionId, ImageRequest imageRequest) {
 		UUID requestId = UUID.randomUUID();
 		requestStatusManager.addImageRequest(requestId, sessionId, imageRequest);
 		return requestId;
-	}	
+	}
 
-	
+	/**
+	 * iterate over layers in the request, generate urls to retrieve them and make the request via ImageDownloader
+	 * @param imageRequest
+	 * @throws Exception
+	 */
 	private void downloadLayerImages(ImageRequest imageRequest) throws Exception {
 
 		//populateImageRequest depends on setBaseQuery running first
@@ -82,7 +98,14 @@ public class ImageHandlerImpl implements ImageHandler {
 		}
 
 	}
-	
+
+	/**
+	 * Get info from solr for each layer, filter out any layers the user doesn't have access to. Add a generated url
+	 * with appropriate params to the request object
+	 *
+	 * @param imageRequest
+	 * @throws Exception
+	 */
 	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
 		//only retrieve records the user has permission to access data for
 		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllowedRecords(imageRequest.getLayerIds());
@@ -102,7 +125,11 @@ public class ImageHandlerImpl implements ImageHandler {
 		}
 		
 	}
-	
+
+	/**
+	 * decide which type of url to construct and construct it
+	 * @param layerImage
+	 */
 	private void populateLayerUrl(LayerImage layerImage){
 
 		SolrRecord solrRecord = layerImage.getSolrRecord();
@@ -118,6 +145,11 @@ public class ImageHandlerImpl implements ImageHandler {
 		layerImage.setUrl(url);
 	}
 
+	/**
+	 * generate an ArcGIS Server url
+	 * @param solrRecord
+	 * @return
+	 */
 	private URL getAGServerUrl(SolrRecord solrRecord) {
 		String layerQueryString = "&LAYERS=show:" + solrRecord.getName();
 
@@ -153,9 +185,14 @@ public class ImageHandlerImpl implements ImageHandler {
 		return url;
 	}
 
-
+	/**
+	 * generate a WMS GetMap url (untiled)
+	 * @param solrRecord
+	 * @param sld
+	 * @return
+	 */
 	private URL getWMSUrl(SolrRecord solrRecord, String sld) {
-		
+
 		String layerQueryString = "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName();
 		if ((sld != null) && (!sld.equals("null") && (!sld.isEmpty()))) {
 	   		try {

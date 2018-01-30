@@ -314,9 +314,9 @@ OpenGeoportal.Views.PreviewTools = Backbone.View.extend({
 		extent.push(this.model.get("MaxX"));
 		extent.push(this.model.get("MaxY"));
 
-		var bbox = extent.join();
+		//var bbox = extent.join();
         $(document).trigger("map.zoomToLayerExtent", {
-			bbox : bbox
+			bbox : extent
 		});
 	},
 
