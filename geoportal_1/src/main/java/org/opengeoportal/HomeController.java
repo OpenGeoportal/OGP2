@@ -87,7 +87,8 @@ public class HomeController {
 		
 		mav.addObject("searchUrl", conf.getSearchUrl().toString());
 		mav.addObject("analyticsId", conf.getAnalyticsId());
-		
+		mav.addObject("gmapsAPIKey", conf.getGmapsAPIKey());
+
 		mav.addObject("loginRepository", conf.getLoginConfig().getRepositoryId());
 		mav.addObject("loginType", conf.getLoginConfig().getType());
 		mav.addObject("loginUrl", conf.getLoginConfig().getUrl());

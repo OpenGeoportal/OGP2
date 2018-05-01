@@ -14,6 +14,8 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	
 	//property keys
 	private static final String ANALYTICS_KEY = "apikey.analytics";
+	private static final String GOOGLE_MAPS_API_KEY = "apikey.gmaps";
+
 	private static final String TITLE_PRIMARY = "ogp.pageTitle.primary";
 	private static final String TITLE_OFFSET = "ogp.pageTitle.offset";
 	private static final String EXTRA_JS = "ogp.jsLocalized";
@@ -87,6 +89,9 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 
 		String analyticsKey = getPropertyWithDefault(ANALYTICS_KEY, "");
 		ogpConfig.setAnalyticsId(analyticsKey);
+
+		String gmapsAPIKey = getPropertyWithDefault(GOOGLE_MAPS_API_KEY, "");
+		ogpConfig.setGmapsAPIKey(gmapsAPIKey);
 
 		String pageTitlePrimary = getPropertyWithDefault(TITLE_PRIMARY, TITLE_PRIMARY_DEFAULT);
 		ogpConfig.setPageTitlePrimary(pageTitlePrimary);
