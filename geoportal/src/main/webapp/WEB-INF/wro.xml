@@ -18,7 +18,6 @@
 
         <css>/resources/css/structure.css</css>
         <css>/resources/css/header.css</css>
-		<css>/resources/css/google.css</css>
 		<css>/resources/css/mapDiv.css</css>
         <css>/resources/css/footer.css</css>
         <css>/resources/css/icons.css</css>

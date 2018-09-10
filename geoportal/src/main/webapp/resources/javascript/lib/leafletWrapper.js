@@ -179,22 +179,67 @@ OpenGeoportal.LeafletWrapper = function() {
      */
 
     this.initBasemaps = function() {
-        this.basemaps = this.createBasemaps();
+        //this.basemaps = this.createBasemaps();
 
-        this.basemaps.addTo(this.leafletMap);
+        //this.basemaps.addTo(this.leafletMap);
     };
 
 
     /***************************************************************************
      * basemap handling
      **************************************************************************/
+    // map of displayName to Leaflet layer
+    this.basemaps = {};
+
+    this.setBasemap = function(bmapModel){
+        var name = bmapModel.get('displayName');
+        var layer = {};
+
+        // remove non-matching basemap layers
+        _.each(this.basemaps, function(v, k, lst){
+           if (k !== name) {
+               if (self.leafletMap.hasLayer(v)) {
+                   self.leafletMap.removeLayer(v);
+               }
+           } else {
+               layer = v;
+           }
+        });
+
+        if (_.isEmpty(layer)){
+            var params = {};
+            if (bmapModel.has("attribution")){
+                params.attribution = bmapModel.get("attribution");
+            }
+
+            if (bmapModel.has("id")){
+                params.id = bmapModel.get("id");
+            }
+
+            if (bmapModel.has("maxZoom")){
+                params.maxZoom = bmapModel.get("maxZoom");
+            }
+
+            if (!bmapModel.has('type')){
+                throw new Error("map definition is missing 'type'");
+            }
+            if (bmapModel.get('type') === "tilelayer") {
+                layer = L.tileLayer(bmapModel.get("url"), params);
+            }
+        }
+
+        if (!this.leafletMap.hasLayer(layer)){
+            this.basemaps[name] = layer;
+            this.leafletMap.addLayer(layer);
+        }
+    };
 
     this.createBasemaps = function() {
         var that = this;
 
         // values are injected to OpenGeoportal.Config.BasemapsBootstrap on page load from ogp_config.json
         var basemaps = OpenGeoportal.Config.BasemapsBootstrap;
-
+        console.log(basemaps);
         var map_map = {};
         _.each(basemaps, function(map){
             var params = {};
@@ -205,7 +250,14 @@ OpenGeoportal.LeafletWrapper = function() {
             if (_.has(map, "id")){
                 params.id = map.id;
             }
-            var layer = L.tileLayer(map.url, params);
+
+            var layer = null;
+            if (!_.has(map, 'type')){
+                throw new Error("map definition is missing 'type'");
+            }
+            if (map.type === "tilelayer") {
+                layer = L.tileLayer(map.url, params);
+            }
             // this throws an Error. maybe changed with new Leaflet version
             //.on('load', that.leafletMap.mapLoaded);
             map_map[map.displayName] = layer;
@@ -216,8 +268,11 @@ OpenGeoportal.LeafletWrapper = function() {
             }
         });
 
+
         // create an instance of the basemap collection
-        return new L.control.layers(map_map);
+
+        return new L.Control.OgpBasemapControl(map_map);
+
 
     };
 
@@ -307,7 +362,11 @@ OpenGeoportal.LeafletWrapper = function() {
     };
 
     this.mapClick = function(callback){
-      this.leafletMap.on('click', callback);
+      return this.leafletMap.on('click', callback);
+    };
+
+    this.mapClickOff = function(){
+        this.leafletMap.off('click');
     };
 
     this.mapMoveEnd = function(callback){
@@ -327,8 +386,7 @@ OpenGeoportal.LeafletWrapper = function() {
      * @param ogpBounds 	obj with 'minX', 'maxX', 'minY', 'maxY'
      */
     this.showLayerBBox = function(ogpBounds) {
-        console.log('showlayerbbox');
-        console.log(ogpBounds);
+
         // add a layer with a vector representing the selected feature bounding box
 
         if (typeof this.bBoxes !== "undefined") {
@@ -376,14 +434,37 @@ OpenGeoportal.LeafletWrapper = function() {
         }
 
         var bounds = L.latLngBounds(bottomLeft, topRight);
-        var bBox = null;
+        var bBox = L.layerGroup();
         if (displayMarker){
             var center = bounds.getCenter();
-            bBox = L.circleMarker(center, { weight: 4, color: "#103b56", fillOpacity:0.15, className: "bBox" });
+            var options = { weight: 4, color: "#1D6EEF", fillColor: "#DAEDFF", fillOpacity:0.25, className: "bBox" };
+            bBox.addLayer(L.circleMarker(center, options));
+            // hack to make sure this shows in the viewport
+            var doppel = _.clone(center);
+            doppel.lng = doppel.lng + 360;
+            bBox.addLayer(L.circleMarker(doppel, options));
+
+            var doppel = _.clone(center);
+            doppel.lng = doppel.lng - 360;
+            bBox.addLayer(L.circleMarker(doppel, options));
 
         } else {
-            bBox = L.rectangle(bounds,{ weight: 4, color: "#103b56", fillOpacity:0.15, className: "bBox" });
+            var options = { weight: 4, color: "#1D6EEF", fillColor: "#DAEDFF", fillOpacity:0.25, className: "bBox" };
+            bBox.addLayer(L.rectangle(bounds, options));
+            // hack to make sure this shows in the viewport
+            var bl = _.clone(bottomLeft);
+            bl.lng = bl.lng + 360;
+            var tr = _.clone(topRight);
+            tr.lng = tr.lng + 360;
+            var doppel = L.latLngBounds(bl, tr);
+            bBox.addLayer(L.rectangle(doppel, options));
 
+            var bl = _.clone(bottomLeft);
+            bl.lng = bl.lng - 360;
+            var tr = _.clone(topRight);
+            tr.lng = tr.lng - 360;
+            var doppel = L.latLngBounds(bl, tr);
+            bBox.addLayer(L.rectangle(doppel, options));
         }
 
         var time = 500;
@@ -487,10 +568,14 @@ OpenGeoportal.LeafletWrapper = function() {
     };
 
     this.zoomToExtent = function(bbox){
-        console.log('leaflet zoom to extent');
-        console.log(bbox);
+        if (bbox[0] > bbox[2]){
+            console.log('crosses dateline.');
+            console.log(bbox);
+            this.leafletMap.fitBounds([[bbox[1], bbox[0] - 360], [bbox[3], bbox[2]]]);
 
-        this.leafletMap.fitBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
+        } else {
+            this.leafletMap.fitBounds([[bbox[1], bbox[0]], [bbox[3], bbox[2]]]);
+        }
     };
 
 
@@ -797,6 +882,15 @@ OpenGeoportal.LeafletWrapper = function() {
         var maxZ = this.getMaxZ();
         if (isFinite(maxZ)) { maxZ += 1 } else { maxZ = 100 }
         return maxZ
+    };
+
+    this.combineBounds = function(arrbounds){
+        var newExtent = L.latLngBounds();
+        for (var i in arrbounds){
+            newExtent.extend(arrbounds[i]);
+        }
+        // TODO: should this return a Leaflet bounds object, or something more generic.
+        return newExtent;
     };
 
     this.getPreviewUrlArray = function(layerModel, useTilecache) {

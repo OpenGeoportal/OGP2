@@ -16,7 +16,8 @@ if (typeof OpenGeoportal === 'undefined') {
  * 
  */
 OpenGeoportal.Geocoder = function Geocoder() {
-	this.geocoder = new google.maps.Geocoder();
+	// Google geocoder needs to be replaced
+	this.geocoder = {};//new google.maps.Geocoder();
 	
 	/**
 	 * geocodes the value typed into the geocoder text input using the Google

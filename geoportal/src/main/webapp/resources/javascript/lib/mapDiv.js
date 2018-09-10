@@ -74,12 +74,17 @@ OpenGeoportal.MapController = function(params) {
 		this.containerDiv = containerDiv;
 		
 		this.createMapHtml(containerDiv);
+        $(document).on("container.resize", function (e, data) {
+        	console.log("called before events registered?");
+        	console.log(data);
+		});
 
 		this.wrapper =  new OpenGeoportal.LeafletWrapper();
 		this.wrapper.init(this.mapDiv, this.getInitialZoomLevel());
-
+		console.log("about to register events");
 		try {
 			this.registerMapEvents();
+			console.log("after events registered");
 		} catch (e) {
 			console.log("problem registering map events");
 			console.log(e);
@@ -156,10 +161,33 @@ OpenGeoportal.MapController = function(params) {
 			buttonText : "Print"
 		}, OpenGeoportal.Utility.doPrint);
 
+        // add the HTML for the basemap menu to the toolbar
+        this.addToMapToolbar(this.template.get('basemapMenu')());
+
+        this.basemaps = OpenGeoportal.Config.BasemapsBootstrap;
+
+        $(document).on('map.selectBasemap', function(e, data){
+        	self.wrapper.setBasemap(data);
+        });
+        var collection = new OpenGeoportal.BasemapCollection(this.basemaps);
+
+        var selected = collection.where({'default': true });
+        if (selected.length > 0){
+            selected[0].set({"selected": true});
+        }
+        // the menu itself is implemented as a view of the Basemap collection
+        this.basemapMenu = new OpenGeoportal.Views.CollectionSelect({
+            collection : collection,
+            el : "div#basemapMenu",
+            valueAttribute : "displayName",
+            displayAttribute : "displayName",
+            buttonLabel : "Basemap",
+            itemClass : "baseMapMenuItem"
+        });
+
 		$(".leaflet-zoom-box-control").appendTo("#navControls");
 		$(".history-control").appendTo("#navControls");
 	};
-
 
 	/**
 	 * register event handlers for the map
@@ -184,6 +212,7 @@ OpenGeoportal.MapController = function(params) {
 
             if (newHeight !== oldHeight || newWidth !== oldWidth){
                 $map.height(newHeight).width(newWidth);
+                console.log('map redraw');
                 that.wrapper.redrawMap();
             }
 
@@ -366,6 +395,7 @@ OpenGeoportal.MapController = function(params) {
     	var fh = null;
         var that = this;
 
+        var onclick;
         $(document).on(
             "map.getFeatureInfoOn",
             function (e, data) {
@@ -380,7 +410,7 @@ OpenGeoportal.MapController = function(params) {
                 console.log(fh);
 
                 // register a click handler on the map to get the parameters for a feature attribute request
-                that.wrapper.mapClick(function(ev){
+                onclick = that.wrapper.mapClick(function(ev){
                 	console.log('feature info map click');
                     var params = that.wrapper.getLocationParamsFromClickEvent(ev);
 
@@ -409,6 +439,8 @@ OpenGeoportal.MapController = function(params) {
         $(document).on(
             "map.getFeatureInfoOff",
             function () {
+            	console.log("get feature off");
+            	that.wrapper.mapClickOff();
                 fh.getFeatureAttributesOff.apply(that, arguments)
             });
 
@@ -490,12 +522,7 @@ OpenGeoportal.MapController = function(params) {
 	//Is only needed for MapIt Functions. Not currently being used by UA
 	this.getCombinedBounds = function(arrBounds) {
 
-		var newExtent = new OpenLayers.Bounds();
-		for ( var currentIndex in arrBounds) {
-			var currentBounds = arrBounds[currentIndex];
-			newExtent.extend(currentBounds);
-		}
-		return newExtent;
+		return this.wrapper.combineBounds(arrBounds);
 	};
 
 /*	//Is only needed for MapIt Functions. Not currently being used by UA

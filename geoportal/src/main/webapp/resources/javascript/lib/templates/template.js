@@ -55,6 +55,7 @@ OpenGeoportal.Template = {
 
         mapButton: '<button class="mapStyledButton {{ displayClass }}" title="{{ title }}" >{{ buttonText }}</button>',
 
+        basemapMenu: '<div id="basemapMenu"></div>',
         loadIndicator: '<div class="loadIndicator"></div>',
 
         requestIndicator: ['<div class="raised">',

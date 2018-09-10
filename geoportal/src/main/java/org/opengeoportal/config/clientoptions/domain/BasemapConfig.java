@@ -14,6 +14,14 @@ public class BasemapConfig {
     @JsonProperty("default")
     Boolean defaultBasemap = false;
 
+    // TODO: add bean validation to require this field
+    @JsonProperty("type")
+    String mapType;
+
+    String subtype;
+
+    String apikey;
+
     public String getId() {
         return id;
     }
@@ -60,5 +68,29 @@ public class BasemapConfig {
 
     public void setDefaultBasemap(Boolean defaultBasemap) {
         this.defaultBasemap = defaultBasemap;
+    }
+
+    public String getMapType() {
+        return mapType;
+    }
+
+    public void setMapType(String mapType) {
+        this.mapType = mapType;
+    }
+
+    public String getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(String subtype) {
+        this.subtype = subtype;
+    }
+
+    public String getApikey() {
+        return apikey;
+    }
+
+    public void setApikey(String apikey) {
+        this.apikey = apikey;
     }
 }
