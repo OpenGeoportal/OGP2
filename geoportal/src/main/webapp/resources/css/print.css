@@ -38,6 +38,14 @@ svg {
 	display: none;
 }
 
+.leaflet-control {
+	display: none;
+}
+
+.leaflet-control.leaflet-control-attribution, .leaflet-control.leaflet-control-scale-line {
+	display: inherit;
+}
+
 #container {
 	border: none;
 	position: absolute !important;

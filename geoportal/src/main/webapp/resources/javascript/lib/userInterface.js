@@ -67,7 +67,7 @@ OpenGeoportal.Structure = function (params) {
 
 	this.resetHandler = function() {
 		var that = this;
-		jQuery(".reset").on("click", function() {
+		$(".reset").on("click", function() {
 			analytics.track("Interface", "Reset Page");
 			
 			var cartAuthWarningArr = ["showAuthenticationWarningExternal", "showAuthenticationWarningLocal"];
@@ -94,7 +94,7 @@ OpenGeoportal.Structure = function (params) {
 	 */
 
 
-	this.triggerInitialSearch = function () {
+	this.hideBubbleHandler = function () {
 		//trigger a search if a user clicks on the expand button, etc.
 		var initSearchEvents = [
 			{
@@ -103,10 +103,6 @@ OpenGeoportal.Structure = function (params) {
 			},
 			{
 				selector: "#moreSearchOptions",
-				event: "click"
-			},
-			{
-				selector: ".olControlPanel > div",
 				event: "click"
 			}
 		];
@@ -120,7 +116,7 @@ OpenGeoportal.Structure = function (params) {
 
 		_.each(initSearchEvents, function (item) {
 			$(item.selector).on(item.event + ".initial", function () {
-				jQuery(document).trigger("fireSearch");
+				$(document).trigger("hideBubble");
 				deregisterAll();
 			});
 		});
@@ -137,11 +133,14 @@ OpenGeoportal.Structure = function (params) {
         if (this.doShowInfo(bubble1) && doIntro) {
 			var $bubble1 = this.showInfoBubble(bubble1);
 
-			this.triggerInitialSearch();
+			//initObj.results.disableFetch();
+
+			this.hideBubbleHandler();
 
 			var that = this;
-			jQuery(document).one("fireSearch", function(event) {
-				$bubble1.hide({
+			$(document).one("hideBubble fireSearch", function(event) {
+
+                $bubble1.hide({
 					effect : "drop",
 					duration : 250,
 					//queue : false,
@@ -149,11 +148,14 @@ OpenGeoportal.Structure = function (params) {
 						that.panelView.model.set({
 							mode : "open"
 						});
-						jQuery(document).one("panelOpen", function() {
-							var bubble2 = "directionsBubble";
+
+                        $(document).one("panelOpen", function() {
+                            $(document).trigger('ui.readyForSearch');
+
+                            var bubble2 = "directionsBubble";
 							if (that.doShowInfo(bubble2)){
 								var $bubbleDir = that.showDirectionsBubble_1(bubble2);
-								jQuery(document).one("click focus", function() {
+								$(document).one("click focus", function() {
 									$bubbleDir.hide("drop");
 								});
 							}
@@ -169,29 +171,32 @@ OpenGeoportal.Structure = function (params) {
 			this.panelView.model.set({
 				mode : "open"
 			});
+            $(document).one("panelOpen", function() {
+                $(document).trigger('ui.readyForSearch');
+            });
 
             if (initObj.sharedLayers) {
 				// set tab to the "cart" tab if there are shared layers
-				jQuery("#tabs").tabs({
+				$("#tabs").tabs({
 					active : 1
 				});
 
 			} else {
 				//fire a search
-				jQuery(document).trigger("fireSearch");
+				$(document).trigger("fireSearch");
 			}
 
 		}
 	};
 
     /*	this.initializeTabs = function() {
-		jQuery("#tabs").tabs(
+		$("#tabs").tabs(
 				{
 					active : 0,
 
 					activate : function(event, ui) {
 
-						jQuery("#left_col").trigger("adjustContents");
+						$("#left_col").trigger("adjustContents");
 						var label, idx = ui.index;
 
 						label = (idx == 1) && "Cart Tab" || (idx == 0)
@@ -204,7 +209,7 @@ OpenGeoportal.Structure = function (params) {
      };*/
 
 	this.aboutHandler = function() {
-		jQuery('#about').dialog({
+		$('#about').dialog({
 			zIndex : 2999,
 			title : "About",
 			resizable : false,
@@ -212,14 +217,14 @@ OpenGeoportal.Structure = function (params) {
 			minWidth : 473,
 			autoOpen : false
 		});
-		jQuery("#aboutLink").click(function() {
-			jQuery('#about').dialog("open");
+		$("#aboutLink").click(function() {
+			$('#about').dialog("open");
 			analytics.track("Help", "Show About");
 		});
 	};
 
 	this.contactHandler = function() {
-		jQuery('#contact').dialog({
+		$('#contact').dialog({
 			zIndex : 2999,
 			title : "Contact Information",
 			resizable : false,
@@ -227,13 +232,13 @@ OpenGeoportal.Structure = function (params) {
 			minWidth : 405,
 			autoOpen : false
 		});
-		jQuery("#contactLink").click(function() {
-			jQuery('#contact').dialog("open");
+		$("#contactLink").click(function() {
+			$('#contact').dialog("open");
 		});
 	};
 
 	this.userHelpHandler = function() {
-		jQuery('#userGuide').dialog({
+		$('#userGuide').dialog({
 			zIndex : 2999,
 			title : "User Guide",
 			resizable : true,
@@ -241,11 +246,11 @@ OpenGeoportal.Structure = function (params) {
 			width : 745,
 			autoOpen : false
 		});
-		jQuery("#userGuideLink").click(function() {
-			if (jQuery("#userGuide").length == 0) {
+		$("#userGuideLink").click(function() {
+			if ($("#userGuide").length == 0) {
 				jQuery.get("userguide", function (data) {
-					jQuery("#dialogs").append(data);
-					jQuery("#userGuide").dialog({
+					$("#dialogs").append(data);
+					$("#userGuide").dialog({
 						zIndex : 2999,
 						title : "USER GUIDE",
 						resizable : true,
@@ -257,10 +262,10 @@ OpenGeoportal.Structure = function (params) {
 						top : -10,
 						left : -30
 					});
-					jQuery('#userGuide').dialog("open");
+					$('#userGuide').dialog("open");
 				});
 			} else {
-				jQuery('#userGuide').dialog("open");
+				$('#userGuide').dialog("open");
 			}
 			analytics.track("Help", "Show User Guide");
 		});
@@ -281,10 +286,10 @@ OpenGeoportal.Structure = function (params) {
 
 
 			var oldContainerWidth = $container.width();
-			var newContainerWidth = Math.max(jQuery(window).width(), minWidth);
+			var newContainerWidth = Math.max($(window).width(), minWidth);
 
 			var oldContainerHeight = $container.height();
-			var newContainerHeight = Math.max(jQuery(window).height()
+			var newContainerHeight = Math.max($(window).height()
 					- fixedHeights, minHeight);
 			
 			//resize the container if there is a change.
@@ -327,8 +332,8 @@ OpenGeoportal.Structure = function (params) {
 		var downtimeText = "Layers will be unavailable temporarily while we perform server maintenance. We apologize for the inconvenience.";
 		var downtimeDiv = '<div id="downtimeNotice" class="dialog infoDialog"><p>'
 				+ downtimeText + '</p></div>';
-		jQuery("#dialogs").append(downtimeDiv);
-		jQuery('#downtimeNotice').dialog({
+		$("#dialogs").append(downtimeDiv);
+		$('#downtimeNotice').dialog({
 			zIndex : 2999,
 			title : "Downtime",
 			resizable : false,
@@ -356,7 +361,7 @@ OpenGeoportal.Structure = function (params) {
 			isChecked: false
 		});
 		$("#infoBubbles").append(infoBubbleMain);
-		var $bubble = jQuery("#" + bubbleId);
+		var $bubble = $("#" + bubbleId);
 
 		var hght = $bubble.height();
 		var wdth = $bubble.width();
@@ -368,7 +373,7 @@ OpenGeoportal.Structure = function (params) {
 		if (panelModel.get("mode") !== "closed") {
 			xoffset = panelModel.get("openWidth");
 		}
-		var fullwidth = jQuery("#container").width();
+		var fullwidth = $("#container").width();
 		var marginright = 20;
 		var marginleft = 33;
 		var margins = marginright + marginleft;
@@ -398,7 +403,7 @@ OpenGeoportal.Structure = function (params) {
 
 		$bubble.on("click", ".doNotShow > input", function () {
 			var show = true;
-			if (jQuery(this).is(":checked")) {
+			if ($(this).is(":checked")) {
 				show = false;
 			}
 			OpenGeoportal.Utility.LocalStorage.setBool(bubbleId, show);

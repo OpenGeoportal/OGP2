@@ -22,6 +22,8 @@ OpenGeoportal.LeafletWrapper = function() {
     var self = this;
 
     var $viewport = [];
+
+    var initDeferred = $.Deferred();
     /**
      * initialization function for the map
      *
@@ -33,16 +35,14 @@ OpenGeoportal.LeafletWrapper = function() {
      *            the created Leaflet map
      *
      */
-    this.init = function(mapDiv, initialZoom) {
-
+    this.init = function (mapDiv, basemap, initialZoom) {
         try {
-            this.leafletMap = this.createMap(mapDiv, initialZoom);
+            this.leafletMap = this.createMap(mapDiv, basemap, initialZoom);
         } catch (e) {
             console.log("problem creating leaflet map");
             console.log(e);
         }
 
-        this.initBasemaps();
         this.previewLayerGroup = L.layerGroup().addTo(this.leafletMap);
 
         try {
@@ -51,6 +51,8 @@ OpenGeoportal.LeafletWrapper = function() {
             console.log("problem registering map events");
             console.log(e);
         }
+
+        return initDeferred.promise();
 
     };
 
@@ -61,35 +63,33 @@ OpenGeoportal.LeafletWrapper = function() {
      * @returns an array of controls to pass to the map
      */
 
-    this.createLeafletControls = function() {
-        var extentHistory = new L.HistoryControl({
-           position: "topleft"
-        });
-
-/*        var zoomBox = L.control.zoomBox({
-            modal:false,
-            position:"topleft"
-        });*/
+    this.createLeafletControls = function () {
 
         var scaleBar = L.control.scale({
-            position:"bottomright"
+            position: "bottomright"
         });
 
-        var mouseCoords = L.control.coordinates({
-            position:"bottomright",
-            decimals:4,
-            enableUserInput:false,
-            decimalSeparator:".",
-            useLatLongOrder:false,
-            labelTemplateLng:"Longitude: {x}",
-            labelTemplateLat:"Latitude: {y}"
+        var mouseCoords = L.control.pointercoordinates({});
+
+        /*        var loadingControl = L.Control.loading({
+                    separate: true
+                });*/
+
+        function broadcastZoomBoxOn(){
+            $(document).trigger('map.zoomBoxOn');
+        }
+
+        this.navbar = L.control.navbar({
+            positon: 'topleft',
+            useBounds: true,
+            addZoomBox: true,
+            callbacks: {
+                zoomBoxOn: broadcastZoomBoxOn
+            }
         });
 
-/*        var loadingControl = L.Control.loading({
-            separate: true
-        });*/
 
-        var mapControls = [scaleBar];
+        var mapControls = [scaleBar, mouseCoords, this.navbar];
 
         return mapControls;
     };
@@ -103,85 +103,80 @@ OpenGeoportal.LeafletWrapper = function() {
      *            userOptions - options to pass through to the Leaflet Map
      *            object
      */
-    this.createMap = function(mapDiv, initialZoom, userOptions) {
+    this.createMap = function (mapDiv, basemap, initialZoom, userOptions) {
         userOptions = userOptions || {};
         initialZoom = initialZoom || 1;
 
         // set default Leaflet map options
         this.controls = this.createLeafletControls();
 
+        // adds the layer to management object and returns the layer
+        var basemapLayer = this.registerBasemap(basemap);
+        basemapLayer.on('load', function(){
+            initDeferred.resolve();
+        });
+
+        // adding L.Control.Zoomslider, not adding default zoom control
         var options = {
+            layers: [basemapLayer],
+            center: new L.LatLng(0, 0),
+            zoom: initialZoom,
             minZoom: 1,
             maxZoom: 18,
+            zoomsliderControl: true,
+            zoomControl: false,
             worldCopyJump: true
         };
 
         // merge default options and user specified options into 'options'--not
         // recursive
         $.extend(userOptions, options);
-
         var map = L.map(mapDiv, options);
 
         // add controls to map
-        _.each(this.controls, function(c){
+        _.each(this.controls, function (c) {
             c.addTo(map);
         });
-
-/*        map.on('load', function() {
-            $(document).trigger("mapReady");
-        } );*/
 
 
         // set the visible area of the map to be the active area
         // creates a div with class viewport
-        map.setActiveArea('viewport', true, true);
-
-
-        map.setView(new L.LatLng(0,0), initialZoom);
+        map.setActiveArea('viewport', false, false);
 
 
         // handle search form expansion and contraction
-        $(document).on("searchform.resize", function(event, data){
+        $(document).on("searchform.resize", function (event, data) {
             // will need to be modified if 'top' for viewport is not 0
             var top = 0;
-            if (data.delta > 0){
+            if (data.delta > 0) {
                 top = data.delta;
             }
             $(".viewport").css("top", top + 'px');
         });
 
         // when the results pane resizes, resize the view port
-        $(document).on("results-pane.resize", function(event, data){
+        $(document).on("results-pane.resize", function (event, data) {
 
             $(".viewport").css("left", data.width + 'px');
 
             // optional 'recenter' property resets the map center when the viewport changes size.
             if (_.has(data, "recenter")) {
                 if (data.recenter) {
-                    map.setView([0,0]);
+                    map.setView([0, 0]);
                     // TODO: make this more sophisticated. center y val on actual extent, etc.
                 }
             }
+
         });
 
         return map;
     };
 
-    this.$getViewport = function(){
-        if ($viewport.length === 0){
+    this.$getViewport = function () {
+        if ($viewport.length === 0) {
             $viewport = $('.viewport');
         }
         return $viewport;
-    };
-
-    /**
-     * Initialize the Basemaps collection, set the initial basemap
-     */
-
-    this.initBasemaps = function() {
-        //this.basemaps = this.createBasemaps();
-
-        //this.basemaps.addTo(this.leafletMap);
     };
 
 
@@ -191,89 +186,60 @@ OpenGeoportal.LeafletWrapper = function() {
     // map of displayName to Leaflet layer
     this.basemaps = {};
 
-    this.setBasemap = function(bmapModel){
+    this.getBasemapLayerFromModel = function(bmapModel){
+        var params = {};
+        var layer = {};
+        if (bmapModel.has("attribution")) {
+            params.attribution = bmapModel.get("attribution");
+        }
+
+        if (bmapModel.has("id")) {
+            params.id = bmapModel.get("id");
+        }
+
+        if (bmapModel.has("maxZoom")) {
+            params.maxZoom = bmapModel.get("maxZoom");
+        }
+
+        if (!bmapModel.has('type')) {
+            throw new Error("map definition is missing 'type'");
+        }
+        if (bmapModel.get('type') === "tilelayer") {
+            layer = L.tileLayer(bmapModel.get("url"), params);
+        }
+        return layer;
+    };
+
+    this.registerBasemap = function(bmapModel){
+        var layer = this.getBasemapLayerFromModel(bmapModel);
+        this.basemaps[bmapModel.get('displayName')] = layer;
+        return layer;
+    };
+
+    this.setBasemap = function (bmapModel) {
+
         var name = bmapModel.get('displayName');
         var layer = {};
 
         // remove non-matching basemap layers
-        _.each(this.basemaps, function(v, k, lst){
-           if (k !== name) {
-               if (self.leafletMap.hasLayer(v)) {
-                   self.leafletMap.removeLayer(v);
-               }
-           } else {
-               layer = v;
-           }
+        _.each(this.basemaps, function (v, k, lst) {
+            if (k !== name) {
+                if (self.leafletMap.hasLayer(v)) {
+                    self.leafletMap.removeLayer(v);
+                }
+            } else {
+                layer = v;
+            }
         });
 
-        if (_.isEmpty(layer)){
-            var params = {};
-            if (bmapModel.has("attribution")){
-                params.attribution = bmapModel.get("attribution");
-            }
-
-            if (bmapModel.has("id")){
-                params.id = bmapModel.get("id");
-            }
-
-            if (bmapModel.has("maxZoom")){
-                params.maxZoom = bmapModel.get("maxZoom");
-            }
-
-            if (!bmapModel.has('type')){
-                throw new Error("map definition is missing 'type'");
-            }
-            if (bmapModel.get('type') === "tilelayer") {
-                layer = L.tileLayer(bmapModel.get("url"), params);
-            }
+        if (_.isEmpty(layer)) {
+            layer = this.registerBasemap(bmapModel);
         }
 
-        if (!this.leafletMap.hasLayer(layer)){
-            this.basemaps[name] = layer;
+        if (!this.leafletMap.hasLayer(layer)) {
             this.leafletMap.addLayer(layer);
         }
-    };
-
-    this.createBasemaps = function() {
-        var that = this;
-
-        // values are injected to OpenGeoportal.Config.BasemapsBootstrap on page load from ogp_config.json
-        var basemaps = OpenGeoportal.Config.BasemapsBootstrap;
-        console.log(basemaps);
-        var map_map = {};
-        _.each(basemaps, function(map){
-            var params = {};
-            if (_.has(map, "attribution")){
-                params.attribution = map.attribution;
-            }
-
-            if (_.has(map, "id")){
-                params.id = map.id;
-            }
-
-            var layer = null;
-            if (!_.has(map, 'type')){
-                throw new Error("map definition is missing 'type'");
-            }
-            if (map.type === "tilelayer") {
-                layer = L.tileLayer(map.url, params);
-            }
-            // this throws an Error. maybe changed with new Leaflet version
-            //.on('load', that.leafletMap.mapLoaded);
-            map_map[map.displayName] = layer;
-
-            // Set Default Basemap
-            if (_.has(map, "default") && map["default"]){
-                layer.addTo(that.leafletMap).setZIndex(50);
-            }
-        });
-
-
-        // create an instance of the basemap collection
-
-        return new L.Control.OgpBasemapControl(map_map);
-
-
+        return layer;
     };
 
 
@@ -282,7 +248,7 @@ OpenGeoportal.LeafletWrapper = function() {
      **************************************************************************/
 
 
-    this.clamp = function(val, min, max){
+    this.clamp = function (val, min, max) {
         if (val > max) {
             val = max;
         }
@@ -292,7 +258,7 @@ OpenGeoportal.LeafletWrapper = function() {
         return val;
     };
 
-    this.getSearchBounds = function(){
+    this.getSearchBounds = function () {
         var leafletBounds = this.leafletMap.wrapLatLngBounds(this.leafletMap.getBounds());
         // console.log('leaflet bounds');
         // console.log(leafletBounds);
@@ -311,14 +277,14 @@ OpenGeoportal.LeafletWrapper = function() {
 
         }
 
-        if (maxX > 180){
+        if (maxX > 180) {
             // console.log('crosses date line max');
 
             maxX = -180 + (maxX - 180)
         }
 
 
-        var bounds =  {
+        var bounds = {
             "minX": minX,
             "maxX": maxX,
             "minY": this.clamp(leafletBounds.getSouth(), -90, 90),
@@ -330,7 +296,7 @@ OpenGeoportal.LeafletWrapper = function() {
 
     };
 
-    this.getLocationParamsFromClickEvent = function(e){
+    this.getLocationParamsFromClickEvent = function (e) {
         var point = e.containerPoint;
         var latlng = this.leafletMap.containerPointToLatLng(e.containerPoint);
         var offsetLatLng = this.leafletMap.containerPointToLatLng({x: point.x + 1, y: point.y - 1});
@@ -346,38 +312,36 @@ OpenGeoportal.LeafletWrapper = function() {
         return params;
     };
 
-    this.getCenter = function(){
+    this.getCenter = function () {
         return this.leafletMap.getCenter();
     };
 
     // add layers to map
-    this.hideLayerBBox = function(layers) {
+    this.hideLayerBBox = function (layers) {
         this.bBoxes.clearLayers();
         //THIS MAY NOT BE NEEDED?..
         $(".corner").hide();
     };
 
-    this.redrawMap = function(){
-      this.leafletMap.invalidateSize();
+    this.redrawMap = function () {
+        this.leafletMap.invalidateSize();
     };
 
-    this.mapClick = function(callback){
-      return this.leafletMap.on('click', callback);
+    this.mapClick = function (callback) {
+        return this.leafletMap.on('click', callback);
     };
 
-    this.mapClickOff = function(){
+    this.mapClickOff = function () {
         this.leafletMap.off('click');
     };
 
-    this.mapMoveEnd = function(callback){
+    this.mapMoveEnd = function (callback) {
         this.leafletMap.on('moveend', callback);
     };
 
-    this.deactivateZoomBoxControl = function(){
-        // TODO: implement zoombox control
-        console.log("implement zoombox control");
-        if (_.has(this.leafletMap, 'zoomBoxControl')) {
-            this.leafletMap.zoomBoxControl.disable();
+    this.deactivateZoomBoxControl = function () {
+        if (_.has(this, 'navbar')) {
+            this.navbar.panHandOn();
         }
     };
 
@@ -561,13 +525,14 @@ OpenGeoportal.LeafletWrapper = function() {
 
         for ( var i in corners) {
             if(corners.hasOwnProperty(i)) {
-                jQuery("#" + cornerIds[corners[i]]).show();
+                $("#" + cornerIds[corners[i]]).show();
             }
 
         }
     };
 
     this.zoomToExtent = function(bbox){
+        console.log('zoomtoextent');
         if (bbox[0] > bbox[2]){
             console.log('crosses dateline.');
             console.log(bbox);
@@ -598,12 +563,12 @@ OpenGeoportal.LeafletWrapper = function() {
         userSLD.fillColor = userColor;
         userSLD.strokeWidth = userWidth;
 
-        if (dataType == "polygon") {
+        if (dataType === "polygon") {
             userSLD.strokeColor = this.getBorderColor(userColor);
             userSLD.strokeWidth -= 1
-        } else if (dataType == "point") {
+        } else if (dataType === "point") {
             userSLD.strokeColor = "#000";
-        } else if (dataType == "line") {
+        } else if (dataType === "line") {
             userSLD.strokeColor = userColor;
         } else {
             console.log("Unknown Data Type");

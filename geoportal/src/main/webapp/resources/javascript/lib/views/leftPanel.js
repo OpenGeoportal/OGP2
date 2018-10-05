@@ -13,6 +13,7 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 /**
  * This View handles resizing behavior of the results pane.
  * TODO: handle Leaflet controls.
+ * TODO: make sure the extent gets reset if the panel size changes.
  * @type {any}
  */
 OpenGeoportal.Views.LeftPanel = Backbone.View
@@ -163,25 +164,21 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				});
 				var that = this;
                 var element = this.$el;
-                var hasFired = false;
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '+=' + panelOffset
 				}, {
 					queue : false,
-                    duration: time,
-					complete : function() {
-                        // set the map viewport
-						that.sendWidth(panelWidth, true);
-                        //we don't want this to fire for each animated element...just once
-                        if (!hasFired) {
-                            hasFired = true;
-                            that.resizablePanel();
-                            $(document).trigger("panelOpen");
-                            element.resizable("enable");
-                            element.trigger("adjustContents");
-                        }
-                    }
-                });
+                    duration: time
+                }).promise().done(function(){
+                    // set the map viewport
+                    that.sendWidth(panelWidth, true);
+
+					that.resizablePanel();
+					$(document).trigger("panelOpen");
+					element.resizable("enable");
+					element.trigger("adjustContents");
+
+				});
 
 			},
 
@@ -195,16 +192,15 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					width : panelWidth
 				}, {
 					queue : false,
-					duration : 500,
-					complete : function() {
-                        $(".slideHorizontal").css({
-							'margin-left' : panelOffset
-						}).not(".corner").fadeIn();
-                        // set the map viewport
-                        that.sendWidth(panelWidth, true);
-                        $(this).trigger("adjustContents");
-						that.resizablePanel();
-					}
+					duration : 500
+				}).promise().done(function(){
+                    $(".slideHorizontal").css({
+                        'margin-left' : panelOffset
+                    }).not(".corner").fadeIn();
+                    // set the map viewport
+                    that.sendWidth(panelWidth, true);
+                    $(this).trigger("adjustContents");
+                    that.resizablePanel();
 				});
 
 			},
@@ -225,10 +221,12 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					queue : false,
 					duration : 500,
 					complete : function() {
-                        that.$rollRight.show();
-                        // set the map viewport
-                        that.sendWidth(that.$rollRight.width().true);
+
                     }
+				}).promise().done(function(){
+                    that.$rollRight.show();
+                	// set the map viewport
+                	that.sendWidth(that.$rollRight.width(), true);
 				});
 				
 				this.$el.resizable( "disable" );
@@ -247,11 +245,10 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
                     'width': $('#container').width()
 				}, {
 					queue : false,
-					duration : 500,
-					complete : function() {
-                        $(this).trigger("adjustContents");
-					}
-				});
+					duration : 500
+				}).promise().done(function(){
+                    $(this).trigger("adjustContents");
+                });
 			},
 
 			resizablePanel : function() {

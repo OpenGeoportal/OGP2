@@ -1,0 +1,113 @@
+/** modified for OGP styling **/
+/** Slider **/
+
+.leaflet-control-zoomslider.leaflet-bar.leaflet-control {
+	border: none;
+}
+
+.leaflet-control-zoomslider-wrap {
+	padding-top: 0px;
+	padding-bottom: 0px;
+	background-color: transparent;
+}
+.leaflet-control-zoomslider-body {
+	width: 4px;
+	border-left: 1px solid rgb(119, 119, 120);
+	border-right: 1px solid rgb(119, 119, 120);
+	background-color: rgb(235, 236, 237);
+	margin: 0 auto;
+	-webkit-box-shadow: 3px 0px 5px -1px #777777;
+	box-shadow: 3px 0px 5px -1px #777777;
+	padding-bottom: 6px;
+}
+.leaflet-control-zoomslider-knob {
+	position: relative;
+	width: 12px;
+	height: 10px;
+	background-color: #efefef;
+	border: 1px solid rgb(119, 119, 120);
+	margin-left: -5px;
+	-webkit-box-shadow: 3px 1px 5px -1px #777777;
+	box-shadow: 3px 1px 5px -1px #777777;
+}
+.leaflet-control-zoomslider-body:hover {
+	cursor: pointer;
+}
+.leaflet-control-zoomslider-knob:hover {
+	cursor: default;
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+}
+
+.leaflet-control-zoomslider-in.leaflet-bar-part.leaflet-bar-part-top {
+	background: url("/resources/media/ogp-sprite.png") no-repeat scroll -159px -3px transparent;
+	border-bottom: none;
+	color: transparent;
+}
+
+.leaflet-control-zoomslider-out.leaflet-bar-part.leaflet-bar-part-bottom {
+	background: url("/resources/media/ogp-sprite.png") no-repeat scroll -159px -240px transparent;
+	color: transparent;
+}
+
+.leaflet-dragging .leaflet-control-zoomslider,
+.leaflet-dragging .leaflet-control-zoomslider-wrap,
+.leaflet-dragging .leaflet-control-zoomslider-body,
+.leaflet-dragging .leaflet-control-zoomslider a,
+.leaflet-dragging .leaflet-control-zoomslider a.leaflet-control-zoomslider-disabled,
+.leaflet-dragging .leaflet-control-zoomslider-knob:hover  {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+}
+
+/** Leaflet Zoom Styles **/
+.leaflet-container .leaflet-control-zoomslider {
+	margin-left: 13px;
+	margin-top: 55px;
+}
+.leaflet-control-zoomslider a {
+	width: 26px;
+	height: 26px;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	display: block;
+}
+.leaflet-control-zoomslider a:hover {
+	background-color: #f4f4f4;
+}
+.leaflet-control-zoomslider-in {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+}
+.leaflet-control-zoomslider-in:after{
+	content:"\002B"
+}
+.leaflet-control-zoomslider-out {
+	font: bold 22px 'Lucida Console', Monaco, monospace;
+}
+.leaflet-control-zoomslider-out:after{
+	content:"\2212"
+}
+.leaflet-control-zoomslider a.leaflet-control-zoomslider-disabled {
+	cursor: default;
+	color: #bbb;
+}
+
+
+/* Old IE */
+
+.leaflet-oldie .leaflet-control-zoomslider-wrap {
+	width: 26px;
+}
+
+.leaflet-oldie .leaflet-control-zoomslider {
+	border: 1px solid #999;
+}
+
+.leaflet-oldie .leaflet-control-zoomslider-in {
+	*zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '\u002B');
+}
+.leaflet-oldie .leaflet-control-zoomslider-out {
+	*zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML = '\u2212');
+}

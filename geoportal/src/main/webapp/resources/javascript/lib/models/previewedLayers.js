@@ -306,7 +306,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
             }
 		});
 
-		jQuery(document).trigger(gfEvent);
+		$(document).trigger(gfEvent);
 
 
 	},

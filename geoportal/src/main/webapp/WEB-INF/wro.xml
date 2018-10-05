@@ -3,9 +3,15 @@
 <groups xmlns="http://www.isdc.ro/wro">
 	<group name="leaflet">
 		<css minimize="false">/resources/javascript/leaflet/leaflet/leaflet.css</css>
+		<css minimize="false">/resources/javascript/leaflet/plugins/zoomslider/src/L.Control.Zoomslider.css</css>
+		<css minimize="false">/resources/javascript/leaflet/plugins/navbar/src/Leaflet.NavBar.css</css>
+		<css minimize="false">/resources/javascript/leaflet/plugins/coords/src/L.Control.PointerCoordinates.css</css>
 		<css minimize="false">/resources/javascript/leaflet/plugins/*.css</css>
 
 		<js minimize="false">/resources/javascript/leaflet/leaflet/leaflet.js</js>
+		<js minimize="false">/resources/javascript/leaflet/plugins/zoomslider/src/L.Control.Zoomslider.js</js>
+		<js minimize="false">/resources/javascript/leaflet/plugins/navbar/src/Leaflet.NavBar.js</js>
+		<js minimize="false">/resources/javascript/leaflet/plugins/coords/src/L.Control.PointerCoordinates.js</js>
 		<js minimize="false">/resources/javascript/leaflet/plugins/*.js</js>
 	</group>
     <group name='lib'>

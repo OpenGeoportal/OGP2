@@ -94,6 +94,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 				menu$.menu("focus", null, menu$.find( ".ui-menu-item:first" ) );
                 menu$.find(".ui-menu-item:first").focus();
                 $(document).on("focusin.dropdown click.dropdown", function (e) {
+                	e.stopPropagation();
                     if (!$(e.target).parents(menu$).is(menu$) && !$(e.target).is(menu$)
                         && !$(e.target).parent().siblings(menu$).is(menu$) && !$(e.target).is($(".button-text"))) {
                         //console.log(e.target);
@@ -105,6 +106,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 	},
 	toggleMenu: function(e){
 		e.preventDefault;
+		e.stopPropagation();
 		
 		var menu$ = this.$el.find(".select").first().parent().next();
 		if (menu$.css("display") != "none"){
@@ -129,7 +131,7 @@ OpenGeoportal.Views.AbstractSelectMenu = Backbone.View.extend({
 		return this.getAttributeName(this.options.itemClass, "menuItem");
 	},
 	getAttributeName: function(optionAttribute, defaultValue){
-		if (typeof optionAttribute == "undefined"){
+		if (typeof optionAttribute === "undefined"){
 			return defaultValue;
 		} else {
 			return optionAttribute;
@@ -202,7 +204,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		var selectAttr = this.getSelectionAttribute();
 
 		var prevSelected = this.collection.find(function(model) {
-			return model.get(selectAttr) == true;
+			return model.get(selectAttr) === true;
 		});
 		prevSelected.set(selectAttr, false);//, {silent: true});//just trigger the listener once
 		
@@ -217,7 +219,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 	},
 	
 	selectCallback: function(event, ui, context){
-
+		event.stopPropagation();
 		var selValue = ui.item.find("input[type=hidden]").first().val();
 		this.changeSelected(selValue);
 	},
@@ -229,7 +231,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 			})[0];
 		var value = "";
 		var display = this.getButtonLabel();
-		if (typeof selectedModel != "undefined"){
+		if (typeof selectedModel !== "undefined"){
 			value = selectedModel.get(this.getValueAttribute());
 			if (value.length !== 0){
 				display = selectedModel.get(this.getDisplayAttribute());

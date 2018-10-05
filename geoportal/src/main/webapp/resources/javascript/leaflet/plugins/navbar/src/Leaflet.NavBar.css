@@ -1,0 +1,86 @@
+/**
+This css file works only in the context of OGP, since it relies on a sprite included in OGP.
+--note: a future version should either contain the sprite or use a glyph font
+ */
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control {
+    clear: none;
+    border: none;
+    border-radius: 0;
+    margin-left: 7px;
+    margin-top: 5px;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > a {
+    display: inline-block;
+    border: none;
+    border-radius: 0;
+    height: 38px;
+    width: 30px;
+    line-height: 38px;
+    cursor: pointer;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-back {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -31px -139px transparent;
+    filter: contrast(.6);
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-back.active {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -31px -139px transparent;
+    filter: unset;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-back.active:hover {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -31px -183px transparent;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-fwd {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -61px -139px transparent;
+    filter: contrast(.6);
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-fwd.active {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -61px -139px transparent;
+    filter: unset;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-fwd.active:hover {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -61px -183px transparent;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-panhand {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -122px -139px transparent;
+    width: 38px;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-panhand.active {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-panhand:hover {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-zoombox {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -91px -139px transparent;
+    width: 31px;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-zoombox:hover {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-zoombox.active {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-home {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll 0 -139px transparent;
+    width: 31px;
+}
+
+.leaflet-control-navbar.leaflet-bar.leaflet-control > .leaflet-control-navbar-home:hover {
+    background: url("/resources/media/ogp-sprite.png") no-repeat scroll 0 -183px transparent;
+}
+

@@ -286,6 +286,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			
 			extentChangeQueue : [],
 			extentChanged : function() {
+				console.log('extentchanged called');
 				// should be a delay before fireSearch is called, so we don't
 				// have a bunch of fireSearch events at once
 				var id = setTimeout(this.fireSearch, 100);
@@ -297,7 +298,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 
 			fireSearch : function() {
-
+				console.log('firesearch called');
 				jQuery(document).trigger("fireSearch");
 			},
 

@@ -72,19 +72,26 @@ OpenGeoportal.MapController = function(params) {
 			throw new Error("The id of the map div must be specified.");
 		}
 		this.containerDiv = containerDiv;
-		
-		this.createMapHtml(containerDiv);
-        $(document).on("container.resize", function (e, data) {
-        	console.log("called before events registered?");
-        	console.log(data);
-		});
+
+		// load the basemaps collection, set the default as selected
+        var basemaps = OpenGeoportal.Config.BasemapsBootstrap;
+        this.basemapsCollection = new OpenGeoportal.BasemapCollection(basemaps);
+        var selected = this.basemapsCollection.where({'default': true });
+        if (selected.length > 0){
+            selected[0].set({"selected": true}, {"silent": true});
+        } else {
+        	throw new Error('No default basemap set.');
+		}
+
+        this.createMapHtml(containerDiv);
 
 		this.wrapper =  new OpenGeoportal.LeafletWrapper();
-		this.wrapper.init(this.mapDiv, this.getInitialZoomLevel());
-		console.log("about to register events");
+		var leafletPromise = this.wrapper.init(this.mapDiv, selected[0], this.getInitialZoomLevel());
+
+		// console.log("about to register events");
 		try {
 			this.registerMapEvents();
-			console.log("after events registered");
+			// console.log("after events registered");
 		} catch (e) {
 			console.log("problem registering map events");
 			console.log(e);
@@ -92,8 +99,10 @@ OpenGeoportal.MapController = function(params) {
 		
 		this.addMapToolbarElements();
 
-        mapready.resolve();
-
+		$.when(leafletPromise).then(function(){
+			// console.log('mapready resolved');
+			mapready.resolve();
+		})
     };
 
     /**
@@ -164,20 +173,13 @@ OpenGeoportal.MapController = function(params) {
         // add the HTML for the basemap menu to the toolbar
         this.addToMapToolbar(this.template.get('basemapMenu')());
 
-        this.basemaps = OpenGeoportal.Config.BasemapsBootstrap;
-
         $(document).on('map.selectBasemap', function(e, data){
         	self.wrapper.setBasemap(data);
         });
-        var collection = new OpenGeoportal.BasemapCollection(this.basemaps);
 
-        var selected = collection.where({'default': true });
-        if (selected.length > 0){
-            selected[0].set({"selected": true});
-        }
         // the menu itself is implemented as a view of the Basemap collection
         this.basemapMenu = new OpenGeoportal.Views.CollectionSelect({
-            collection : collection,
+            collection : this.basemapsCollection,
             el : "div#basemapMenu",
             valueAttribute : "displayName",
             displayAttribute : "displayName",
@@ -185,9 +187,8 @@ OpenGeoportal.MapController = function(params) {
             itemClass : "baseMapMenuItem"
         });
 
-		$(".leaflet-zoom-box-control").appendTo("#navControls");
-		$(".history-control").appendTo("#navControls");
 	};
+
 
 	/**
 	 * register event handlers for the map
@@ -200,7 +201,6 @@ OpenGeoportal.MapController = function(params) {
 		// register events
 
         $(document).on("container.resize", function (e, data) {
-
             //update the size of the map if the container size actually changed.
             var $map = $("#map");
 
@@ -212,55 +212,54 @@ OpenGeoportal.MapController = function(params) {
 
             if (newHeight !== oldHeight || newWidth !== oldWidth){
                 $map.height(newHeight).width(newWidth);
-                console.log('map redraw');
                 that.wrapper.redrawMap();
             }
 
         });
+		var uiready = $.Deferred();
+		$(document).on('ui.readyForSearch', function(){
+			uiready.resolve();
+		});
+		// TODO: don't fire this until everything is ready
+		$.when(mapready, uiready).then(function(){
 
+            that.wrapper.mapMoveEnd(function() {
+                console.log('mapmoveend');
+                var newExtent = that.wrapper.getSearchBounds();
+                var c = that.wrapper.getCenter();
+                var newCenter = {
+                    "centerX": c.lng,
+                    "centerY": c.lat
+                };
 
-		this.wrapper.mapMoveEnd(function() {
-			var newExtent = that.wrapper.getSearchBounds();
-			var c = that.wrapper.getCenter();
-			var newCenter = {
-				"centerX": c.lng,
-				"centerY": c.lat
-			};
+                /*
+                 * Translate the Leaflet event to a jQuery event used by the
+                 * application. This is the event used to trigger a search on map
+                 * move. cluster moveend events so that we don't fire too often
+                 *
+                 * @fires "map.extentChanged"
+                 *
+                */
+                if (that.moveEventId !== null) {
+                    clearTimeout(that.moveEventId);
+                }
 
-			/*
-			 * Translate the Leaflet event to a jQuery event used by the
-			 * application. This is the event used to trigger a search on map
-			 * move. cluster moveend events so that we don't fire too often
-			 * 
-			 * @fires "map.extentChanged"
-			 *
-			*/
-			if (that.moveEventId !== null) {
-                clearTimeout(that.moveEventId);
-            }
-	
-			var trigger = function(){
-				/*
-				mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
-				mapCenter: {centerX: 0, centerY: 0},
-				 */
-				$(document).trigger('map.extentChanged', {
-					mapExtent : newExtent,
-					mapCenter : newCenter
-				});
-			};
+                var trigger = function(){
+                    /*
+                    mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
+                    mapCenter: {centerX: 0, centerY: 0},
+                     */
+                    $(document).trigger('map.extentChanged', {
+                        mapExtent : newExtent,
+                        mapCenter : newCenter
+                    });
+                };
 
-			that.moveEventId = setTimeout(trigger, 500);
-			
+                that.moveEventId = setTimeout(trigger, 100);
+
+            });
 		});
 
-
-		var zoomBoxListener = function() {
-			that.previewed.clearGetFeature();
-		};
-
-		// TODO: look at this. if needed, refactor.
-		$('leaflet-zoom-box-control').click(zoomBoxListener);
 
 
 		this.bboxHandler();
@@ -278,13 +277,7 @@ OpenGeoportal.MapController = function(params) {
 	 * Appends HTML to the map tool bar.
 	 */
 	this.addToMapToolbar = function(markup) {
-		// this has a hidden dependency on the map toolbar template. Should be a
-		// better way to do this, but its hard not to have some sort of
-		// dependency on the template. Maybe it's better to just pass everything
-		// in to the template on construction, rather than adding after the
-		// fact.
-
-		jQuery("#ogpMapButtons").append(markup);
+		$("#ogpMapButtons").append(markup);
 	};
 
 	/**
@@ -308,13 +301,14 @@ OpenGeoportal.MapController = function(params) {
 		this.addToMapToolbar(this.template.get('mapButton')(displayParams));
 		var that = this;
 		$("." + displayParams.displayClass).button().on("click",
-				function() {
+				function(e) {
+					e.stopPropagation();
 					clickCallback.call(that);
 				});
 	};
 
 	this.mapLoaded = function() {
-		jQuery("#map").fadeTo("slow", 1);
+		$("#map").fadeTo("slow", 1);
 	};
 
 
@@ -375,7 +369,7 @@ OpenGeoportal.MapController = function(params) {
 
 	this.styleChangeHandler = function() {
 		var that = this;
-		jQuery(document).on("map.styleChange", function(event, data) {
+		$(document).on("map.styleChange", function(event, data) {
 			that.wrapper.setStyle(that.getLayerModelByOGPId(data.LayerId));
 		});
 	};
@@ -413,25 +407,6 @@ OpenGeoportal.MapController = function(params) {
                 onclick = that.wrapper.mapClick(function(ev){
                 	console.log('feature info map click');
                     var params = that.wrapper.getLocationParamsFromClickEvent(ev);
-
-/*                    bbox
-                        :
-                        "-87.20947265625001,28.01380137638074,-67.10449218750001,50.93073802371819"
-                    coord
-                        :
-                        "43.389081939117496,-74.39941406250001"
-                    ogpid
-                        :
-                        "Tufts.NYProtectedAreas0511"
-                    pixel
-                        :
-                        "1607,506"
-                    size
-                        :
-                        "915,1373"
-                    srs
-                        :
-                        "EPSG:4326"*/
                     fh.getFeatureAttributes(params);
 				});
             });
@@ -441,23 +416,29 @@ OpenGeoportal.MapController = function(params) {
             function () {
             	console.log("get feature off");
             	that.wrapper.mapClickOff();
-                fh.getFeatureAttributesOff.apply(that, arguments)
+                fh.getFeatureAttributesOff.apply(that, arguments);
+
             });
+
+        // when the zoomBox control is activated, clear any getFeatureInfo controls in layer previews.
+        $(document).on("map.zoomBoxOn", function(){
+        	that.previewed.clearGetFeature();
+		});
 
     };
 
 	this.mouseCursorHandler = function() {
 		var that = this;
-		jQuery(document).on("map.attributeInfoOn",
+		$(document).on("map.attributeInfoOn",
 			function() {
-				jQuery("#map").css('cursor', "crosshair");
+				$("#map").css('cursor', "crosshair");
 				// also deactivate regular map controls
 				that.wrapper.deactivateZoomBoxControl();
 			}
 		);
-		jQuery(document).on("map.attributeInfoOff",
+		$(document).on("map.attributeInfoOff",
 			function() {
-				jQuery("#map").css('cursor','')
+				$("#map").css('cursor','');
 			}
 		);
 	};
@@ -467,9 +448,7 @@ OpenGeoportal.MapController = function(params) {
 	 */
 	this.clearLayersHandler = function() {
 		var that = this;
-		// TODO: this should be in the previewed layers view. clearing the map
-		// should update the previewed layers collection, which triggers
-		// removal from the map.
+
 		var mapClear$ = $("#mapClearButton");
 		mapClear$.button();
 		mapClear$.on("click", function(event) {

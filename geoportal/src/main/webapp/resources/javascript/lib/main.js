@@ -221,7 +221,8 @@ $(document)
                 // Results, etc.
                 ogp.structure.introFlow({
                     sharedLayers: hasSharedLayers,
-                    userState: hasUserState
+                    userState: hasUserState,
+                    results: ogp.results
                 });
             });
 
