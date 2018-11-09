@@ -54,8 +54,6 @@ OpenGeoportal.Structure = function (params) {
 		this.resizeWindowHandler();
 
 
-        //this.initializeTabs();
-
 		this.resetHandler();
 		
 		// dialogs
@@ -89,21 +87,24 @@ OpenGeoportal.Structure = function (params) {
 		return OpenGeoportal.Utility.LocalStorage.getBool(key, true);
 	};
 
+
 	/**
 	 * should register event handlers that should interrupt the flow and initiate a search. If one of them is triggered, they should all be unregistered
 	 */
-
-
 	this.hideBubbleHandler = function () {
-		//trigger a search if a user clicks on the expand button, etc.
+        // introFlow bubble should stay up until user interacts with the map, submits the search form,
 		var initSearchEvents = [
 			{
-				selector: ".arrow_right",
-				event: "click"
+				selector: document,
+				event: "panelOpen"
 			},
 			{
 				selector: "#moreSearchOptions",
 				event: "click"
+			},
+			{
+				selector: document,
+				event: "firstQueryFired"
 			}
 		];
 
@@ -115,15 +116,16 @@ OpenGeoportal.Structure = function (params) {
 		};
 
 		_.each(initSearchEvents, function (item) {
-			$(item.selector).on(item.event + ".initial", function () {
-				$(document).trigger("hideBubble");
+			$(item.selector).on(item.event + ".initial", function (e) {
+				// trigger map.userinteraction so that the map starts firing queries on extent changes.
+                $(document).trigger("map.userinteraction");
+                $(document).trigger("hideBubble");
 				deregisterAll();
 			});
 		});
 
 
 	};
-
 
     this.introFlow = function (initObj) {
 		var bubble1 = "welcomeBubble";
@@ -133,12 +135,10 @@ OpenGeoportal.Structure = function (params) {
         if (this.doShowInfo(bubble1) && doIntro) {
 			var $bubble1 = this.showInfoBubble(bubble1);
 
-			//initObj.results.disableFetch();
-
 			this.hideBubbleHandler();
 
 			var that = this;
-			$(document).one("hideBubble fireSearch", function(event) {
+			$(document).one("hideBubble", function(event) {
 
                 $bubble1.hide({
 					effect : "drop",
@@ -150,8 +150,6 @@ OpenGeoportal.Structure = function (params) {
 						});
 
                         $(document).one("panelOpen", function() {
-                            $(document).trigger('ui.readyForSearch');
-
                             var bubble2 = "directionsBubble";
 							if (that.doShowInfo(bubble2)){
 								var $bubbleDir = that.showDirectionsBubble_1(bubble2);
@@ -171,9 +169,6 @@ OpenGeoportal.Structure = function (params) {
 			this.panelView.model.set({
 				mode : "open"
 			});
-            $(document).one("panelOpen", function() {
-                $(document).trigger('ui.readyForSearch');
-            });
 
             if (initObj.sharedLayers) {
 				// set tab to the "cart" tab if there are shared layers
@@ -183,30 +178,11 @@ OpenGeoportal.Structure = function (params) {
 
 			} else {
 				//fire a search
-				$(document).trigger("fireSearch");
+				$(document).trigger("newSearch");
 			}
 
 		}
 	};
-
-    /*	this.initializeTabs = function() {
-		$("#tabs").tabs(
-				{
-					active : 0,
-
-					activate : function(event, ui) {
-
-						$("#left_col").trigger("adjustContents");
-						var label, idx = ui.index;
-
-						label = (idx == 1) && "Cart Tab" || (idx == 0)
-								&& "Search Tab" || "Getting Started Tab";
-						analytics.track("Interface", "Change Tab", label);
-					}
-
-				});
-
-     };*/
 
 	this.aboutHandler = function() {
 		$('#about').dialog({

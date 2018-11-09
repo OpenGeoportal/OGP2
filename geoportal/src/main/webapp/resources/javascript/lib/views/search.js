@@ -28,11 +28,9 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 OpenGeoportal.Views.Query = Backbone.View
 		.extend({
 
-			initialize : function() {
+			initialize : function(options) {
+                _.extend(this, _.pick(options, "map", "widgets", "tableControls", "ready"));
 
-
-				this.widgets = OpenGeoportal.ogp.widgets;
-				this.tableControls = OpenGeoportal.ogp.tableControls;
 				this.geocoder = new OpenGeoportal.Geocoder();
 				
 				var that = this;
@@ -69,9 +67,10 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.searchTypeHandler();
 				this.showRestrictedHandler();
 				this.searchBoxKeypressHandler();
+				this.fireSearchHandler();
 
-				jQuery(document).on("map.extentChanged", function(e, data) {
-					that.model.setMapExtent(data.mapExtent, data.mapCenter);
+				jQuery(document).on("map.extentChanged", function(e, searchExtent) {
+					that.model.setMapExtent(searchExtent);
 				});
 
                 $("#whereField").focus();
@@ -286,7 +285,6 @@ OpenGeoportal.Views.Query = Backbone.View
 			
 			extentChangeQueue : [],
 			extentChanged : function() {
-				console.log('extentchanged called');
 				// should be a delay before fireSearch is called, so we don't
 				// have a bunch of fireSearch events at once
 				var id = setTimeout(this.fireSearch, 100);
@@ -297,9 +295,22 @@ OpenGeoportal.Views.Query = Backbone.View
 
 			},
 
+			fireSearchHandler: function(){
+				var that = this;
+				$(document).on('fireSearch', function(){
+					console.log('fireSearch triggered');
+					that.fireSearch();
+				});
+			},
+
 			fireSearch : function() {
-				console.log('firesearch called');
-				jQuery(document).trigger("fireSearch");
+				$.when.apply(this.ready).done(
+					function(){
+						$(document).trigger("newSearch");
+                    }
+				);
+				// todo: wait to fire search until everything in ready is ready. should just cancel if not ready?
+				//jQuery(document).trigger("newSearch");
 			},
 
 			searchTypeHandler : function() {

@@ -45,13 +45,6 @@ OpenGeoportal.LeafletWrapper = function() {
 
         this.previewLayerGroup = L.layerGroup().addTo(this.leafletMap);
 
-        try {
-            //this.registerMapEvents();
-        } catch (e) {
-            console.log("problem registering map events");
-            console.log(e);
-        }
-
         return initDeferred.promise();
 
     };
@@ -87,7 +80,6 @@ OpenGeoportal.LeafletWrapper = function() {
                 zoomBoxOn: broadcastZoomBoxOn
             }
         });
-
 
         var mapControls = [scaleBar, mouseCoords, this.navbar];
 
@@ -155,22 +147,33 @@ OpenGeoportal.LeafletWrapper = function() {
         });
 
         // when the results pane resizes, resize the view port
-        $(document).on("results-pane.resize", function (event, data) {
+        $(document).on("results-pane.resizestart", function(e){
+            var bounds = map.wrapLatLngBounds(map.getBounds());
+            // note: using bounds tends to shrink the actual bounds as you go back and forth, but using center, zoom
+            // can crop too much
+            var center = map.getCenter();
+            var zoom = map.getZoom();
 
-            $(".viewport").css("left", data.width + 'px');
+            $(document).one("results-pane.resizeend", function (event, data) {
+                $(".viewport").css("left", data.width + 'px');
 
-            // optional 'recenter' property resets the map center when the viewport changes size.
-            if (_.has(data, "recenter")) {
-                if (data.recenter) {
-                    map.setView([0, 0]);
-                    // TODO: make this more sophisticated. center y val on actual extent, etc.
+                // optional 'recenter' property resets the map center when the viewport changes size.
+                if (_.has(data, "recenter")) {
+                    if (data.recenter) {
+                        map.fitBounds(bounds);
+                        //map.setView(center, zoom);
+                    }
                 }
-            }
 
+            });
         });
+
+
 
         return map;
     };
+
+
 
     this.$getViewport = function () {
         if ($viewport.length === 0) {
@@ -345,6 +348,14 @@ OpenGeoportal.LeafletWrapper = function() {
         }
     };
 
+    this.onUserInteraction = function(callback){
+      this.leafletMap.on('zoomstart dragstart', callback);
+    };
+
+    this.clearNavBarHistory = function(){
+      this.navbar._viewHistory = [this.navbar._viewHistory[0]];
+      this.navbar._curIndx = 0;
+    };
     /**
      * show a bounding box on the map.
      * @param ogpBounds 	obj with 'minX', 'maxX', 'minY', 'maxY'

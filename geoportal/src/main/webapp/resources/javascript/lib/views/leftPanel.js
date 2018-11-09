@@ -50,7 +50,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
              * @param width
              */
 			sendWidth: function(width, recenter){
-				$(document).trigger('results-pane.resize', {width: width, recenter: recenter});
+				$(document).trigger('results-pane.resizeend', { width: width, recenter: recenter });
 			},
 
             changeTab: function (model) {
@@ -136,8 +136,12 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					this.showPanelFullScreen();
 				}
 			},
+			sendResizeStart: function(){
+                $(document).trigger('results-pane.resizestart');
+            },
 
             showPanelMidRight: function (immediate) {
+            	this.sendResizeStart();
                 this.setAlsoMoves();
                 var time = 500;
                 if (typeof immediate !== "undefined") {
@@ -183,6 +187,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
 			showPanelMidLeft : function() {
+                this.sendResizeStart();
 
 				var panelWidth = this.model.get("openWidth");
                 var panelOffset = panelWidth - this.$rollRight.width();
@@ -206,7 +211,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
 			showPanelClosed : function() {
-				// display full width map
+                this.sendResizeStart();
+                // display full width map
                 var $slide = $(".slideHorizontal");
                 if ($slide.is(":hidden")) {
                     $slide.not(".corner").show();
@@ -257,6 +263,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				this.$el.resizable({
                     handles: 'e',
 					start : function(event, ui) {
+                        that.sendResizeStart();
                         //trigger an event mask so map doesn't grab mouseover events
                         $(document).trigger('eventMaskOn');
 
@@ -303,9 +310,9 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 						that.sendWidth(newWidth, false);
 
                         $(this).trigger("adjustContents");
-                        //if the size difference is more than 10 percent, fire a search
+                        //if the size difference is more than 10 percent, fire an extent change
                         if (Math.abs(ui.originalSize.width - newWidth) > ui.originalSize.width * .1) {
-                            $(document).trigger("fireSearch");
+                            $(document).trigger("map.updateSearchExtent");
                         }
 
 

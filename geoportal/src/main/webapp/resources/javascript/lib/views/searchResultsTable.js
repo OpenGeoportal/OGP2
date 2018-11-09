@@ -67,7 +67,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				});
 
 			
-				this.fireSearchHandler();
+				this.newSearchHandler();
 
 			},
 
@@ -156,9 +156,10 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				$scrollTarget.height(ht);
 			},
 			
-			fireSearchHandler: function(){
+			newSearchHandler: function(){
 				var that = this;
-				jQuery(document).on("fireSearch", function(){
+				jQuery(document).on("newSearch", function(e){
+					//console.log('newSearch called');
 					that.$el.fadeTo("fast", .5);
 					that.collection.newSearch();
 					jQuery(document).one("newResults", function(){that.$el.fadeTo("fast", 1)});

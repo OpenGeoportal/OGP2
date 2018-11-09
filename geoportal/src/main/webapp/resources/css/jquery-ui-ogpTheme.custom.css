@@ -628,14 +628,13 @@ input.ui-button::-moz-focus-inner,button.ui-button::-moz-focus-inner {
 .ui-dialog-titlebar button.ui-dialog-titlebar-close {
 	border: medium none;
 	height: 15px;
-	margin: -8px 0 0;
+	margin: -8px 5px 0;
 	padding: 1px;
 	position: absolute;
 	right: 0.3em;
 	top: 57%;
 	width: 17px;
-    visibility: hidden;
-
+	font-size: 0;
 }
 
 .ui-dialog-titlebar button.ui-dialog-titlebar-close > span {

@@ -29,7 +29,7 @@ OpenGeoportal.MapController = function(params) {
 
     var validateParams = function (params) {
         var valid = true;
-        var required = ["previewed", "requestQueue", "template", "config", "panel"];
+        var required = ["previewed", "requestQueue", "template", "config"];
         _.each(required, function (prop) {
             valid = valid && _.has(params, prop);
         });
@@ -45,7 +45,7 @@ OpenGeoportal.MapController = function(params) {
     this.requestQueue = params.requestQueue;
     this.template = params.template;
     this.config = params.config;
-    this.panel = params.panel;
+    //this.panel = params.panel;
 
 
     var mapready = $.Deferred();
@@ -197,7 +197,6 @@ OpenGeoportal.MapController = function(params) {
 	this.moveEventId = null;
 	
 	this.registerMapEvents = function() {
-		var that = this;
 		// register events
 
         $(document).on("container.resize", function (e, data) {
@@ -212,54 +211,10 @@ OpenGeoportal.MapController = function(params) {
 
             if (newHeight !== oldHeight || newWidth !== oldWidth){
                 $map.height(newHeight).width(newWidth);
-                that.wrapper.redrawMap();
+                self.wrapper.redrawMap();
             }
 
         });
-		var uiready = $.Deferred();
-		$(document).on('ui.readyForSearch', function(){
-			uiready.resolve();
-		});
-		// TODO: don't fire this until everything is ready
-		$.when(mapready, uiready).then(function(){
-
-            that.wrapper.mapMoveEnd(function() {
-                console.log('mapmoveend');
-                var newExtent = that.wrapper.getSearchBounds();
-                var c = that.wrapper.getCenter();
-                var newCenter = {
-                    "centerX": c.lng,
-                    "centerY": c.lat
-                };
-
-                /*
-                 * Translate the Leaflet event to a jQuery event used by the
-                 * application. This is the event used to trigger a search on map
-                 * move. cluster moveend events so that we don't fire too often
-                 *
-                 * @fires "map.extentChanged"
-                 *
-                */
-                if (that.moveEventId !== null) {
-                    clearTimeout(that.moveEventId);
-                }
-
-                var trigger = function(){
-                    /*
-                    mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
-                    mapCenter: {centerX: 0, centerY: 0},
-                     */
-                    $(document).trigger('map.extentChanged', {
-                        mapExtent : newExtent,
-                        mapCenter : newCenter
-                    });
-                };
-
-                that.moveEventId = setTimeout(trigger, 100);
-
-            });
-		});
-
 
 
 		this.bboxHandler();
@@ -271,6 +226,58 @@ OpenGeoportal.MapController = function(params) {
 		this.clearLayersHandler();
 		this.mouseCursorHandler();
         this.zoomToExtentHandler();
+        this.updateSearchExtentHandler();
+        this.mapInteractionHandler();
+	};
+
+    /**
+	 * Attaches a handler that updates the search extent on map moveend, once a user interaction event has been triggered
+     */
+	this.mapInteractionHandler = function(){
+		// don't start searching on extent change until ready
+        $(document).one("map.userinteraction", function(e){
+        	self.wrapper.clearNavBarHistory();
+            self.wrapper.mapMoveEnd(self.updateSearchExtent);
+        });
+
+		this.wrapper.onUserInteraction(function(){
+			$(document).trigger("map.userinteraction");
+		});
+	};
+    /**
+	 * set the search extent and broadcast it
+     */
+	this.updateSearchExtent = function(){
+
+        $(document).trigger('map.extentChanged', self.getSearchExtent());
+
+	};
+
+
+    /**
+	 * Gets the search extent from the map.
+     * @returns {{mapExtent: {minX, maxX, minY, maxY}, mapCenter: {centerX: *, centerY: *}}}
+     */
+	this.getSearchExtent = function(){
+
+        var newExtent = this.wrapper.getSearchBounds();
+        var c = this.wrapper.getCenter();
+        var newCenter = {
+            "centerX": c.lng,
+            "centerY": c.lat
+        };
+
+        return {
+            mapExtent : newExtent,
+            mapCenter : newCenter
+        }
+	};
+
+    /**
+	 * listens for event that requests a search extent update.
+     */
+	this.updateSearchExtentHandler = function(){
+		$(document).on('map.updateSearchExtent', this.updateSearchExtent);
 	};
 
 	/**

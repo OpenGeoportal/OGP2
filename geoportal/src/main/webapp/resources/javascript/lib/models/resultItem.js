@@ -148,6 +148,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		fetchStatus: null,
 		
 		newSearch: function(){
+			//console.log('new search');
 			if (!this.fetchOn && typeof this.fetchStatus !== "undefined" && this.fetchStatus !== null){
 				console.log("abort called");
 				this.fetchStatus.abort();

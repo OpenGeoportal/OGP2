@@ -79,6 +79,13 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
                 });
             }
         });
+
+        this.listenTo(this, "change:firstQueryFired", function(){
+        	// broadcast an event to let the application know that the first query has been fired
+        	if (this.get("firstQueryFired")){
+                $(document).trigger('firstQueryFired')
+            }
+		});
 	},
 
 
@@ -106,13 +113,10 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	/*
 	 * adds spatial search params to solr object if pertinent
 	 */
-	setMapExtent : function(extent, center) {
+	setMapExtent : function(searchExtent) {
         // make sure we're getting the right values for the extent
 
-		this.set({
-			mapExtent : extent,
-			mapCenter : center
-		}, {
+		this.set(searchExtent, {
 			silent : true
 		});
 

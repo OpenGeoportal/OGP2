@@ -109,8 +109,7 @@ $(document)
                     template: OpenGeoportal.Template,
                     previewed: ogp.previewed,
                     requestQueue: ogp.requestQueue,
-                    config: OpenGeoportal.Config,
-                    panel: ogp.panel
+                    config: OpenGeoportal.Config
                 });
                 ogp.map.initMap("map");
 
@@ -172,8 +171,13 @@ $(document)
 
             ogp.search = new OpenGeoportal.Views.Query({
                 model: ogp.queryTerms,
-                el: "form#searchForm"
+                el: "form#searchForm",
+                widgets: ogp.widgets,
+                tableControls: ogp.tableControls,
+                map: ogp.map,
+                ready: [ogp.map.ready]
             });
+
 
             ogp.facets = new OpenGeoportal.FacetCollection();
             // The collection that holds search
