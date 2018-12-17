@@ -51,8 +51,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				
 				this.mapInputsToModel();
 
-				var advSearchButtons$ = jQuery(".advancedSearchButtons")
-						.first();
+				var advSearchButtons$ = $(".advancedSearchButtons").first();
 				this.widgets.prependButton(advSearchButtons$,
 						"advancedSearchSubmit", "Search", function() {
 							that.fireSearchWithZoom();
@@ -69,11 +68,15 @@ OpenGeoportal.Views.Query = Backbone.View
 				this.searchBoxKeypressHandler();
 				this.fireSearchHandler();
 
-				jQuery(document).on("map.extentChanged", function(e, searchExtent) {
+				$(document).on("map.extentChanged", function(e, searchExtent) {
 					that.model.setMapExtent(searchExtent);
 				});
 
                 $("#whereField").focus();
+
+                if (this.model.get('searchType') === "advanced"){
+                	this.showAdvanced();
+				}
 			},
 			
 			events : {
@@ -331,7 +334,10 @@ OpenGeoportal.Views.Query = Backbone.View
 			
 			mapFilterHandler : function() {
 				var that = this;
-				jQuery("#mapFilterCheck").on("change", function(event) {
+				var $mapFilter = $("#mapFilterCheck");
+				$mapFilter.prop('checked', this.model.get('ignoreSpatial'));
+
+				$mapFilter.on("change", function(event) {
                     that.noteSearchChanged();
 					that.model.set({
 						ignoreSpatial : this.checked
@@ -452,6 +458,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * allows a user to select an ISO topic to search
 			 */
 			createTopicsMenu : function() {
+				// todo: this should be able to show a preselected value. don't add collections as model attributes.
 				var isoTopics = this.model.get("isoTopicList");
 				this.topics = new OpenGeoportal.Views.CollectionSelect({
 					collection : isoTopics,
@@ -552,7 +559,34 @@ OpenGeoportal.Views.Query = Backbone.View
 				});
             },
 
+			showAdvanced: function(){
+                var $search = $("#searchForm");
 
+                // hide basic search controls
+                $search.find(".basicSearch").hide();
+                $("#geosearchDiv").removeClass("basicSearch").addClass(
+                    "advancedSearch");
+
+                var $searchBox = $('#searchBox');
+                var hght = $(".searchFormRow").height() * 3;
+                $searchBox.height($searchBox.height() + hght);
+
+                var $adv = $search.find(".advancedSearch");
+                $adv.filter(".searchRow1").show();
+                $adv.filter(".searchRow2").show();
+                $adv.filter(".searchRow3").show();
+                $adv.filter(".searchRow4").show();
+
+                this.map.ready.then(function(){
+                    $(".olControlModPanZoomBar, .olControlPanel, #mapToolBar, #neCorner, #nwCorner, .leaflet-top").addClass("slideVertical");
+                    var margin = $(".slideVertical").css("margin-top");
+                    $(".slideVertical").css({"margin-top": parseInt(margin) + hght});
+                    $(document).trigger("searchform.resize", {"delta": hght});
+                });
+
+
+
+            },
             /**
 			 * expand search box height to accommodate advanced search.
              * @param hght  searchRow height

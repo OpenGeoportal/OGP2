@@ -29,7 +29,7 @@ OpenGeoportal.MapController = function(params) {
 
     var validateParams = function (params) {
         var valid = true;
-        var required = ["previewed", "requestQueue", "template", "config"];
+        var required = ["previewed", "requestQueue", "template", "config", "mapState"];
         _.each(required, function (prop) {
             valid = valid && _.has(params, prop);
         });
@@ -45,6 +45,7 @@ OpenGeoportal.MapController = function(params) {
     this.requestQueue = params.requestQueue;
     this.template = params.template;
     this.config = params.config;
+    this.mapState = params.mapState;
     //this.panel = params.panel;
 
 
@@ -76,17 +77,36 @@ OpenGeoportal.MapController = function(params) {
 		// load the basemaps collection, set the default as selected
         var basemaps = OpenGeoportal.Config.BasemapsBootstrap;
         this.basemapsCollection = new OpenGeoportal.BasemapCollection(basemaps);
-        var selected = this.basemapsCollection.where({'default': true });
+
+        this.basemapsCollection.listenTo(this.basemapsCollection, "change:selected", function(model){
+			self.mapState.set({"basemapId": model.get("basemapId")});
+		});
+
+        var selected = [];
+        if (this.mapState.has('basemapId')){
+        	selected = this.basemapsCollection.where({'basemapId': this.mapState.get("basemapId") });
+		}
+		if (selected.length === 0) {
+            selected = this.basemapsCollection.where({'default': true});
+        }
         if (selected.length > 0){
             selected[0].set({"selected": true}, {"silent": true});
         } else {
         	throw new Error('No default basemap set.');
 		}
 
-        this.createMapHtml(containerDiv);
+        var zoom = this.getInitialZoomLevel();
+        if (this.mapState.has('zoom')){
+            zoom = this.mapState.get('zoom');
+        } else {
+        	this.mapState.set({'zoom': zoom});
+		}
+
+        this.createMapHtml(containerDiv, zoom);
+
 
 		this.wrapper =  new OpenGeoportal.LeafletWrapper();
-		var leafletPromise = this.wrapper.init(this.mapDiv, selected[0], this.getInitialZoomLevel());
+		var leafletPromise = this.wrapper.init(this.mapDiv, selected[0], this.mapState);
 
 		// console.log("about to register events");
 		try {
@@ -111,7 +131,7 @@ OpenGeoportal.MapController = function(params) {
      * @param {string}
      *            div - the id for the div the map should be rendered to
      */
-    this.createMapHtml = function(div) {
+    this.createMapHtml = function(div, zoom) {
         // test for uniqueness
         var div$ = jQuery("#" + div);
         if (div$.length === 0) {
@@ -125,16 +145,15 @@ OpenGeoportal.MapController = function(params) {
         div$.html(resultsHTML);
 
         this.mapDiv = div;
-        var initialZoom = this.getInitialZoomLevel();
 
 		var initialHeight;
-        if (initialZoom === 1){
+        if (zoom === 1){
             initialHeight = 512;
         } else {
-            initialHeight = jQuery("#" + this.containerDiv).parent().height();
+            initialHeight = $("#" + this.containerDiv).parent().height();
         }
 
-        jQuery('#' + this.mapDiv).height(initialHeight).width(jQuery("#" + this.containerDiv).parent().width());
+        $('#' + this.mapDiv).height(initialHeight).width($("#" + this.containerDiv).parent().width());
     };
 
 	this.getInitialZoomLevel = function() {
@@ -248,8 +267,15 @@ OpenGeoportal.MapController = function(params) {
 	 * set the search extent and broadcast it
      */
 	this.updateSearchExtent = function(){
+		var searchExtent = self.getSearchExtent();
 
-        $(document).trigger('map.extentChanged', self.getSearchExtent());
+        $(document).trigger('map.extentChanged', searchExtent);
+
+        self.mapState.set({
+			"center": self.wrapper.getCenter(),
+			"zoom": self.wrapper.getZoom(),
+			"searchExtent": searchExtent
+		});
 
 	};
 
@@ -467,18 +493,6 @@ OpenGeoportal.MapController = function(params) {
 	 * map utility functions
 	 **************************************************************************/
 
-/*	this.hasMultipleWorlds = function() {
-		var exp = this.getZoom() + 8;
-		var globalWidth = Math.pow(2, exp);
-
-		var viewPortWidth = this.getSize().w - this.getMapOffset().x;
-
-		if (viewPortWidth > globalWidth) {
-			return true;
-		} else {
-			return false;
-		}
-	};*/
 
 	this.getMapOffset = function() {
 		var mapOffset = jQuery("#" + this.containerDiv).offset();
@@ -495,15 +509,6 @@ OpenGeoportal.MapController = function(params) {
 		return pixelOffset;
 	};
 
-/*	this.adjustExtent = function() {
-		var offset = this.getMapOffset();
-		var fullMapHeight = jQuery('#' + this.mapDiv).height();
-		var fullMapWidth = jQuery('#' + this.mapDiv).width();
-		var adjust = {};
-		adjust.x = (fullMapWidth - offset.x) / fullMapWidth;
-		adjust.y = (fullMapHeight - offset.y) / fullMapHeight;
-		return adjust;
-	};*/
 
 	//Is only needed for MapIt Functions. Not currently being used by UA
 	this.getCombinedBounds = function(arrBounds) {
@@ -511,55 +516,6 @@ OpenGeoportal.MapController = function(params) {
 		return this.wrapper.combineBounds(arrBounds);
 	};
 
-/*	//Is only needed for MapIt Functions. Not currently being used by UA
-	this.boundsToOLObject = function(model) {
-		var newExtent = new OpenLayers.Bounds();
-		newExtent.left = model.get("MinX");
-		newExtent.right = model.get("MaxX");
-		newExtent.top = model.get("MaxY");
-		newExtent.bottom = model.get("MinY");
-
-		return newExtent;
-	};
-
-	//Is only used by the mapIt functions.  Not currently being used UA
-	this.getSpecifiedExtent = function getSpecifiedExtent(extentType, layerObj) {
-		var extentArr = [];
-		var maxExtentForLayers = null;
-		if (extentType === "maxForLayers") {
-			for ( var indx in layerObj) {
-
-				var arrBbox = this.boundsToOLObject(layerObj[indx]);
-				extentArr.push(arrBbox);
-			}
-			if (extentArr.length > 1) {
-				maxExtentForLayers = this.getCombinedBounds(extentArr).toBBOX();
-			} else {
-				maxExtentForLayers = extentArr[0].toBBOX();
-			}
-		}
-		var extentMap = {
-			"global" : "-180,-85,180,85",
-			"current" : this.getBounds().toBBoxString(),
-			"maxForLayers" : maxExtentForLayers
-		};
-
-		if (typeof extentMap[extentType] !== "undefined") {
-			return extentMap[extentType];
-		} else {
-			throw new Error('Extent type "' + extentType + '" is undefined.');
-		}
-	};*/
-
-/*	this.getBboxFromCoords = function(minx, miny, maxx, maxy) {
-		var bbox = [];
-		bbox.push(minx);
-		bbox.push(miny);
-		bbox.push(maxx);
-		bbox.push(maxy);
-		bbox = bbox.join(",");
-		return bbox;
-	};*/
 
 
 	/***************************************************************************

@@ -16,7 +16,9 @@
             panHandTitle: 'Drag to pan',
             useBounds: false, //alternatively, store bounds in the history, instead of zoom/center,
             addZoomBox: false,   // add zoombox/panhand controls
-            callbacks: {}
+            panHand: true,
+            callbacks: {},
+            viewHistory: []
         },
 
         zoomBoxActive: false,
@@ -51,18 +53,33 @@
                     controlName + '-panhand', container, this.panHandOn);
 
                 // panhand is active by default, so reflect this on the button state
-                this._setButtonInactive(this._zoomBoxButton);
-                this._setButtonActive(this._panButton);
+                if (options.panHand){
+                    this._setButtonInactive(this._zoomBoxButton);
+                    this._setButtonActive(this._panButton);
+                } else {
+                    this.zoomBoxOn();
+                }
 
             }
             // Initialize view history and index
+            this._viewHistory = options.viewHistory;
             if (!this.options.useBounds) {
-                this._viewHistory = [{center: this.options.center, zoom: this.options.zoom}];
+                var init = {center: this.options.center, zoom: this.options.zoom};
+                if (this._viewHistory.length > 0){
+                    if (!this._viewHistory[0].hasOwnProperty('center')){
+                        this._viewHistory = [];
+                    }
+                }
+                this._viewHistory.push(init);
             } else {
                 if (this.options.bounds) {
-                    this._viewHistory = [this.options.bounds];
-                } else {
-                    this._viewHistory = [];
+                    if (this._viewHistory.length > 0) {
+                        if (this._viewHistory[0].hasOwnProperty('center')){
+                            this._viewHistory = [];
+                        }
+
+                    }
+                    this._viewHistory.push(this.options.bounds);
                 }
             }
             this._curIndx = 0;
@@ -217,6 +234,13 @@
             this._setButtonActive(this._panButton);
 
             this._doCallback('panHandOn');
+        },
+
+        getState: function(){
+            return {
+                panHand: !this.zoomBoxActive,
+                viewHistory: this._viewHistory
+            }
         },
 
         _handleZoomBoxMouseDown: function (event) {

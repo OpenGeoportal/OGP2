@@ -63,11 +63,45 @@ OpenGeoportal.UserState = function () {
 
     var models_and_collections = {};
 
-    self.getWatched = function () {
+    self.getUserState = function () {
         return models_and_collections;
     };
 
-    self.listenForUpdates = function (collections) {
+    /**
+     * if the state is managed by a Backbone model or collection, we can add a listener to update on change.
+     * @param key
+     * @param collection
+     * @param events
+     */
+    self.listenForModelUpdates = function (key, collection, events) {
+
+        models_and_collections[key] = collection;
+
+        collection.listenTo(collection, events, self.save);
+    };
+
+    /**
+     * use this function to manually update state
+     * @param key
+     * @param valueObj
+     * @param options
+     */
+    self.updateUserState = function(key, valueObj, options){
+        models_and_collections[key] = valueObj;
+        if (_.has(models_and_collections, key)){
+            // merge
+        } else {
+            models_and_collections[key] = valueObj;
+        }
+
+        if (_.has(options, 'silent') && options.silent){
+            //
+        } else {
+            self.save();
+        }
+    };
+
+/*    self.listenForUpdates = function (collections) {
         var valid = true;
         var vals = ["cart", "previewed", "requestQueue", "panel"];
         _.each(vals, function (k) {
@@ -82,8 +116,8 @@ OpenGeoportal.UserState = function () {
         collections.cart.listenTo(collections.cart, "add remove", self.save);
         collections.previewed.listenTo(collections.previewed, "add remove", self.save);
         collections.requestQueue.listenTo(collections.requestQueue, "add remove", self.save);
-        collections.panel.listenTo(collections.panel, "change:currentTab", self.save);
-    };
+        collections.panel.listenTo(collections.panel, "change:currentTab change:openWidth change:mode", self.save);
+    };*/
 
     /**
      * Gather state info from the instance.
@@ -100,12 +134,14 @@ OpenGeoportal.UserState = function () {
         //ui settings? columns shown, widths, pane width, map extent, basemap, search type,
         // displayed dialogs?
 
-        var coll = self.getWatched();
+        var coll = self.getUserState();
 
-        state.cart = coll.cart.toJSON();
-        state.previewed = coll.previewed.toJSON();
-        state.requests = coll.requestQueue.toJSON();
-        state.tabId = coll.panel.get("currentTab");
+        _.each(coll, function(v, k){
+            state[k] = v.toJSON();
+        });
+
+        console.log('gather state');
+        console.log(state);
         return state;
     };
 

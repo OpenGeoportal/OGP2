@@ -53,6 +53,7 @@
         <js>/resources/javascript/lib/models/facetModel.js</js>
 		<js>/resources/javascript/lib/models/resultItem.js</js>
 		<js>/resources/javascript/lib/models/basemapModel.js</js>
+		<js>/resources/javascript/lib/models/mapStateModel.js</js>
 		<js>/resources/javascript/lib/models/tableConfig.js</js>
 		<js>/resources/javascript/lib/models/tableLayerSettings.js</js>
 		<js>/resources/javascript/lib/models/tableSortSettings.js</js>

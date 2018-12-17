@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(value= JsonInclude.Include.NON_ABSENT)
 public class BasemapConfig {
 
-    String id;
+    String basemapId;
     String displayName;
     String attribution;
     Integer maxZoom;
@@ -22,12 +22,12 @@ public class BasemapConfig {
 
     String apikey;
 
-    public String getId() {
-        return id;
+    public String getBasemapId() {
+        return basemapId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setBasemapId(String id) {
+        this.basemapId = id;
     }
 
     public String getDisplayName() {

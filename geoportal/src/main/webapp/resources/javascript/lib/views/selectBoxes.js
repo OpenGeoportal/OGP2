@@ -171,6 +171,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		this.initRender();
 		this.render();
 	},
+
 	getTemplateParams: function(){
 
 		var menuHtml = "";	
@@ -226,9 +227,10 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 	
 	render: function(){
 		var selectionAttr = this.getSelectionAttribute();
-		var selectedModel = this.collection.filter(function(model){
+		var models = this.collection.filter(function(model){
 				return model.get(selectionAttr);
-			})[0];
+			});
+		var selectedModel = models[0];
 		var value = "";
 		var display = this.getButtonLabel();
 		if (typeof selectedModel !== "undefined"){

@@ -19,7 +19,6 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 OpenGeoportal.Views.LeftPanel = Backbone.View
 		.extend({
 			initialize : function() {
-                //TODO: account for mode open on initial load
                 this.initializeTabs();
 				this.listenTo(this.model, "change:mode", this.showPanel);
                 this.listenTo(this.model, "change:currentTab", this.changeTab);
@@ -34,8 +33,11 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
                     "margin-left": "-" + margin + "px"
                 });
 
+                // closed is the default mode.
                 if (this.model.get("mode") === "open") {
                     this.showPanelMidRight(true);
+                } else if (this.model.get("mode") === "fullscreen") {
+                    this.showPanelFullScreen();
                 }
 
 			},
@@ -54,8 +56,15 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
             changeTab: function (model) {
-                $("#tabs").tabs("active", model.get("currentTab"));
+				var $tabs = $("#tabs");
+				var modelTab = model.get("currentTab");
+
+				// only try to change the tab if the new index is different
+                if ($tabs.tabs("option", "active") !== modelTab) {
+                    $tabs.tabs("option", "active", modelTab);
+                }
             },
+
             initializeTabs: function () {
                 var self = this;
                 $("#tabs").tabs(
@@ -66,10 +75,12 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 
                             self.$el.trigger("adjustContents");
 
-                            var label, idx = ui.index;
+                            var idx = $(this).tabs("option", "active");
 
-                            label = (idx === 1) && "Cart Tab" || (idx === 0)
-                                && "Search Tab" || "Getting Started Tab";
+                            self.model.set({"currentTab": idx});
+
+                            //label = (idx === 1) && "Cart Tab" || (idx === 0)
+                             //   && "Search Tab" || "Getting Started Tab";
                             //analytics.track("Interface", "Change Tab", label);
                         }
 
@@ -305,6 +316,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
                         that.model.set({
                             openWidth: newWidth
                         });
+                        console.log('openwidth changed');
 
                         // set the map viewport
 						that.sendWidth(newWidth, false);

@@ -35,9 +35,9 @@ OpenGeoportal.LeafletWrapper = function() {
      *            the created Leaflet map
      *
      */
-    this.init = function (mapDiv, basemap, initialZoom) {
+    this.init = function (mapDiv, basemap, initialZoom, initialCenter) {
         try {
-            this.leafletMap = this.createMap(mapDiv, basemap, initialZoom);
+            this.leafletMap = this.createMap(mapDiv, basemap, initialZoom, initialCenter);
         } catch (e) {
             console.log("problem creating leaflet map");
             console.log(e);
@@ -56,7 +56,7 @@ OpenGeoportal.LeafletWrapper = function() {
      * @returns an array of controls to pass to the map
      */
 
-    this.createLeafletControls = function () {
+    this.createLeafletControls = function (mapState) {
 
         var scaleBar = L.control.scale({
             position: "bottomright"
@@ -70,20 +70,37 @@ OpenGeoportal.LeafletWrapper = function() {
 
         function broadcastZoomBoxOn(){
             $(document).trigger('map.zoomBoxOn');
+            mapState.set({'panHand': false});
         }
 
-        this.navbar = L.control.navbar({
+        function broadcastPanHandOn(){
+            $(document).trigger('map.panHandOn');
+            mapState.set({'panHand': true});
+        }
+
+        var navbarInit = {
             positon: 'topleft',
             useBounds: true,
             addZoomBox: true,
+            panHand: true,
             callbacks: {
-                zoomBoxOn: broadcastZoomBoxOn
+                zoomBoxOn: broadcastZoomBoxOn,
+                panHandOn: broadcastPanHandOn
             }
-        });
+        };
 
-        var mapControls = [scaleBar, mouseCoords, this.navbar];
+        if (mapState.has('panHand')){
+            navbarInit.panHand = mapState.get('panHand');
+        }
 
-        return mapControls;
+        if (mapState.has('viewHistory')){
+            navbarInit.viewHistory = mapState.get('viewHistory');
+        }
+
+        this.navbar = L.control.navbar(navbarInit);
+
+        return [scaleBar, mouseCoords, this.navbar];
+
     };
 
 
@@ -95,12 +112,13 @@ OpenGeoportal.LeafletWrapper = function() {
      *            userOptions - options to pass through to the Leaflet Map
      *            object
      */
-    this.createMap = function (mapDiv, basemap, initialZoom, userOptions) {
+    this.createMap = function (mapDiv, basemap, mapState, userOptions) {
         userOptions = userOptions || {};
-        initialZoom = initialZoom || 1;
+        var zoom = mapState.get('zoom') || 1;
+        var center = mapState.get('center') || {"lat": 0, "lng": 0};
 
         // set default Leaflet map options
-        this.controls = this.createLeafletControls();
+        this.controls = this.createLeafletControls(mapState);
 
         // adds the layer to management object and returns the layer
         var basemapLayer = this.registerBasemap(basemap);
@@ -108,11 +126,12 @@ OpenGeoportal.LeafletWrapper = function() {
             initDeferred.resolve();
         });
 
+        console.log('create map zoom: ' + zoom);
         // adding L.Control.Zoomslider, not adding default zoom control
         var options = {
             layers: [basemapLayer],
-            center: new L.LatLng(0, 0),
-            zoom: initialZoom,
+            center: new L.LatLng(center.lat, center.lng),
+            zoom: zoom,
             minZoom: 1,
             maxZoom: 18,
             zoomsliderControl: true,
@@ -148,7 +167,7 @@ OpenGeoportal.LeafletWrapper = function() {
 
         // when the results pane resizes, resize the view port
         $(document).on("results-pane.resizestart", function(e){
-            var bounds = map.wrapLatLngBounds(map.getBounds());
+
             // note: using bounds tends to shrink the actual bounds as you go back and forth, but using center, zoom
             // can crop too much
             var center = map.getCenter();
@@ -160,18 +179,16 @@ OpenGeoportal.LeafletWrapper = function() {
                 // optional 'recenter' property resets the map center when the viewport changes size.
                 if (_.has(data, "recenter")) {
                     if (data.recenter) {
-                        map.fitBounds(bounds);
-                        //map.setView(center, zoom);
+                        map.setView(center, zoom);
                     }
                 }
 
             });
         });
 
-
-
         return map;
     };
+
 
 
 
@@ -263,29 +280,30 @@ OpenGeoportal.LeafletWrapper = function() {
 
     this.getSearchBounds = function () {
         var leafletBounds = this.leafletMap.wrapLatLngBounds(this.leafletMap.getBounds());
-        // console.log('leaflet bounds');
-        // console.log(leafletBounds);
         var minX = leafletBounds.getWest();
         var maxX = leafletBounds.getEast();
 
-        if (maxX - minX >= 360) {
+        if (Math.abs(maxX - minX) >= 360) {
+            /*
+            more than one copy of the world, so just pass the max extent
+             */
             minX = -180;
             maxX = 180;
+        } else {
+            if (minX < -180) {
+                // console.log('crosses date line min');
+
+                minX = 180 - Math.abs(minX + 180);
+
+            }
+
+            if (maxX > 180) {
+                // console.log('crosses date line max');
+
+                maxX = -180 + (maxX - 180)
+            }
+
         }
-
-        if (minX < -180) {
-            // console.log('crosses date line min');
-
-            minX = 180 - Math.abs(minX + 180);
-
-        }
-
-        if (maxX > 180) {
-            // console.log('crosses date line max');
-
-            maxX = -180 + (maxX - 180)
-        }
-
 
         var bounds = {
             "minX": minX,
@@ -294,7 +312,6 @@ OpenGeoportal.LeafletWrapper = function() {
             "maxY": this.clamp(leafletBounds.getNorth(), -90, 90)
         };
 
-        // console.log(bounds);
         return bounds;
 
     };
@@ -317,6 +334,10 @@ OpenGeoportal.LeafletWrapper = function() {
 
     this.getCenter = function () {
         return this.leafletMap.getCenter();
+    };
+
+    this.getZoom = function(){
+        return this.leafletMap.getZoom();
     };
 
     // add layers to map
@@ -543,10 +564,9 @@ OpenGeoportal.LeafletWrapper = function() {
     };
 
     this.zoomToExtent = function(bbox){
-        console.log('zoomtoextent');
         if (bbox[0] > bbox[2]){
-            console.log('crosses dateline.');
-            console.log(bbox);
+            //console.log('crosses dateline.');
+            //console.log(bbox);
             this.leafletMap.fitBounds([[bbox[1], bbox[0] - 360], [bbox[3], bbox[2]]]);
 
         } else {

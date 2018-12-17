@@ -6,9 +6,9 @@
  *
  */
 
-if (typeof OpenGeoportal == 'undefined') {
+if (typeof OpenGeoportal === 'undefined') {
     OpenGeoportal = {};
-} else if (typeof OpenGeoportal != "object") {
+} else if (typeof OpenGeoportal !== "object") {
     throw new Error("OpenGeoportal already exists and is not an object");
 }
 
@@ -42,8 +42,10 @@ $(document)
             ogp.userState = new OpenGeoportal.UserState();
 
             var userState = OpenGeoportal.Config.userStateBootstrap || {};
-            var hasUserState = !_.isEmpty(userState);
 
+            var hasUserState = !_.isEmpty(userState);
+            console.log('bootstrapped state');
+            console.log(userState);
 
             /*
              Handles client portion of authentication and authorization
@@ -63,8 +65,15 @@ $(document)
                 prev = userState.previewed;
             }
             ogp.previewed = new OpenGeoportal.PreviewedLayers(prev);
+            ogp.userState.listenForModelUpdates("previewed", ogp.previewed, "add remove");
 
-            ogp.requestQueue = new OpenGeoportal.RequestQueue();
+            var rq = null;
+            if (_.has(userState, "requestQueue")) {
+                rq = userState.requestQueue;
+            }
+            ogp.requestQueue = new OpenGeoportal.RequestQueue(rq);
+
+            ogp.userState.listenForModelUpdates("requestQueue", ogp.requestQueue, "add remove");
 
             var cart = null;
             if (_.has(userState, "cart")) {
@@ -76,6 +85,7 @@ $(document)
                 widgets: OpenGeoportal.Widgets
             });
 
+            ogp.userState.listenForModelUpdates("cart", ogp.cart, "add remove");
 
 
             ogp.indicator = new OpenGeoportal.Views.RequestQueueLoadIndicatorView({
@@ -87,21 +97,28 @@ $(document)
              // handles behavior of "frame elements", like expansion of
              // advanced search area, left panel
              */
-            ogp.panel = new OpenGeoportal.Models.LeftPanel();
-            if (hasUserState) {
-                ogp.panel.set("mode", "open");
+            var panel = null;
+            if (_.has(userState, "panel")) {
+                panel = userState.panel;
             }
 
-            ogp.userState.listenForUpdates({
-                panel: ogp.panel,
-                cart: ogp.cart,
-                previewed: ogp.previewed,
-                requestQueue: ogp.requestQueue
-            });
+            ogp.panel = new OpenGeoportal.Models.LeftPanel(panel);
+
+            ogp.userState.listenForModelUpdates("panel", ogp.panel, "change:currentTab change:openWidth change:mode");
+
 
             /*
              Create the map
              */
+
+            var mapState = null;
+            if (_.has(userState, "map")) {
+                mapState = userState.map;
+            }
+
+            ogp.mapState = new OpenGeoportal.Models.MapState(mapState);
+
+            ogp.userState.listenForModelUpdates("map", ogp.mapState, "change");
 
             try {
 
@@ -109,7 +126,8 @@ $(document)
                     template: OpenGeoportal.Template,
                     previewed: ogp.previewed,
                     requestQueue: ogp.requestQueue,
-                    config: OpenGeoportal.Config
+                    config: OpenGeoportal.Config,
+                    mapState: ogp.mapState
                 });
                 ogp.map.initMap("map");
 
@@ -155,18 +173,23 @@ $(document)
             /*
              bootstrap Search related objects
              */
+
+            /*
+            todo: think through query state. do we want to persist query terms, dropdown values, history across reloads?
+            todo: also, make sure that UI reflects loaded state
+            */
+            var query = null;
+            if (_.has(userState, "query")) {
+                query = userState.query;
+            }
+
+
             // model that holds state for query terms
-            ogp.queryTerms = new OpenGeoportal.Models.QueryTerms({}, {
+            ogp.queryTerms = new OpenGeoportal.Models.QueryTerms(query, {
                 config: OpenGeoportal.Config
             });
 
-
-            /*
-             If there is user state passed from the session, bootstrap here.
-             */
-            //TODO: is there a more elegant way to handle this? pass collections in to constructors?
-            var bootstrapModels = new OpenGeoportal.BootstrapModels(ogp);
-            bootstrapModels.bootstrapUserState(userState);
+            ogp.userState.listenForModelUpdates("query", ogp.queryTerms, "change");
 
 
             ogp.search = new OpenGeoportal.Views.Query({
@@ -218,6 +241,8 @@ $(document)
 
                 // if the url is a share link, add the
                 // shared layers to the cart
+
+                // todo: integrate this with userState.
                 var hasSharedLayers = ogp.cartView.addSharedLayers();
 
                 // introFlow dictates behavior of info
