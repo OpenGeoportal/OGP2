@@ -17,7 +17,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
  */
 OpenGeoportal.Views.CartRow = OpenGeoportal.Views.LayerRow.extend({
 
-	subClassEvents : {
+    role: 'cartItem',
+
+    subClassEvents : {
         "change .cartCheckBox > input": "syncCheck"
 	},
 

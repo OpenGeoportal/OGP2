@@ -52,7 +52,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		history: []
 	},
 
-    initialize: function (options) {
+    initialize: function (prevState, options) {
 
         // Always show restricted layers for repositories you can log in to
         var restricted = this.config.General.get("loginConfig").repositoryId;
@@ -62,13 +62,23 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
         //show restricted layers from all repositories
         //var repositories = OpenGeoportal.Config.Repositories.pluck("shortName")[0];
 
-        this.set({
-            alwaysIncludeRestrictedFrom: alwaysInclude,
-            isoTopicList: this.config.IsoTopics,
-            dataTypeList: this.config.DataTypes,
-            repositoryList: this.config.Repositories
+		if (prevState === null) {
+            this.set({
+                alwaysIncludeRestrictedFrom: alwaysInclude,
+                isoTopicList: this.config.IsoTopics,
+                dataTypeList: this.config.DataTypes,
+                repositoryList: this.config.Repositories
 
-        });
+            });
+        } else {
+            this.set({
+                alwaysIncludeRestrictedFrom: alwaysInclude,
+                isoTopicList: new OpenGeoportal.Config.TopicCollection(prevState.isoTopicList),
+                dataTypeList: new OpenGeoportal.Config.DataTypeCollection(prevState.dataTypeList),
+                repositoryList: new OpenGeoportal.Config.RepositoryCollection(prevState.repositoryList)
+
+            });
+		}
 
         this.listenTo(this, "change:geocodedBbox", function () {
             //console.log("geocoder map zoom");

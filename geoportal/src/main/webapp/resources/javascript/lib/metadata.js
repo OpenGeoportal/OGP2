@@ -19,23 +19,28 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 	 * Metadata control
 	 * 
 	 */
+	var self = this;
     this.template = OpenGeoportal.Template;
 
     this.elId = "metadataDialogContent";
 
     this.model = null;
 
+    this.role = null;
+
+
     this.setModel = function (model) {
         if (this.model !== null && this.model !== model) {
-            this.model.set("selected", false);
+            this.model.set({mvSelected: false});
         }
 
         this.model = model;
+
     };
 
 
-    this.viewMetadata = function (model) {
-
+    this.viewMetadata = function (model, role) {
+        this.role = role;
         this.setModel(model);
 		var location = model.get("Location");
 
@@ -54,6 +59,21 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
         return this.deferred.promise();
 	};
+
+
+    this.getViewerState = function(){
+        if (this.model === null){
+            return {
+                viewerOn: false
+            };
+        } else {
+            return {
+                viewerOn: this.model.get("mvSelected"),
+                LayerId: this.model.get("LayerId"),
+                role: this.role
+            };
+        }
+    };
 
     this.next = function () {
         this.goto(this.getIndex(this.model) + 1);
@@ -128,7 +148,7 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
             });
 
         } catch (e) {
-            this.model.set("selected", false);
+            this.model.set({mvSelected: false});
             console.log(e);
             throw new Error("Error opening the metadata dialog.");
         }
@@ -206,8 +226,6 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
 
 
         var dialogHeight = 450;
-        var that = this;
-
 
         $metadataDialog.dialog({
 			zIndex : 9999,
@@ -227,13 +245,13 @@ OpenGeoportal.MetadataViewer = function MetadataViewer() {
             resizeStop: function (event, ui) {
                 $(document).trigger('eventMaskOff');
             },
-            beforeClose: function () {
-                that.model.set("selected", false);
+            close: function () {
+                self.model.set({mvSelected: false});
             },
             open: function () {
                 $metadataDialog.scrollTo(0);
-                that.model.set("selected", true);
-                that.deferred.resolve("opened");
+                self.model.set({mvSelected: true});
+                self.deferred.resolve("opened");
             }
 		});
 

@@ -43,5 +43,16 @@ public class UserStateController {
         return resp;
     }
 
+    @RequestMapping(value = "state", method = RequestMethod.DELETE, produces = "application/json")
+    public
+    @ResponseBody
+    Map<String, Object> clearUserState() throws Exception {
+
+        this.userState.clearState();
+
+        Map<String, Object> resp = new HashedMap();
+        resp.put("success", true);
+        return resp;
+    }
 
 }

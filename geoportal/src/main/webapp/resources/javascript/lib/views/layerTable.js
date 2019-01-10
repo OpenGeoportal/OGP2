@@ -19,9 +19,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.LayerTable = Backbone.View.extend({
 
     initialize: function (options) {
-        _.extend(this, _.pick(options, "template", "tableControls", "userAuth", "layerState"));
+        _.extend(this, _.pick(options, "template", "tableControls", "userAuth", "layerState", "columnState",
+            "metadataViewer"));
 
-        this.tableConfig = this.createTableConfig();
+        this.tableConfig = this.createTableConfig(this.columnState);
 
         this.adjustColumnsHandler();
 
@@ -59,7 +60,8 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
         var row = new OpenGeoportal.Views.LayerRow(
             {
                 model: model,
-                tableConfig: this.tableConfig
+                tableConfig: this.tableConfig,
+                metadataViewer: this.metadataViewer
             });
         this.appendSubview(row);
         return row;
@@ -445,15 +447,26 @@ OpenGeoportal.Views.LayerTable = Backbone.View.extend({
     },
 
 
-    createTableConfig: function () {
+    createTableConfig: function (columnState) {
         try {
             var tableConfigCollection = new OpenGeoportal.TableConfig();
             this.addColumns(tableConfigCollection);
-
+            if (!_.isUndefined(columnState) && columnState !== null){
+                tableConfigCollection.set(columnState);
+            }
             return tableConfigCollection;
         } catch (e) {
             console.log(e);
         }
+    },
+
+    getColumnState: function(){
+      return this.tableConfig.map(function(v){
+          return {
+            columnName: v.get("columnName"),
+            visible: v.get("visible")
+          };
+      });
     },
 
     columnsTemplate: function () {

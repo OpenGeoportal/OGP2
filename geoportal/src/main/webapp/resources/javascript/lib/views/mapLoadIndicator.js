@@ -122,6 +122,7 @@ OpenGeoportal.Views.RequestQueueLoadIndicatorView = OpenGeoportal.Views.LoadIndi
 	id: "requestTickerContainer",
 	
 	initialize: function(){
+		this.checkQueue();
 		this.listenTo(this.collection, "add", this.showSpinner);
 		this.listenTo(this.collection, "change:status", this.hideSpinner);
 	},
@@ -158,6 +159,12 @@ OpenGeoportal.Views.RequestQueueLoadIndicatorView = OpenGeoportal.Views.LoadIndi
 		}
 
 	},
+
+	checkQueue: function(){
+        if (this.collection.where({status: "PROCESSING"}).length > 0) {
+        	this.showSpinner();
+        }
+        },
 	
 	getDefaultText: function(){
 		var tickerText = "Sending Request...";

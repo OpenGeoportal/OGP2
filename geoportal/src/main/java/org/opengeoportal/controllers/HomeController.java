@@ -57,7 +57,7 @@ public class HomeController {
                                     @RequestParam(value = "minY", defaultValue = "-90") String miny,
                                     @RequestParam(value = "maxY", defaultValue = "90") String maxy,
                                     @RequestParam(value = "dev", defaultValue = "false") Boolean isDev) throws Exception {
-        //@RequestParam("ogpids") Set<String> layerIds, ..should be optional.  also a param to set dev vs. prod
+
 		//create the model to return
         ModelAndView mav = new ModelAndView("ogp_home");
 

@@ -18,7 +18,7 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	tagName : "div",
 	className : "tableRow",
-	events : {
+	baseEvents : {
 		"click .viewMetadataControl" : "viewMetadata",
         "change .previewControl > input[type=checkbox]": "togglePreview",
 		"click .previewLink"	: "handlePreviewLink",
@@ -27,10 +27,18 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		"mouseover" : "doMouseoverOn",
 		"mouseout" : "doMouseoverOff"
 	},
-	
-	constructor: function (options) {
+
+	events: function (){
+		return Object.assign({}, this.baseEvents, this.subClassEvents);
+	},
+
+
+    role: 'generic',
+
+    constructor: function (options) {
 		//allow options to be passed in the constructor argument as in previous Backbone versions.
-        _.extend(this, _.pick(options, "userAuth", "template", "previewed", "cart", "config", "layerState", "tableConfig"));
+        _.extend(this, _.pick(options, "userAuth", "template", "previewed", "cart", "config",
+			"metadataViewer", "layerState", "tableConfig"));
 		    Backbone.View.apply(this, arguments);
 		  },
 		  
@@ -44,8 +52,6 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		this.listenTo(this.model, "change:showControls change:hidden", this.render);
         this.listenTo(this.model, "change:selected", this.handleSelection);
 		this.subClassInit();
-		this.addSubClassEvents();
-		//console.log("init render");
 		this.subviewStorage();
 		this.render();
 	},
@@ -56,7 +62,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	subClassEvents: {},
 	
 	addSubClassEvents: function(){
-		jQuery.extend(this.events, this.subClassEvents);
+		jQuery.extend(this.base_events, this.subClassEvents);
 	},
 	
 	subviewStorage: function(){
@@ -89,17 +95,10 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
         }
     },
 
-    getMetadataViewer: function () {
-        if (typeof this.metadataViewer === "undefined") {
-            this.metadataViewer = new OpenGeoportal.MetadataViewer();
-        }
-        return this.metadataViewer;
-    },
-
 	viewMetadata : function() {
         //temporarily disable mouseout event listener. reenable once the dialog is open.
         this.stopListening(this, "mouseout");
-        var promise = this.getMetadataViewer().viewMetadata(this.model);
+        var promise = this.metadataViewer.viewMetadata(this.model, this.role);
         var that = this;
         $.when(promise).then(function () {
             that.listenTo(that, "mouseout", that.doMouseoverOff);

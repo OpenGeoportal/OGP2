@@ -22,6 +22,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		"istop" : "broadcastModel"
 	},
 
+	role: 'searchResult',
 	subClassInit: function(){
 		//since the results collection is by nature transient, we have to store some state externally
 		//listen for saved items (in cart collection)

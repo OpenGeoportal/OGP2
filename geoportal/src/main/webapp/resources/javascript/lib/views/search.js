@@ -349,11 +349,12 @@ OpenGeoportal.Views.Query = Backbone.View
 			
 			showRestrictedHandler : function() {
 
+				var $check = $("#restrictedCheck");
                 //initialize with model value
-                jQuery("#restrictedCheck").prop("checked", this.model.get("includeRestricted"));
+                $check.prop("checked", this.model.get("includeRestricted"));
 
                 var that = this;
-                jQuery("#restrictedCheck").on("change", function (event) {
+                $check.on("change", function (event) {
                     var checked = jQuery(this).prop("checked");
 
                     that.model.set({
@@ -458,8 +459,8 @@ OpenGeoportal.Views.Query = Backbone.View
 			 * allows a user to select an ISO topic to search
 			 */
 			createTopicsMenu : function() {
-				// todo: this should be able to show a preselected value. don't add collections as model attributes.
 				var isoTopics = this.model.get("isoTopicList");
+
 				this.topics = new OpenGeoportal.Views.CollectionSelect({
 					collection : isoTopics,
 					el : "div#topicDropdown",

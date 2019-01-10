@@ -128,7 +128,8 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.AbstractQueueItem.ex
 		email : "",
 		status : "REQUESTING",
 		requestUrl: "requestDownload",
-		retrieveUrl : "getDownload"
+		retrieveUrl : "getDownload",
+		requestType: "downloadRequest"
 	},
 	
 	subClassInit: function(){
@@ -197,7 +198,8 @@ OpenGeoportal.Models.GeoCommonsRequest = OpenGeoportal.Models.AbstractQueueItem.
 		bbox : "",
 		status : "REQUESTING",
 		requestUrl : "geocommons/requestExport",
-		retrieveUrl : "geocommons/getExport"
+		retrieveUrl : "geocommons/getExport",
+		requestType: "geoCommonsRequest"
 	},
 
 	retrieve: function() {
@@ -275,7 +277,8 @@ OpenGeoportal.Models.ImageRequest = OpenGeoportal.Models.AbstractQueueItem.exten
 		srs: null,
 		status : "REQUESTING",
 		requestUrl : "requestImage",
-		retrieveUrl : "getImage"
+		retrieveUrl : "getImage",
+		requestType: "imageRequest"
 	},
 
 	getRequestParams : function() {
@@ -309,7 +312,16 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 	//Backbone no longer recognizes subclassed models, so we will validate for
 	// a particular property
 
-	//model : OpenGeoportal.Models.QueueItem,
+    model: function(attrs, options) {
+    	var type = attrs.requestType;
+        if (type === "downloadRequest") {
+            return new OpenGeoportal.Models.DownloadRequest(attrs, options);
+        } else if (type === "imageRequest") {
+            return new OpenGeoportal.Models.ImageRequest(attrs, options);
+        } else {
+            return new OpenGeoportal.Models.AbstractQueueItem(attrs, options);
+        }
+    },
 
 	validate: function (attrs, options) {
 		return (_.has(attrs, "itemType") && attrs['itemType'] == "request");
@@ -406,7 +418,7 @@ OpenGeoportal.RequestQueue = Backbone.Collection.extend({
 							status: "FAILED"
 						});
 					});
-
+					that.stopPoll();
 					//jQuery(document).trigger("requestStatus.failure");
 				}
 		};

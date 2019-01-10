@@ -126,7 +126,7 @@ OpenGeoportal.LeafletWrapper = function() {
             initDeferred.resolve();
         });
 
-        console.log('create map zoom: ' + zoom);
+        // console.log('create map zoom: ' + zoom);
         // adding L.Control.Zoomslider, not adding default zoom control
         var options = {
             layers: [basemapLayer],
@@ -179,7 +179,7 @@ OpenGeoportal.LeafletWrapper = function() {
                 // optional 'recenter' property resets the map center when the viewport changes size.
                 if (_.has(data, "recenter")) {
                     if (data.recenter) {
-                        map.setView(center, zoom);
+                        setTimeout(function(){map.setView(center, zoom);}, 25);
                     }
                 }
 

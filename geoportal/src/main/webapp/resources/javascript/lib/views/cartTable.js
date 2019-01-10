@@ -71,6 +71,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 							model : model,
                             tableConfig: this.tableConfig,
                             previewed: this.previewed,
+                            metadataViewer: this.metadataViewer,
                             userAuth: this.userAuth,
                             config: this.config,
                             template: this.template

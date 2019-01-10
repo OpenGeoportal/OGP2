@@ -22,8 +22,10 @@ OpenGeoportal.UserState = function () {
     /**
      * Save user state to the user/state endpoint
      */
-    self.save = function () {
-
+    self.save = function (isSynchronous) {
+        if (_.isUndefined(isSynchronous)){
+            isSynchronous = false;
+        }
 
         var stateObj = self.gatherState();
         var callback = function () {
@@ -35,13 +37,17 @@ OpenGeoportal.UserState = function () {
             data: JSON.stringify(stateObj),
             contentType: "application/json",
             success: callback,
-            dataType: "json"
+            dataType: "json",
+            async: !isSynchronous
         })
             .fail(function () {
                 throw new Error("Failed to save user state.");
             });
     };
 
+    self.synchronousSave = function(){
+        self.save(true);
+    };
     /**
      * Retrieve user state from the 'user/state' endpoint
      */
@@ -62,9 +68,28 @@ OpenGeoportal.UserState = function () {
     };
 
     var models_and_collections = {};
+    var state_callbacks = {};
 
     self.getUserState = function () {
-        return models_and_collections;
+        var state = models_and_collections;
+        _.each(state_callbacks, function(v, k){
+            state[k] = v();
+        });
+        return state;
+    };
+
+
+    /**
+     *
+     * @param key
+     * @param collection
+     */
+    self.registerState = function(key, collection){
+        models_and_collections[key] = collection;
+    };
+
+    self.registerCallback = function(key, callback){
+        state_callbacks[key] = callback;
     };
 
     /**
@@ -75,7 +100,7 @@ OpenGeoportal.UserState = function () {
      */
     self.listenForModelUpdates = function (key, collection, events) {
 
-        models_and_collections[key] = collection;
+        self.registerState(key, collection);
 
         collection.listenTo(collection, events, self.save);
     };
@@ -101,24 +126,6 @@ OpenGeoportal.UserState = function () {
         }
     };
 
-/*    self.listenForUpdates = function (collections) {
-        var valid = true;
-        var vals = ["cart", "previewed", "requestQueue", "panel"];
-        _.each(vals, function (k) {
-            valid = valid && _.has(collections, k);
-        });
-        if (!valid) {
-            throw new Error("missing properties!");
-        }
-
-        models_and_collections = collections;
-
-        collections.cart.listenTo(collections.cart, "add remove", self.save);
-        collections.previewed.listenTo(collections.previewed, "add remove", self.save);
-        collections.requestQueue.listenTo(collections.requestQueue, "add remove", self.save);
-        collections.panel.listenTo(collections.panel, "change:currentTab change:openWidth change:mode", self.save);
-    };*/
-
     /**
      * Gather state info from the instance.
      * @returns {{}}
@@ -129,7 +136,6 @@ OpenGeoportal.UserState = function () {
         //cart items...
         //currently processing items... request queue
         //previewed items
-        //login
         //query terms?
         //ui settings? columns shown, widths, pane width, map extent, basemap, search type,
         // displayed dialogs?
@@ -137,11 +143,15 @@ OpenGeoportal.UserState = function () {
         var coll = self.getUserState();
 
         _.each(coll, function(v, k){
-            state[k] = v.toJSON();
+            if (_.has(v, 'toJSON')) {
+                state[k] = v.toJSON();
+            } else {
+                state[k] = v;
+            }
         });
 
-        console.log('gather state');
-        console.log(state);
+        // console.log('gather state');
+        // console.log(state);
         return state;
     };
 

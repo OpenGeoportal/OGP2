@@ -356,7 +356,9 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		return this.getValue().split(",");
 	},
 
-
+	checkSelected: function(){
+	  // a render callback
+	},
 	render: function(){
 		var selectionAttr = this.getSelectionAttribute();
 		var valueAttr = this.getValueAttribute();
@@ -378,6 +380,8 @@ OpenGeoportal.Views.CollectionMultiSelect = OpenGeoportal.Views.AbstractSelectMe
 		if (this.lastFocus !== null){
 			this.$el.find(".ui-menu").menu("focus", null, this.lastFocus);
 		}
+
+		this.checkSelected();
 		return this;
 	}
 
@@ -400,19 +404,16 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		var collectionFilter = this.options.collectionFilter;
 
 		var extraControl = "";
-		
+
+
+
 		if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
             extraControl = this.template.get('showOnlyControl')();
-			//make sure we start in the right state
-			this.checkSelected();
-			//if using 'only' and 'select all' controls, do a check on selection to see if all are selected
-			var selectionEvent = "change:" + selectionAttr;
-			this.listenTo(this.collection, selectionEvent, this.checkSelected);
 		}
 		
 		var that = this;
 		this.collection.each(function(currModel){
-			if (typeof  collectionFilter != "undefined"){
+			if (typeof collectionFilter != "undefined"){
 				if(currModel.get(collectionFilter.attr) !== collectionFilter.val){
 					return;
 				}
@@ -451,6 +452,7 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		
 		return params;
 	},
+
 	selectAll: function(){
 		
 		var selectAttr = this.getSelectionAttribute();
@@ -479,8 +481,10 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 			}
 			model.set(selectAttr, false);
 		});
+
 	},
 	allSelected: function(){
+
 		var selectAttr = this.getSelectionAttribute();
 		var collectionFilter = this.options.collectionFilter;
 

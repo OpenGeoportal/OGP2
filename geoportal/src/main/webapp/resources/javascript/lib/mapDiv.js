@@ -46,8 +46,6 @@ OpenGeoportal.MapController = function(params) {
     this.template = params.template;
     this.config = params.config;
     this.mapState = params.mapState;
-    //this.panel = params.panel;
-
 
     var mapready = $.Deferred();
     this.ready = mapready.promise();
@@ -122,6 +120,14 @@ OpenGeoportal.MapController = function(params) {
 		$.when(leafletPromise).then(function(){
 			// console.log('mapready resolved');
 			mapready.resolve();
+            self.previewed.each(function(model){
+            	if (model.get("preview") === "on"){
+                    self.wrapper.previewLayerOn(model);
+                    if (model.get("getFeature")){
+                    	self.previewed.changeGetFeatureState(model);
+					}
+                }
+			});
 		})
     };
 
@@ -447,7 +453,7 @@ OpenGeoportal.MapController = function(params) {
         $(document).on(
             "map.getFeatureInfoOff",
             function () {
-            	console.log("get feature off");
+            	// console.log("get feature off");
             	that.wrapper.mapClickOff();
                 fh.getFeatureAttributesOff.apply(that, arguments);
 

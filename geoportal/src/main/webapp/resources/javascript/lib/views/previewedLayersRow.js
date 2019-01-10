@@ -15,7 +15,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
  */
 OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 
-	subClassEvents: {
+    role: 'preview',
+
+    subClassEvents: {
 		"click .saveControl" : "toggleSave"
 	},
 	subClassInit: function(){

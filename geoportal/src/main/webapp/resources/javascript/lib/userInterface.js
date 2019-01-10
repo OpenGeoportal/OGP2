@@ -73,7 +73,7 @@ OpenGeoportal.Structure = function (params) {
 			that.resetShowInfo();
 			
 			
-			window.location = window.location;
+			window.location.href = 'reset';
 		});
 
 	};

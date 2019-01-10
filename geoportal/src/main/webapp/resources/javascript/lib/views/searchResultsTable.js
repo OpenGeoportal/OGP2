@@ -84,13 +84,13 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
                         layerState: this.layerState,
                         template: this.template,
                         tableConfig: this.tableConfig,
+						metadataViewer: this.metadataViewer,
                         cart: this.cart
                     });
                 }
 				var that = this;
 				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
 					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
-
 			},
 
 			scrollOffset: 300,
@@ -231,8 +231,10 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
                             config: this.config,
                             layerState: this.layerState,
                             template: this.template,
+                            metadataViewer: this.metadataViewer,
                             cart: this.cart
 						});
+
 				if (typeof toTop !== "undefined" && toTop){
 					this.prependSubview(row);
 				} else {

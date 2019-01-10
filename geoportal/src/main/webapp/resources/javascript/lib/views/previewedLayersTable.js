@@ -45,6 +45,7 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
                             userAuth: this.userAuth,
                             config: this.config,
                             layerState: this.layerState,
+                            metadataViewer: this.metadataViewer,
                             previewed: this.collection
 
                         });

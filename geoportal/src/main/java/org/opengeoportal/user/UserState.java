@@ -36,4 +36,6 @@ public class UserState {
         this.stateMap = stateMap;
     }
 
+    public void clearState(){ this.stateMap = new HashedMap();}
+
 }
