@@ -26,22 +26,55 @@ OpenGeoportal.Models.Facet = Backbone.Model.extend({
         _.each(model.attributes, function (v, k) {
             self.setFacetValue(id, k, v);
         });
-        if (model.has("ScannedMap")) {
-            var total = model.get("ScannedMap");
-            if (model.has("Scanned Map")) {
-                total += model.get("ScannedMap");
-            }
-            if (model.has("Paper Map")) {
-                total += model.get("Paper Map");
-            }
-            self.setFacetValue(id, "ScannedMap", total);
-        }
     },
+
     setFacetValue: function (facet, key, val) {
         $('.facet_' + facet + '.facetValue_' + key).text(' (' + val + ')');
     }
 });
 
 OpenGeoportal.FacetCollection = Backbone.Collection.extend({
-    model: OpenGeoportal.Models.Facet
+    model: OpenGeoportal.Models.Facet,
+
+    parseFacets: function (facetResponse) {
+        var facets = [];
+        _.each(facetResponse.facet_fields, function (v, k) {
+            var f = {
+                field_id: k
+            };
+            for (var i = 0; i < v.length; i += 2) {
+                f[v[i]] = v[i + 1];
+            }
+            facets.push(f);
+        });
+
+        return facets;
+    },
+
+    updateFacets: function (facetResponse) {
+        var updatedFacets = this.parseFacets(facetResponse);
+        var self = this;
+        _.each(updatedFacets, function (facet) {
+            var f = self.findWhere({field_id: facet.field_id});
+            // aggregate scanned map values
+            if (facet.field_id === 'DataTypeSort'){
+                var count = 0;
+                var vals = ["Paper Map", "Scanned Map", "ScannedMap"];
+                _.each(vals, function(k){
+                    if (_.has(facet, k)){
+                        count += facet[k];
+                        delete facet[k];
+                    }
+                });
+                facet["ScannedMap"] = count;
+            }
+
+            if (_.isUndefined(f)) {
+                self.add(facet);
+            } else {
+                f.set(facet);
+            }
+        });
+
+    },
 });

@@ -44,8 +44,6 @@ $(document)
             var userState = OpenGeoportal.Config.userStateBootstrap || {};
 
             var hasUserState = !_.isEmpty(userState);
-            // console.log('bootstrapped state');
-            // console.log(userState);
 
             /*
              Handles client portion of authentication and authorization

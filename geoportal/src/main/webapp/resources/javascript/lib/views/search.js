@@ -42,8 +42,7 @@ OpenGeoportal.Views.Query = Backbone.View
 							that.fireSearchWithZoom();
 						}).addClass("searchButton");
 				
-				this.solrAutocomplete(
-						jQuery("#advancedOriginatorText"), "OriginatorSort");
+				// this.solrAutocomplete(jQuery("#advancedOriginatorText"), "OriginatorSort");
 				
 				this.createInstitutionsMenu();
 				this.createDataTypesMenu();
@@ -391,7 +390,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				var iconRenderer = this.tableControls.renderRepositoryIcon;
 
 				var callback = function() {
-					var repositoryMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
+					var repositoryMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckboxAndFacetCounts(
 							{
 								collection : repositoryCollection,
 								el : "div#repositoryDropdown",
@@ -431,7 +430,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				var that = this;
 				var iconRenderer = this.tableControls.renderTypeIcon;
 				var dataTypes = this.model.get("dataTypeList");
-				var dataTypesMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckbox(
+				var dataTypesMenu = new OpenGeoportal.Views.CollectionMultiSelectWithCheckboxAndFacetCounts(
 						{
 							collection : dataTypes,
 							el : "div#dataTypeDropdown",
@@ -545,7 +544,7 @@ OpenGeoportal.Views.Query = Backbone.View
 								facetError, this);
 
 					},
-					minLength : 2,
+					minLength : 3,
 					select : function(event, ui) {
 
 					},

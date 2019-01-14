@@ -397,15 +397,12 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 		var itemClass = this.getItemClass();
 		var iconRenderer = this.options.iconRenderer;
 		var controlClass = this.options.controlClass;
-        var countClass = this.options.countClass;
 		var selectionAttr = this.getSelectionAttribute();
 
 
 		var collectionFilter = this.options.collectionFilter;
 
 		var extraControl = "";
-
-
 
 		if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
             extraControl = this.template.get('showOnlyControl')();
@@ -437,8 +434,6 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
                 icon: icon,
                 control: control,
                 name: name,
-                count: '',
-                countClass: countClass + ' facetValue_' + value,
                 value: value,
                 className: itemClass
             });
@@ -542,6 +537,71 @@ OpenGeoportal.Views.CollectionMultiSelectWithCheckbox = OpenGeoportal.Views.Coll
 	}
 });
 
+OpenGeoportal.Views.CollectionMultiSelectWithCheckboxAndFacetCounts = OpenGeoportal.Views.CollectionMultiSelectWithCheckbox.extend({
+    getTemplateParams: function(){
+        var menuHtml = "";
+        var buttonLabel = this.getButtonLabel();
+        var valueAttr = this.getValueAttribute();
+        var displayAttr = this.getDisplayAttribute();
+        var itemClass = this.getItemClass();
+        var iconRenderer = this.options.iconRenderer;
+        var controlClass = this.options.controlClass;
+        var countClass = this.options.countClass;
+        var selectionAttr = this.getSelectionAttribute();
+
+
+        var collectionFilter = this.options.collectionFilter;
+
+        var extraControl = "";
+
+
+
+        if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
+            extraControl = this.template.get('showOnlyControl')();
+        }
+
+        var that = this;
+        this.collection.each(function(currModel){
+            if (typeof collectionFilter != "undefined"){
+                if(currModel.get(collectionFilter.attr) !== collectionFilter.val){
+                    return;
+                }
+            }
+
+            var value = currModel.get(valueAttr);
+            var name = currModel.get(displayAttr);
+            var icon = iconRenderer(value);
+            var isSelected = "checkOff";
+            if (currModel.get(selectionAttr)){
+                isSelected = "checkOn";
+            }
+            //TODO: refactor to use actual checkboxes with label styled...template.get('checkboxControl')
+            var control = extraControl + that.template.get('genericControl')({
+                displayClass: isSelected,
+                controlClass: controlClass,
+                text: "",
+                tooltip: ""
+            });
+            menuHtml += that.template.get('controlMenuItemWithCounts')({
+                icon: icon,
+                control: control,
+                name: name,
+                count: '(0)',
+                countClass: countClass + ' facetValue_' + value,
+                value: value,
+                className: itemClass
+            });
+        });
+
+        var params = {menuHtml: menuHtml, buttonLabel: buttonLabel};
+
+        if (typeof this.options.showOnly !== "undefined" && this.options.showOnly){
+            params.caption = this.template.get('selectAllCaption')();
+        }
+
+        return params;
+    }
+});
 
 
 OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({

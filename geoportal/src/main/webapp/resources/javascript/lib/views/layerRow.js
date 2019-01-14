@@ -32,6 +32,13 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		return Object.assign({}, this.baseEvents, this.subClassEvents);
 	},
 
+    id: function(){
+        return this.getIdPrefix() + this.model.cid;
+    },
+
+    getIdPrefix: function(){
+        return this.role + "_";
+    },
 
     role: 'generic',
 

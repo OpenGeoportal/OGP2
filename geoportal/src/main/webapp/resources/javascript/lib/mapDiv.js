@@ -73,7 +73,7 @@ OpenGeoportal.MapController = function(params) {
 		this.containerDiv = containerDiv;
 
 		// load the basemaps collection, set the default as selected
-        var basemaps = OpenGeoportal.Config.BasemapsBootstrap;
+        var basemaps = OpenGeoportal.Config.BasemapsBootstrap;	1
         this.basemapsCollection = new OpenGeoportal.BasemapCollection(basemaps);
 
         this.basemapsCollection.listenTo(this.basemapsCollection, "change:selected", function(model){
@@ -120,12 +120,17 @@ OpenGeoportal.MapController = function(params) {
 		$.when(leafletPromise).then(function(){
 			// console.log('mapready resolved');
 			mapready.resolve();
+			var reverseOrder = [];
             self.previewed.each(function(model){
-            	if (model.get("preview") === "on"){
+            	reverseOrder.unshift(model);
+
+			});
+            _.each(reverseOrder, function(model){
+                if (model.get("preview") === "on"){
                     self.wrapper.previewLayerOn(model);
                     if (model.get("getFeature")){
-                    	self.previewed.changeGetFeatureState(model);
-					}
+                        self.previewed.changeGetFeatureState(model);
+                    }
                 }
 			});
 		})
@@ -389,8 +394,12 @@ OpenGeoportal.MapController = function(params) {
 		var that = this;
 		$(document).on("map.zIndexChange",	function(event, data) {
 			that.wrapper.setZ(data.LayerId, data.zIndex);
-		});	
-	};
+		});
+
+        $(document).on("map.sortLayers",	function(event, data) {
+            that.wrapper.reorderLayers(data.sortOrder);
+        });
+    };
 
 	this.previewLayerHandler = function() {
 		var that = this;

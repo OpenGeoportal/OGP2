@@ -216,28 +216,40 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		this.listenTo(this, "change:graphicWidth change:color",
             this.changeLayerStyle);
 		this.listenTo(this, "change:opacity", this.changeLayerOpacity);
-		this.listenTo(this, "change:zIndex", this.changeZIndex);
+		//this.listenTo(this, "change:zIndex", this.changeZIndex);
 		this.listenTo(this, "change:getFeature", this.changeGetFeatureState);
-
+		this.listenTo(this, "sort", this.sortMapLayers);
 	},
 
     comparator: function (model1, model2) {
         var getComparison = function (model) {
-			var comp = 0;
-            if (model.has("zIndex")) {
-				comp = model.get("zIndex");
+			var comp = 9999;
+            if (model.has("zOrder")) {
+				comp = model.get("zOrder");
 			}
 			return comp;
 		};
 
 		var val1 = getComparison(model1);
 		var val2 = getComparison(model2);
-        if (val1 > val2) {
+        if (val1 >= val2) {
 			return -1;
         } else if (val2 > val1) {
 			return 1;
 		} else {
 			return 0;
+        }
+	},
+
+	sortMapLayers: function(){
+
+    	var ids = [];
+    	_.each(this.where({preview: "on"}), function(el){
+    		ids.unshift(el.get("LayerId"));
+		});
+
+    	if (ids.length > 1){
+            $(document).trigger('map.sortLayers', {sortOrder: ids});
         }
 	},
 
@@ -338,6 +350,7 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
     addPreview: function (model, val, options) {
         // console.log("add preview called.");
         // console.log(arguments);
+		model.set({zOrder: this.getMaxZ()}, {silent: true});
         var preview = model.get("preview");
         var layerId = model.get("LayerId");
         if (preview === "on") {
@@ -346,6 +359,16 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
             });// show layer on map
         }
     },
+
+	getMaxZ: function(){
+    	var maxz = 0;
+    	this.each(function(model){
+    		if (model.has('zOrder')){
+    			maxz = Math.max(model.get('zOrder'), maxz);
+			}
+		});
+    	return maxz + 1;
+	},
 
     isPreviewed: function (layerId) {
 		var currModel = this.findWhere({

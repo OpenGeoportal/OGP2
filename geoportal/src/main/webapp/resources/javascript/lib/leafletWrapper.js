@@ -267,6 +267,23 @@ OpenGeoportal.LeafletWrapper = function() {
      * map actions and requests
      **************************************************************************/
 
+    this.reorderLayers = function(sortOrder){
+
+        var layers = [];
+        _.each(sortOrder, function(el){
+            try {
+                var layer = self.getLayerByOGPId(el);
+                layers.push(layer);
+                self.previewLayerGroup.removeLayer(layer);
+            } catch (e){
+                console.log(e);
+            }
+        });
+        _.each(layers, function(el){
+            self.previewLayerGroup.addLayer(el);
+        });
+
+    };
 
     this.clamp = function (val, min, max) {
         if (val > max) {
@@ -985,7 +1002,7 @@ OpenGeoportal.LeafletWrapper = function() {
 
         var zIndex = this.getNextZ();
         if (matchingLayer !== null) {
-            layerModel.set({zIndex: zIndex});
+            //layerModel.set({zIndex: zIndex});
             this.showLayer(layerId);
             matchingLayer.opacity = opacitySetting * .01;
             return;
@@ -1007,7 +1024,7 @@ OpenGeoportal.LeafletWrapper = function() {
                     attribution:"",
                     opacity:opacitySetting*0.01,
                     id: layerId,
-                    zIndex: zIndex,
+                   // zIndex: zIndex,
                     identify: false
                 });
 
@@ -1029,7 +1046,7 @@ OpenGeoportal.LeafletWrapper = function() {
                 that.leafletMap.fireEvent('dataloading', {layer: newLayer});
 
                 try {
-                    layerModel.set({zIndex: zIndex});
+                   // layerModel.set({zIndex: zIndex});
                 } catch (e){
                     console.log("failed!");
                     console.log(e);

@@ -23,8 +23,40 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 				var that = this;
 				this.tableConfig.listenTo(this.collection, "change:visible", function(model){ that.updateSubviews.call(that);});
 				this.listenTo(this.collection, "change:showControls", function(){jQuery(document).trigger("previewRow.expand");});
-				this.listenTo(this.collection, "change:zIndex", this.render);
+				this.listenTo(this.collection, "sort", this.render);
 
+			},
+
+			afterRender: function(){
+            	this.addSortable();
+                this.$el.on("render", $.proxy(this.addSortable, this));
+
+            },
+
+			addSortable: function(){
+            	var that = this;
+            	var $sortable = this.$el.find('.rowContainer');
+            	if (!_.isUndefined($sortable.sortable('instance'))){
+            		$sortable.sortable('destroy');
+                }
+                $sortable.sortable(
+                	{
+						containment: "parent",
+						tolerance: "pointer",
+						cursor: "move",
+						update: function(){
+							var newOrder = $sortable.sortable('instance').toArray();
+							var order = _.range(1, newOrder.length + 1);
+							_.each(newOrder, function(elId){
+
+								var m = that.collection.get(elId.replace('preview_', ''));
+
+								var newz = order.pop();
+								m.set({zOrder: newz});
+							});
+							that.collection.sort();
+						}
+                	});
 			},
 			
 			handleEmptyTable: function(table$){

@@ -882,8 +882,8 @@ OpenGeoportal.Solr = function() {
 		var ajaxParams = {
 			type : "GET",
 			url : url,
-			dataType : 'jsonp',
-			jsonp : 'json.wrf',
+			dataType : 'json',
+			//jsonp : 'json.wrf',
 			timeout : 5000,
 			crossDomain : true,
 			success : function(data) {

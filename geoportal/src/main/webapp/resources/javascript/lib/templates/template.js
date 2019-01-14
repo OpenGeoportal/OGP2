@@ -84,6 +84,12 @@ OpenGeoportal.Template = {
 
         controlMenuItem: ['<li class="{{ className }}"><div>', '<div class="menuIcon">{{ icon }}</div>',
             '<div class="selectTextWrapper"><div class="selectText">{{ name }}</div>',
+            '</div>', '{{ control }}',
+            '<input type="hidden" value="{{ value }}" />', '</div></li>']
+            .join('\n'),
+
+        controlMenuItemWithCounts: ['<li class="{{ className }}"><div>', '<div class="menuIcon">{{ icon }}</div>',
+            '<div class="selectTextWrapper"><div class="selectText">{{ name }}</div>',
             '<div class="facetCount {{ countClass }}">', '{{ count }}</div></div>', '{{ control }}',
             '<input type="hidden" value="{{ value }}" />', '</div></li>']
             .join('\n'),
