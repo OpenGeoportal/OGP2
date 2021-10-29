@@ -14,7 +14,7 @@ import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.proxy.controllers.ImageRequest;
 import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
 import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

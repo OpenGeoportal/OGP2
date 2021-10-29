@@ -24,7 +24,7 @@ import javax.xml.transform.stream.StreamResult;
 
 
 import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

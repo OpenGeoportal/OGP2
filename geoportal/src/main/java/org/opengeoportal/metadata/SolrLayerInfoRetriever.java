@@ -13,7 +13,7 @@ import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.opengeoportal.config.search.SearchConfigRetriever;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.http.OgpHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

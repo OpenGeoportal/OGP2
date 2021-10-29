@@ -5,7 +5,7 @@ import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.AugmentedSolrRecord;
 import org.opengeoportal.ogc.AugmentedSolrRecordRetriever;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

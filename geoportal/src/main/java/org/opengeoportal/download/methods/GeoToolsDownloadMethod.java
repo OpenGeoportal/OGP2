@@ -10,8 +10,6 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.solr.SolrRecord;
-import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

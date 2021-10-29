@@ -10,7 +10,7 @@ import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

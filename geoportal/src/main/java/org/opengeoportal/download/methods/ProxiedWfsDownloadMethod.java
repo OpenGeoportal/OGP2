@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;

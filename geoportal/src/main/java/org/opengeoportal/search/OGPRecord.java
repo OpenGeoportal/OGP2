@@ -1,12 +1,10 @@
-package org.opengeoportal.solr;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+package org.opengeoportal.search;
 
 import org.apache.solr.client.solrj.beans.Field;
 
-public class SolrRecord {
+import java.util.*;
+
+public class OGPRecord {
 	@Field("LayerId")
 	String layerId;
 	@Field("Name")
@@ -27,10 +25,6 @@ public class SolrRecord {
 	String publisher;
 	@Field("Originator")
 	String originator;
-	@Field("ThemeKeywords")
-	String themeKeywords;
-	@Field("PlaceKeywords")
-	String placeKeywords;
 	@Field("GeoReferenced")
 	Boolean georeferenced;
 	@Field("Abstract")
@@ -45,32 +39,19 @@ public class SolrRecord {
 	Double maxX;
 	@Field("MinX")
 	Double minX;
-	@Field("CenterX")
-	Double centerX;
-	@Field("CenterY")
-	Double centerY;
-	@Field("HalfWidth")
-	Double halfWidth;
-	@Field("HalfHeight")
-	Double halfHeight;
-	@Field("Area")
-	Double area;
 	@Field("WorkspaceName")
 	String workspaceName;
 	@Field("ContentDate")
 	Date contentDate;
-	@Field("FgdcText")
-	String fgdcText;
-	/*@Field("DataTypeSort")
-	String dataTypeSort;
-	@Field("InstitutionSort")
-	String institutionSort;
-	@Field("LayerDisplayNameSort")
-	String layerDisplayNameSort;
-	@Field("PublisherSort")
-	String publisherSort;
-	@Field("OriginatorSort")
-	String originatorSort;*/
+
+	private static final List<String> fieldList = new ArrayList<>(Arrays.asList("LayerId", "Name", "CollectionId", "Institution",
+			"Access", "DataType", "Availability", "LayerDisplayName", "Publisher", "Originator", "GeoReferenced",
+			"Abstract", "Location", "MinX", "MinY", "MaxX", "MaxY", "WorkspaceName", "ContentDate"));
+
+	public static String getFieldList() {
+		return String.join(", ", fieldList);
+	}
+
 	public String getLayerId() {
 		return layerId;
 	}
@@ -136,18 +117,6 @@ public class SolrRecord {
 		this.originator = originator;
 	}
 
-	public String getThemeKeywords() {
-		return themeKeywords;
-	}
-	public void setThemeKeywords(String themeKeywords) {
-		this.themeKeywords = themeKeywords;
-	}
-	public String getPlaceKeywords() {
-		return placeKeywords;
-	}
-	public void setPlaceKeywords(String placeKeywords) {
-		this.placeKeywords = placeKeywords;
-	}
 	public Boolean getGeoreferenced() {
 		return georeferenced;
 	}
@@ -190,36 +159,7 @@ public class SolrRecord {
 	public void setMinX(Double minX) {
 		this.minX = minX;
 	}
-	public Double getCenterX() {
-		return centerX;
-	}
-	public void setCenterX(Double centerX) {
-		this.centerX = centerX;
-	}
-	public Double getCenterY() {
-		return centerY;
-	}
-	public void setCenterY(Double centerY) {
-		this.centerY = centerY;
-	}
-	public Double getHalfWidth() {
-		return halfWidth;
-	}
-	public void setHalfWidth(Double halfWidth) {
-		this.halfWidth = halfWidth;
-	}
-	public Double getHalfHeight() {
-		return halfHeight;
-	}
-	public void setHalfHeight(Double halfHeight) {
-		this.halfHeight = halfHeight;
-	}
-	public Double getArea() {
-		return area;
-	}
-	public void setArea(Double area) {
-		this.area = area;
-	}
+
 	public String getWorkspaceName() {
 		return workspaceName;
 	}
@@ -232,12 +172,6 @@ public class SolrRecord {
 	public void setContentDate(Date contentDate) {
 		this.contentDate = contentDate;
 	}
-	public String getFgdcText() {
-		return fgdcText;
-	}
-	public void setFgdcText(String fgdcText) {
-		this.fgdcText = fgdcText;
-	}
 	
 	public Map<String,String> toMap(){
 		Map<String,String> map = new HashMap<String,String>();
@@ -246,7 +180,6 @@ public class SolrRecord {
 		map.put("Title", this.layerDisplayName);
 		map.put("DataType", this.dataType);
 		map.put("Access", this.access);
-		//map.put("ContentDate", this.contentDate);
 		map.put("Bounds", this.minX + "," + this.minY + "," + this.maxX + "," + this.maxY);
 		map.put("Originator", this.originator);
 		map.put("Publisher", this.publisher);
@@ -254,13 +187,13 @@ public class SolrRecord {
 	}
 	public String toString(){
 		Map<String, String> map = this.toMap();
-		String s = "";
+		StringBuilder s = new StringBuilder();
 		for (String key: map.keySet()){
-			s += key;
-			s += ": ";
-			s += map.get(key);
-			s += ",";
+			s.append(key);
+			s.append(": ");
+			s.append(map.get(key));
+			s.append(",");
 		}
-		return s;
+		return s.toString();
 	}
 }

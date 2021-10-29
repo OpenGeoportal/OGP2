@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

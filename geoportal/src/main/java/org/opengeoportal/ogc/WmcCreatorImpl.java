@@ -21,7 +21,7 @@ import org.opengeoportal.ogc.wmc.jaxb.ServerType;
 import org.opengeoportal.ogc.wmc.jaxb.ServiceType;
 import org.opengeoportal.ogc.wmc.jaxb.TypeType;
 import org.opengeoportal.ogc.wmc.jaxb.ViewContextType;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;

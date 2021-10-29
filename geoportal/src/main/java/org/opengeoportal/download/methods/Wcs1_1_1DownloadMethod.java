@@ -12,7 +12,7 @@ import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wcs.WcsGetCoverage1_1_1;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

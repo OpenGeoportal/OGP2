@@ -3,7 +3,7 @@ package org.opengeoportal.ogc;
 import com.fasterxml.jackson.core.JsonParseException;
 import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;

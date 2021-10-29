@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.opengeoportal.download.LayerDownloader;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
 import org.opengeoportal.layer.BoundingBox;
@@ -12,15 +11,13 @@ import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.AugmentedSolrRecord;
 import org.opengeoportal.ogc.AugmentedSolrRecordRetriever;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
-import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 
 /**

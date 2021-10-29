@@ -3,7 +3,7 @@ package org.opengeoportal.security;
 import java.io.Serializable;
 
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

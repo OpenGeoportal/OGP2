@@ -12,7 +12,7 @@ import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wfs.WfsGetFeature;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

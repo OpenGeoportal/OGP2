@@ -1,6 +1,6 @@
 package org.opengeoportal.ogc;
 
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 
 public interface AugmentedSolrRecordRetriever {
 

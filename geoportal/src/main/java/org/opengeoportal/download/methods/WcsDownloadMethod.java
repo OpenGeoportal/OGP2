@@ -13,7 +13,7 @@ import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wcs.wcs1_0_0.CoverageOffering1_0_0;
 import org.opengeoportal.ogc.wcs.wcs1_0_0.WcsGetCoverage1_0_0;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

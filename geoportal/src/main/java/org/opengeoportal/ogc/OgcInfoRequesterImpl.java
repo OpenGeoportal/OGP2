@@ -4,8 +4,7 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
-import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;

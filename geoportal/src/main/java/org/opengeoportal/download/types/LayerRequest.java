@@ -11,7 +11,7 @@ import java.util.concurrent.Future;
 
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 

@@ -3,7 +3,7 @@ package org.opengeoportal.ogc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opengeoportal.solr.SolrRecord;
+import org.opengeoportal.search.SolrRecord;
 
 public class AugmentedSolrRecord {
 	List<OwsInfo> owsInfo = new ArrayList<OwsInfo>();
