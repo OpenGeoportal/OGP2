@@ -1,7 +1,6 @@
 package org.opengeoportal.download;
 
-import java.util.*;
-import java.io.*; 
+import java.io.*;
 
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
@@ -12,8 +11,7 @@ import org.opengeoportal.search.MetadataRecord;
 import org.opengeoportal.service.SearchService;
 import org.xml.sax.*;
 import org.apache.commons.io.IOUtils;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.common.SolrDocumentList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.*;
