@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +152,7 @@ public class SubmittedDownloadRequest {
 		@JsonIgnore
 		String queryString;
 		@JsonIgnore
-		SolrRecord solrRecord;
+		OGPRecord ogpRecord;
 		@JsonIgnore
 		File imageFile;
 		@JsonIgnore
@@ -204,11 +204,11 @@ public class SubmittedDownloadRequest {
 		public void setQueryString(String queryString) {
 			this.queryString = queryString;
 		}
-		public SolrRecord getSolrRecord() {
-			return solrRecord;
+		public OGPRecord getOgpRecord() {
+			return ogpRecord;
 		}
-		public void setSolrRecord(SolrRecord solrRecord) {
-			this.solrRecord = solrRecord;
+		public void setOgpRecord(OGPRecord ogpRecord) {
+			this.ogpRecord = ogpRecord;
 		}
 		
 		public File getImageFile() {

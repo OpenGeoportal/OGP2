@@ -13,8 +13,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.http.OgpHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class QuickWfsDownload implements QuickDownload {
 	@Autowired
 	DirectoryRetriever directoryRetriever;
 	@Autowired
-	LayerInfoRetriever layerInfoRetriever;
+	SearchService searchService;
 	@Autowired
 	@Qualifier("httpClient.pooling")
 	OgpHttpClient ogpHttpClient;
@@ -52,7 +52,7 @@ public class QuickWfsDownload implements QuickDownload {
 	@Override
 	public File downloadZipFile(String layerId, BoundingBox bounds) throws Exception{
 
-		SolrRecord layerInfo = layerInfoRetriever.getAllLayerInfo(layerId);
+		OGPRecord layerInfo = searchService.findRecordById(layerId);
 		
 		//requests too near the poles are problematic
 		BoundingBox requestBounds = null;
@@ -128,11 +128,11 @@ public class QuickWfsDownload implements QuickDownload {
 		this.directoryRetriever = directoryRetriever;
 	}
 
-	public LayerInfoRetriever getLayerInfoRetriever() {
-		return layerInfoRetriever;
+	public SearchService getSearchService() {
+		return searchService;
 	}
 
-	public void setLayerInfoRetriever(LayerInfoRetriever layerInfoRetriever) {
-		this.layerInfoRetriever = layerInfoRetriever;
+	public void setSearchService(SearchService searchService) {
+		this.searchService = searchService;
 	}
 }

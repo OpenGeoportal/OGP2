@@ -6,6 +6,7 @@ import org.opengeoportal.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -28,7 +29,15 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException {
-        return searchClient.ogpRecordSearch(searchClient.createOGPLayerIdParams(layerIds));
+        String queryString = searchClient.createLayerIdQueryString(layerIds);
+        return searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+    }
+
+    @Override
+    @PostFilter("hasPermission(filterObject, 'download')")
+    public List<OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException {
+        String queryString = searchClient.createLayerIdQueryString(layerIds);
+        return searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
     }
 
     @Override
@@ -37,6 +46,17 @@ public class SearchServiceImpl implements SearchService {
         List<OGPRecord> recordList = findRecordsById(List.of(layerId));
         if (recordList.isEmpty()){
             throw new LayerNotFoundException("Layer with id ['" + layerId.trim() + "'] not found in the search index.");
+        } else {
+            return recordList.get(0);
+        }
+    }
+
+    @Override
+    public OGPRecord findRecordByName(String name) throws LayerNotFoundException, SearchServerException {
+        String queryString = searchClient.createNameQueryString(name);
+        List<OGPRecord> recordList = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        if (recordList.isEmpty()){
+            throw new LayerNotFoundException("Layer with name ['" + name.trim() + "'] not found in the search index.");
         } else {
             return recordList.get(0);
         }

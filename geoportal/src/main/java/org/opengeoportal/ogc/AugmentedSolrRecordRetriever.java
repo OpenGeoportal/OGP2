@@ -1,6 +1,6 @@
 package org.opengeoportal.ogc;
 
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 
 public interface AugmentedSolrRecordRetriever {
 
@@ -13,7 +13,7 @@ public interface AugmentedSolrRecordRetriever {
 	AugmentedSolrRecord getOgcAugmentedSolrRecord(String layerId)
 			throws Exception;
 
-	AugmentedSolrRecord getOgcAugmentedSolrRecord(SolrRecord solrRecord)
+	AugmentedSolrRecord getOgcAugmentedSolrRecord(OGPRecord ogpRecord)
 			throws Exception;
 
 }

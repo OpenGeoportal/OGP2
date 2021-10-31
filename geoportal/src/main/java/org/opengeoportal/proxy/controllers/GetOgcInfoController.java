@@ -1,11 +1,11 @@
 package org.opengeoportal.proxy.controllers;
 
 
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.AugmentedSolrRecord;
 import org.opengeoportal.ogc.AugmentedSolrRecordRetriever;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class GetOgcInfoController {
 	AugmentedSolrRecordRetriever augmentedSolrRecordRetriever;
 
 	@Autowired
-	LayerInfoRetriever layerInfoRetriever;
+	SearchService searchService;
 	
 	@RequestMapping(method=RequestMethod.GET, produces="application/json")
 	public @ResponseBody AugmentedSolrRecord getLayerInfo(@RequestParam("ogpid") String layerId) throws Exception {
@@ -44,13 +44,13 @@ public class GetOgcInfoController {
 	}
 	
 	@RequestMapping(value="ogp", method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody SolrRecord ogcSolrInfo(@RequestParam("ogpid") String layerId, @RequestParam(value="full", defaultValue="false") Boolean includeMetadata) throws Exception {
-		SolrRecord record = layerInfoRetriever.getAllLayerInfo(layerId);
+	public @ResponseBody OGPRecord ogcSolrInfo(@RequestParam("ogpid") String layerId, @RequestParam(value="full", defaultValue="false") Boolean includeMetadata) throws Exception {
+		OGPRecord record = searchService.findRecordById(layerId);
 		if (includeMetadata){
 			return record;
 		} else {
-			record.setFgdcText(null);
-			
+			//record.setFgdcText(null);
+			//TODO: does the javascript client use this functionality? CSB 10/2021
 			return record;
 		}
 	}

@@ -4,7 +4,7 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
@@ -62,10 +62,10 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 		}
 	}
 		
-	public OwsInfo getOwsInfo(SolrRecord solrRecord, String owsUrl) throws Exception {
+	public OwsInfo getOwsInfo(OGPRecord ogpRecord, String owsUrl) throws Exception {
 		InputStream is = null;
 		try{
-			String layerName = OgpUtils.getLayerNameNS(solrRecord.getWorkspaceName(), solrRecord.getName());
+			String layerName = OgpUtils.getLayerNameNS(ogpRecord.getWorkspaceName(), ogpRecord.getName());
 
 			String request = ogcInfoRequest.createRequest(layerName);
 			String method = ogcInfoRequest.getMethod();
@@ -85,15 +85,16 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	}
 	
 
-	public OwsInfo getOwsInfo(SolrRecord solrRecord) throws Exception {
+	public OwsInfo getOwsInfo(OGPRecord ogpRecord) throws Exception {
 		InputStream is = null;
 		try{
-			String layerName = OgpUtils.getLayerNameNS(solrRecord.getWorkspaceName(), solrRecord.getName());
+			String layerName = OgpUtils.getLayerNameNS(ogpRecord.getWorkspaceName(), ogpRecord.getName());
 
 			String request = ogcInfoRequest.createRequest(layerName);
 			String method = ogcInfoRequest.getMethod();
 			String protocol = ogcInfoRequest.getOgcProtocol().toLowerCase();
-			String url = proxyConfigRetriever.getInternalUrl(protocol, solrRecord.getInstitution(), solrRecord.getAccess(), solrRecord.getLocation());
+			String url = proxyConfigRetriever.getInternalUrl(protocol, ogpRecord.getInstitution(),
+					ogpRecord.getAccess(), ogpRecord.getLocation());
 
 			is = httpRequester.sendRequest(url, request, method);
 
@@ -110,23 +111,23 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	}
 	
 	@Override
-	public AugmentedSolrRecord getOgcAugment(SolrRecord solrRecord, String owsUrl)
+	public AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord, String owsUrl)
 			throws Exception {
 		AugmentedSolrRecord asr = new AugmentedSolrRecord();
-		asr.setSolrRecord(solrRecord);
-		OwsInfo info = getOwsInfo(solrRecord, owsUrl);
+		asr.setOgpRecord(ogpRecord);
+		OwsInfo info = getOwsInfo(ogpRecord, owsUrl);
 		asr.getOwsInfo().add(info);
 
 		return asr;
 	}
 
 	@Override
-	public AugmentedSolrRecord getOgcAugment(SolrRecord solrRecord)
+	public AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord)
 			throws Exception {
 		
 		AugmentedSolrRecord asr = new AugmentedSolrRecord();
-		asr.setSolrRecord(solrRecord);
-		OwsInfo info = getOwsInfo(solrRecord);
+		asr.setOgpRecord(ogpRecord);
+		OwsInfo info = getOwsInfo(ogpRecord);
 		asr.getOwsInfo().add(info);
 		return asr;
 	}

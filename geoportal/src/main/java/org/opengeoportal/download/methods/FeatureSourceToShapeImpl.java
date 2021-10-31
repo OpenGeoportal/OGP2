@@ -18,9 +18,10 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.util.factory.GeoTools;
+import org.locationtech.jts.geom.Envelope;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.opengis.feature.simple.SimpleFeature;
@@ -32,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.vividsolutions.jts.geom.Envelope;
 
 public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	private FeatureSourceRetriever featureSourceRetriever;
@@ -58,7 +58,6 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	/**
 	 * set a FeatureCollection from a FeatureSource with a bbox query
 	 * 
-	 * @param typeName
 	 * @param bbox
 	 * @throws Exception 
 	 */
@@ -75,7 +74,6 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 		FilterFactory ff = CommonFactoryFinder.getFilterFactory( GeoTools.getDefaultHints() );
 		//bbox(String propertyName, double minx, double miny, double maxx, double maxy, String srs) 
 		CoordinateReferenceSystem crs = DefaultGeographicCRS.WGS84;
-		
 		BBOX filter = ff.bbox(geomName, bbox.getMinX(), bbox.getMinY(), bbox.getMaxX(), bbox.getMaxY(), crs.toWKT());
 		// = ff.intersects( ff.property( geomName ), ff.literal( polygon ) );
 		logger.info(Boolean.toString(filter == null));
@@ -96,7 +94,6 @@ public class FeatureSourceToShapeImpl implements FeatureSourceToShape {
 	/**
 	 * Copy Features from a FeatureCollection to a feature store.
 	 * 
-	 * @param targetFeatureStore
 	 * @throws IOException
 	 */
 	protected void copyFeatures(SimpleFeatureSource featureSource, SimpleFeatureSource targetSource) throws IOException {

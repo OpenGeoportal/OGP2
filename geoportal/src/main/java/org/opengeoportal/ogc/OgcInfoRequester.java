@@ -1,12 +1,12 @@
 package org.opengeoportal.ogc;
 
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 
 public interface OgcInfoRequester {
 
-	AugmentedSolrRecord getOgcAugment(SolrRecord solrRecord) throws Exception;
+	AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord) throws Exception;
 
-	AugmentedSolrRecord getOgcAugment(SolrRecord solrRecord, String owsUrl)
+	AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord, String owsUrl)
 			throws Exception;
 
 }

@@ -11,7 +11,7 @@ import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.layer.GeometryType;
 import org.opengeoportal.ogc.OgcInfoRequest;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class WmsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		//info needed: geometry column, bbox coords, epsg code, workspace & layername
 	 	//all client bboxes should be passed as lat-lon coords.  we will need to get the appropriate epsg code for the layer
 	 	//in order to return the file in original projection to the user (will also need to transform the bbox)
-		SolrRecord layerInfo = this.currentLayer.getLayerInfo();
+		OGPRecord layerInfo = this.currentLayer.getLayerInfo();
 		BoundingBox nativeBounds = new BoundingBox(layerInfo.getMinX(), layerInfo.getMinY(), layerInfo.getMaxX(), layerInfo.getMaxY());
 		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
 		String layerName = this.currentLayer.getLayerNameNS();

@@ -4,6 +4,7 @@ import org.opengeoportal.search.MetadataRecord;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
+import org.springframework.security.access.prepost.PostFilter;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,9 @@ public interface SearchService {
      */
     List<OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException;
 
+    @PostFilter("hasPermission(filterObject, 'download')")
+    List<OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException;
+
     /***
      * find an OGP record by LayerId. throws an exception if a layer is not found.
      * @param layerId
@@ -33,6 +37,15 @@ public interface SearchService {
      * @throws SearchServerException
      */
     OGPRecord findRecordById(String layerId) throws LayerNotFoundException, SearchServerException;
+
+    /***
+     * find an OGP record by Name. throws an exception if a record is not found
+     * @param name
+     * @return
+     * @throws LayerNotFoundException
+     * @throws SearchServerException
+     */
+    OGPRecord findRecordByName(String name) throws LayerNotFoundException, SearchServerException;
 
     /***
      * find a MetadataRecord by LayerId. Used to generate XML metadata documents.

@@ -1,9 +1,10 @@
 package org.opengeoportal.download.methods;
 
+import org.locationtech.jts.geom.Envelope;
+
 import java.io.File;
 import java.util.Set;
 
-import com.vividsolutions.jts.geom.Envelope;
 
 public interface FeatureSourceToShape {
 

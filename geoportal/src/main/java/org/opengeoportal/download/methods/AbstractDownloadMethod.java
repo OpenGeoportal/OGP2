@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
+import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
@@ -171,7 +172,7 @@ public abstract class AbstractDownloadMethod {
 	public abstract String getMethod();
 	
 	public BoundingBox getClipBounds() throws Exception{
-		SolrRecord layerInfo = this.currentLayer.getLayerInfo(); 
+		OGPRecord layerInfo = this.currentLayer.getLayerInfo();
 		BoundingBox nativeBounds = new BoundingBox(layerInfo.getMinX(), layerInfo.getMinY(), layerInfo.getMaxX(), layerInfo.getMaxY());
 		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
 		return bounds;

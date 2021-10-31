@@ -1,9 +1,9 @@
 package org.opengeoportal.ogc;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	@Qualifier("httpRequester.generic")
 	private HttpRequester httpRequester;
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 	 
 	@Override
 	public OwsInfo getWmsInfo(String layerId) throws Exception{
@@ -80,10 +80,10 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 		URL owsUrlObj = new URL(owsUrl);
 
 		if (type.equalsIgnoreCase("wfs")){
-			String storedUrl = LocationFieldUtils.getWfsUrl(asr.getSolrRecord().getLocation());
+			String storedUrl = LocationFieldUtils.getWfsUrl(asr.getOgpRecord().getLocation());
 			URL storedUrlObj = new URL(storedUrl);
 			try{
-				dataInfo = getInfoAttempt(wfsRequester, DATA_ATTEMPTS, asr.getSolrRecord());
+				dataInfo = getInfoAttempt(wfsRequester, DATA_ATTEMPTS, asr.getOgpRecord());
 				asr.getOwsInfo().add(OwsInfo.findWfsInfo(dataInfo.getOwsInfo()));
 				
 			} catch (Exception e){
@@ -91,7 +91,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 				if (!storedUrlObj.getHost().equalsIgnoreCase(owsUrlObj.getHost()) || !storedUrlObj.getPath().equalsIgnoreCase(owsUrlObj.getPath())){
 				logger.info("trying retrieved URL: " + owsUrl);
 					try {
-						dataInfo = getInfoAttempt(wfsRequester, DATA_ATTEMPTS, asr.getSolrRecord(), owsUrl);
+						dataInfo = getInfoAttempt(wfsRequester, DATA_ATTEMPTS, asr.getOgpRecord(), owsUrl);
 						asr.getOwsInfo().add(OwsInfo.findWfsInfo(dataInfo.getOwsInfo()));
 					} catch (Exception e1){
 						
@@ -99,17 +99,17 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 				}
 			}
 		} else if (type.equalsIgnoreCase("wcs")){
-			String storedUrl = LocationFieldUtils.getWcsUrl(asr.getSolrRecord().getLocation());
+			String storedUrl = LocationFieldUtils.getWcsUrl(asr.getOgpRecord().getLocation());
 			URL storedUrlObj = new URL(storedUrl);
 			try{
-				dataInfo = getInfoAttempt(wcsRequester, DATA_ATTEMPTS, asr.getSolrRecord());
+				dataInfo = getInfoAttempt(wcsRequester, DATA_ATTEMPTS, asr.getOgpRecord());
 				asr.getOwsInfo().add(OwsInfo.findWcsInfo(dataInfo.getOwsInfo()));
 			} catch (Exception e){
 				//if the urls are substantively different, try the one retrieved from wms describeLayer
 				if (!storedUrlObj.getHost().equalsIgnoreCase(owsUrlObj.getHost()) || !storedUrlObj.getPath().equalsIgnoreCase(owsUrlObj.getPath())){
 					try {
 						logger.info("trying retrieved URL: " + owsUrl);
-						dataInfo = getInfoAttempt(wcsRequester, DATA_ATTEMPTS, asr.getSolrRecord(), owsUrl);
+						dataInfo = getInfoAttempt(wcsRequester, DATA_ATTEMPTS, asr.getOgpRecord(), owsUrl);
 						asr.getOwsInfo().add(OwsInfo.findWcsInfo(dataInfo.getOwsInfo()));
 					} catch (Exception e1){
 					}
@@ -122,9 +122,9 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	}
 	
 	@Override
-	public AugmentedSolrRecord getOgcAugmentedSolrRecord(SolrRecord solrRecord) throws Exception {
+	public AugmentedSolrRecord getOgcAugmentedSolrRecord(OGPRecord ogpRecord) throws Exception {
 
-		AugmentedSolrRecord asr = getInfoAttempt(wmsRequester, DATA_ATTEMPTS, solrRecord);
+		AugmentedSolrRecord asr = getInfoAttempt(wmsRequester, DATA_ATTEMPTS, ogpRecord);
 		OwsInfo wmsInfo =  OwsInfo.findWmsInfo(asr.getOwsInfo());
 		String type = wmsInfo.getInfoMap().get("owsType");
 		//String qualName = wmsInfo.getWmsResponseMap().get("qualifiedName");
@@ -137,18 +137,18 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, String layerId) throws Exception{
-		SolrRecord solrRecord = layerInfoRetriever.getAllLayerInfo(layerId);
-		return getInfoAttempt(requester, numAttempts, solrRecord);
+		OGPRecord ogpRecord = searchService.findRecordById(layerId);
+		return getInfoAttempt(requester, numAttempts, ogpRecord);
 
 	}
 	
 	
-	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, SolrRecord solrRecord) throws Exception{
+	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, OGPRecord ogpRecord) throws Exception{
 		AugmentedSolrRecord asr = null;
 		for (int i = 0; i < numAttempts; i++ ){
 			logger.info("Attempt " + (i + 1));
 			try{
-				asr = requester.getOgcAugment(solrRecord);
+				asr = requester.getOgcAugment(ogpRecord);
 				if (asr == null){
 					continue;
 				} else {
@@ -167,13 +167,13 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 		}
 	}
 	
-	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, SolrRecord solrRecord, String url) throws Exception{
+	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, OGPRecord ogpRecord, String url) throws Exception{
 		AugmentedSolrRecord asr = null;
 		for (int i = 0; i < numAttempts; i++ ){
 			logger.info("Attempt " + (i + 1));
 
 			try{
-				asr = requester.getOgcAugment(solrRecord, url);
+				asr = requester.getOgcAugment(ogpRecord, url);
 				if (asr == null){
 					continue;
 				} else {

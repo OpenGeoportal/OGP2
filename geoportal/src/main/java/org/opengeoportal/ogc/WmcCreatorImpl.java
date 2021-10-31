@@ -2,6 +2,7 @@ package org.opengeoportal.ogc;
 
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -10,7 +11,6 @@ import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
 
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.opengeoportal.ogc.wmc.jaxb.BoundingBoxType;
 import org.opengeoportal.ogc.wmc.jaxb.GeneralType;
@@ -21,7 +21,8 @@ import org.opengeoportal.ogc.wmc.jaxb.ServerType;
 import org.opengeoportal.ogc.wmc.jaxb.ServiceType;
 import org.opengeoportal.ogc.wmc.jaxb.TypeType;
 import org.opengeoportal.ogc.wmc.jaxb.ViewContextType;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
@@ -182,7 +183,7 @@ import org.springframework.oxm.XmlMappingException;
  */
 public class WmcCreatorImpl implements WmcCreator {
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 	
 	@Autowired
     private Marshaller marshaller;
@@ -191,9 +192,9 @@ public class WmcCreatorImpl implements WmcCreator {
 
 	public LayerListType getLayerList(Map<String, OwsType> idsAndFormats) throws Exception {
 		
-		List<SolrRecord> records = layerInfoRetriever.fetchAllLayerInfo(idsAndFormats.keySet());
+		List<OGPRecord> records = searchService.findRecordsById(new ArrayList<>(idsAndFormats.keySet()));
 		LayerListType layerList = new LayerListType();
-		for (SolrRecord record: records){
+		for (OGPRecord record: records){
 			try {
 				layerList.getLayer().add(populateLayer(record, idsAndFormats.get(record.getLayerId())));
 			} catch (Exception e){
@@ -203,7 +204,7 @@ public class WmcCreatorImpl implements WmcCreator {
 		return layerList;
 	}
 	
-	public LayerType populateLayer(SolrRecord record, OwsType format) throws Exception {
+	public LayerType populateLayer(OGPRecord record, OwsType format) throws Exception {
 		/*
 		 * 	<xs:complexType name="LayerType">
 		<xs:sequence>

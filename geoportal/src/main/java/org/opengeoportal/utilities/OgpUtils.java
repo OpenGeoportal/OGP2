@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -218,8 +218,8 @@ public class OgpUtils {
 		return envString;
 	}
 	
-	public static SolrRecord findRecordById(String layerId, List<SolrRecord> recordList) throws Exception{
-		for (SolrRecord sr: recordList){
+	public static OGPRecord findRecordById(String layerId, List<OGPRecord> recordList) throws Exception{
+		for (OGPRecord sr: recordList){
 			if (sr.getLayerId().equals(layerId)){
 				
 				return sr;

@@ -12,7 +12,7 @@ import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wcs.WcsGetCoverage1_1_1;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,7 +45,7 @@ public class Wcs1_1_1DownloadMethod extends AbstractDownloadMethod implements Pe
     	//all client bboxes should be passed as lat-lon coords.  we will need to get the appropriate epsg code for the layer
 		//in order to return the file in original projection to the user 
 
-		SolrRecord layerInfo = this.currentLayer.getLayerInfo();
+		OGPRecord layerInfo = this.currentLayer.getLayerInfo();
 		BoundingBox nativeBounds = new BoundingBox(layerInfo.getMinX(), layerInfo.getMinY(), layerInfo.getMaxX(), layerInfo.getMaxY());
 		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
 		String layerName = this.currentLayer.getLayerNameNS();

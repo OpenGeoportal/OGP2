@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
 
 import org.opengeoportal.download.controllers.RequestStatusController.StatusSummary;
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +152,7 @@ public class ImageRequest {
 		String layerId;
 		String sld;
 		@JsonIgnore
-		SolrRecord solrRecord;
+		OGPRecord ogpRecord;
 		@JsonIgnore
 		File imageFile;
 		@JsonIgnore
@@ -193,13 +193,14 @@ public class ImageRequest {
 			this.zIndex = zIndex;
 		}
 
-		public SolrRecord getSolrRecord() {
-			return solrRecord;
+		public OGPRecord getOgpRecord() {
+			return ogpRecord;
 		}
-		public void setSolrRecord(SolrRecord solrRecord) {
-			this.solrRecord = solrRecord;
+
+		public void setOgpRecord(OGPRecord ogpRecord) {
+			this.ogpRecord = ogpRecord;
 		}
-		
+
 		public File getImageFile() {
 			return imageFile;
 		}

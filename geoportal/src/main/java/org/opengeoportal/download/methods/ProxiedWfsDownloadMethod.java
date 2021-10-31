@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -34,7 +34,7 @@ public class ProxiedWfsDownloadMethod extends
 	}
 	
 	public String getProxyTo(LayerRequest layer) throws Exception {
-		SolrRecord sr = layer.getLayerInfo();
+		OGPRecord sr = layer.getLayerInfo();
 		return proxyConfigRetriever.getInternalProxyUrl("wfs", sr.getInstitution(), sr.getAccess());
 	}
 }

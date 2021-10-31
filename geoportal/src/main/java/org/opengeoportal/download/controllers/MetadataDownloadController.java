@@ -2,8 +2,9 @@ package org.opengeoportal.download.controllers;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.opengeoportal.config.search.SearchConfig;
 import org.opengeoportal.download.MetadataRetriever;
-import org.opengeoportal.metadata.LayerInfoRetriever;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,7 @@ public class MetadataDownloadController {
 	@Autowired
 	private MetadataRetriever metadataRetriever;
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 
 	 /**
 	 * This controller should receive a GET request with the layerId and a boolean "inline" that tells whether the data should 
@@ -85,7 +86,7 @@ public class MetadataDownloadController {
 	private String getFileName(String id){
 		String fileName = null;
 		try {
-			fileName = layerInfoRetriever.getAllLayerInfo(id).getName();
+			fileName = searchService.findRecordById(id).getName();
 		} catch (Exception e) {
 			e.printStackTrace();
 			fileName = id;

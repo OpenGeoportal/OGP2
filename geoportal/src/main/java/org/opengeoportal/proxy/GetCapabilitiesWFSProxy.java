@@ -5,11 +5,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-//import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,8 +22,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.springframework.web.HttpRequestHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -37,11 +33,16 @@ import org.xml.sax.SAXException;
 
 public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 	private GenericProxy genericProxy;
-	//private OgpAuthenticator ogpAuthenticator;
-	//private final String restrictedWMSServerUrl = "http://127.0.0.1:8580/wms";
-	//private final String restrictedWMSServerUsername = "";
-	//private final String restrictedWMSServerPassword = "";
-	private LayerInfoRetriever layerInfoRetriever;
+
+	public SearchService getSearchService() {
+		return searchService;
+	}
+
+	public void setSearchService(SearchService searchService) {
+		this.searchService = searchService;
+	}
+
+	private SearchService searchService;
 	private Document featureNodesDocument;
 	String serverName = "http://geoserver01.uit.tufts.edu";
 	String servicePoint = serverName + "/wfs";
@@ -52,26 +53,10 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 		this.genericProxy = genericProxy;
 	}
 
-	public LayerInfoRetriever getLayerInfoRetriever() {
-		return layerInfoRetriever;
-	}
-
-	public void setLayerInfoRetriever(LayerInfoRetriever layerInfoRetriever) {
-		this.layerInfoRetriever = layerInfoRetriever;
-	}
-
 	public GenericProxy getGenericProxy() {
 		return this.genericProxy;
 	}
 
-/*	public void setOgpAuthenticator(OgpAuthenticator ogpAuthenticator) {
-		this.ogpAuthenticator = ogpAuthenticator;
-	}
-
-	public OgpAuthenticator getOgpAuthenticator() {
-		return this.ogpAuthenticator;
-	}
-*/
 	@Override
 	public void handleRequest(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
@@ -132,9 +117,9 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
 			layerIdSet.add(layerIds[i]); 
    		}
 
-   		List<SolrRecord> layerInfoList = null;
+   		List<OGPRecord> layerInfoList = null;
 		try {
-			layerInfoList = this.layerInfoRetriever.fetchAllLayerInfo(layerIdSet);
+			layerInfoList = this.searchService.findRecordsById(new ArrayList<>(layerIdSet));
 		} catch (Exception e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
@@ -163,7 +148,7 @@ public class GetCapabilitiesWFSProxy implements HttpRequestHandler {
    			version = "1.0.0";
    		}
    		this.featureNodesDocument = this.createXMLDocument();
-		for (SolrRecord layer: layerInfoList){
+		for (OGPRecord layer: layerInfoList){
    			String workspace = layer.getWorkspaceName();
    			String layerName = layer.getName();
    			//System.out.println(serverName + "/" + workspace + "/" + layerName + "/wfs?request=GetCapabilities&version=" + version);

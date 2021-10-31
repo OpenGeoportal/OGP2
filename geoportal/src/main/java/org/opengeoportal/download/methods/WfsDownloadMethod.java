@@ -12,7 +12,7 @@ import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wfs.WfsGetFeature;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class WfsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 	 	//all client bboxes should be passed as lat-lon coords.  we will need to get the appropriate epsg code for the layer 
 	 	//in order to return the file in original projection to the user (will also need to transform the bbox)
 		String layerName = this.currentLayer.getLayerNameNS();
-		SolrRecord layerInfo = this.currentLayer.getLayerInfo();
+		OGPRecord layerInfo = this.currentLayer.getLayerInfo();
 		BoundingBox nativeBounds = new BoundingBox(layerInfo.getMinX(), layerInfo.getMinY(), layerInfo.getMaxX(), layerInfo.getMaxY());
 		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
 

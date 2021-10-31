@@ -2,9 +2,7 @@ package org.opengeoportal.proxy.controllers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -12,8 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
-import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
@@ -41,7 +39,7 @@ public class GetFeatureInfoController {
 	@Autowired @Qualifier("httpRequester.generic")
 	private HttpRequester httpRequester;
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 	@Autowired
 	private ProxyConfigRetriever proxyConfigRetriever;
 	
@@ -51,9 +49,7 @@ public class GetFeatureInfoController {
 			@RequestParam("width") String width,@RequestParam("height") String height,
 			HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    
-	    SolrRecord layerInfo = getSolrRecord(layerId);
-	    
-	    
+	    OGPRecord layerInfo = getOGPRecord(layerId);
 	    
 	    String wmsEndpoint = proxyConfigRetriever.getInternalUrl("wms", layerInfo.getInstitution(), layerInfo.getAccess(), layerInfo.getLocation());
 	    
@@ -69,7 +65,7 @@ public class GetFeatureInfoController {
 	}
 	//Not necessary...only allowed layers are fetched from solr
 	//@PostAuthorize("hasPermission(#layerInfo, 'download')")
-	String createRequestFromSolrRecord(SolrRecord layerInfo, String xCoord, String yCoord, String bbox, String height, String width) throws Exception{
+	String createRequestFromSolrRecord(OGPRecord layerInfo, String xCoord, String yCoord, String bbox, String height, String width) throws Exception{
 	    String layerName = 	OgpUtils.getLayerNameNS(layerInfo.getWorkspaceName(), layerInfo.getName());
 		return this.createWmsGetFeatureInfoQuery(layerName, xCoord, yCoord, bbox, height, width);
 	}
@@ -104,17 +100,15 @@ public class GetFeatureInfoController {
 	}
 	
 	
-	SolrRecord getSolrRecord(String layerId) throws Exception{
-	    Set<String> layerIds = new HashSet<String>();
-	    layerIds.add(layerId);
+	OGPRecord getOGPRecord(String layerId) throws Exception{
 	    
-	    List<SolrRecord> allLayerInfo = this.layerInfoRetriever.fetchAllowedRecords(layerIds);
+		List<OGPRecord> allLayerInfo = this.searchService.findAllowedRecordsById(List.of(layerId));
 	    
 	    if (allLayerInfo.isEmpty()){
 	    	throw new Exception("No allowed records returned for Layer Id: ['" + layerId + "'");
 	    }
 	    
-	    SolrRecord layerInfo = allLayerInfo.get(0);
+	    OGPRecord layerInfo = allLayerInfo.get(0);
 	    return layerInfo;
 	}
 }

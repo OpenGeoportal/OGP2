@@ -8,11 +8,12 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
+import org.opengeoportal.search.MetadataRecord;
+import org.opengeoportal.service.SearchService;
 import org.xml.sax.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.common.SolrDocumentList;
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.w3c.dom.*;
@@ -25,7 +26,7 @@ import org.w3c.dom.*;
 
 public class MetadataFromSolr implements MetadataRetriever {
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 	private String layerId;
 	private Document xmlDocument;
 	private DocumentBuilder builder;
@@ -127,36 +128,26 @@ public class MetadataFromSolr implements MetadataRetriever {
 	
 	/**
 	 * given a layer name, retrieves the XML metadata string from the OGP Solr instance
-	 * @param layerName
+	 * @param identifier
+	 * @param descriptor
 	 * @return the XML metadata as a string
 	 * @throws Exception 
 	 */
-	private String getXMLStringFromSolr(String identifier, String descriptor) throws Exception{
-		Map<String,String> conditionsMap = new HashMap<String, String>();
+	private String getXMLStringFromSolr(String identifier, String descriptor) throws Exception {
+
+		MetadataRecord record;
+
 		if (descriptor.equalsIgnoreCase("name")){
-			int i = identifier.indexOf(":");
-			if (i > 0){
-				//String workSpace = layerName.substring(0, i);
-				//conditionsMap.put("WorkspaceName", workSpace);
-				identifier = identifier.substring(i + 1);
-			}
-			conditionsMap.put("Name", identifier);
-			this.layerId = null;
+			record = this.searchService.findMetadataRecordByName(identifier);
 		} else if(descriptor.equalsIgnoreCase("layerid")){
-			conditionsMap.put("LayerId", identifier);
-			this.layerId = identifier;
+			record = this.searchService.findMetadataRecordById(identifier);
 		} else {
 			this.layerId = null;
 			return null;
 		}
+		this.layerId = record.getLayerId();
 
-		SolrQuery query = new SolrQuery();
-		query.setQuery( descriptor + ":" + identifier );
-		query.addField("FgdcText");
-		query.setRows(1);
-		
-		 SolrDocumentList docs = this.layerInfoRetriever.getSolrServer().query(query).getResults();
-		 return (String) docs.get(0).getFieldValue("FgdcText");
+		return record.getFgdcText();
 	}
 	
 	/**

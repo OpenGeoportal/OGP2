@@ -2,9 +2,9 @@ package org.opengeoportal.ogc.wcs.wcs1_0_0;
 
 import java.util.List;
 
-import org.geotools.factory.Hints;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.ReferencingFactoryFinder;
+import org.geotools.util.factory.Hints;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengis.referencing.crs.CRSAuthorityFactory;

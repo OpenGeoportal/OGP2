@@ -32,11 +32,12 @@ interface SearchClient {
     String createLayerIdQueryString(List<String> layerIds);
 
     /***
-     * Generates a Map of parameters for a LayerId search to be used by ogpRecordSearch
-     * @param layerIds
+     * Given a query string and field list string, builds a simple parameter map for a query
+     * @param queryString
+     * @param fieldList
      * @return
      */
-    Map<String,String> createOGPLayerIdParams(List<String> layerIds);
+    Map<String,String> buildSimpleParams(String queryString, String fieldList);
 
     /***
      * Generates a query string to search for layers by Name

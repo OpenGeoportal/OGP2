@@ -1,9 +1,7 @@
 package org.opengeoportal.proxy.controllers;
 
-/**
+/*
  * Adapted from David Smiley's HTTP reverse proxy/gateway servlet
- */
-/**
 * Copyright MITRE
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,10 +29,9 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.HeaderGroup;
 import org.apache.http.util.EntityUtils;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.opengeoportal.metadata.*;
-import org.opengeoportal.search.*;
+
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.opengeoportal.utilities.http.OgpHttpClient;
@@ -71,14 +68,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.BitSet;
-import java.util.Enumeration;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 @RequestMapping("/dynamic")
@@ -91,9 +81,9 @@ public class DynamicOgcController {
 	protected URI targetUri;
 	
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 
-	private TransformerFactory transformerFactory = TransformerFactory.newInstance();
+	private final TransformerFactory transformerFactory = TransformerFactory.newInstance();
 	private DocumentBuilder builder = null;
 	
 	@Autowired
@@ -168,7 +158,7 @@ public class DynamicOgcController {
 	  String currentUrl = "";
 	  String wfsQueryBoilerPlate = "?version=" + version + "&service=wfs";
 	  String capabilitiesQuery = "&request=GetCapabilities";
-	  String featureTypeInfo = "";
+	  StringBuilder featureTypeInfo = new StringBuilder();
 	  CloseableHttpClient proxyClient = ogpHttpClient.getCloseableHttpClient();
 
 
@@ -181,7 +171,7 @@ public class DynamicOgcController {
 		  Document document = this.getDocument(inputStream);
 		  Set<String> nameList = container.qualifiedNames;
 
-		  featureTypeInfo += this.extractWfsFeatureTypeNodes(document, nameList);
+		  featureTypeInfo.append(this.extractWfsFeatureTypeNodes(document, nameList));
 
 	  }
 
@@ -211,14 +201,14 @@ public class DynamicOgcController {
 	  mav.addObject("getCapabilities", StringEscapeUtils.escapeXml(servletRequest.getRequestURL().toString() + "?" + servletRequest.getQueryString()));
 	  mav.addObject("describeFeatureUrl", StringEscapeUtils.escapeXml(describeFeatureUrl)); 
 	  mav.addObject("getFeatureUrl",StringEscapeUtils.escapeXml(getFeatureUrl));
-	  mav.addObject("featureTypeInfo", featureTypeInfo);
+	  mav.addObject("featureTypeInfo", featureTypeInfo.toString());
 
 	  servletResponse.setHeader("Content-Disposition", "inline;filename=GetCapabilities.xml");
 	  return mav;
   }
   
  private String extractWfsFeatureTypeNodes(Document xmlDocument, Set<String> nameList) throws Exception{
-	 	String featureTypeInfo = "";
+	 	StringBuilder featureTypeInfo = new StringBuilder();
 		NodeList layerNodeList = xmlDocument.getElementsByTagName("Name");
 		if (layerNodeList.getLength() == 0){
 			throw new Exception("Malformed GetCapabilities Document.");
@@ -231,16 +221,16 @@ public class DynamicOgcController {
 			Node currentLayerNode = layerNodeList.item(j);
 			String layerName = currentLayerNode.getTextContent().toLowerCase();
 			if (OgpUtils.getSetAsLowerCase(nameList).contains(layerName)){
-				featureTypeInfo += xmlToString(currentLayerNode.getParentNode());
+				featureTypeInfo.append(xmlToString(currentLayerNode.getParentNode()));
 			}
 
 		}
 		
-		return featureTypeInfo;
+		return featureTypeInfo.toString();
  }
  
  private String extractWmsLayerNodes(Document xmlDocument, Set<String> nameList) throws Exception{
-	 String featureTypeInfo = "";
+	 StringBuilder featureTypeInfo = new StringBuilder();
 		NodeList layerNodeList = xmlDocument.getElementsByTagName("Name");
 		if (layerNodeList.getLength() == 0){
 			throw new Exception("Malformed GetCapabilities Document.");
@@ -252,13 +242,13 @@ public class DynamicOgcController {
 				String layerName = currentLayerNode.getTextContent().toLowerCase();
 
 				if (OgpUtils.getSetAsLowerCase(nameList).contains(layerName)){
-						featureTypeInfo += xmlToString(currentLayerNode.getParentNode());
+						featureTypeInfo.append(xmlToString(currentLayerNode.getParentNode()));
 		   		}
 				
 			}
 		}
 		
-		return featureTypeInfo;
+		return featureTypeInfo.toString();
  }
  
 @RequestMapping(value="/wfs", method=RequestMethod.GET)
@@ -303,9 +293,9 @@ public class DynamicOgcController {
 }
 
 private Map<String,UrlToNameContainer> getRecordMapFromLayerIds(Set<String> layerIds) throws Exception{
-	  List<SolrRecord> solrRecords = null;
+	  List<OGPRecord> ogpRecords = null;
 		try {
-			solrRecords = this.layerInfoRetriever.fetchAllLayerInfo(layerIds);
+			ogpRecords = this.searchService.findRecordsById(new ArrayList<>(layerIds));
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ServletException("Unable to retrieve layer info.");
@@ -313,14 +303,14 @@ private Map<String,UrlToNameContainer> getRecordMapFromLayerIds(Set<String> laye
 		//need to pass a model to the caps document
 		
 		Map<String,UrlToNameContainer> recordMap  = new HashMap<String,UrlToNameContainer>();
-		for (SolrRecord solrRecord: solrRecords){
+		for (OGPRecord record: ogpRecords){
 			//we have to get all of the wfs service points for the passed layerids.  match layerids to service points, so we only have to process each caps document once
 			//in the future, we should cache these caps documents
-			String workspaceName = solrRecord.getWorkspaceName();
-			String layerName = solrRecord.getName();
+			String workspaceName = record.getWorkspaceName();
+			String layerName = record.getName();
 			
 			String qualifiedName = OgpUtils.getLayerNameNS(workspaceName, layerName);
-			String wmsUrl = LocationFieldUtils.getWmsUrl(solrRecord.getLocation());
+			String wmsUrl = LocationFieldUtils.getWmsUrl(record.getLocation());
 			
 			URI currentURI = new URI(wmsUrl);
 			//is it ok to call these equivalent?
@@ -408,9 +398,8 @@ public void doWmsRequest(@RequestParam("ogpids") Set<String> layerIds, HttpServl
 	String layers = "";
 	while (paramNames.hasMoreElements()){
 		String param = (String) paramNames.nextElement();
-		if (param.equalsIgnoreCase("version")){
 
-		} else if (param.equalsIgnoreCase("request")){
+		if (param.equalsIgnoreCase("request")){
 			logger.info("request: " + servletRequest.getParameter(param));
 			ogcRequest = servletRequest.getParameter(param);
 		} else if (param.equalsIgnoreCase("layers")){
@@ -448,36 +437,31 @@ public static String removeParamFromQuery(String query, String param){
 		query = query.substring(1);
 	}
 	String[] arrQuery = query.split("&");
-	String newQuery = "";
-	for (int i = 0; i < arrQuery.length; i++){
-		String currentParam = arrQuery[i].substring(0, arrQuery[i].indexOf("="));
-		if (!currentParam.equalsIgnoreCase(param)){
-			newQuery += arrQuery[i] + "&";
+	StringBuilder newQuery = new StringBuilder();
+	for (String s : arrQuery) {
+		String currentParam = s.substring(0, s.indexOf("="));
+		if (!currentParam.equalsIgnoreCase(param)) {
+			newQuery.append(s).append("&");
 		}
 	}
 	if (newQuery.length() > 0){
-		newQuery = newQuery.substring(0, newQuery.length() - 1);
+		newQuery = new StringBuilder(newQuery.substring(0, newQuery.length() - 1));
 	}
-	return newQuery;
+	return newQuery.toString();
 }
 
-private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) throws Exception{
-	SolrQuery query = new SolrQuery();
-		
+private String getOgcUrlFromLayerName(String layerName, String ogcProtocol) throws Exception {
+
 	if (layerName.contains(":")){
 		String[] arrName = layerName.split(":");
 		layerName = arrName[1];
 	}
+
+	OGPRecord record = searchService.findRecordByName(layerName);
 	
 	String queryText = "Name:" + layerName;
-	
-    query.setQuery(queryText);
-	QueryResponse queryResponse = this.layerInfoRetriever.getSolrServer().query(query);
-	List<SolrRecord> records = queryResponse.getBeans(SolrRecord.class);
-	if (records.isEmpty()){
-		throw new Exception("No matching record found in Solr Index for ['" + layerName + "']");
-	}
-	String location = records.get(0).getLocation();
+
+	String location = record.getLocation();
 	
 	if (ogcProtocol.equalsIgnoreCase("wfs")){
 		return LocationFieldUtils.getWfsUrl(location);

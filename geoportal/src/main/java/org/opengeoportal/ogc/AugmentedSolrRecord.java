@@ -1,13 +1,13 @@
 package org.opengeoportal.ogc;
 
+import org.opengeoportal.search.OGPRecord;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opengeoportal.search.SolrRecord;
-
 public class AugmentedSolrRecord {
 	List<OwsInfo> owsInfo = new ArrayList<OwsInfo>();
-	SolrRecord solrRecord;
+	OGPRecord ogpRecord;
 	
 	public List<OwsInfo> getOwsInfo() {
 		return owsInfo;
@@ -15,11 +15,11 @@ public class AugmentedSolrRecord {
 	public void setOwsInfo(List<OwsInfo> owsInfo) {
 		this.owsInfo = owsInfo;
 	}
-	public SolrRecord getSolrRecord() {
-		return solrRecord;
+	public OGPRecord getOgpRecord() {
+		return ogpRecord;
 	}
-	public void setSolrRecord(SolrRecord solrRecord) {
-		this.solrRecord = solrRecord;
+	public void setOgpRecord(OGPRecord ogpRecord) {
+		this.ogpRecord = ogpRecord;
 	}
 
 }

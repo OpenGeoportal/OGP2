@@ -11,7 +11,7 @@ import java.util.concurrent.Future;
 
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 
@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 
 public class LayerRequest {
 	final String id;
-	final SolrRecord layerInfo;
+	final OGPRecord layerInfo;
 	List<OwsInfo> owsInfo;
 	private String requestedFormat;
 	private UUID jobId;
@@ -36,7 +36,7 @@ public class LayerRequest {
 	private Date timeStamp;
 	private Future<?> futureValue;
 
-	public LayerRequest(SolrRecord record, String requestedFormat){
+	public LayerRequest(OGPRecord record, String requestedFormat){
 		this.id = record.getLayerId();
 		this.layerInfo = record;
 		this.timeStamp = new Date();
@@ -72,7 +72,7 @@ public class LayerRequest {
 		this.emailAddress = emailAddress;
 	}
 	
-	public SolrRecord getLayerInfo(){
+	public OGPRecord getLayerInfo(){
 		return this.layerInfo;
 	}
 

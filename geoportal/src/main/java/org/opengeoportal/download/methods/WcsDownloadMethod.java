@@ -13,7 +13,6 @@ import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wcs.wcs1_0_0.CoverageOffering1_0_0;
 import org.opengeoportal.ogc.wcs.wcs1_0_0.WcsGetCoverage1_0_0;
-import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.OgpUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,7 +54,7 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 			describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(this.currentLayer.getOwsInfo()).getOwsDescribeInfo();
 		}
 		
-		SolrRecord layerInfo = this.currentLayer.getLayerInfo();
+		//OGPRecord layerInfo = this.currentLayer.getLayerInfo();
 		
 		Envelope env = describeLayerInfo.getLonLatEnvelope();
 		BoundingBox nativeBounds = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());

@@ -3,7 +3,7 @@ package org.opengeoportal.security;
 import java.io.Serializable;
 
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class LayerPermissionEvaluator implements PermissionEvaluator {
 		logger.info("checking permission...");
 		  boolean hasPermission = false;
 		  
-		  if (targetDomainObject instanceof SolrRecord){
-			  SolrRecord sr = (SolrRecord) targetDomainObject;
+		  if (targetDomainObject instanceof OGPRecord){
+			  OGPRecord sr = (OGPRecord) targetDomainObject;
 			  if (sr.getAccess().equalsIgnoreCase("public")){
 				  hasPermission = true;
 			  } else if (authentication.isAuthenticated() && hasAuthority(authentication, "ROLE_USER")){

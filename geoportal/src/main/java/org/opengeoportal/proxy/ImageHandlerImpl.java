@@ -4,17 +4,18 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.proxy.controllers.ImageRequest;
 import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
 import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class ImageHandlerImpl implements ImageHandler {
 	@Autowired
 	private ImageDownloaderFactory imageDownloaderFactory;
 	@Autowired
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 	@Autowired
 	private ProxyConfigRetriever proxyConfigRetriever;
 	private String baseQuery;
@@ -81,17 +82,17 @@ public class ImageHandlerImpl implements ImageHandler {
 	
 	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
 		//only retrieve records the user has permission to access data for
-		List<SolrRecord> layerInfo = this.layerInfoRetriever.fetchAllowedRecords(imageRequest.getLayerIds());
+		List<OGPRecord> layerInfo = this.searchService.findAllowedRecordsById(new ArrayList<>(imageRequest.getLayerIds()));
 	    logger.info("Number of layers in image: " + Integer.toString(layerInfo.size()));
 		
 		for (LayerImage layerImage: imageRequest.getLayers()){
 			
 			String currentId = layerImage.getLayerId();
 			
-			for (SolrRecord solrRecord : layerInfo){
+			for (OGPRecord record : layerInfo){
 				
-				if (solrRecord.getLayerId().equalsIgnoreCase(currentId)){
-					layerImage.setSolrRecord(solrRecord);
+				if (record.getLayerId().equalsIgnoreCase(currentId)){
+					layerImage.setOgpRecord(record);
 					populateLayerUrl(layerImage);				
 				}
 			}
@@ -101,9 +102,9 @@ public class ImageHandlerImpl implements ImageHandler {
 	
 	private void populateLayerUrl(LayerImage layerImage){
 		
-		SolrRecord solrRecord = layerImage.getSolrRecord();
+		OGPRecord record = layerImage.getOgpRecord();
 		
-		String layerQueryString = "&layers=" + solrRecord.getWorkspaceName() + ":" + solrRecord.getName();
+		String layerQueryString = "&layers=" + record.getWorkspaceName() + ":" + record.getName();
 		String currentSLD = layerImage.getSld();
 	   	if ((currentSLD != null)&&(!currentSLD.equals("null")&&(!currentSLD.isEmpty()))){
 	   		try {
@@ -117,7 +118,8 @@ public class ImageHandlerImpl implements ImageHandler {
 	   	String baseUrl = "";
 
 	   	try{
-	   		baseUrl = this.proxyConfigRetriever.getInternalUrl("wms", solrRecord.getInstitution(), solrRecord.getAccess(),solrRecord.getLocation());
+	   		baseUrl = this.proxyConfigRetriever.getInternalUrl("wms", record.getInstitution(),
+					record.getAccess(), record.getLocation());
 	   		layerImage.setUrl(new URL(baseUrl + "?" + baseQuery + layerQueryString));
 
 	   	} catch (Exception e1) {

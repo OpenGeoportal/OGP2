@@ -8,6 +8,7 @@ import java.util.concurrent.Future;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.locationtech.jts.geom.Envelope;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.AsyncResult;
 
-import com.vividsolutions.jts.geom.Envelope;
 
 public class GeoToolsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {
 	private static final Boolean INCLUDES_METADATA = false;

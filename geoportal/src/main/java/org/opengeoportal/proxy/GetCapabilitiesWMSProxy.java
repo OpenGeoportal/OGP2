@@ -3,6 +3,7 @@ package org.opengeoportal.proxy;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,9 +23,8 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-
-import org.opengeoportal.metadata.LayerInfoRetriever;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
 
 public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 	private GenericProxy genericProxy;
-	private LayerInfoRetriever layerInfoRetriever;
+	private SearchService searchService;
 	private DocumentBuilder builder;
 	private Transformer serializer;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -46,14 +46,6 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 
 	public void setGenericProxy(GenericProxy genericProxy) {
 		this.genericProxy = genericProxy;
-	}
-
-	public LayerInfoRetriever getLayerInfoRetriever() {
-		return layerInfoRetriever;
-	}
-
-	public void setLayerInfoRetriever(LayerInfoRetriever layerInfoRetriever) {
-		this.layerInfoRetriever = layerInfoRetriever;
 	}
 
 	public GenericProxy getGenericProxy() {
@@ -104,15 +96,15 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
 			layerIdSet.add(layerIds[i]); 
    		}
 
-   		List<SolrRecord> layerRecords = null;
+   		List<OGPRecord> layerRecords = null;
 		try {
-			layerRecords = this.layerInfoRetriever.fetchAllLayerInfo(layerIdSet);
+			layerRecords = this.searchService.findRecordsById(new ArrayList<>(layerIdSet));
 		} catch (Exception e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
    		
-		SolrRecord firstRecord = layerRecords.get(0);
+		OGPRecord firstRecord = layerRecords.get(0);
    		//String institution = firstRecord.getInstitution();
 		String location = firstRecord.getLocation();
 		String servicePoint = LocationFieldUtils.getWmsUrl(location);
@@ -121,7 +113,7 @@ public class GetCapabilitiesWMSProxy implements HttpRequestHandler {
    		genericProxy.proxyRequest(request, response, servicePoint + "request=getCapabilities&version=1.1.1");
 
    		Set<String> layerNames = new HashSet<String>();
-   		for (SolrRecord layer: layerRecords){
+   		for (OGPRecord layer: layerRecords){
 				String currentLayerName = layer.getWorkspaceName() + ":" + layer.getName();
 				layerNames.add(currentLayerName);
    		}

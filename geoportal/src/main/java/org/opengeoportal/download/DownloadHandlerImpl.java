@@ -1,5 +1,6 @@
 package org.opengeoportal.download;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -7,11 +8,11 @@ import java.util.UUID;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
 import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.metadata.LayerInfoRetriever;
 import org.opengeoportal.ogc.AugmentedSolrRecord;
 import org.opengeoportal.ogc.AugmentedSolrRecordRetriever;
 import org.opengeoportal.ogc.OwsInfo;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
@@ -33,10 +34,9 @@ public class DownloadHandlerImpl implements DownloadHandler {
 
 	@Autowired
 	protected RequestStatusManager requestStatusManager;
-
 	
 	@Autowired
-	protected LayerInfoRetriever layerInfoRetriever;
+	protected SearchService searchService;
 
 	@Autowired
 	private DirectoryRetriever directoryRetriever;
@@ -75,8 +75,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	/**
 	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
 	 *  
-	 * @param downloadMap a map that relates a string key (that identifies the concrete LayerDownloader Class) to a List of
-	 * LayerRequest objects that can be downloaded using that concrete class.
+	 *
 	 */
 	@Async
 	public void submitDownloadRequest() {
@@ -100,11 +99,12 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	
 	private void populateDownloadRequest (DownloadRequest dlRequest) throws Exception {
 		Set<String> layerIdSet = dlRequest.getRequestedLayerIds();
-		List<SolrRecord> layerInfo = layerInfoRetriever.fetchAllowedRecords(layerIdSet);
-		
+		List<String> layerIds = new ArrayList<>(layerIdSet);
+		List<OGPRecord> layerInfo = searchService.findAllowedRecordsById(layerIds);
+
 		for (String layerId: layerIdSet){
 			
-			SolrRecord record = null;
+			OGPRecord record = null;
 			try{
 				//layerIdSet can contain layerIds for layers the user is not allowed to access
 				record = OgpUtils.findRecordById(layerId, layerInfo);
@@ -138,12 +138,12 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	}
 
 	
-	private LayerRequest createLayerRequest(SolrRecord solrRecord, String requestedFormat, BoundingBox bounds, String emailAddress){
-		LayerRequest layer = new LayerRequest(solrRecord, requestedFormat);
+	private LayerRequest createLayerRequest(OGPRecord ogpRecord, String requestedFormat, BoundingBox bounds, String emailAddress){
+		LayerRequest layer = new LayerRequest(ogpRecord, requestedFormat);
 		layer.setRequestedBounds(bounds);
 		layer.setEmailAddress(emailAddress);
 		layer.setTargetDirectory(this.directoryRetriever.getDownloadDirectory());
-		if (LocationFieldUtils.hasWmsUrl(solrRecord.getLocation())){
+		if (LocationFieldUtils.hasWmsUrl(ogpRecord.getLocation())){
 			addOwsInfo(layer);
 		}
 		return layer;

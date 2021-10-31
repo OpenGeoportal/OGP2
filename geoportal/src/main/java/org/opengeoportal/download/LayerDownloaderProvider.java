@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.opengeoportal.download.config.DownloadConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.GeometryType;
-import org.opengeoportal.search.SolrRecord;
+import org.opengeoportal.search.OGPRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -74,7 +74,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 	public String getClassKey(LayerRequest layer) throws Exception {
 		JsonNode institutions = getDownloadConfig();
 		
-		SolrRecord record = layer.getLayerInfo();
+		OGPRecord record = layer.getLayerInfo();
 		JsonNode methods = institutions.path(record.getInstitution().trim().toLowerCase());
 		if (!methods.isArray()){
 			try{
@@ -127,7 +127,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 	}
 
 	protected Boolean matchAllCriteria(JsonNode currentNode, LayerRequest layer) {
-		SolrRecord record = layer.getLayerInfo();
+		OGPRecord record = layer.getLayerInfo();
 		logger.debug(record.getAccess().toLowerCase());
 		logger.debug(record.getDataType().toLowerCase());
 		logger.debug(layer.getRequestedFormat().toLowerCase());

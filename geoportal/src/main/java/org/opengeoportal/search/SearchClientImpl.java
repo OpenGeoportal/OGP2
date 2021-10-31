@@ -3,49 +3,51 @@ package org.opengeoportal.search;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.client.solrj.impl.LBHttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.params.MapSolrParams;
+import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URL;
+import java.util.*;
 
 @Component
 class SearchClientImpl implements SearchClient {
-    @Value("${solrUrl}")
-    private final List<String> solrUrl;
 
+    private final SearchConfigRetriever searchConfigRetriever;
     private SolrClient solrClient;
 
-    SearchClientImpl(List<String> solrUrl) {
-        this.solrUrl = solrUrl;
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    SearchClientImpl(SearchConfigRetriever searchConfigRetriever) {
+        this.searchConfigRetriever = searchConfigRetriever;
     }
 
     @PostConstruct
     void buildSolrClient() throws SolrServerException {
-        if (solrUrl.size() == 0){
+        // get the url for the solr collection from the searchconfig object
+        URL url = searchConfigRetriever.getInternalSearchUrl();
+        String solrUrl = url.toString();
+
+        // remove /select from the end of the url
+        if (solrUrl.contains("/select")){
+            solrUrl = solrUrl.substring(0, solrUrl.indexOf("/select"));
+        }
+
+        logger.debug("creating Solr Server at " + solrUrl);
+
+        if (solrUrl.length() == 0){
             // throw an error
             throw new SolrServerException("No solr url specified");
-        } else if (solrUrl.size() == 1) {
-            solrClient = new HttpSolrClient.Builder(solrUrl.get(0))
-                    .withConnectionTimeout(10000)
-                    .withSocketTimeout(60000)
-                    .build();
         } else {
-            LBHttpSolrClient.Builder builder = new LBHttpSolrClient.Builder();
-            for (String url: solrUrl){
-                builder.withBaseSolrUrl(url);
-            }
-            solrClient = builder
+            solrClient = new HttpSolrClient.Builder(solrUrl)
                     .withConnectionTimeout(10000)
                     .withSocketTimeout(60000)
                     .build();
@@ -94,7 +96,8 @@ class SearchClientImpl implements SearchClient {
 
     @Override
     public String createLayerIdQueryString(List<String> layerIds) {
-        List<String> cleanedList = new ArrayList<>();
+        // use a set to ensure there are no duplicates
+        Set<String> cleanedList = new HashSet<>();
         for (String layerId: layerIds) {
             cleanedList.add(ClientUtils.escapeQueryChars(layerId.trim()));
         }
@@ -102,11 +105,10 @@ class SearchClientImpl implements SearchClient {
     }
 
     @Override
-    public Map<String,String> createOGPLayerIdParams(List<String> layerIds){
-        String queryString = this.createLayerIdQueryString(layerIds);
+    public Map<String,String> buildSimpleParams(String queryString, String fieldList){
         final Map<String, String> queryParamMap = new HashMap<>();
         queryParamMap.put("q", queryString);
-        queryParamMap.put("fl", OGPRecord.getFieldList());
+        queryParamMap.put("fl", fieldList);
         return queryParamMap;
     }
 
