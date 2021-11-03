@@ -17,7 +17,6 @@ import org.apache.commons.io.IOUtils;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.search.OGPRecord;
-import org.opengeoportal.search.SolrRecord;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.opengeoportal.utilities.http.HttpRequester;
@@ -31,7 +30,7 @@ public abstract class AbstractDownloadMethod {
 	protected LayerRequest currentLayer;
 	protected HttpRequester httpRequester;
 	@Autowired
-	protected DirectoryRetriever directoryRetriever;
+	DirectoryRetriever directoryRetriever;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	
