@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 
 public class FilterServletOutputStream extends ServletOutputStream {
 
@@ -24,6 +25,16 @@ public class FilterServletOutputStream extends ServletOutputStream {
 
 	public void write(byte[] b, int off, int len) throws IOException {
 		stream.write(b, off, len);
+	}
+
+	@Override
+	public boolean isReady() {
+		return false;
+	}
+
+	@Override
+	public void setWriteListener(WriteListener writeListener) {
+
 	}
 }
 
