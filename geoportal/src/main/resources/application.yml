@@ -1,0 +1,6 @@
+solrUrl: http://localhost:8983/solr
+solrCollection: ogp
+
+minPoolSize: 6
+maxPoolSize: 12
+queueCapacity: 100
