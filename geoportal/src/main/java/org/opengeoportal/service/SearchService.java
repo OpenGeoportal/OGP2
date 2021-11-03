@@ -12,7 +12,7 @@ import java.util.Map;
 public interface SearchService {
     /***
      * method for searching index for OGP layer records
-     * @param queryParams
+     * @param queryParams Map of search parameters
      * @return
      * @throws SearchServerException
      */
@@ -20,18 +20,23 @@ public interface SearchService {
 
     /***
      * method for finding OGP records by LayerIds
-     * @param layerIds
+     * @param layerIds list of LayerId's
      * @return
      * @throws SearchServerException
      */
     List<OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException;
 
-    @PostFilter("hasPermission(filterObject, 'download')")
+    /***
+     * Returns a list of OGPRecords by LayerIds. Records that the user is not allowed to download are filtered out.
+     * @param layerIds list of LayerId's
+     * @return
+     * @throws SearchServerException
+     */
     List<OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException;
 
     /***
      * find an OGP record by LayerId. throws an exception if a layer is not found.
-     * @param layerId
+     * @param layerId OGP LayerId
      * @return
      * @throws LayerNotFoundException
      * @throws SearchServerException
@@ -40,7 +45,7 @@ public interface SearchService {
 
     /***
      * find an OGP record by Name. throws an exception if a record is not found
-     * @param name
+     * @param name OGP Name
      * @return
      * @throws LayerNotFoundException
      * @throws SearchServerException
@@ -49,7 +54,7 @@ public interface SearchService {
 
     /***
      * find a MetadataRecord by LayerId. Used to generate XML metadata documents.
-     * @param layerId
+     * @param layerId OGP LayerId
      * @return
      * @throws LayerNotFoundException
      * @throws SearchServerException
@@ -58,7 +63,7 @@ public interface SearchService {
 
     /***
      * find a MetadataRecord by Name. Used to generate XML metadata documents.
-     * @param name
+     * @param name OGP Name
      * @return
      * @throws LayerNotFoundException
      * @throws SearchServerException

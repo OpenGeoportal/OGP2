@@ -45,7 +45,6 @@ public class DirectoryRetrieverImpl implements DirectoryRetriever {
 	/** 
 	 * 
 	 * @return a File handle for the temp directory, which we're using for downloads
-	 * @see org.OpenGeoPortal.Utilities.DirectoryRetriever#getDownloadDirectory()
 	 */
 	public File getDownloadDirectory() {
 		File theDirectory = null;
