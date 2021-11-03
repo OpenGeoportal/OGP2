@@ -9,7 +9,6 @@ import org.opengeoportal.download.DownloadRequest;
 import org.opengeoportal.download.MethodLevelDownloadRequest;
 import org.opengeoportal.download.RequestStatusManager;
 import org.opengeoportal.download.types.LayerRequest;
-import org.opengeoportal.export.geocommons.GeoCommonsExportRequest;
 import org.opengeoportal.proxy.controllers.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +29,7 @@ public class RequestStatusController {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private List<DownloadRequest> downloadRequests; 
 	private List<ImageRequest> imageRequests;
-	private List<GeoCommonsExportRequest> exportRequests;
-	
+
 	public enum StatusSummary {
 		PROCESSING,
 		READY_FOR_PACKAGING,
@@ -48,7 +46,6 @@ public class RequestStatusController {
 		}
 		this.downloadRequests = new ArrayList<DownloadRequest>();
 		this.imageRequests = new ArrayList<ImageRequest>();
-		this.exportRequests = new ArrayList<GeoCommonsExportRequest>();
 
 		for (String requestId: requestIdsArr){
 			try {
@@ -67,16 +64,9 @@ public class RequestStatusController {
 			} catch (Exception e){
 				//e.printStackTrace();
 			}
-			try {
-				GeoCommonsExportRequest exRequest = requestStatusManager.getExportRequest(UUID.fromString(requestId));
-				if (exRequest != null){
-					this.exportRequests.add(exRequest);
-				}
-			} catch (Exception e){
-				//e.printStackTrace();
-			}
+
 		}
-		if ((this.downloadRequests.size() + this.imageRequests.size() + this.exportRequests.size()) > 0){
+		if ((this.downloadRequests.size() + this.imageRequests.size()) > 0){
 			return getRequestStatus();
 		} else {
 			logger.error("no requests found");
@@ -125,15 +115,6 @@ public class RequestStatusController {
 			//logger.info("RequestId: " + requestId.toString());
 			String type = "image";
 			StatusSummary status = imageRequest.getStatusSummary();
-			//logger.info("Image status summary: " + status.toString());
-			requestStatus.addRequestStatusElement(requestId, type, status);
-		}
-		
-		for (GeoCommonsExportRequest exportRequest: exportRequests){
-			UUID requestId = exportRequest.getRequestId();
-			//logger.info("RequestId: " + requestId.toString());
-			String type = "export";
-			StatusSummary status = exportRequest.getStatusSummary();
 			//logger.info("Image status summary: " + status.toString());
 			requestStatus.addRequestStatusElement(requestId, type, status);
 		}

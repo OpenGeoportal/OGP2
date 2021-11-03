@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.opengeoportal.export.geocommons.GeoCommonsExportRequest;
 import org.opengeoportal.proxy.controllers.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +13,6 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 	//
 	List<DownloadRequest> globalDownloadRequestRegistry = new ArrayList<DownloadRequest>();
 	List<ImageRequest> globalImageRequestRegistry = new ArrayList<ImageRequest>();
-	List<GeoCommonsExportRequest> globalExportRequestRegistry = new ArrayList<GeoCommonsExportRequest>();
-
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -49,22 +46,12 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 		}
 		return sessionStatus;
 	}
-	
-	private synchronized List<GeoCommonsExportRequest> getExportRequestBySessionId(String sessionId){
-		List<GeoCommonsExportRequest> sessionStatus = new ArrayList<GeoCommonsExportRequest>();
-		for (GeoCommonsExportRequest status: globalExportRequestRegistry){
-			if (status.getSessionId().equals(sessionId)){
-				sessionStatus.add(status);
-			}
-		}
-		return sessionStatus;
-	}
+
 	
 	@Override
 	public synchronized void removeRequestsBySessionId(String sessionId){
 		removeImageRequestsBySessionId(sessionId);
 		removeDownloadRequestsBySessionId(sessionId);
-		removeExportRequestsBySessionId(sessionId);
 	}
 	
 	private synchronized void removeImageRequestsBySessionId(String sessionId){
@@ -75,15 +62,7 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 			logger.debug("No image status objects found for this session: " + sessionId);
 		}	
 	}
-	
-	private synchronized void removeExportRequestsBySessionId(String sessionId){
-		List<GeoCommonsExportRequest> sessionStatus = getExportRequestBySessionId(sessionId);
-		if (!sessionStatus.isEmpty()){
-			globalExportRequestRegistry.removeAll(sessionStatus);
-		} else {
-			logger.debug("No export status objects found for this session: " + sessionId);
-		}	
-	}
+
 	
 	private synchronized void removeDownloadRequestsBySessionId(String sessionId){
 		List<DownloadRequest> sessionStatus = getDownloadRequestBySessionId(sessionId);
@@ -119,26 +98,6 @@ public class RequestStatusManagerImpl implements RequestStatusManager {
 		}
 		//logger.info("No status found for image request.");
 		return null;
-	}
-
-	@Override
-	public synchronized GeoCommonsExportRequest getExportRequest(UUID requestId) {
-		for (GeoCommonsExportRequest status: globalExportRequestRegistry){
-			if (status.getRequestId().equals(requestId)){
-				return status;
-			}
-		}
-		//logger.info("No status found for image request.");
-		return null;
-	}
-	
-	@Override
-	public void addExportRequest(UUID requestId, String sessionId,
-			GeoCommonsExportRequest exportRequest) {
-		logger.info("Adding export request status object...");
-		exportRequest.setRequestId(requestId);
-		exportRequest.setSessionId(sessionId);
-		globalExportRequestRegistry.add(exportRequest);		
 	}
 
 }
