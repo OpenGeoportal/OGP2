@@ -3,9 +3,10 @@ package org.opengeoportal.download;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -20,8 +21,8 @@ public class LayerDownloaderProviderTest {
     String downloadConfigJsonPath = "org/opengeoportal/download/ogpDownloadConfig_default.json";
     LayerDownloaderProvider layerDownloaderProvider;
 
-    @Before
-    public void setupTests() throws IOException {
+    @BeforeEach
+    void setupTests() throws IOException {
         Resource resource = new ClassPathResource(downloadConfigJsonPath);
         ObjectMapper mapper = new ObjectMapper();
         JsonNode downloadConfig = mapper.readTree(resource.getInputStream()).path("institutions");
@@ -39,7 +40,7 @@ public class LayerDownloaderProviderTest {
 
         for (String testVal : testVector) {
             String actual = LayerDownloaderProvider.getGeneralizedDataType(testVal);
-            Assert.assertEquals("vector", actual);
+            assertThat(actual).isEqualTo("vector");
         }
     }
 
@@ -52,7 +53,8 @@ public class LayerDownloaderProviderTest {
 
         for (String testVal : testVector) {
             String actual = LayerDownloaderProvider.getGeneralizedDataType(testVal);
-            Assert.assertEquals("raster", actual);
+            assertThat(actual).isEqualTo("raster");
+
         }
     }
 
@@ -66,7 +68,8 @@ public class LayerDownloaderProviderTest {
 
         for (String testVal : testVector) {
             String actual = LayerDownloaderProvider.getGeneralizedDataType(testVal);
-            Assert.assertEquals("paper map", actual);
+            assertThat(actual).isEqualTo("paper map");
+
         }
     }
 }
