@@ -74,7 +74,6 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 			},
 			polygon : {
 				getFeature : false,
-				opacity : 100,
 				colorPickerOn : false,
 				sld : "",
 				opacity : 80,
