@@ -50,8 +50,9 @@
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
-	<beans:bean id="jsonpCallbackFilter"
-		class="org.opengeoportal.utilities.http.JsonpCallbackFilter" />
+<!--	<beans:bean id="jsonpCallbackFilter"
+		class="JsonpCallbackFilter" />-->
+
 	<beans:bean id="imageHandlerFactory" class="org.opengeoportal.proxy.ImageHandlerFactory" />
 	
 	<beans:bean id="imageHandler" class="org.opengeoportal.proxy.ImageHandlerImpl" scope="prototype" lazy-init="true" />
@@ -64,19 +65,6 @@
 	<beans:bean id="imageDownloaderFactory" class="org.opengeoportal.proxy.ImageDownloaderFactory" />
 
 	<beans:bean id="imageDownloader" class="org.opengeoportal.proxy.ImageDownloaderImpl" scope="prototype" lazy-init="true" />
-
-	<beans:bean id="exportHandlerFactory.geocommons"
-		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerFactory" />
-		
-	<beans:bean id="exportHandler.geocommons"
-		class="org.opengeoportal.export.geocommons.GeoCommonsExportHandlerImpl"
-		scope="prototype" />
-	<beans:bean id="exporter.geocommons"
-		class="org.opengeoportal.export.geocommons.GeoCommonsExporterImpl"
-		scope="prototype" />
-	<beans:bean id="restClient.geocommons"
-		class="org.opengeoportal.export.geocommons.GeoCommonsJsonClient"
-		scope="prototype" />
 
 
 	<beans:bean id="requestStatusManager"
@@ -92,21 +80,18 @@
 		<beans:property name="propertiesFile" ref="properties.generalOgp" />
 	</beans:bean>
 
-	<beans:bean id="layerInfoRetriever.solr"
-		class="org.opengeoportal.metadata.SolrLayerInfoRetriever" />
-
 	<beans:bean id="metadataRetriever.solr" class="org.opengeoportal.download.MetadataFromSolr" >
 		<beans:property name="fgdcStyleSheet" value="${styleSheet.fgdc}"/>
 		<beans:property name="iso19139StyleSheet" value="${styleSheet.iso19139}"/>
 	</beans:bean>
 
 	<beans:bean id="configRetriever.download"
-		class="org.opengeoportal.download.config.OgpDownloadConfigRetriever">
-		<beans:property name="resource" value="resources/ogpDownloadConfig.json" />
+		class="org.opengeoportal.config.download.OgpDownloadConfigRetriever">
+		<beans:property name="resource" value="ogpDownloadConfig.json" />
 	</beans:bean>
 
 	<beans:bean id="quickDownload"
-		class="org.opengeoportal.utilities.QuickWfsDownload" scope="prototype" />
+				class="org.opengeoportal.download.QuickWfsDownload" scope="prototype" />
 
 	<beans:bean id="directoryRetriever.simple" class="org.opengeoportal.utilities.DirectoryRetrieverImpl" >
 		<beans:constructor-arg index="0" value="${ogp.downloadDir}" />
@@ -127,38 +112,54 @@
 
 	<!-- http requesters -->
 	<beans:bean id="httpRequester.generic"
-		class="org.opengeoportal.utilities.http.HttpComponentsHttpRequester"
+		class="org.opengeoportal.http.HttpComponentsHttpRequester"
 		scope="prototype">
 		<beans:property name="ogpHttpClient" ref="httpClient.pooling" />
 	</beans:bean>
 
-	<beans:bean id="httpRequester.allTrustingCert"
-		class="org.opengeoportal.utilities.http.HttpComponentsHttpRequester"
+<!--	<beans:bean id="httpRequester.allTrustingCert"
+		class="org.opengeoportal.http.HttpComponentsHttpRequester"
 		scope="prototype">
 		<beans:property name="ogpHttpClient" ref="httpClient.pooling.allTrusting" />
-	</beans:bean>
+	</beans:bean>-->
 
 	<beans:bean id="httpClient.pooling"
-		class="org.opengeoportal.utilities.http.PoolingHttpClient" init-method="init">
+				class="org.opengeoportal.http.PoolingHttpClient" init-method="init">
 		<beans:property name="maxConnections" value="${connectionPool.maxTotal}" />
 		<beans:property name="maxConnectionsRt" value="${connectionPool.maxPerRoute}" />
 	</beans:bean>
-	
-	<beans:bean id="httpClient.pooling.allTrusting"
-		class="org.opengeoportal.utilities.http.AllTrustingCertPoolingHttpClient" />
 
+	
+<!--	<beans:bean id="httpClient.pooling.allTrusting"
+		class="org.opengeoportal.http.AllTrustingCertPoolingHttpClient" />-->
+
+
+	
 	<beans:bean id="featureSourceRetriever.wfs" class="org.opengeoportal.download.methods.WfsFeatureSourceRetriever" scope="prototype"/>
 
 	<beans:bean id="featureSourceToShape.wfs" class="org.opengeoportal.download.methods.FeatureSourceToShapeImpl"
 		scope="prototype">
 		<beans:property name="featureSourceRetriever" ref="featureSourceRetriever.wfs"/>
 	</beans:bean>
+
+
 	
 	<!-- Download methods -->
 	<beans:bean id="downloadMethod.wms"
 		class="org.opengeoportal.download.methods.WmsDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
+
+	<beans:bean id="downloadMethod.kmlReflector"
+				class="org.opengeoportal.download.methods.KmlDownloadMethod" scope="prototype">
+		<beans:property name="httpRequester" ref="httpRequester.generic" />
+	</beans:bean>
+
+	<beans:bean id="downloadMethod.file"
+				class="org.opengeoportal.download.methods.FileDownloadMethod" scope="prototype">
+		<beans:property name="httpRequester" ref="httpRequester.generic" />
+	</beans:bean>
+
 
 	<beans:bean id="downloadMethod.wfs"
 		class="org.opengeoportal.download.methods.WfsDownloadMethod" scope="prototype">
@@ -168,11 +169,6 @@
 	<beans:bean id="downloadMethod.wfs.proxied"
 		class="org.opengeoportal.download.methods.ProxiedWfsDownloadMethod"
 		scope="prototype">
-		<beans:property name="httpRequester" ref="httpRequester.generic" />
-	</beans:bean>
-
-	<beans:bean id="downloadMethod.kmlReflector"
-		class="org.opengeoportal.download.methods.KmlDownloadMethod" scope="prototype">
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
@@ -187,10 +183,8 @@
 		<beans:property name="httpRequester" ref="httpRequester.generic" />
 	</beans:bean>
 
-	<beans:bean id="downloadMethod.file"
-		class="org.opengeoportal.download.methods.FileDownloadMethod" scope="prototype">
-		<beans:property name="httpRequester" ref="httpRequester.generic" />
-	</beans:bean>
+
+
 
 	<beans:bean id="downloadMethod.email.HGL"
 		class="org.opengeoportal.download.methods.HGLEmailDownloadMethod"
@@ -226,6 +220,7 @@
 		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wms" />
 	</beans:bean>
+
 	<beans:bean id="layerDownloader.wms"
 		class="org.opengeoportal.download.PerLayerDownloader" scope="prototype">
 		<beans:property name="perLayerDownloadMethod" ref="downloadMethod.wms" />
@@ -249,6 +244,9 @@
 		class="org.opengeoportal.download.EmailLayerDownloader" scope="prototype">
 		<beans:property name="emailDownloadMethod" ref="downloadMethod.email.HGL" />
 	</beans:bean>
+
+
+
 
 	<beans:bean id="ogcInfoRequester.wms" class="org.opengeoportal.ogc.OgcInfoRequesterImpl"
 		scope="prototype">
@@ -293,6 +291,8 @@
 
 	<beans:bean id="wmcCreator" class="org.opengeoportal.ogc.WmcCreatorImpl"
 		scope="prototype" />
+
+
 
 	<task:annotation-driven executor="executor" />
 

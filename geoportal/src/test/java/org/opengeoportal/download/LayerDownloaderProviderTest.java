@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengeoportal.config.download.DownloadConfigRetriever;
+import org.opengeoportal.config.download.OgpDownloadConfigRetriever;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -24,11 +26,10 @@ public class LayerDownloaderProviderTest {
     @BeforeEach
     void setupTests() throws IOException {
         Resource resource = new ClassPathResource(downloadConfigJsonPath);
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode downloadConfig = mapper.readTree(resource.getInputStream()).path("institutions");
 
-        layerDownloaderProvider = new LayerDownloaderProvider();
-        layerDownloaderProvider.setDownloadConfig(downloadConfig);
+        OgpDownloadConfigRetriever dlConfigRetriever = new OgpDownloadConfigRetriever(resource);
+        layerDownloaderProvider = new LayerDownloaderProvider(dlConfigRetriever);
+        layerDownloaderProvider.init();
     }
 
     /**
