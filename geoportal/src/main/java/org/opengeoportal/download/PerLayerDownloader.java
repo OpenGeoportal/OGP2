@@ -4,14 +4,16 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.opengeoportal.download.exception.DownloadPackagingException;
 import org.opengeoportal.download.methods.PerLayerDownloadMethod;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
+import org.opengeoportal.download.types.MethodLevelDownloadRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
 /**
@@ -23,16 +25,23 @@ import org.springframework.scheduling.annotation.Async;
  */
 //the layer downloader should handle all the errors thrown by the download method,
 //and take care of layer status as much as possible
+
 public class PerLayerDownloader implements LayerDownloader {
-	private PerLayerDownloadMethod perLayerDownloadMethod;
-	@Autowired
-	private DownloadPackager downloadPackager;
+
+	private final PerLayerDownloadMethod perLayerDownloadMethod;
+
+	private final DownloadPackager downloadPackager;
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@SuppressWarnings("unchecked") 
+	public PerLayerDownloader(PerLayerDownloadMethod perLayerDownloadMethod, DownloadPackager downloadPackager) {
+		this.perLayerDownloadMethod = perLayerDownloadMethod;
+		this.downloadPackager = downloadPackager;
+	}
+
 	@Async
 	@Override
-	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest downloadRequest) throws Exception {
+	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest downloadRequest) throws DownloadPackagingException {
 		//downloadStatusManager.addDownloadRequestStatus(requestId, sessionId, layerRequests);
 		List<LayerRequest> layerList = downloadRequest.getRequestList();
 		for (LayerRequest currentLayer: layerList){
@@ -43,7 +52,7 @@ public class PerLayerDownloader implements LayerDownloader {
 				currentLayer.setFutureValue(this.perLayerDownloadMethod.download(currentLayer));
 			} catch (Exception e){
 				e.printStackTrace();
-				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
+				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerInfo().getLayerId());
 				currentLayer.setStatus(Status.FAILED);
 				continue;
 			}
@@ -56,7 +65,7 @@ public class PerLayerDownloader implements LayerDownloader {
 				successCount++;
 				logger.info("finished download for: " + currentLayer.getLayerNameNS());
 			} catch (Exception e){
-				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerNameNS());
+				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerInfo().getLayerId());
 				currentLayer.setStatus(Status.FAILED);	
 			}
 		
@@ -64,20 +73,18 @@ public class PerLayerDownloader implements LayerDownloader {
 		
 		if (successCount > 0){
 			Future<Boolean> ready = downloadPackager.packageFiles(requestId); //this is going to try to package files each time a download method is complete.
-			Boolean response = ready.get();
+			Boolean response = null;
+			try {
+				response = ready.get();
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+				throw new DownloadPackagingException("Error retrieving download package.");
+			}
 			logger.info("Packager response: " + Boolean.toString(response));
 		} else {
 			logger.error("No Files to package.  Download failed.");
 		}
 		
-	}
-
-	public PerLayerDownloadMethod getPerLayerDownloadMethod() {
-		return perLayerDownloadMethod;
-	}
-
-	public void setPerLayerDownloadMethod(PerLayerDownloadMethod perLayerDownloadMethod) {
-		this.perLayerDownloadMethod = perLayerDownloadMethod;
 	}
 
 	@Override

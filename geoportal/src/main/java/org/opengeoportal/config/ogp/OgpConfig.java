@@ -15,7 +15,7 @@ public class OgpConfig {
 	String cssLocalized;
 	URL searchUrl;
 	String analyticsId;
-	String gmapsAPIKey	;
+	String gmapsAPIKey;
 	LoginConfig loginConfig = new LoginConfig();
 	
 	public String getPageTitlePrimary() {

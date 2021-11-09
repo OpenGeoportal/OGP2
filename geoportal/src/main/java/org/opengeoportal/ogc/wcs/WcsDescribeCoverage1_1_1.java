@@ -12,10 +12,14 @@ import org.opengeoportal.ogc.OwsInfo.OwsProtocol;
 import org.opengeoportal.utilities.OgpXmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+@Component("ogcInfoRequest.wcs_1_1_1")
+@Scope("prototype")
 public class WcsDescribeCoverage1_1_1 implements OgcInfoRequest {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	public final String VERSION = "1.1.1";

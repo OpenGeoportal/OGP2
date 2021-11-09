@@ -1,4 +1,4 @@
-package org.opengeoportal.utilities;
+package org.opengeoportal.download;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,11 +15,16 @@ import org.apache.http.util.EntityUtils;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.service.SearchService;
-import org.opengeoportal.utilities.http.OgpHttpClient;
+import org.opengeoportal.utilities.DirectoryRetriever;
+import org.opengeoportal.utilities.LocationFieldUtils;
+import org.opengeoportal.utilities.OgpFileUtils;
+import org.opengeoportal.http.OgpHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -28,17 +33,26 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author cbarne02
  *
  */
+@Component
+@Scope("prototype")
 public class QuickWfsDownload implements QuickDownload {
 	/*http://geoserver01.uit.tufts.edu:80/wfs?request=GetFeature&version=1.1.0&typeName=topp:states&BBOX=-75.102613,40.212597,-72.361859,41.512517,EPSG:4326
 	*/
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	@Autowired
+	final
 	DirectoryRetriever directoryRetriever;
-	@Autowired
+	final
 	SearchService searchService;
-	@Autowired
-	@Qualifier("httpClient.pooling")
+	final
 	OgpHttpClient ogpHttpClient;
+
+	@Autowired
+	public QuickWfsDownload(DirectoryRetriever directoryRetriever, SearchService searchService,
+							OgpHttpClient ogpHttpClient) {
+		this.directoryRetriever = directoryRetriever;
+		this.searchService = searchService;
+		this.ogpHttpClient = ogpHttpClient;
+	}
 
 	/**
 	 * Method retreives a zipped Shapefile via WFS and places it in the "download" directory
@@ -47,7 +61,6 @@ public class QuickWfsDownload implements QuickDownload {
 	 * @param bounds	a BoundingBox with the desired selection bounds for the layer in EPSG:4326
 	 * @return a zip File containing the shape file
 	 * @throws Exception if the remote server does not response with status code 200 or returns an XML response (assumed to be an error)
-	 * @see org.OpenGeoPortal.Utilities.QuickDownload#downloadZipFile(java.lang.String, org.OpenGeoPortal.Layer.BoundingBox)
 	 */
 	@Override
 	public File downloadZipFile(String layerId, BoundingBox bounds) throws Exception{
@@ -120,19 +133,4 @@ public class QuickWfsDownload implements QuickDownload {
 		return outputFile;
 }
 
-	public DirectoryRetriever getDirectoryRetriever() {
-		return directoryRetriever;
-	}
-
-	public void setDirectoryRetriever(DirectoryRetriever directoryRetriever) {
-		this.directoryRetriever = directoryRetriever;
-	}
-
-	public SearchService getSearchService() {
-		return searchService;
-	}
-
-	public void setSearchService(SearchService searchService) {
-		this.searchService = searchService;
-	}
 }

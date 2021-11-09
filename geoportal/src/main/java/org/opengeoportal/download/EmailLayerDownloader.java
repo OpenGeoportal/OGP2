@@ -2,14 +2,13 @@ package org.opengeoportal.download;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Future;
 
 import org.opengeoportal.download.methods.EmailDownloadMethod;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
+import org.opengeoportal.download.types.MethodLevelDownloadRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 
 /**
@@ -23,47 +22,31 @@ import org.springframework.scheduling.annotation.Async;
 //and take care of layer status as much as possible
 public class EmailLayerDownloader implements LayerDownloader {
 	private EmailDownloadMethod emailDownloadMethod;
-	@Autowired
-	private RequestStatusManager requestStatusManager;
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public EmailDownloadMethod getEmailDownloadMethod() {
-		return emailDownloadMethod;
-	}
-
-
-	public void setEmailDownloadMethod(EmailDownloadMethod emailDownloadMethod) {
+	public EmailLayerDownloader(EmailDownloadMethod emailDownloadMethod) {
 		this.emailDownloadMethod = emailDownloadMethod;
 	}
 
-
 	@Async
 	@Override
-	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest request) throws Exception {
+	public void downloadLayers(UUID requestId, MethodLevelDownloadRequest request) {
 		List<LayerRequest> layerList = request.getRequestList();
 		for (LayerRequest layer: layerList){
 			layer.setShouldHaveFiles(false);
-		}
-		//check to see if the filename exists
-		//this should fire off a callable that asynchronously calls the download method
 
-		logger.debug("Trying to send email...");
-		Future<?> emailFuture = this.emailDownloadMethod.sendEmail(layerList);
+			logger.debug("Trying to send email...");
+			boolean emailSent = this.emailDownloadMethod.sendEmail(layer);
 
-		Boolean emailSent = (Boolean) emailFuture.get();
-		for (LayerRequest currentLayer: layerList){
 			if (emailSent){
-				currentLayer.setStatus(Status.SUCCESS);
+				layer.setStatus(Status.SUCCESS);
+				logger.debug("Email requested.");
 			} else {
-				currentLayer.setStatus(Status.FAILED);
+				layer.setStatus(Status.FAILED);
+				logger.error("Error requesting Email for layer [" + layer.getLayerInfo().getLayerId() + "]");
 			}
-		}
-		if(emailSent){
-			DownloadRequest downloadRequest = requestStatusManager.getDownloadRequest(requestId);
-			downloadRequest.setEmailSent(emailSent);
-			logger.info("Email requested.");
-		} else {
-			logger.error("Error requesting Email");
+
 		}
 	}
 

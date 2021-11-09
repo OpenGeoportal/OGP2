@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.opengeoportal.config.PropertiesFile;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -16,28 +20,25 @@ import org.springframework.web.client.RestTemplate;
  * @author cbarne02
  *
  */
-
+@Component
+@Scope("prototype")
 public class UrlShortenerGoogle implements UrlShortener {
-	private String url = "https://www.googleapis.com/urlshortener/v1/url?key=";
+	private final String url = "https://www.googleapis.com/urlshortener/v1/url?key=";
+
+	final
 	PropertiesFile propertiesFile;
 
-	public PropertiesFile getPropertiesFile() {
-		return propertiesFile;
-	}
-
-
-	public void setPropertiesFile(PropertiesFile propertiesFile) {
+	@Autowired
+	public UrlShortenerGoogle(@Qualifier("properties.generalOgp") PropertiesFile propertiesFile) {
 		this.propertiesFile = propertiesFile;
 	}
-
 
 	/** 
 	 * Takes a url and returns a shortened version from the Google Url Shortener service
 	 * 
 	 * @param longUrl	a String containing the url to be shortened
 	 * @return a String containing the shortened Url, if the call to Google was successful.  
-	 * @throws Exception	
-	 * @see org.OpenGeoPortal.Utilities.UrlShortener#retrieveShortLink(java.lang.String)
+	 * @throws Exception
 	 */
 	public String retrieveShortLink(String longUrl) throws Exception{
 		/*

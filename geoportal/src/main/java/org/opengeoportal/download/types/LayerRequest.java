@@ -168,7 +168,7 @@ public class LayerRequest {
 		return LocationFieldUtils.getWmsUrl(this.layerInfo.getLocation());
 	}
 	
-	public String getWfsUrl() throws Exception{
+	public String getWfsUrl() throws Exception {
 		String url = "";
 
 		try {

@@ -2,6 +2,7 @@ package org.opengeoportal.download;
 
 import java.io.*;
 
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
@@ -9,6 +10,8 @@ import javax.xml.transform.stream.*;
 
 import org.opengeoportal.search.MetadataRecord;
 import org.opengeoportal.service.SearchService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.xml.sax.*;
 import org.apache.commons.io.IOUtils;
 
@@ -22,39 +25,37 @@ import org.w3c.dom.*;
  *
  */
 
+@Component
 public class MetadataFromSolr implements MetadataRetriever {
-	@Autowired
-	private SearchService searchService;
+	private final SearchService searchService;
 	private String layerId;
 	private Document xmlDocument;
 	private DocumentBuilder builder;
+
+	@Value("${stylesheet.fgdc}")
 	private Resource fgdcStyleSheet;
+
+	@Value("${stylesheet.iso19139}")
 	private Resource iso19139StyleSheet;
 	
 	public enum MetadataType {
 		ISO_19139, FGDC;
-
 	}
-	
-	MetadataFromSolr() {
+
+	@Autowired
+	public MetadataFromSolr(SearchService searchService) {
+
+		this.searchService = searchService;
+	}
+
+	@PostConstruct
+	public void init() throws ParserConfigurationException {
 		// Create a factory
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
-		try {
-			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-		} catch (ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		// Use document builder factory
-		try {
-			builder = factory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		builder = factory.newDocumentBuilder();
 	}
-	
 	/**
 	 * takes the XML metadata string from the Solr instance, does some filtering, parses it as XML
 	 * as a form of simplistic validation
@@ -69,18 +70,12 @@ public class MetadataFromSolr implements MetadataRetriever {
 		Document document = null;
 		try {
 			document = buildXMLDocFromString(layerId, rawXMLString);
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (ParserConfigurationException | SAXException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		Source xmlSource = new DOMSource(document);
+		 Source xmlSource = new DOMSource(document);
 		StringWriter stringWriter = new StringWriter();
 		StreamResult streamResult = new StreamResult(stringWriter);
 		

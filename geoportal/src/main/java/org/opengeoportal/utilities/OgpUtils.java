@@ -3,6 +3,7 @@ package org.opengeoportal.utilities;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +13,8 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.opengeoportal.download.types.LayerRequest;
+import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.search.OGPRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -227,5 +230,22 @@ public class OgpUtils {
 		}
 		
 		throw new Exception("Record not found.");
+	}
+
+	public static String checkUrl(String url) throws MalformedURLException{
+		try{
+			new URL(url);
+		} catch (MalformedURLException e){
+			logger.error("URL is malformed: '" + url + "'");
+			throw new MalformedURLException();
+		}
+
+		return url;
+	}
+
+	public static BoundingBox getClipBounds(LayerRequest layerRequest) throws Exception {
+		OGPRecord layerInfo = layerRequest.getLayerInfo();
+		BoundingBox nativeBounds = new BoundingBox(layerInfo.getMinX(), layerInfo.getMinY(), layerInfo.getMaxX(), layerInfo.getMaxY());
+		return nativeBounds.getIntersection(layerRequest.getRequestedBounds());
 	}
 }

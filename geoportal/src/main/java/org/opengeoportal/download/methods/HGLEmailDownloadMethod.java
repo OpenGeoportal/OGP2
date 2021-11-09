@@ -1,96 +1,81 @@
 package org.opengeoportal.download.methods;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.concurrent.Future;
 
 import org.apache.commons.io.IOUtils;
+import org.opengeoportal.download.exception.RequestCreationException;
 import org.opengeoportal.download.types.LayerRequest;
-import org.opengeoportal.download.types.LayerRequest.Status;
-import org.opengeoportal.layer.BoundingBox;
-import org.opengeoportal.utilities.OgpUtils;
-import org.opengeoportal.utilities.http.HttpRequester;
+import org.opengeoportal.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
+import org.apache.commons.validator.routines.EmailValidator;
 
 import com.fasterxml.jackson.core.JsonParseException;
 
 /**
- * a class that implements PackagedDownloadMethod to request raster layers from HGL.  They are not downloaded locally.
- * Rather, an email is sent to the user containing a link to the requested layers.
+ * a class to request layer downloads from HGL.  They are not downloaded locally.
+ * Rather, an email is sent to the user containing a link to the requested layer.
  * 
  * @author chris
  *
  */
 public class HGLEmailDownloadMethod implements EmailDownloadMethod {
-	private static final Boolean INCLUDES_METADATA = true;
-	private HttpRequester httpRequester;
-	private List<LayerRequest> layerList;
+
+	private final HttpRequester httpRequester;
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public void setLayerList(List<LayerRequest> layerList){
-		this.layerList = layerList;
-	}
-	
-	/**
-	 * an HttpRequester is injected
-	 * @param httpRequester
-	 */
-	public void setHttpRequester(HttpRequester httpRequester){
+	public HGLEmailDownloadMethod(HttpRequester httpRequester) {
 		this.httpRequester = httpRequester;
 	}
 	
 	@Override
 	public Boolean includesMetadata() {
-		return INCLUDES_METADATA;
+		return true;
 	}
-	
-	
-	public void validate(LayerRequest currentLayer) throws Exception {
-		if (currentLayer.getEmailAddress().isEmpty()){
-			throw new Exception("A valid email address must be supplied.");
-		}
-	}
-	
-	public void setAllLayerStatus(Status status){
-		for (LayerRequest currentLayer: this.layerList){
-			currentLayer.setStatus(status);
-		}
-	}
-	
-	
-	@Override
-	public String createDownloadRequest() {
-		LayerRequest representativeLayer = this.layerList.get(0);
 
-		BoundingBox bounds = representativeLayer.getRequestedBounds();
-		String userEmail = representativeLayer.getEmailAddress();
+	/***
+	 * creates request string for email. Current version doesn't support clipping.
+	 * @param layerRequest
+	 * @return
+	 * @throws RequestCreationException
+	 */
+	public String createQueryString(LayerRequest layerRequest) throws RequestCreationException {
 
-		String layerQuery = "";
+		/*
+		old request:
 		for (LayerRequest currentLayer: this.layerList){
 			layerQuery += "LayerName=" + currentLayer.getLayerInfo().getName() + "&";
 		}
+		layerQuery + "UserEmail=" + userEmail + "&Clip=true&EmailAdmin=true&AppID=55&EncryptionKey=OPENGEOPORTALROCKS"
+		 + "&XMin=" + bounds.getMinX() + "&YMin=" + bounds.getMinY() + "&XMax=" + bounds.getMaxX() + "&YMax=" + bounds.getMaxY()
+		 */
+		String userEmail = layerRequest.getEmailAddress();
+		boolean validEmail = EmailValidator.getInstance().isValid(userEmail);
 
-		String getFeatureRequest = layerQuery 
-		 + "UserEmail=" + userEmail + "&Clip=true&EmailAdmin=true&AppID=55&EncryptionKey=OPENGEOPORTALROCKS"
-		 + "&XMin=" + bounds.getMinX() + "&YMin=" + bounds.getMinY() + "&XMax=" + bounds.getMaxX() + "&YMax=" + bounds.getMaxY();
-		return getFeatureRequest;
+		if (!validEmail) {
+			throw new RequestCreationException("email address is invalid");
+		}
+		String emailRequestQuery = null;
+		try {
+			emailRequestQuery = "LayerName=" + layerRequest.getLayerNameNS() + "UserEmail=" + userEmail;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RequestCreationException("Unable to get layer name with namespace.");
+		}
+
+		return emailRequestQuery;
 	}
 	
 	@Override
-	@Async
-	public Future<Boolean> sendEmail(List<LayerRequest> layerList) {
-		this.layerList = layerList;
+	public boolean sendEmail(LayerRequest layerRequest) {
 		InputStream inputStream = null;
 		try {
-			this.validate(layerList.get(0));
-			inputStream = this.httpRequester.sendRequest(this.getUrl(layerList.get(0)), createDownloadRequest(), "GET");
-			return new AsyncResult<Boolean>(true);
+			inputStream = this.httpRequester.sendRequest(this.getUrl(layerRequest), createQueryString(layerRequest), "GET");
+			return true;
 		} catch (Exception e){
 			logger.error(e.getMessage());
-			return new AsyncResult<Boolean>(false);
+			return false;
 		} finally {
 			IOUtils.closeQuietly(inputStream);
 		}
@@ -98,24 +83,35 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 
 	@Override
 	public Boolean hasRequiredInfo(LayerRequest layerRequest){
-		if (!OgpUtils.isWellFormedEmailAddress(layerRequest.getEmailAddress())){
+
+		try {
+			createQueryString(layerRequest);
+		} catch (RequestCreationException e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
 			return false;
 		}
-		try {
-			if (getUrl(layerRequest) != null){
-				return true;
-			}
-		} catch (JsonParseException e) {
-			logger.error(e.getMessage());
-		}
-		logger.info("Layer does not have required info for HGLEmailDownload");
-		return false;
-	};
-	
-	private String getUrl(LayerRequest layer) throws JsonParseException {
 
-		logger.info("Download URL: " + layer.getDownloadUrl());
-		return layer.getDownloadUrl().get(0);
+		try {
+			getUrl(layerRequest);
+		} catch (RequestCreationException e) {
+			logger.error(e.getMessage());
+			return false;
+		}
+
+		logger.info("Layer [" + layerRequest.getLayerInfo().getLayerId() + "] does not have required info for HGLEmailDownload");
+		return true;
+	};
+
+	@Override
+	public String getUrl(LayerRequest layer) throws RequestCreationException {
+		try {
+			logger.info("Download URL: " + layer.getDownloadUrl());
+			return layer.getDownloadUrl().get(0);
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+			throw new RequestCreationException("Unable to parse email request url from download url");
+		}
 	}
 
 }

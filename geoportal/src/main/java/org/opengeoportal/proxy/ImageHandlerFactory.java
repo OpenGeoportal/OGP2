@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ImageHandlerFactory implements ApplicationContextAware {
     private ApplicationContext applicationContext;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());

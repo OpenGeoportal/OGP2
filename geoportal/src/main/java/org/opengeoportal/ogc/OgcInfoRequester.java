@@ -6,7 +6,7 @@ public interface OgcInfoRequester {
 
 	AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord) throws Exception;
 
-	AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord, String owsUrl)
+    AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord, String owsUrl)
 			throws Exception;
 
 }

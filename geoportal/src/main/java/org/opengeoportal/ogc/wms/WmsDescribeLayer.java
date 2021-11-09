@@ -4,17 +4,20 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.OwsInfo.OwsProtocol;
 import org.opengeoportal.utilities.OgpXmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+@Component("ogcInfoRequest.wms")
+@Scope("prototype")
 public class WmsDescribeLayer implements OgcInfoRequest {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	public final String VERSION = "1.1.1";

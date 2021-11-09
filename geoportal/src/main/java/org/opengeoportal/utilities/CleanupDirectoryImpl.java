@@ -5,6 +5,8 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * This class inspects the donwload directory, looks for files last modified before FILE_AGE_MINUTES, then deletes them
@@ -14,11 +16,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cbarne02
  *
  */
+@Component
 public class CleanupDirectoryImpl implements CleanupDirectory {
+	@Value("${maxFileAge:240}")
 	int maxAge;
-	@Autowired
-	private DirectoryRetriever directoryRetriever;
+
+	private final DirectoryRetriever directoryRetriever;
 	final static Logger logger = LoggerFactory.getLogger(CleanupDirectoryImpl.class.getName());
+
+	@Autowired
+	public CleanupDirectoryImpl(DirectoryRetriever directoryRetriever) {
+		this.directoryRetriever = directoryRetriever;
+	}
 
 	public int getMaxAge() {
 		return maxAge;

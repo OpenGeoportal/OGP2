@@ -28,8 +28,9 @@ import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.oxm.Marshaller;
-import org.springframework.oxm.XmlMappingException;
+import org.springframework.stereotype.Component;
 
 /*
  * Given a list of OGP ids, this returns a WMC XML document that can be used by Desktop or web-mapping tools
@@ -181,14 +182,20 @@ import org.springframework.oxm.XmlMappingException;
 
  * 
  */
+@Component
+@Scope("prototype")
 public class WmcCreatorImpl implements WmcCreator {
-	@Autowired
-	private SearchService searchService;
+	private final SearchService searchService;
 	
-	@Autowired
-    private Marshaller marshaller;
+	private final Marshaller marshaller;
 	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	public WmcCreatorImpl(SearchService searchService, Marshaller marshaller) {
+		this.searchService = searchService;
+		this.marshaller = marshaller;
+	}
 
 	public LayerListType getLayerList(Map<String, OwsType> idsAndFormats) throws Exception {
 		
@@ -372,12 +379,10 @@ public class WmcCreatorImpl implements WmcCreator {
 		Result result = new StreamResult(os);
 		try {
 			marshaller.marshal(viewContext, result);
-		} catch (XmlMappingException e) {
- 			e.printStackTrace();
 		} catch (Exception e) {
-			e.printStackTrace();
+ 			e.printStackTrace();
 		}
-		
+
 		return result;
 
 	}

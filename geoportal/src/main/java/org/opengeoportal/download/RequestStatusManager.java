@@ -2,7 +2,7 @@ package org.opengeoportal.download;
 
 import java.util.UUID;
 
-import org.opengeoportal.proxy.controllers.ImageRequest;
+import org.opengeoportal.proxy.ImageRequest;
 
 public interface RequestStatusManager {
 

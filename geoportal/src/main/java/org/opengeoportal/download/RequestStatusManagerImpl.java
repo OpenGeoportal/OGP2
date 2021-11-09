@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.opengeoportal.proxy.controllers.ImageRequest;
+import org.opengeoportal.proxy.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RequestStatusManagerImpl implements RequestStatusManager {
 	//can probably do this smarter with a single registry if each type of request implements a generic request type
 	//

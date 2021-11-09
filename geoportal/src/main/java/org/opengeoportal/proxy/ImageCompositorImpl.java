@@ -14,28 +14,38 @@ import java.util.concurrent.TimeoutException;
 
 import javax.imageio.ImageIO;
 
-import org.opengeoportal.proxy.controllers.ImageRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
-import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
+import org.opengeoportal.proxy.ImageRequest.ImageStatus;
+import org.opengeoportal.proxy.ImageRequest.LayerImage;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope("prototype")
 public class ImageCompositorImpl implements ImageCompositor {
 	private static final String FORMAT_SUFFIX = "png";
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private Graphics2D compositeImageGraphicsObj = null;
-	@Autowired
-	private DirectoryRetriever directoryRetriever;
+	private final DirectoryRetriever directoryRetriever;
 
 	private int width;
 	private int height;
+
+	@Value("${maxImageSize:20}")
 	private int maxSizeMB;
+
 	private BufferedImage compositeImage = null;
 
+	@Autowired
+	public ImageCompositorImpl(DirectoryRetriever directoryRetriever) {
+		this.directoryRetriever = directoryRetriever;
+	}
 
 
 	@Async

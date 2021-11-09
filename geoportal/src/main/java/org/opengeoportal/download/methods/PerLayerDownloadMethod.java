@@ -9,7 +9,7 @@ import org.opengeoportal.download.types.LayerRequest;
 public interface PerLayerDownloadMethod {
 
 	Future<Set<File>> download(LayerRequest currentLayer) throws Exception;
-	Boolean includesMetadata();
+
 	Boolean hasRequiredInfo(LayerRequest layer);
 
 }

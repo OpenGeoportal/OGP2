@@ -8,13 +8,18 @@ import org.opengeoportal.ogc.OgcInfoRequest;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.OwsInfo.OwsProtocol;
 import org.opengeoportal.utilities.OgpXmlUtils;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+@Component("ogcInfoRequest.wfs")
+@Scope("prototype")
 public class WfsDescribeFeature implements OgcInfoRequest{
 	public final String VERSION = "1.0.0";
+
 	@Override
 	public String createRequest(String qualifiedLayerName){
 	 	/*String describeFeatureRequest = "<DescribeFeatureType"

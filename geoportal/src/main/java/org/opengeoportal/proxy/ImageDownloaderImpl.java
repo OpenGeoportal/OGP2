@@ -7,19 +7,27 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.opengeoportal.utilities.http.HttpRequester;
+import org.opengeoportal.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope("prototype")
 public class ImageDownloaderImpl implements ImageDownloader {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@Autowired @Qualifier("httpRequester.generic")
-	private HttpRequester httpRequester;
+	private final HttpRequester httpRequester;
+
+	@Autowired
+	public ImageDownloaderImpl(@Qualifier("httpRequester.generic") HttpRequester httpRequester) {
+		this.httpRequester = httpRequester;
+	}
 
 	@Override
 	@Async

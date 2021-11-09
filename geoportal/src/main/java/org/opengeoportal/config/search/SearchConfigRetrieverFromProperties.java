@@ -10,25 +10,34 @@ import org.apache.commons.lang.StringUtils;
 import org.opengeoportal.config.PropertiesFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
+@Component
 public class SearchConfigRetrieverFromProperties implements SearchConfigRetriever {
 	private static final String INTERNAL_SEARCH_URL = "solr.url.internal";
 	private static final String EXTERNAL_SEARCH_URL = "solr.url.external";
 	private static final String SEARCH_REPOSITORIES = "ogp.repositories";
 	private static final String DEFAULT_REPOSITORIES = "ogp.repositories.defaultSelected";
+
+	final
 	PropertiesFile propertiesFile;
 	SearchConfig searchConfig;
 	
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
+	@Autowired
+	public SearchConfigRetrieverFromProperties(@Qualifier("properties.generalOgp") PropertiesFile propertiesFile) {
+		this.propertiesFile = propertiesFile;
+	}
+
 	public PropertiesFile getPropertiesFile() {
 		return propertiesFile;
 	}
 
-	public void setPropertiesFile(PropertiesFile propertiesFile) {
-		this.propertiesFile = propertiesFile;
-	}
-	
 	@Override
 	public SearchConfig getConfig() {
 		return searchConfig;
@@ -37,7 +46,8 @@ public class SearchConfigRetrieverFromProperties implements SearchConfigRetrieve
 	public void setSearchConfig(SearchConfig searchConfig) {
 		this.searchConfig = searchConfig;
 	}
- 
+
+	@PostConstruct
 	@Override
 	public SearchConfig load() throws Exception {
 		Properties props = propertiesFile.getProperties();

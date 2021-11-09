@@ -1,44 +1,61 @@
 package org.opengeoportal.download.methods;
 
-import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
+import org.opengeoportal.download.exception.RequestCreationException;
 import org.opengeoportal.download.types.LayerRequest;
+import org.opengeoportal.download.types.RequestParams.Method;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.layer.Envelope;
-import org.opengeoportal.ogc.OgcInfoRequest;
+import org.opengeoportal.ogc.AugmentedSolrRecord;
+import org.opengeoportal.ogc.OgcInfoRequester;
 import org.opengeoportal.ogc.OwsInfo;
 import org.opengeoportal.ogc.wcs.wcs1_0_0.CoverageOffering1_0_0;
 import org.opengeoportal.ogc.wcs.wcs1_0_0.WcsGetCoverage1_0_0;
 import org.opengeoportal.utilities.OgpUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
-public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLayerDownloadMethod {	
-	private static final Boolean INCLUDES_METADATA = false;
+import static org.opengeoportal.utilities.OgpUtils.checkUrl;
+
+@Component("wcsDownloadMethodHelper")
+public class WcsDownloadMethodHelper implements PerLayerDownloadMethodHelper {
+	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	final OgcInfoRequester wcsInfoRequester;
 
 	@Autowired
-	@Qualifier("ogcInfoRequest.wcs_1_0_0")
-	private OgcInfoRequest ogcInfoRequest;
+	public WcsDownloadMethodHelper(@Qualifier("ogcInfoRequester.wcs_1_0_0")OgcInfoRequester wcsInfoRequester) {
+		this.wcsInfoRequester = wcsInfoRequester;
+	}
+
 	@Override
-	public String getMethod(){
-		return WcsGetCoverage1_0_0.getMethod();
+	public Boolean includesMetadata() {
+		return false;
+	}
+
+	@Override
+	public Method getMethod(){
+		return Method.POST;
 	}
 	
 	@Override
 	public Set<String> getExpectedContentType(){
-		Set<String> expectedContentType = new HashSet<String>();
-		expectedContentType.add("application/zip");
-		expectedContentType.add("image/tiff");
-		expectedContentType.add("image/tiff;subtype=\"geotiff\"");
-		expectedContentType.add("image/tiff; subtype=\"geotiff\"");
-		return expectedContentType;
+		return Stream.of("application/zip", "image/geotiff", "image/tiff",
+						"image/tiff; subtype=\"geotiff\"", "image/tiff;subtype=\"geotiff\"")
+				.collect(Collectors.toCollection(HashSet::new));
 	}
-	
-	public String createDownloadRequest() throws Exception {
+
+	@Override
+	public String createQueryString(LayerRequest layerRequest) throws RequestCreationException {
 		//--generate POST message
 		//info needed: geometry column, bbox coords, epsg code, workspace & layername
 	 	//all client bboxes should be passed as lat-lon coords.  we will need to get the appropriate epsg code for the layer
@@ -48,26 +65,41 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 
 		CoverageOffering1_0_0 describeLayerInfo = null;
 		try {
-			describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(this.currentLayer.getOwsInfo()).getOwsDescribeInfo();
+			describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(layerRequest.getOwsInfo()).getOwsDescribeInfo();
 		} catch (Exception e){
-			this.currentLayer.getOwsInfo().add(getWcsDescribeCoverageInfo());
-			describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(this.currentLayer.getOwsInfo()).getOwsDescribeInfo();
+			try {
+				AugmentedSolrRecord asr = wcsInfoRequester.getOgcAugment(layerRequest.getLayerInfo());
+				describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(asr.getOwsInfo()).getInfoMap();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				throw new RequestCreationException("unable to retrieve WCS envelope information to form request");
+			}
 		}
-		
-		//OGPRecord layerInfo = this.currentLayer.getLayerInfo();
-		
+
 		Envelope env = describeLayerInfo.getLonLatEnvelope();
 		BoundingBox nativeBounds = new BoundingBox(env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
-		logger.info("reqLatLon" + this.currentLayer.getRequestedBounds().toStringLatLon());
+		logger.info("reqLatLon" + layerRequest.getRequestedBounds().toStringLatLon());
 		logger.info("natLatLon" + nativeBounds.toStringLatLon());
 
-		BoundingBox bounds = nativeBounds.getIntersection(this.currentLayer.getRequestedBounds());
-		logger.info("intLatLon" + bounds.toStringLatLon());
+		BoundingBox bounds = null;
+		try {
+			bounds = nativeBounds.getIntersection(layerRequest.getRequestedBounds());
+			logger.info("intLatLon" + bounds.toStringLatLon());
 
-		String layerName = this.currentLayer.getLayerNameNS();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RequestCreationException("unable to calculate requested bounds");
+		}
 
 
-		
+		String layerName = null;
+		try {
+			layerName = layerRequest.getLayerNameNS();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RequestCreationException("unable to parse qualified layer Name");
+		}
+
 		/*
 		String epsgCode = describeLayerInfo.get("SRS");
 		String domainSubset = "";
@@ -128,37 +160,33 @@ public class WcsDownloadMethod extends AbstractDownloadMethod implements PerLaye
 		*/
 		int epsgCode = 4326;
 		String format = "geotiff";
-		return WcsGetCoverage1_0_0.createWcsGetCoverageRequest(layerName, describeLayerInfo, bounds, epsgCode, format);
-		//return getCoverageRequest;	 
+		try {
+			return WcsGetCoverage1_0_0.createWcsGetCoverageRequest(layerName, describeLayerInfo, bounds, epsgCode, format);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RequestCreationException("unable to create WCS GetCoverage request");
+
+		}
 	}
 	
 	@Override
-	public List<String> getUrls(LayerRequest layer) throws Exception{
-		String url = layer.getWcsUrl();
-		this.checkUrl(url);
-		return urlToUrls(url);
-	}
-	
-	 OwsInfo getWcsDescribeCoverageInfo()
-	 	throws Exception {
-		 InputStream inputStream = null;
-		 
-		 try{
-			String layerName = this.currentLayer.getLayerNameNS();
-			
-			inputStream = this.httpRequester.sendRequest(OgpUtils.filterQueryString(this.getUrl(this.currentLayer)), ogcInfoRequest.createRequest(layerName), ogcInfoRequest.getMethod());
-			//parse the returned XML and return needed info as a map
-			return ogcInfoRequest.parseResponse(inputStream);
-		 } finally {
-			 IOUtils.closeQuietly(inputStream);
-		 }
-	 }
-
-	 
-		@Override
-		public Boolean includesMetadata() {
-			return INCLUDES_METADATA;
+	public List<String> getUrls(LayerRequest layer) throws RequestCreationException{
+		String url = null;
+		try {
+			url = layer.getWcsUrl();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RequestCreationException("Problem parsing WCS url from record.");
 		}
+		url = OgpUtils.filterQueryString(url);
+		try {
+			checkUrl(url);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			throw new RequestCreationException("WCS url from record is malformed.");
+		}
+		return List.of(url);
+	}
 
 
 }

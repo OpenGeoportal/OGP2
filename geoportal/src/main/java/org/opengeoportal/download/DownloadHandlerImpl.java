@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
+import org.opengeoportal.download.types.MethodLevelDownloadRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.ogc.AugmentedSolrRecord;
 import org.opengeoportal.ogc.AugmentedSolrRecordRetriever;
@@ -19,7 +20,9 @@ import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
 /**
  * class that provides the logic to determine which concrete class 
@@ -29,30 +32,36 @@ import org.springframework.scheduling.annotation.Async;
  * @author Chris Barnett
  *
  */
-
+@Component
+@Scope("prototype")
 public class DownloadHandlerImpl implements DownloadHandler {
 
-	@Autowired
-	protected RequestStatusManager requestStatusManager;
+	protected final RequestStatusManager requestStatusManager;
 	
-	@Autowired
-	protected SearchService searchService;
+	protected final SearchService searchService;
 
-	@Autowired
-	private DirectoryRetriever directoryRetriever;
+	private final DirectoryRetriever directoryRetriever;
 	
-	@Autowired
-	AugmentedSolrRecordRetriever asrRetriever;
+	final AugmentedSolrRecordRetriever asrRetriever;
 
-	@Autowired
-	private LayerDownloaderProvider layerDownloaderProvider;
+	private final LayerDownloaderProvider layerDownloaderProvider;
 	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	DownloadRequest downloadRequest;
-	
 
-	
+	@Autowired
+	public DownloadHandlerImpl(RequestStatusManager requestStatusManager, SearchService searchService,
+							   DirectoryRetriever directoryRetriever, AugmentedSolrRecordRetriever asrRetriever,
+							   LayerDownloaderProvider layerDownloaderProvider) {
+		this.requestStatusManager = requestStatusManager;
+		this.searchService = searchService;
+		this.directoryRetriever = directoryRetriever;
+		this.asrRetriever = asrRetriever;
+		this.layerDownloaderProvider = layerDownloaderProvider;
+	}
+
+
 	/**
 	 * the main method of the class.  Initializes layers and bounds, calls download actions in appropriate
 	 * order
@@ -74,7 +83,6 @@ public class DownloadHandlerImpl implements DownloadHandler {
 
 	/**
 	 * a method that finds the appropriate concrete LayerDownloader and makes the actual request to download layers.
-	 *  
 	 *
 	 */
 	@Async

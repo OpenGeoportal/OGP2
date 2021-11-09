@@ -11,13 +11,13 @@ import org.springframework.core.io.Resource;
 
 public class PropertiesFile {
 	Properties properties;
-	Resource resource;//	<beans:property name="resource" value="WEB-INF/repositories.properties"/> ogp.properties
+	private final Resource resource;//	<beans:property name="resource" value="WEB-INF/repositories.properties"/> ogp.properties
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	public void setResource(Resource resource){
+
+	public PropertiesFile(Resource resource) {
 		this.resource = resource;
 	}
-	
+
 	public void refreshProperties() throws IOException {
 		readProperties();
 	}

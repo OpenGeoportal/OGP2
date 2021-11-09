@@ -5,38 +5,41 @@ import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.LocationFieldUtils;
-import org.opengeoportal.utilities.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+@Component
+@Scope("prototype")
 public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetriever {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private final int WMS_ATTEMPTS = 3;
 	private final int DATA_ATTEMPTS = 3;
 	private final int PAUSE = 200;//milliseconds
 
+	private final OgcInfoRequester wmsRequester;
+	private final OgcInfoRequester wfsRequester;
+	private final OgcInfoRequester wcsRequester;
+	private final SearchService searchService;
+
 	@Autowired
-	@Qualifier("ogcInfoRequester.wms")
-	private OgcInfoRequester wmsRequester;
-	@Autowired
-	@Qualifier("ogcInfoRequester.wfs")
-	private OgcInfoRequester wfsRequester;
-	@Autowired
-	@Qualifier("ogcInfoRequester.wcs_1_0_0")
-	private OgcInfoRequester wcsRequester;
-	
-	@Autowired
-	@Qualifier("httpRequester.generic")
-	private HttpRequester httpRequester;
-	@Autowired
-	private SearchService searchService;
-	 
+	public AugmentedSolrRecordRetrieverImpl(@Qualifier("ogcInfoRequester.wms") OgcInfoRequester wmsRequester,
+											@Qualifier("ogcInfoRequester.wfs") OgcInfoRequester wfsRequester,
+											@Qualifier("ogcInfoRequester.wcs_1_0_0") OgcInfoRequester wcsRequester,
+											SearchService searchService) {
+		this.wmsRequester = wmsRequester;
+		this.wfsRequester = wfsRequester;
+		this.wcsRequester = wcsRequester;
+		this.searchService = searchService;
+	}
+
 	@Override
 	public OwsInfo getWmsInfo(String layerId) throws Exception{
 		List<OwsInfo> info = this.getWmsPlusSolrInfo(layerId).getOwsInfo();
@@ -45,8 +48,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 	
 	@Override
 	public AugmentedSolrRecord getWmsPlusSolrInfo(String layerId) throws Exception{
-		AugmentedSolrRecord asr = getInfoAttempt(wmsRequester, WMS_ATTEMPTS, layerId);
-		return asr;
+		return getInfoAttempt(wmsRequester, WMS_ATTEMPTS, layerId);
 	}
 	
 	@Override
@@ -94,7 +96,8 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 						dataInfo = getInfoAttempt(wfsRequester, DATA_ATTEMPTS, asr.getOgpRecord(), owsUrl);
 						asr.getOwsInfo().add(OwsInfo.findWfsInfo(dataInfo.getOwsInfo()));
 					} catch (Exception e1){
-						
+						logger.error("failed to get info");
+						e1.printStackTrace();
 					}
 				}
 			}
@@ -112,6 +115,8 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 						dataInfo = getInfoAttempt(wcsRequester, DATA_ATTEMPTS, asr.getOgpRecord(), owsUrl);
 						asr.getOwsInfo().add(OwsInfo.findWcsInfo(dataInfo.getOwsInfo()));
 					} catch (Exception e1){
+						logger.error("failed to get info");
+						e1.printStackTrace();
 					}
 				}
 				
@@ -149,9 +154,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 			logger.info("Attempt " + (i + 1));
 			try{
 				asr = requester.getOgcAugment(ogpRecord);
-				if (asr == null){
-					continue;
-				} else {
+				if (asr != null){
 					return asr;
 				}
 			} catch (Exception e){
@@ -160,11 +163,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 			Thread.sleep(PAUSE * (i + 1));
 
 		}
-		if (asr == null){
-			throw new Exception("Error reaching the OGC server.");
-		} else {
-			return asr;
-		}
+		throw new Exception("Error reaching the OGC server.");
 	}
 	
 	private AugmentedSolrRecord getInfoAttempt(OgcInfoRequester requester, int numAttempts, OGPRecord ogpRecord, String url) throws Exception{
@@ -174,9 +173,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 
 			try{
 				asr = requester.getOgcAugment(ogpRecord, url);
-				if (asr == null){
-					continue;
-				} else {
+				if (asr != null){
 					return asr;
 				}
 			} catch (Exception e){
@@ -185,10 +182,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 			Thread.sleep(PAUSE * (i + 1));
 
 		}
-		if (asr == null){
-			throw new Exception("Error reaching the OGC server.");
-		} else {
-			return asr;
-		}
+
+		throw new Exception("Error reaching the OGC server.");
 	}
 }

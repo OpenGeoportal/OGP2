@@ -2,7 +2,7 @@ package org.opengeoportal.download;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.opengeoportal.download.config.DownloadConfigRetriever;
+import org.opengeoportal.config.download.DownloadConfigRetriever;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.layer.GeometryType;
 import org.opengeoportal.search.OGPRecord;
@@ -12,6 +12,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -19,27 +21,24 @@ import java.util.Iterator;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+@Component
 public class LayerDownloaderProvider implements BeanFactoryAware {
 	protected BeanFactory beanFactory;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	final static Logger slogger = LoggerFactory.getLogger(LayerDownloaderProvider.class.getName());
 
-	@Autowired
-	private DownloadConfigRetriever downloadConfigRetriever;
+	private final DownloadConfigRetriever downloadConfigRetriever;
 
 	private JsonNode downloadConfig;
+
+	@Autowired
+	public LayerDownloaderProvider(DownloadConfigRetriever downloadConfigRetriever) {
+		this.downloadConfigRetriever = downloadConfigRetriever;
+	}
 
 	@PostConstruct
 	public void init() throws IOException {
 		downloadConfig = downloadConfigRetriever.getDownloadConfig().path("institutions");
-	}
-
-	public void setDownloadConfigRetriever(DownloadConfigRetriever downloadConfigRetriever) {
-		this.downloadConfigRetriever = downloadConfigRetriever;
-	}
-
-	public DownloadConfigRetriever getDownloadConfigRetriever() {
-		return downloadConfigRetriever;
 	}
 
 	public LayerDownloader build(LayerRequest layer) throws Exception{
@@ -167,11 +166,7 @@ public class LayerDownloaderProvider implements BeanFactoryAware {
 	 * @return the concrete LayerDownloader object
 	 */
 	public LayerDownloader getLayerDownloader(String downloaderKey){
-		LayerDownloader layerDownloader = (LayerDownloader) beanFactory.getBean(downloaderKey);
-		if (layerDownloader == null){
-			throw new NullPointerException("LayerDownloader could not be retrieved");
-		}
-		return layerDownloader;
+		return (LayerDownloader) beanFactory.getBean(downloaderKey);
 	}
 
 	/**

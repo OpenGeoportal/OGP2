@@ -6,7 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.OgpUtils;
-import org.opengeoportal.utilities.http.HttpRequester;
+import org.opengeoportal.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +15,12 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	private OgcInfoRequest ogcInfoRequest;
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private ProxyConfigRetriever proxyConfigRetriever;
+
+	public OgcInfoRequesterImpl(HttpRequester httpRequester, OgcInfoRequest ogcInfoRequest, ProxyConfigRetriever proxyConfigRetriever) {
+		this.httpRequester = httpRequester;
+		this.ogcInfoRequest = ogcInfoRequest;
+		this.proxyConfigRetriever = proxyConfigRetriever;
+	}
 
 	public HttpRequester getHttpRequester() {
 		return httpRequester;

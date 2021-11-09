@@ -11,7 +11,12 @@ import org.opengeoportal.config.search.SearchRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
+@Component
 public class RepositoryConfigRetrieverFromProperties implements RepositoryConfigRetriever {
 	public final String SHORT_NAME_KEY = "shortName";
 	public final String FULL_NAME_KEY = "fullName";
@@ -20,29 +25,33 @@ public class RepositoryConfigRetrieverFromProperties implements RepositoryConfig
 	public final String URL_KEY = "url";
 
 
-	@Autowired
+	final
 	SearchConfigRetriever searchConfigRetriever;
 	
 	List<RepositoryConfig> repositoryConfig;
-	
+
+	final
 	PropertiesFile propertiesFile;
 	
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
+	public RepositoryConfigRetrieverFromProperties(SearchConfigRetriever searchConfigRetriever,
+												   @Qualifier("properties.repositories") PropertiesFile propertiesFile) {
+		this.searchConfigRetriever = searchConfigRetriever;
+		this.propertiesFile = propertiesFile;
+	}
+
 	public PropertiesFile getPropertiesFile() {
 		return propertiesFile;
 	}
 
-	public void setPropertiesFile(PropertiesFile propertiesFile) {
-		this.propertiesFile = propertiesFile;
-	}
-	
 	@Override
 	public List<RepositoryConfig> getConfig(){
 		return repositoryConfig;
 	}
 	
 	@Override
+	@PostConstruct
 	public List<RepositoryConfig> load() throws IOException {
 		Properties props = propertiesFile.getProperties();
 		

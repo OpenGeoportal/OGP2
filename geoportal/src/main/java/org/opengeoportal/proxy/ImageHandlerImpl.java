@@ -11,29 +11,38 @@ import java.util.concurrent.Future;
 
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
-import org.opengeoportal.proxy.controllers.ImageRequest;
-import org.opengeoportal.proxy.controllers.ImageRequest.ImageStatus;
-import org.opengeoportal.proxy.controllers.ImageRequest.LayerImage;
+import org.opengeoportal.proxy.ImageRequest.ImageStatus;
+import org.opengeoportal.proxy.ImageRequest.LayerImage;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope("prototype")
 public class ImageHandlerImpl implements ImageHandler {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	@Autowired
-	private RequestStatusManager requestStatusManager;
-	@Autowired
-	private ImageCompositor imageCompositor;
-	@Autowired
-	private ImageDownloaderFactory imageDownloaderFactory;
-	@Autowired
-	private SearchService searchService;
-	@Autowired
-	private ProxyConfigRetriever proxyConfigRetriever;
+	private final RequestStatusManager requestStatusManager;
+	private final ImageCompositor imageCompositor;
+	private final ImageDownloaderFactory imageDownloaderFactory;
+	private final SearchService searchService;
+	private final ProxyConfigRetriever proxyConfigRetriever;
 	private String baseQuery;
-	
+
+	@Autowired
+	public ImageHandlerImpl(RequestStatusManager requestStatusManager, ImageCompositor imageCompositor,
+							ImageDownloaderFactory imageDownloaderFactory, SearchService searchService,
+							ProxyConfigRetriever proxyConfigRetriever) {
+		this.requestStatusManager = requestStatusManager;
+		this.imageCompositor = imageCompositor;
+		this.imageDownloaderFactory = imageDownloaderFactory;
+		this.searchService = searchService;
+		this.proxyConfigRetriever = proxyConfigRetriever;
+	}
+
 	@Override
 	public UUID requestImage(String sessionId, ImageRequest imageRequest) throws Exception {
 

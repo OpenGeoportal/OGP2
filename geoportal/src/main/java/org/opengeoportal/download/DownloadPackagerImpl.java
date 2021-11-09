@@ -1,6 +1,7 @@
 package org.opengeoportal.download;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,8 +9,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
-import org.opengeoportal.download.DownloadRequest;
-import org.opengeoportal.download.MethodLevelDownloadRequest;
+import org.opengeoportal.download.types.MethodLevelDownloadRequest;
+import org.opengeoportal.download.exception.DownloadPackagingException;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
 import org.opengeoportal.layer.GeometryType;
@@ -18,8 +19,10 @@ import org.opengeoportal.utilities.ZipFilePackager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -28,25 +31,31 @@ import org.springframework.scheduling.annotation.AsyncResult;
  * @author Chris Barnett
  *
  */
+@Component
+@Scope("prototype")
 public class DownloadPackagerImpl implements DownloadPackager {
-	@Autowired
-	private MetadataRetriever metadataRetriever;
-	@Autowired
-	private RequestStatusManager requestStatusManager;
+	private final MetadataRetriever metadataRetriever;
+	private final RequestStatusManager requestStatusManager;
 	private File directory;
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Autowired
+	public DownloadPackagerImpl(MetadataRetriever metadataRetriever, RequestStatusManager requestStatusManager) {
+		this.metadataRetriever = metadataRetriever;
+		this.requestStatusManager = requestStatusManager;
+	}
 
 	/**
 	 * @throws Exception 
 	 * 
 	 */
 	@Async
-	public Future<Boolean> packageFiles(UUID requestId) throws Exception{
+	public Future<Boolean> packageFiles(UUID requestId) throws DownloadPackagingException {
 		//first determine if all requests are complete
 		DownloadRequest downloadRequest = requestStatusManager.getDownloadRequest(requestId);
 		if (!downloadRequest.isReadyForPackaging()){
-			logger.info("Request is not yet complete; not ready to package.");
+			logger.debug("Request is not yet complete; not ready to package.");
 			return new AsyncResult<Boolean>(false);
 		}
 		List<LayerRequest> layerList = new ArrayList<LayerRequest>();
@@ -56,15 +65,20 @@ public class DownloadPackagerImpl implements DownloadPackager {
 		}
 		Set<File> filesToPackage = getFilesToPackage(layerList);
 
-		logger.debug(directory.getAbsolutePath());
-		logger.info("Packaging files");
+		logger.debug("download directory: " + directory.getAbsolutePath());
+		logger.debug("Packaging files...");
 		File zipArchive = new File(directory, "OGPDownload.zip");
-		ZipFilePackager.addFilesToArchive(filesToPackage, zipArchive);
+		try {
+			ZipFilePackager.addFilesToArchive(filesToPackage, zipArchive);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new DownloadPackagingException(e.getMessage());
+		}
 		downloadRequest.setDownloadPackage(zipArchive);
 		return new AsyncResult<Boolean>(true);
 	}
 	
-	private Set<File> getFilesToPackage(List<LayerRequest> layers) throws Exception{
+	private Set<File> getFilesToPackage(List<LayerRequest> layers) throws DownloadPackagingException {
 		//we can get this from the DownloadStatusManager
 		logger.debug("Getting files to package...");
 	    Set<File> filesToPackage = new HashSet<File>();
@@ -79,7 +93,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 	    	if (layer.getStatus() == Status.SUCCESS){
 	    		Set<File> downloadedFiles = layer.getDownloadedFiles();
 	    		if (downloadedFiles.isEmpty()){
-	    			logger.error("No files found for: " + layer.getLayerNameNS());
+	    			logger.error("No files found for: " + layer.getLayerInfo().getLayerId());
 	    			continue;
 	    		}
 	    		logger.debug(layer.getId());
@@ -101,7 +115,7 @@ public class DownloadPackagerImpl implements DownloadPackager {
 	    }
 		if (filesToPackage.isEmpty()){
 			logger.info("No files to package");
-			throw new Exception("No files to package.");
+			throw new DownloadPackagingException("No files to package.");
 		}
 
 		return filesToPackage;

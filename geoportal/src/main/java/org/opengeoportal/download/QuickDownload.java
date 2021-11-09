@@ -1,4 +1,4 @@
-package org.opengeoportal.utilities;
+package org.opengeoportal.download;
 
 import java.io.File;
 

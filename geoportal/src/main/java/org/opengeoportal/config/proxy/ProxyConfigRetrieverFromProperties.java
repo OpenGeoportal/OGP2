@@ -13,20 +13,28 @@ import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
+@Component
 public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever {
 
+	final
 	PropertiesFile propertiesFile;
 	List<ProxyConfig> proxyConfig;
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public PropertiesFile getPropertiesFile() {
-		return propertiesFile;
+	@Autowired
+	public ProxyConfigRetrieverFromProperties(@Qualifier("properties.generalOgp") PropertiesFile propertiesFile) {
+		this.propertiesFile = propertiesFile;
 	}
 
-	public void setPropertiesFile(PropertiesFile propertiesFile) {
-		this.propertiesFile = propertiesFile;
+	public PropertiesFile getPropertiesFile() {
+		return propertiesFile;
 	}
 
 	@Override
@@ -35,6 +43,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	}
 	
 	@Override
+	@PostConstruct
 	public List<ProxyConfig> load() throws IOException {
 		Properties props = propertiesFile.getProperties();
 		proxyConfig = new ArrayList<ProxyConfig>();

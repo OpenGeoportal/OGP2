@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.opengeoportal.download.MethodLevelDownloadRequest;
-import org.opengeoportal.download.controllers.RequestStatusController.StatusSummary;
+import org.opengeoportal.controllers.RequestStatusController.StatusSummary;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
+import org.opengeoportal.download.types.MethodLevelDownloadRequest;
 import org.opengeoportal.layer.BoundingBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

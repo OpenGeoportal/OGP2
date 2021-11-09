@@ -9,7 +9,13 @@ import org.opengeoportal.config.PropertiesFile;
 import org.opengeoportal.config.ogp.OgpConfig.LoginConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
+@Component
 public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	
 	//property keys
@@ -35,20 +41,22 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 
 
 
+	final
 	PropertiesFile propertiesFile;
 	Properties props;
 	OgpConfig ogpConfig;
 	
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-	
+
+	@Autowired
+	public OgpConfigRetrieverFromProperties(@Qualifier("properties.generalOgp") PropertiesFile propertiesFile) {
+		this.propertiesFile = propertiesFile;
+	}
+
 	public PropertiesFile getPropertiesFile() {
 		return propertiesFile;
 	}
 
-	public void setPropertiesFile(PropertiesFile propertiesFile) {
-		this.propertiesFile = propertiesFile;
-	}
-	
 	
 	@Override
 	public OgpConfig getConfig() {
@@ -60,6 +68,7 @@ public class OgpConfigRetrieverFromProperties implements OgpConfigRetriever {
 	}
  
 	@Override
+	@PostConstruct
 	public OgpConfig load() throws Exception {
 		props = propertiesFile.getProperties();
 		
