@@ -1,0 +1,9 @@
+{"config":{
+	"institutions":{
+		"harvard":[
+			{"classKey": "layerDownloader.email.HGL", "accessLevel":["public","restricted"],"dataType":["raster", "paper map", "vector"],"outputFormats":["shp","geotiff"]}],
+		"default":[{"classKey": "layerDownloader.wfs", "accessLevel":["public"],"dataType":["vector"],"outputFormats":["shp"], "preference": 2},
+			{"classKey": "layerDownloader.wcs", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 2},
+			{"classKey": "layerDownloader.wms", "accessLevel":["public"],"dataType":["raster", "paper map"],"outputFormats":["geotiff"], "preference": 3},
+			{"classKey": "layerDownloader.kml", "accessLevel":["public"],"dataType":["raster", "vector"],"outputFormats":["kml", "kmz"], "preference": 4},
+			{"classKey": "layerDownloader.file", "accessLevel":["public"],"dataType":["vector", "raster"],"outputFormats":["shp", "geotiff"], "preference": 1}]}}}

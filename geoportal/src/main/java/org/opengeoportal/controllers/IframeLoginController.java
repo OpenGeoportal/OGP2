@@ -1,12 +1,12 @@
 package org.opengeoportal.controllers;
 
-import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.security.LoginService;
 import org.opengeoportal.security.LoginStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,25 +24,23 @@ import com.fasterxml.jackson.databind.ObjectWriter;
  */
 @Controller
 public class IframeLoginController {
-	final
-	LoginService loginService;
-	
-	final
-	OgpConfigRetriever ogpConfigRetriever;
-	
+	final LoginService loginService;
+
+	@Value("${ogp.domain}:")
+	private String ogpDomain;
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
-	public IframeLoginController(@Qualifier("formLoginService") LoginService loginService, OgpConfigRetriever ogpConfigRetriever) {
+	public IframeLoginController(@Qualifier("formLoginService") LoginService loginService) {
 		this.loginService = loginService;
-		this.ogpConfigRetriever = ogpConfigRetriever;
 	}
 
 	@RequestMapping(value="restricted/weblogin", method=RequestMethod.GET)
 	@ResponseBody public ModelAndView getStatus() throws JsonProcessingException {
 		logger.debug("Login status checked");
 
-		  String sendingPage = ogpConfigRetriever.getPropertyWithDefault("ogp.domain", "");
+		  String sendingPage = ogpDomain;
 		  //create the model to return
 		  ModelAndView mav = new ModelAndView("iframeLogin"); 
 		  LoginStatus status = loginService.getStatus();

@@ -2,6 +2,7 @@ package org.opengeoportal.config.download;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +18,7 @@ public class OgpDownloadConfigRetriever implements DownloadConfigRetriever {
 
 	private final Resource resource;
 
-	public OgpDownloadConfigRetriever(@Value("/WEB-INF/ogpDownloadConfig.json") Resource resource) {
+	public OgpDownloadConfigRetriever(@Value("classpath:ogpDownloadConfig.json") Resource resource) {
 		this.resource = resource;
 	}
 
@@ -34,8 +35,8 @@ public class OgpDownloadConfigRetriever implements DownloadConfigRetriever {
 	 * @return a string containing the JSON config object
 	 * @throws java.io.IOException
 	 */
-	public File loadConfigFile() throws java.io.IOException {
-		return resource.getFile();
+	public InputStream loadConfigFile() throws java.io.IOException {
+		return resource.getInputStream();
 	}
 
 	/**

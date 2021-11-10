@@ -10,7 +10,6 @@ import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.config.search.SearchRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +53,7 @@ public class RepositoryConfigRetrieverFromProperties implements RepositoryConfig
 	@PostConstruct
 	public List<RepositoryConfig> load() throws IOException {
 		Properties props = propertiesFile.getProperties();
-		
+
 		//we have a list of repositories to display/search from ogp.config
 		//and a list of which should be selected by default
 		

@@ -17,6 +17,6 @@ public class PropertiesFileConfig {
 
     @Bean("properties.repositories")
     public PropertiesFile repositoriesProperties(){
-        return new PropertiesFile(new ClassPathResource("WEB-INF/repositories.properties"));
+        return new PropertiesFile(new ClassPathResource("repositories.properties"));
     }
 }

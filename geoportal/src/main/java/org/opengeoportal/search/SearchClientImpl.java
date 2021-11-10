@@ -33,7 +33,7 @@ class SearchClientImpl implements SearchClient {
     @PostConstruct
     void buildSolrClient() throws SolrServerException {
         // get the url for the solr collection from the searchconfig object
-        URL url = searchConfigRetriever.getInternalSearchUrl();
+        URL url = searchConfigRetriever.getSearchUrl();
         String solrUrl = url.toString();
 
         // remove /select from the end of the url

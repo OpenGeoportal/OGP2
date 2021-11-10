@@ -4,17 +4,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
-import org.opengeoportal.config.PropertiesFile;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -22,20 +18,30 @@ import javax.annotation.PostConstruct;
 @Component
 public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever {
 
-	final
-	PropertiesFile propertiesFile;
 	List<ProxyConfig> proxyConfig;
 
+	@Value("${proxy.access-level}")
+	List<String> accessLevel;
+
+	@Value("${proxy.geoserver.internal:}")
+	private String geoserverInternal;
+
+	@Value("${proxy.geoserver.external:}")
+	private String geoserverExternal;
+
+	@Value("${proxy.geoserver.username:}")
+	private String geoserverUserName;
+
+	@Value("${proxy.geoserver.password:}")
+	private String geoserverPassword;
+
+	@Value("${ogp.localRepository:}")
+	private String localRepository;
+
+	@Value("${login.repository:}")
+	private String loginRepository;
+
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-	@Autowired
-	public ProxyConfigRetrieverFromProperties(@Qualifier("properties.generalOgp") PropertiesFile propertiesFile) {
-		this.propertiesFile = propertiesFile;
-	}
-
-	public PropertiesFile getPropertiesFile() {
-		return propertiesFile;
-	}
 
 	@Override
 	public List<ProxyConfig> getConfig(){
@@ -45,86 +51,46 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	@Override
 	@PostConstruct
 	public List<ProxyConfig> load() throws IOException {
-		Properties props = propertiesFile.getProperties();
 		proxyConfig = new ArrayList<ProxyConfig>();
 
 		//populate a List of ProxyConfig objects
-
-		Set<Object> keys = props.keySet();
-		for (Object key: keys){
-			String key$ = (String)key;
-			if (key$.startsWith("proxy.")){
-				//do something
-				List<String> keyList = Arrays.asList(StringUtils.split(key$, "."));
-				String repositoryId = null;
-				if (keyList.size() >= 2){
-					repositoryId = keyList.get(1);
-				} else {
-					logger.error("Something is wrong with the property key. ['" + key$ + "']");
-					continue;
-				}
-				
-				
-				ProxyConfig pc = getProxyConfig(repositoryId);
-				
-				if (keyList.contains("accessLevel")){
-					
-					List<String> accessLevels = Arrays.asList(props.getProperty(key$).split(","));
-					pc.setAccessLevels(accessLevels);
-				} else {
-					
-					List<String> typeList = new ArrayList<String>();
-					Boolean appendServiceEndpoint = false;
-					
-					if (keyList.contains("geoserver")){
-						
-						typeList.add("wms");
-						typeList.add("wfs");
-						typeList.add("wcs");
-						appendServiceEndpoint = true;
-						
-					} else {
-						if (keyList.size() >= 3){
-							typeList.add(keyList.get(2));
-						} else {
-							logger.error("Something is wrong with the property key. ['" + key$ + "']");
-							continue;
-						}
-					}
-					
-					for (String type: typeList){
-						
-						InternalServerMapping sm = getServerMapping(pc, type);
-						
-						String val = props.getProperty(key$);
-						if (keyList.contains("internal")){
-							
-							if (appendServiceEndpoint){
-								val = val + "/" + type;
-							}
-							
-							sm.setInternalUrl(val);
-						} else if (keyList.contains("external")){
-							
-							if (appendServiceEndpoint){
-								val = val + "/" + repositoryId + "/" + type;
-							}
-							
-							sm.setExternalUrl(val);
-						} else if (keyList.contains("username")){
-							
-							sm.setUsername(val);
-						} else if (keyList.contains("password")){
-							
-							sm.setPassword(val);
-						}
-					}
-				}
+		//This should throw an error if LOGIN_REPOSITORY is not set properly
+		String repositoryId = "";
+		if (org.apache.commons.lang3.StringUtils.isNotEmpty(loginRepository)){
+			if (loginRepository.equalsIgnoreCase("useLocal")) {
+				repositoryId = localRepository;
+			} else {
+				repositoryId = loginRepository;
 			}
-			// else skip it
-			
+		} else {
+			throw new IOException("Must set a value for Login Repository!");
 		}
-		
+
+		ProxyConfig pc = getProxyConfig(repositoryId);
+
+		boolean valid = false;
+		pc.setAccessLevels(accessLevel);
+
+		List<String> typeList = new ArrayList<String>();
+		typeList.add("wms");
+		typeList.add("wfs");
+		typeList.add("wcs");
+
+		for (String type: typeList){
+
+			InternalServerMapping sm = getServerMapping(pc, type);
+			sm.setInternalUrl(geoserverInternal + "/" + type);
+			// todo: what?
+			sm.setExternalUrl(geoserverExternal + "/" + repositoryId + "/" + type);
+			sm.setUsername(geoserverUserName);
+			sm.setPassword(geoserverPassword);
+		}
+
+		// todo: decide whether to append this based on values in config. maybe if accesslevel is empty, etc.
+		if (valid) {
+			proxyConfig.add(pc);
+		}
+
 		return proxyConfig;
 	}
 

@@ -88,7 +88,7 @@ public class DynamicOgcController {
 	private final OgpHttpClient ogpHttpClient;
 
 	@Autowired
-	public DynamicOgcController(SearchService searchService, @Qualifier("httpClient.pooling") OgpHttpClient ogpHttpClient) {
+	public DynamicOgcController(SearchService searchService, OgpHttpClient ogpHttpClient) {
 		this.searchService = searchService;
 		this.ogpHttpClient = ogpHttpClient;
 	}
