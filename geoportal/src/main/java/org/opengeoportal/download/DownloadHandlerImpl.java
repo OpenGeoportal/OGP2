@@ -121,7 +121,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 				//create a dummy LayerRequest so we can set status failed?
 				//layerRequest.setStatus(Status.FAILED);
 				//subclass LayerRequest as "AbortedLayerRequest" and add?
-				logger.info("User is not authorized to download: '" + layerId +"'");
+				logger.warn("User is not authorized to download: '" + layerId +"'");
 				continue;	
 			}
 			String requestedFormat = dlRequest.getRequestedFormatForLayerId(record.getLayerId());
@@ -131,10 +131,10 @@ public class DownloadHandlerImpl implements DownloadHandler {
 			
 			try {
 				currentClassKey = this.layerDownloaderProvider.getClassKey(layerRequest);
-				logger.info("DownloadKey: " + currentClassKey);
+				logger.debug("DownloadKey: " + currentClassKey);
 			} catch(Exception e) {
 				layerRequest.setStatus(Status.FAILED);
-				logger.info("No download method found for: '" + record.getLayerId() +"'");
+				logger.error("No download method found for: '" + record.getLayerId() +"'");
 				continue;
 			}
 

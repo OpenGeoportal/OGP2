@@ -49,8 +49,8 @@ public class PerLayerDownloadMethodImpl implements PerLayerDownloadMethod {
             RequestParams requestParams = createDownloadRequest(layerRequest);
             return true;
         } catch (RequestCreationException e) {
-            e.printStackTrace();
             logger.error("Layer does not have required info for DownloadMethod");
+            logger.debug(e.getMessage());
             return false;
         }
     }

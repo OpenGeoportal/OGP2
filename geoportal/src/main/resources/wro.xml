@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<groups xmlns="http://www.isdc.ro/wro">
+	<group name='ogpLib'>
+		<css>/css/google.css</css>
+		<css>/css/mapDiv.css</css>
+		<css>/css/structure.css</css>
+		<css>/css/localize.css</css>
+		
+		<js>/javascript/lib/models/config.js</js>
+		<js>/javascript/lib/utility.js</js>
+		<js>/javascript/lib/templates/template.js</js>
+		<js>/javascript/lib/analytics.js</js>
+		<js>/javascript/lib/commonControls.js</js>
+		<js>/javascript/lib/geocoder.js</js>
+		<js>/javascript/lib/metadata.js</js>
+		<js>/javascript/lib/tableItems.js</js>
+		<js>/javascript/lib/solr.js</js>
+		<js>/javascript/lib/models/resultItem.js</js>
+		<js>/javascript/lib/models/basemapModel.js</js>
+		<js>/javascript/lib/models/tableConfig.js</js>
+		<js>/javascript/lib/models/tableLayerSettings.js</js>
+		<js>/javascript/lib/models/tableSortSettings.js</js>
+		<js>/javascript/lib/models/protocolAwareModel.js</js>
+		<js>/javascript/lib/models/previewedLayers.js</js>
+		<js>/javascript/lib/models/cartCollection.js</js>
+		<js>/javascript/lib/models/downloadQueue.js</js>
+		<js>/javascript/lib/models/loadIndicator.js</js>
+		<js>/javascript/lib/models/userModel.js</js>
+		<js>/javascript/lib/views/loginView.js</js>
+		<js>/javascript/lib/models/appSettings.js</js>
+		<js>/javascript/lib/models/queryModel.js</js>
+		<js>/javascript/lib/models/leftPanelModel.js</js>
+		<js>/javascript/lib/views/selectBoxes.js</js>
+		<js>/javascript/lib/views/mapLoadIndicator.js</js>
+		<js>/javascript/lib/views/layerRow.js</js>
+		<js>/javascript/lib/views/layerTable.js</js>
+		<js>/javascript/lib/views/cartHeader.js</js>
+		<js>/javascript/lib/views/cartRow.js</js>
+		<js>/javascript/lib/views/cartTable.js</js>
+		<js>/javascript/lib/views/leftPanel.js</js>
+		<js>/javascript/lib/views/tableRowSettings.js</js>
+		<js>/javascript/lib/models/externalPreviewWindowsCollection.js</js>
+		<js>/javascript/lib/views/abstractCartAction.js</js>
+		<js>/javascript/lib/views/download.js</js>
+		<js>/javascript/lib/views/shareCart.js</js>
+		<js>/javascript/lib/views/mapIt.js</js>
+		<js>/javascript/lib/views/dynamicWebServices.js</js>
+		<js>/javascript/lib/views/search.js</js>
+		<js>/javascript/lib/views/previewControls.js</js>
+		<js>/javascript/lib/views/previewedLayersRow.js</js>
+		<js>/javascript/lib/views/previewedLayersTable.js</js>
+		<js>/javascript/lib/views/searchResultsRow.js</js>
+		<js>/javascript/lib/views/searchResultsTable.js</js>
+		<js>/javascript/lib/geoCommonsExport.js</js>
+		<js>/javascript/lib/mapDiv.js</js>
+		<js>/javascript/lib/userInterface.js</js>
+	</group>
+	<group name='ogp'>
+		<group-ref>ogpLib</group-ref>
+		<js>/javascript/lib/main.js</js>
+	</group>
+</groups>

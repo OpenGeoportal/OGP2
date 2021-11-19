@@ -34,7 +34,6 @@
 		<validator.version>1.7</validator.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<wro4j.version>1.10.1</wro4j.version>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
 		<warFile.name>opengeoportal</warFile.name>
@@ -49,12 +48,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web-services</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 
 		<dependency>
@@ -101,6 +99,13 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>eu.michael-simons</groupId>
+			<artifactId>wro4j-spring-boot-starter</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.solr</groupId>
@@ -204,12 +209,6 @@
 			<version>${jackson.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jstl</artifactId>
-			<version>1.2</version>
-		</dependency>
-
 <!--		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -248,10 +247,9 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+	<!--		<plugin>
 				<groupId>ro.isdc.wro4j</groupId>
 				<artifactId>wro4j-maven-plugin</artifactId>
-				<version>${wro4j.version}</version>
 				<executions>
 					<execution>
 						<phase>compile</phase>
@@ -267,7 +265,7 @@
 					<jsDestinationFolder>${basedir}/target/${warFile.name}/resources/javascript/</jsDestinationFolder>
 					<wroManagerFactory>ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory</wroManagerFactory>
 				</configuration>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
 </project>

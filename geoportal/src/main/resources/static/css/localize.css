@@ -1,0 +1,26 @@
+@CHARSET "UTF-8";
+
+
+#logoGraphic {
+		background: url("../media/OGP_logo.png") repeat scroll 0 -5px rgba(0, 0, 0, 0);
+		height: 50px;
+		width: 50px;
+		padding: 2px;
+}
+
+#logo > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#logo > div.logoText {
+	margin-left: -9px;
+}
+/*
+#footerLogos .institutionLogo {
+	background: url("../media/ogp-institutions.png") no-repeat scroll -9px
+		-59px transparent;
+	height: 30px;
+	width: 66px;
+}
+*/

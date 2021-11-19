@@ -1,0 +1,266 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title th:text="${titlePrimary + ' ' + titleOffset}"></title>
+    <!-- add analyticsId, searchUrl, login info here -->
+    <script th:inline="javascript">
+
+        OpenGeoportal = {};
+        OpenGeoportal.Config = {};
+        OpenGeoportal.Config.analyticsId=[[${analyticsId}]];
+        OpenGeoportal.Config.searchUrl=[[${searchUrl}]];
+        OpenGeoportal.Config.loginRepository=[[${loginRepository}]];
+        OpenGeoportal.Config.loginType=[[${loginType}]];
+        OpenGeoportal.Config.loginUrl=[[${aloginUrl}]];
+        OpenGeoportal.Config.sd=[[${secureDomain}]];
+        OpenGeoportal.Config.shareIds=[[${shareIds}]];
+        OpenGeoportal.Config.shareBbox=[[${shareBbox}]];
+
+    </script>
+
+    <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/backbonejs/1.1.2/backbone-min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="javascript/jquery.scrollTo-min.js"></script>
+    <script src="javascript/spinners/spinners/spinners.min.js"></script>
+    <script src="javascript/jquery.ba-postmessage.min.js"></script>
+    <script src="https://maps.google.com/maps/api/js?v=3.30&key=${gmapsAPIKey}"></script>
+    <script src="javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
+    <script src="javascript/panZoom.js"></script>
+
+    <link rel="stylesheet" href="css/jquery-ui-ogpTheme.custom.css" type="text/css" />
+
+    <script>
+        if (!Object.create) {
+            Object.create = function(o) {
+                function F() {
+                }
+                F.prototype = o;
+                return new F();
+            };
+        };
+    </script>
+
+    <link rel="stylesheet" href="resources/ogp.css" type="text/css" />
+
+    <script type="text/javascript" src="resources/ogp.js"></script>
+
+</head>
+<body>
+
+<header id="header">
+
+    <div id="logo" onclick="location.href=location.href">
+        <div id="logoGraphic"></div><div class="logoText" th:text="${titlePrimary}"></div> <div class="logoText offsetColor" th:text="${titleOffset}"></div>
+    </div>
+    <div id="top_menu">
+        <button class="reset button headerButton">Reset</button>
+        <span class="separator">|</span>
+        <button id="userGuideLink" class="infoLinks button headerButton">Help</button>
+        <span class="separator">|</span>
+        <button id="highlightsLink" class="infoLinks button headerButton">About</button>
+        <span class="separator">|</span>
+        <button id="headerLogin" class="infoLinks login button headerButton">Login</button>
+    </div>
+</header>
+
+
+<div id="searchBox" class="searchBox shadowDownOuter">
+    <form id="searchForm" onsubmit="return false;">
+        <div id="searchCol1" class="searchCol">
+            <div id="geosearchDiv"
+                 class="basicSearch whereBox searchFormRow searchRow1">
+                <label for="whereField"><span class="labelText">Where:</span></label>
+                <input id="whereField" type="search" />
+            </div>
+            <div class="advancedSearch searchFormRow searchRow2">
+				<span class="formCheckbox searchFormInput"> <input
+                        type="checkbox" name="mapFilterCheck" id="mapFilterCheck"
+                        class="mapFilterFlag" value="ignore" /> <label
+                        for="mapFilterCheck">Ignore map extent (Where)</label>
+				</span>
+            </div>
+            <div class="advancedSearch searchFormRow searchRow3">
+                <label>Topic:</label>
+                <div id="topicDropdown" class="searchFormInput"></div>
+            </div>
+        </div>
+        <div id="searchCol2" class="searchCol">
+            <div class="basicSearch whatBox searchFormRow">
+                <label for="whatField"> <span class="labelText">What:</span>
+                </label> <input id="whatField" type="search" />
+            </div>
+            <div class="advancedSearch searchFormRow searchRow1">
+                <label for="advancedKeywordText">Keyword:</label> <input
+                    name="advancedKeywordText" type="search" class="searchFormInput"
+                    id="advancedKeywordText" />
+            </div>
+            <div class="advancedSearch searchFormRow searchRow2">
+                <label>Data Type:</label>
+                <div id="dataTypeDropdown" class="styledDropdown searchFormInput">
+                </div>
+            </div>
+            <div class="advancedSearch searchFormRow searchRow3">
+                <label>Repository:</label>
+                <div id="repositoryDropdown" class="searchFormInput"></div>
+            </div>
+            <div class="advancedSearch searchFormRow searchRow4">
+				<span class="formCheckbox searchFormInput"> <input
+                        type="checkbox" name="restrictedCheck" id="restrictedCheck" />
+					<label for="restrictedCheck">Include Restricted Data</label>
+				</span>
+            </div>
+        </div>
+        <div id="searchCol3" class="searchCol">
+            <div class="basicSearch basicSearchButtons searchFormRow">
+                <button id="moreSearchOptions" class="searchToggle button offsetColor" tabindex="0" >Advanced
+                    Search</button>
+            </div>
+            <div class="advancedSearch searchFormRow searchRow1">
+                <label for="advancedOriginatorText">Originator:</label> <input
+                    name="advancedOriginatorText" type="search" class="searchFormInput"
+                    id="advancedOriginatorText" />
+            </div>
+            <div class="advancedSearch searchFormRow searchRow2">
+                <label for="advancedDateFromText">Year(s):</label> <span
+                    class="searchFormInput"> <input name="advancedDateFromText"
+                                                    type="search" id="advancedDateFromText" size="4" /> to <input
+                    name="advancedDateToText" type="search" id="advancedDateToText"
+                    size="4" />
+				</span>
+            </div>
+            <div class="advancedSearch searchFormRow advancedSearchButtons searchRow4">
+                <button id="lessSearchOptions" class="searchToggle button offsetColor" tabindex="0" >Basic
+                    Search</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="container">
+    <div id="left_col" class="shadowRightOuter">
+        <div class="contents slideVertical" >
+            <div class="arrow_buttons">
+                <button class="arrow_left button" title="collapse left"></button>
+                <div class="arrow_separator"></div>
+                <button class="arrow_right button" title="expand right"></button>
+            </div>
+            <div id="tabs">
+                <ul>
+                    <li><a href="#searchTab">
+                        <div id="searchTabText" class="tabText">
+                            <div>
+                                <span id="resultsNumber" class="resultsNumber"> 0 </span> Results
+                            </div>
+                        </div>
+                    </a></li>
+                    <li><a href="#cartTab">
+                        <div id="cartTabText" class="tabText">
+                            <div class="shoppingCartIcon"></div>
+                            <div id="cartTabTextInner">
+                                Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span>
+                            </div>
+                        </div>
+                    </a></li>
+                </ul>
+                <div id="searchTab">
+                    <div id="resultsTableHeader" class="tableHeader">
+                        <div id="sortDropdown">Sort Results</div>
+                        <div id="columnDropdown">Columns</div>
+                        <button id="mapClearButton" title="Clear all layers from the map">
+                            Clear Views</button>
+                    </div>
+                    <div id="searchResults">
+                        <div id="searchResultsMessage" class="tableFooter"></div>
+                    </div>
+                </div>
+                <div id="cartTab">
+                    <div id="cartHeader" class="tableHeader"></div>
+                    <div id="cart"></div>
+                </div>
+            </div>
+        </div>
+        <div id="roll_right" class="slideVertical">
+            <button class="arrow_right button"></button>
+        </div>
+    </div>
+    <div id="map"></div>
+</div>
+
+<div id="footer">
+    <!-- <div id="footerLogos">
+        <div class="institutionLogo" title="Tufts"
+            onclick="location.href='http://tufts.edu'"></div>
+        <div class="itLogo infoLinks" title="TTS"
+            onclick="location.href='https://it.tufts.edu/'">Technology
+            Services</div>
+        <div class="gisLogo infoLinks" title="GIS@Tufts"
+            onclick="location.href='http://gis.tufts.edu'">GIS@Tufts.edu</div>
+
+    </div>-->
+    <span id="footerInfo"> <span id="ogpLink" class="infoLinks"
+                                 onclick="location.href='http://www.opengeoportal.org'">Powered
+			by OpenGeoportal</span>
+	</span>
+</div>
+
+<div id="dialogs" class="hiddenElements">
+    <div id="about" class="dialog infoDialog">
+        <p>GeoData@Tufts is developed and maintained by Tufts University
+            Information Technology. Tufts is leading the development in
+            collaboration with Harvard of this open source, federated web
+            application to rapidly discover, preview, and retrieve geospatial data
+            from multiple repositories. GeoData@Tufts combines an intuitive,
+            map-based search interface along with traditional text-based metadata
+            search tools for rapid data discovery and for use in teaching,
+            learning, and research.</p>
+        <p>
+            GeoData@Tufts is part of <a href="http://www.opengeoportal.org">The
+            Open Geoportal</a>. The Open Geoportal is a consortium comprised of
+            contributions of several universities and organizations to help
+            facilitate the discovery and acquisition of geospatial data across
+            many organizations and platforms. Current partners include: Harvard,
+            MIT, MassGIS, Princeton, Columbia, Stanford, UC Berkeley, UCLA, Yale,
+            and UConn. Built on open source technology, The Open Geoportal
+            provides organizations the opportunity to share thousands of
+            geospatial data layers, maps, metadata, and development resources
+            through a single common interface.
+        </p>
+        <p>
+            <span class="geodataContact">For questions, comments, or to
+                report problems, please contact:
+                <a href="mailto:geodata@elist.tufts.edu">geodata@elist.tufts.edu</a>
+            </span>
+        </p>
+    </div>
+
+    <div id="contact" class="dialog infoDialog">
+        <p>
+            <span class="geodataContact">For questions, comments, or to
+                report problems, please contact:
+                <a href="mailto:geodata@elist.tufts.edu">geodata@elist.tufts.edu</a>
+            </span>
+        </p>
+
+        <div>
+            <h3>Project Management:</h3>
+            Patrick Florance, Manager of Geospatial Technology Services, UIT,
+            Tufts University
+        </div>
+
+        <div id="contactLogos">
+            <div class="gisLogo" title="GIS@Tufts"
+                 onclick="location.href='http://gis.tufts.edu/'"></div>
+            <div class="itLogo" title="UIT"
+                 onclick="location.href='http://uit.tufts.edu/'"></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="iframes" class="hiddenElements"></div>
+<div id="infoBubbles"></div>
+</body>
+
+</html>

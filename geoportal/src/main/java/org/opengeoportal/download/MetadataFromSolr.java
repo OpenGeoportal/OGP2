@@ -214,17 +214,18 @@ public class MetadataFromSolr implements MetadataRetriever {
 
 	}
 	
-	File getStyleSheet(Document document) throws Exception{
+	InputStream getStyleSheet(Document document) throws Exception{
 		MetadataType metadataType = getMetadataType(document);
 		//getMetadataType throws an exception if not fgdc or iso19139
 		if (metadataType.equals(MetadataType.FGDC)){
-			return this.getFgdcStyleSheet().getFile();
+			return fgdcStyleSheet.getInputStream();
 		} else {
-			return this.getIso19139StyleSheet().getFile();
+			return iso19139StyleSheet.getInputStream();
 		}
 	}
 	
     public static MetadataType getMetadataType(Document document) throws Exception {
+
         MetadataType metadataType = null;
         try {
             //<metstdn>FGDC Content Standards for Digital Geospatial Metadata
@@ -375,19 +376,4 @@ public class MetadataFromSolr implements MetadataRetriever {
 		return fullAddress;
 	}
 
-	public Resource getFgdcStyleSheet() {
-		return fgdcStyleSheet;
-	}
-
-	public void setFgdcStyleSheet(Resource fgdcStyleSheet) {
-		this.fgdcStyleSheet = fgdcStyleSheet;
-	}
-
-	public Resource getIso19139StyleSheet() {
-		return iso19139StyleSheet;
-	}
-
-	public void setIso19139StyleSheet(Resource iso19139StyleSheet) {
-		this.iso19139StyleSheet = iso19139StyleSheet;
-	}
 }

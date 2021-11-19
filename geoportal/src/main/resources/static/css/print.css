@@ -1,0 +1,76 @@
+@media print 
+{
+
+.page {
+	size: landscape;
+	-webkit-transform: rotate(-90deg);
+	-moz-transform: rotate(-90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+svg {
+	display: none;
+}
+
+#header {
+	display: none;
+}
+
+#menu {
+	display: none;
+}
+
+#map_tabs {
+	display: none;
+}
+
+#footer {
+	display: none;
+}
+
+#left_col {
+	display: none;
+}
+
+#roll_right {
+	display: none;
+}
+
+#roll_right>img {
+	display: none;
+}
+
+#geosearchDiv {
+	display: none;
+}
+
+#mapToolBar {
+	display: none;
+}
+
+#container {
+	border: none;
+}
+
+#map {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+
+.olControlModPanZoomBar {
+	display: none;
+}
+
+.olControlOverviewMap {
+	display: none;
+}
+
+.olControlPanel {
+	display: none;
+}
+
+.olControlMousePosition {
+	display: none;
+}
+}

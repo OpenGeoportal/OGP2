@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,7 +26,7 @@ public class HomeController {
 		this.ogpConfigRetriever = ogpConfigRetriever;
 	}
 
-	@RequestMapping(value={"/index", "/"}, method=RequestMethod.GET)
+	@GetMapping({"/", "/index"})
 	public ModelAndView getHomePage(@RequestParam(value="ogpids", defaultValue = "") Set<String> layerIds,
 			@RequestParam(value="bbox", defaultValue = "-180,-90,180,90") String bbox,
 			@RequestParam(value="layer[]", defaultValue = "") Set<String> layers,
@@ -36,7 +37,7 @@ public class HomeController {
 			@RequestParam(value="dev", defaultValue = "false") Boolean isDev) throws Exception {
 		//@RequestParam("ogpids") Set<String> layerIds, ..should be optional.  also a param to set dev vs. prod
 		//create the model to return
-		ModelAndView mav = new ModelAndView("ogp_home"); 
+		ModelAndView mav = new ModelAndView("ogp_home");
 
 		mav.addObject("dev", isDev);
 		

@@ -1,0 +1,114 @@
+body {
+	background: #cccccc url(../media/bg_tile.gif) repeat;
+	font-family: arial, sans-serif;
+	/* altering font-size could cause formatting problems in places */
+	font-size: 12px;
+}
+
+/*main logo.  The width will probably have to be changed to accomodate your specific logo */
+#logo {
+	width: 358px;
+	background-image: url(../media/logo.png);
+}
+
+/* css for the Contact dialog */
+#contact {
+	padding: 10px;
+}
+
+#contactLogos {
+	background: none repeat scroll 0 0 #CCCCCC;
+	bottom: 15px;
+	height: 30px;
+	left: 33px;
+	padding-top: 5px;
+	position: absolute;
+	width: 83%;
+}
+
+#contactLogos>div {
+	cursor: pointer;
+	display: inline-block;
+	height: 25px;
+	padding: 5px;
+}
+
+#contactLogos>div.gisLogo {
+	float: right;
+}
+
+#contactLogos>div.itLogo {
+	float: left;
+	margin-left: 10px;
+}
+
+/*logos in the footer and in contact dialog */
+.itLogo {
+	width: 34px;
+	background: url(../media/uit_logo.png) no-repeat transparent;
+}
+
+.gisLogo {
+	width: 111px;
+	background: url(../media/gis_logo.png) no-repeat transparent;
+}
+
+h1 {
+	font-size: 14px;
+	color: #003366;
+}
+
+h2 {
+	font-size: 13px;
+	color: #3366cc;
+	margin-bottom: 3px;
+}
+
+h4 {
+	text-decoration: underline;
+}
+
+#header {
+	background-color: #edf4fa;
+	border-right: #333 solid 1px;
+	border-left: #333 solid 1px;
+	border-bottom: #999999 solid 1px;
+}
+
+#top_menu {
+	width: 252px;
+	background: url(../media/top_menu_bg.png) no-repeat transparent;
+}
+
+#top_menu a {
+	color: #FFFFFF;
+}
+
+#top_menu a:hover {
+	color: #FFFF66;
+}
+
+#welcome {
+	color: #333333;
+}
+
+#footer {
+	height: 30px;
+	background: #003366;
+	border-right: #333 solid 1px;
+	border-left: #333 solid 1px;
+	border-bottom: #333 solid 1px;
+}
+
+#footer a {
+	color: #FFFFFF;
+	text-decoration: none;
+}
+
+#footer a:hover {
+	color: #FFFF66;
+}
+
+.highlight_row {
+	background-color: #edf4fa;
+}
