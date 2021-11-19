@@ -83,10 +83,12 @@ public class WfsDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 			assert describeLayerInfo.containsKey("nameSpace");
 		} catch (Exception e){
 			try {
+				logger.debug("Requesting additional info from WFS server.");
 				// if the wfs layer info is not there, make a request to the WFS server
 				AugmentedSolrRecord asr = wfsInfoRequester.getOgcAugment(layerInfo);
 				describeLayerInfo = OwsInfo.findWfsInfo(asr.getOwsInfo()).getInfoMap();
 			} catch (Exception ex) {
+				logger.debug("Failed to get additional info from WFS server.");
 				ex.printStackTrace();
 			}
 		}

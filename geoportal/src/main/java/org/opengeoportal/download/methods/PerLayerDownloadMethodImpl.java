@@ -29,7 +29,7 @@ public class PerLayerDownloadMethodImpl implements PerLayerDownloadMethod {
         try {
             String queryString = perLayerDownloadMethodHelper.createQueryString(layerRequest);
             List<String> urls = perLayerDownloadMethodHelper.getUrls(layerRequest);
-            return new RequestParams(new HashSet<>(urls), queryString, RequestParams.Method.GET);
+            return new RequestParams(new HashSet<>(urls), queryString, perLayerDownloadMethodHelper.getMethod());
         } catch (Exception e) {
             throw new RequestCreationException("Error creating download request");
         }

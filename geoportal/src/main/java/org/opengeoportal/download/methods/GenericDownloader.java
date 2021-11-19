@@ -42,12 +42,15 @@ public class GenericDownloader {
 		File directory = getDirectory();
 		Set<File> fileSet = new HashSet<File>();
 		for (String url: requestParam.getUrls()){
-			InputStream inputStream = null;
 
-			try{
-				inputStream = this.httpRequester.sendRequest(url, requestParam.getQueryParam(), requestParam.getMethod().toString());
+			try (
+					InputStream inputStream = this.httpRequester.sendRequest(url, requestParam.getQueryParam(), requestParam.getMethod().toString());
+					BufferedInputStream bufferedIn = new BufferedInputStream(inputStream)
+					)
+			{
+
 				int status = httpRequester.getStatus();
-				if (status <= 200 || status >= 400){
+				if (status < 200 || status >= 400){
 					throw new Exception("Request Failed! Server responded with: " + Integer.toString(status));
 				}
 				String contentType = httpRequester.getContentType().toLowerCase();
@@ -63,13 +66,15 @@ public class GenericDownloader {
 
 				}
 				//Content-Disposition	attachment;filename="middle_east_dams.xls"
-				String fileName = null;
+				String fileName;
 
 				String contentDisp = "";
 				try{
 					contentDisp = httpRequester.getHeaderValue("Content-Disposition");
+					logger.debug("content-disposition: " + contentDisp);
 				} catch (Exception e){
 					//ignore
+					logger.error(e.getMessage());
 				}
 				if (contentDisp.toLowerCase().contains("filename")){
 					contentDisp = contentDisp.substring(contentDisp.toLowerCase().indexOf("filename="));
@@ -81,17 +86,9 @@ public class GenericDownloader {
 
 
 				File outputFile = OgpFileUtils.createNewFileFromDownload(fileName, contentType, directory);
-				//FileUtils with a BufferedInputStream seems to be the fastest method with a small sample size.  requires more testing
-				BufferedInputStream bufferedIn = null;
-				try {
-					bufferedIn = new BufferedInputStream(inputStream);
-					FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
-					fileSet.add(outputFile);
-				} finally {
-					IOUtils.closeQuietly(bufferedIn);
-				}
-			} finally {
-				IOUtils.closeQuietly(inputStream);
+
+				FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
+				fileSet.add(outputFile);
 
 			}
 		}

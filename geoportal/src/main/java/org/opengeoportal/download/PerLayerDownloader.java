@@ -51,10 +51,10 @@ public class PerLayerDownloader implements LayerDownloader {
 				logger.info("Requesting download for: " + currentLayer.getLayerNameNS());
 				currentLayer.setFutureValue(this.perLayerDownloadMethod.download(currentLayer));
 			} catch (Exception e){
-				e.printStackTrace();
+				//e.printStackTrace();
 				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerInfo().getLayerId());
+				logger.error(e.getMessage());
 				currentLayer.setStatus(Status.FAILED);
-				continue;
 			}
 		} 
 		int successCount = 0;
@@ -66,6 +66,7 @@ public class PerLayerDownloader implements LayerDownloader {
 				logger.info("finished download for: " + currentLayer.getLayerNameNS());
 			} catch (Exception e){
 				logger.error("An error occurred downloading this layer: " + currentLayer.getLayerInfo().getLayerId());
+				logger.error(e.getMessage());
 				currentLayer.setStatus(Status.FAILED);	
 			}
 		

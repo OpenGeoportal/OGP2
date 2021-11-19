@@ -124,8 +124,17 @@ public class HttpComponentsHttpRequester implements HttpRequester {
 			int statusCode = status.getStatusCode();
 			this.setStatus(statusCode);
 			if (status.getStatusCode() != 200){
-				logger.error("Server responded with: " + Integer.toString(statusCode) + status.getReasonPhrase());
+				logger.warn("Server responded with: " + Integer.toString(statusCode) + status.getReasonPhrase());
 			}
+
+			for (Header header: response.getAllHeaders()) {
+				logger.debug(header.getName() + ": " + header.getValue());
+				if (header.getName().equalsIgnoreCase("location")){
+					logger.info("redirecting POST request to " + header.getValue());
+					return sendPostRequest(header.getValue(), requestBody, contentType);
+				}
+			}
+
 			this.setHeaders(response.getAllHeaders());
 			HttpEntity entity = response.getEntity();
 
