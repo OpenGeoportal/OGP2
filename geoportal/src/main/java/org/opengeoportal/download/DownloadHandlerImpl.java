@@ -110,6 +110,9 @@ public class DownloadHandlerImpl implements DownloadHandler {
 		List<String> layerIds = new ArrayList<>(layerIdSet);
 		List<OGPRecord> layerInfo = searchService.findAllowedRecordsById(layerIds);
 
+		for (OGPRecord layerMatch: layerInfo) {
+			logger.debug("found info for: " + layerMatch.getLayerId());
+		}
 		for (String layerId: layerIdSet){
 			
 			OGPRecord record = null;
@@ -122,6 +125,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 				//layerRequest.setStatus(Status.FAILED);
 				//subclass LayerRequest as "AbortedLayerRequest" and add?
 				logger.warn("User is not authorized to download: '" + layerId +"'");
+				logger.debug(e.getMessage());
 				continue;	
 			}
 			String requestedFormat = dlRequest.getRequestedFormatForLayerId(record.getLayerId());

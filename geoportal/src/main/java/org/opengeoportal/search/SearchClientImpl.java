@@ -57,13 +57,15 @@ class SearchClientImpl implements SearchClient {
     @Override
     public List<OGPRecord> ogpRecordSearch(Map<String, String> queryParams) throws SearchServerException {
         MapSolrParams solrParams = new MapSolrParams(queryParams);
+        String attemptedParams = solrParams.toQueryString();
+
+        logger.debug("solr query: " + attemptedParams);
 
         QueryResponse response;
         try {
             response = this.solrClient.query(solrParams);
         } catch (SolrServerException | IOException e) {
             e.printStackTrace();
-            String attemptedParams = solrParams.toQueryString();
             throw new SearchServerException("The search failed.");
         }
         assert response != null;
@@ -99,9 +101,9 @@ class SearchClientImpl implements SearchClient {
         // use a set to ensure there are no duplicates
         Set<String> cleanedList = new HashSet<>();
         for (String layerId: layerIds) {
-            cleanedList.add(ClientUtils.escapeQueryChars(layerId.trim()));
+            cleanedList.add("LayerId:" + ClientUtils.escapeQueryChars(layerId.trim()));
         }
-        return "LayerId:" + String.join(" OR ", cleanedList);
+        return String.join(" OR ", cleanedList);
     }
 
     @Override

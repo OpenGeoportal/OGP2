@@ -223,7 +223,7 @@ public class OgpUtils {
 	
 	public static OGPRecord findRecordById(String layerId, List<OGPRecord> recordList) throws Exception{
 		for (OGPRecord sr: recordList){
-			if (sr.getLayerId().equals(layerId)){
+			if (sr.getLayerId().equalsIgnoreCase(layerId)){
 				
 				return sr;
 			}
