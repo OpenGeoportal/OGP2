@@ -1,47 +1,85 @@
 package org.opengeoportal.search;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.solr.client.solrj.beans.Field;
 
 import java.util.*;
 
 public class OGPRecord {
 	@Field("LayerId")
+	@JsonProperty("LayerId")
 	String layerId;
+
 	@Field("Name")
+	@JsonProperty("Name")
 	String name;
+
 	@Field("CollectionId")
+	@JsonProperty("CollectionId")
 	String collectionId;
+
 	@Field("Institution")
+	@JsonProperty("Institution")
 	String institution;
+
 	@Field("Access")
+	@JsonProperty("Access")
 	String access;
+
 	@Field("DataType")
+	@JsonProperty("DataType")
 	String dataType;
+
 	@Field("Availability")
+	@JsonProperty("Availability")
 	String availability;
+
 	@Field("LayerDisplayName")
+	@JsonProperty("LayerDisplayName")
 	String layerDisplayName;
+
 	@Field("Publisher")
+	@JsonProperty("Publisher")
 	String publisher;
+
 	@Field("Originator")
+	@JsonProperty("Originator")
 	String originator;
+
 	@Field("GeoReferenced")
+	@JsonProperty("GeoReferenced")
 	Boolean georeferenced;
+
 	@Field("Abstract")
+	@JsonProperty("Abstract")
 	String description;
+
 	@Field("Location")
+	@JsonProperty("Location")
 	String location;
+
 	@Field("MaxY")
+	@JsonProperty("MaxY")
 	Double maxY;
+
 	@Field("MinY")
+	@JsonProperty("MinY")
 	Double minY;
+
 	@Field("MaxX")
+	@JsonProperty("MaxX")
 	Double maxX;
+
 	@Field("MinX")
+	@JsonProperty("MinX")
 	Double minX;
+
 	@Field("WorkspaceName")
+	@JsonProperty("WorkspaceName")
 	String workspaceName;
+
 	@Field("ContentDate")
+	@JsonProperty("ContentDate")
 	Date contentDate;
 
 	private static final List<String> fieldList = new ArrayList<>(Arrays.asList("LayerId", "Name", "CollectionId", "Institution",
@@ -49,7 +87,7 @@ public class OGPRecord {
 			"Abstract", "Location", "MinX", "MinY", "MaxX", "MaxY", "WorkspaceName", "ContentDate"));
 
 	public static String getFieldList() {
-		return String.join(", ", fieldList);
+		return String.join(",", fieldList);
 	}
 
 	public String getLayerId() {

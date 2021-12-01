@@ -52,7 +52,7 @@ public class MetadataRecord {
 	}
 
 	public static String getFieldList() {
-		return "LayerId, Name, WorkspaceName, FgdcText";
+		return "LayerId,Name,WorkspaceName,FgdcText";
 	}
 
 	public String toString(){
