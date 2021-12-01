@@ -43,9 +43,9 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		// converts solr response object to backbone models
 	solrToCollection: function(dataObj) {
 			// dataObj is a Javascript object (usually) returned by Solr
-			this.totalResults = dataObj.response.numFound;
-			var start = dataObj.response.start;
-			var solrLayers = dataObj.response.docs;
+			this.totalResults = dataObj.numFound;
+			var start = dataObj.start;
+			var solrLayers = dataObj.docs;
 			var ids = [];
 			var previewed = OpenGeoportal.ogp.appState.get("previewed").each(function(model){
 				if (model.get("preview") === "on"){
@@ -123,8 +123,8 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	        var that = this;
 
 	        var xhr = this.fetch({
-	          dataType: "jsonp",
-			  jsonp: "json.wrf",
+	          dataType: "json",
+			  //jsonp: "json.wrf",
 	          complete: function(){that.fetchComplete.apply(that, arguments); jQuery(document).trigger("newResults");},
 	          reset: true,
 	          data: $.extend(this.pageParams, this.extraParams)
@@ -147,8 +147,8 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	       }
 	       var that = this;
 	       this.fetchStatus = this.fetch({
-	          dataType: "jsonp",
-			  jsonp: "json.wrf",
+	          dataType: "json",
+			  //jsonp: "json.wrf",
 
 	         // success: this.fetchSuccess,
 	         // error: this.fetchError,

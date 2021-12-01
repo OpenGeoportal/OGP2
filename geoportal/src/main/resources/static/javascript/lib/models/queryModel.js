@@ -28,12 +28,10 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
 		mapCenter: {centerX: 0, centerY: 0},
 		ignoreSpatial: false,
-		displayRestrictedAdvanced: [],
-
 		isoTopicList: null,
 		dataTypeList: null,
 		repositoryList: null,
-		displayRestrictedBasic: [],
+		showRestricted: false,
 		whatExample: "(Example: buildings)",
 		whereExample:"(Example: Boston, MA)",
 		searchType: "basic",
@@ -41,10 +39,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	}, 
 	
 	initialize: function(){
-		var restricted = OpenGeoportal.Config.General.get("loginConfig").repositoryId;
-
-		this.set({displayRestrictedBasic: [restricted],
-			displayRestrictedAdvanced:  [restricted],
+		this.set({
 			isoTopicList: OpenGeoportal.Config.IsoTopics,
 			dataTypeList: OpenGeoportal.Config.DataTypes,
 			repositoryList: OpenGeoportal.Config.Repositories});
@@ -107,22 +102,17 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 */
 	getSearchRequest : function() {
 
-		var solr = null;
+		var request = null;
 
-		var searchType = this.get("searchType");
-
-		if (searchType === 'basic') {
-			solr = this.getBasicSearchQuery();
-		} else if (searchType === 'advanced') {
-			solr = this.getAdvancedSearchQuery();
+		if (this.get("searchType") === 'advanced') {
+			request = 'advanced-search?' + jQuery.param(this.getAdvancedSearchQuery(), false);
 		} else {
-			// fall through
-			solr = this.getBasicSearchQuery();
+			request = 'search?' + jQuery.param(this.getBasicSearchQuery(), false);
 		}
 
-		this.addToHistory(solr);
-		// console.log(solr.getURL());
-		return solr.getURL();
+		this.addToHistory(request);
+
+		return request;
 	},
 	getSortInfo : function() {
 		return OpenGeoportal.ogp.resultsTableObj.tableOrganize;
@@ -132,97 +122,71 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * add elements specific to basic search
 	 */
 	getBasicSearchQuery : function() {
-		var solr = new OpenGeoportal.Solr();
-		solr.setSearchType(this.get("searchType"));
 		var sort = this.getSortInfo();
-		solr.setSort(sort.get("column"), sort.get("direction"));
+		var bounds = this.get("mapExtent");
+		var center = this.get("mapCenter");
 
-		solr.setBoundingBox(this.get("mapExtent"));
-		solr.setCenter(this.get("mapCenter"));
-
-		var what = this.get("what");
-		if ((what != null) && (what != "")) {
-			solr.setWhat(what);
+		return {
+			what: this.get("what") || "",
+			column: sort.get("column"),
+			direction: sort.get("direction"),
+			minX : Math.max(bounds.minX, -180),
+			minY : Math.max(bounds.minY, -90),
+			maxX : Math.min(bounds.maxX, 180),
+			maxY : Math.min(bounds.maxY, 90),
+			centerX: center.centerX,
+			centerY: center.centerY
 		}
-		/*
-		 * if ((whereField != null) && (whereField != "")){
-		 * solr.setWhere(whereField); }
-		 */
+	},
 
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedBasic")));
-
-		/*
-		 * var institutionConfig =
-		 * OpenGeoportal.InstitutionInfo.getInstitutionInfo();
-		 * 
-		 * for (var institution in institutionConfig){
-		 * solr.addInstitution(institution); }
-		 */
-		return solr;
+	process_term: function(params, param_key, param_value) {
+		if (typeof param_value === "string") {
+			if (param_value.trim().length > 0) {
+				params[param_key] = param_value.trim();
+			}
+		} else {
+			if (param_value !== null && param_value !== undefined) {
+				params[param_key] = param_value;
+			}
+		}
 	},
 
 	getAdvancedSearchQuery : function() {
-		var solr = new OpenGeoportal.Solr();
-		solr.setSearchType(this.get("searchType"));
 
 		var sort = this.getSortInfo();
-		solr.setSort(sort.get("column"), sort.get("direction"));
-
-		// check if "ignore map extent" is checked
+		var bounds = this.get("mapExtent");
+		var center = this.get("mapCenter");
 		var ignoreSpatial = this.get("ignoreSpatial");
-		solr.setIgnoreSpatial(ignoreSpatial);
+		var showRestricted = this.get("showRestricted");
+
+		var params = {};
+		this.process_term(params, "keyword", this.get("keyword")|| "");
+		this.process_term(params, "where", this.get("where")|| "");
+		this.process_term(params, "column", sort.get("column"));
+		this.process_term(params, "direction", sort.get("direction"));
+		this.process_term(params, "ignoreSpatial", ignoreSpatial);
+		this.process_term(params, "includeRestricted", showRestricted);
+		this.process_term(params, "dateFrom", this.get("dateFrom"));
+		this.process_term(params, "dateTo", this.get("dateTo"));
+		this.process_term(params, "originator", this.get("originator"));
+		this.process_term(params, "publisher", this.get("publisher"));
+		this.process_term(params, "isoTopic", this.get("isoTopic"));
+		this.process_term(params, "dateFrom", this.get("dateFrom"));
+
 		if (!ignoreSpatial) {
-			solr.setBoundingBox(this.get("mapExtent"));
-			solr.setCenter(this.get("mapCenter"));
+			this.process_term(params, "minX",  Math.max(bounds.minX, -180));
+			this.process_term(params, "minY",  Math.max(bounds.minY, -90));
+			this.process_term(params, "maxX",  Math.min(bounds.maxX, 180));
+			this.process_term(params, "maxY",  Math.min(bounds.maxY, 90));
+			this.process_term(params, "centerX",  center.centerX);
+			this.process_term(params, "centerY",  center.centerY);
 		}
 
-		var keywords = this.get("keyword");
-		if ((keywords !== null) && (keywords !== "")) {
-			solr.setAdvancedKeywords(keywords);
-		}
+		params["dataTypes"] = this.get("dataType");
+		params["repositories"] = this.get("repository");
 
-		var dateFrom = this.get("dateFrom");
-		var dateTo = this.get("dateTo");
-		solr.addFilter(solr.createDateRangeFilter("ContentDate",
-				dateFrom, dateTo));
-
-		var dataTypes = this.get("dataType");// columnName,
-		// values, joiner,
-		// prefix
-
-        var altVals = ["\"Paper Map\"", "\"Scanned Map\"", "ScannedMap"];
-        // shim to support proliferation of Scanned Map values.
-        if (_.contains(dataTypes, "Paper Map")) {
-            _.each(altVals, function (val) {
-                if (!_.contains(dataTypes, val)) {
-                    dataTypes.push(val);
-                }
-            });
-            dataTypes = _.without(dataTypes, "Paper Map");
-        }
-
-		solr.addFilter(solr.createFilter("DataType", dataTypes,
-				"{!tag=dt}"));
-
-		var repositories = this.get("repository");
-		//console.log(repositories);
-		solr.addFilter(solr.createFilter("Institution", repositories,
-				"{!tag=insf}"));
-
-		solr.addFilter(solr.createAccessFilter(this.get("displayRestrictedAdvanced")));
-
-		var originator = this.get("originator");
-		// TODO: should this be a filter?
-		solr.addFilter(solr.createFilter("Originator", originator,
-				null, "AND"));
-
-		var isoTopic = this.get("isoTopic");
-		solr.addFilter(solr.createFilter("ThemeKeywordsSynonymsIso",
-				isoTopic));
-
-		return solr;
+		return params;
 	},
-	
 
 	/*******************************************************************
 	 * Callbacks

@@ -285,15 +285,7 @@ OpenGeoportal.Views.Query = Backbone.View
 				
 				var that = this;
 				jQuery("#restrictedCheck").on("change", function(event) {
-					var arrRestricted = [];
-					if (!this.checked) {
-						arrRestricted = that.model.get("displayRestrictedBasic");
-					} else {
-						arrRestricted = that.model.get("repositoryList").pluck("shortName");
-					}
-					that.model.set({
-						displayRestrictedAdvanced : arrRestricted
-					});
+					that.model.set({showRestricted: this.checked})
 				});
 			},
 			
