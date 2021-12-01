@@ -70,11 +70,24 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 			
 			addSharedLayers: function() {
 				if (OpenGeoportal.Config.shareIds.length > 0) {
-					var solr = new OpenGeoportal.Solr();
 					var that = this;
-					solr.getLayerInfoFromSolr(OpenGeoportal.Config.shareIds,
-							function(){that.getLayerInfoSuccess.apply(that, arguments);}, 
-							function(){that.getLayerInfoError.apply(that, arguments);});
+
+					// remove surrounding quotes
+					var searchIds = OpenGeoportal.Config.shareIds.map(id => id.replaceAll('"', ''));
+					var query = jQuery.param({layerIds: searchIds.join(",")});
+					var params = {
+						type : "GET",
+						url : "searchByIds?" + query,
+						dataType : 'json',
+						timeout : 5000,
+						success : function() {
+							that.getLayerInfoSuccess.apply(that, arguments);
+						},
+						error : function() {
+							that.getLayerInfoError.apply(that, arguments);
+						}
+					}
+					jQuery.ajax(params);
 					return true;
 				} else {
 					return false;
@@ -96,7 +109,7 @@ OpenGeoportal.Views.CartTable = OpenGeoportal.Views.LayerTable
 
 			},
 
-			getLayerInfoJsonpError:function() {
+			getLayerInfoError:function() {
 				throw new Error(
 						"The attempt to retrieve layer information from layerIds failed.");
 			},
