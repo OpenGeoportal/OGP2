@@ -1,22 +1,22 @@
 package org.opengeoportal.service;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.opengeoportal.search.MetadataRecord;
 import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.search.PortalSearchResponse;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
-import org.springframework.security.access.prepost.PostFilter;
 
 import java.util.List;
-import java.util.Map;
 
 public interface SearchService {
     /***
      * method for searching index for OGP layer records
-     * @param queryParams Map of search parameters
+     * @param solrQuery Map of search parameters
      * @return
      * @throws SearchServerException
      */
-    List<OGPRecord> searchPortal(Map<String, String> queryParams) throws SearchServerException;
+    PortalSearchResponse searchPortal(SolrQuery solrQuery) throws SearchServerException;
 
     /***
      * method for finding OGP records by LayerIds

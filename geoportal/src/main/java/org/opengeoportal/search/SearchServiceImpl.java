@@ -1,5 +1,6 @@
 package org.opengeoportal.search;
 
+import org.apache.solr.client.solrj.SolrQuery;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
 import org.opengeoportal.service.SearchService;
@@ -23,21 +24,23 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<OGPRecord> searchPortal(Map<String, String> queryParams) throws SearchServerException {
-        return searchClient.ogpRecordSearch(queryParams);
+    public PortalSearchResponse searchPortal(SolrQuery solrQuery) throws SearchServerException {
+        return searchClient.ogpRecordSearch(solrQuery);
     }
 
     @Override
     public List<OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException {
         String queryString = searchClient.createLayerIdQueryString(layerIds);
-        return searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        PortalSearchResponse psr = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        return psr.getDocs();
     }
 
     @Override
     @PostFilter("hasPermission(filterObject, 'download')")
     public List<OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException {
         String queryString = searchClient.createLayerIdQueryString(layerIds);
-        return searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        PortalSearchResponse psr = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        return psr.getDocs();
     }
 
     @Override
@@ -54,7 +57,8 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public OGPRecord findRecordByName(String name) throws LayerNotFoundException, SearchServerException {
         String queryString = searchClient.createNameQueryString(name);
-        List<OGPRecord> recordList = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        PortalSearchResponse psr = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
+        List<OGPRecord> recordList = psr.getDocs();
         if (recordList.isEmpty()){
             throw new LayerNotFoundException("Layer with name ['" + name.trim() + "'] not found in the search index.");
         } else {

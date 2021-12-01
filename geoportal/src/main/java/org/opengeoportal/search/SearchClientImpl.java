@@ -1,11 +1,12 @@
 package org.opengeoportal.search;
 
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
-import org.apache.solr.common.params.MapSolrParams;
+import org.apache.solr.common.SolrDocumentList;
 import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
@@ -55,33 +56,35 @@ class SearchClientImpl implements SearchClient {
     }
 
     @Override
-    public List<OGPRecord> ogpRecordSearch(Map<String, String> queryParams) throws SearchServerException {
-        MapSolrParams solrParams = new MapSolrParams(queryParams);
-        String attemptedParams = solrParams.toQueryString();
+    public PortalSearchResponse ogpRecordSearch(SolrQuery solrQuery) throws SearchServerException {
+        String attemptedParams = solrQuery.toQueryString();
 
         logger.debug("solr query: " + attemptedParams);
 
         QueryResponse response;
         try {
-            response = this.solrClient.query(solrParams);
+            response = this.solrClient.query(solrQuery);
         } catch (SolrServerException | IOException e) {
             e.printStackTrace();
             throw new SearchServerException("The search failed.");
         }
         assert response != null;
-        return response.getBeans(OGPRecord.class);
+        SolrDocumentList results = response.getResults();
+        int numFound = (int) results.getNumFound();
+        int start = (int) results.getStart();
+        List<OGPRecord> records = response.getBeans(OGPRecord.class);
+        return new PortalSearchResponse(records, start, records.size(), numFound);
     }
 
     @Override
     public MetadataRecord metadataRecordSearch(String queryString) throws LayerNotFoundException, SearchServerException {
-        final Map<String, String> queryParamMap = new HashMap<>();
-        queryParamMap.put("q", queryString);
-        queryParamMap.put("fl", MetadataRecord.getFieldList());
-        MapSolrParams queryParams = new MapSolrParams(queryParamMap);
 
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.set("q", queryString);
+        solrQuery.set("fl", MetadataRecord.getFieldList());
         QueryResponse response;
         try {
-            response = this.solrClient.query(queryParams);
+            response = this.solrClient.query(solrQuery);
         } catch (SolrServerException | IOException e) {
             e.printStackTrace();
             throw new SearchServerException("The search failed.");
@@ -98,20 +101,16 @@ class SearchClientImpl implements SearchClient {
 
     @Override
     public String createLayerIdQueryString(List<String> layerIds) {
-        // use a set to ensure there are no duplicates
-        Set<String> cleanedList = new HashSet<>();
-        for (String layerId: layerIds) {
-            cleanedList.add("LayerId:" + ClientUtils.escapeQueryChars(layerId.trim()));
-        }
-        return String.join(" OR ", cleanedList);
+        return SearchClient.createFilterFromList(layerIds, "LayerId", "OR");
     }
 
+
     @Override
-    public Map<String,String> buildSimpleParams(String queryString, String fieldList){
-        final Map<String, String> queryParamMap = new HashMap<>();
-        queryParamMap.put("q", queryString);
-        queryParamMap.put("fl", fieldList);
-        return queryParamMap;
+    public SolrQuery buildSimpleParams(String queryString, String fieldList){
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.set("q", queryString);
+        solrQuery.set("fl", fieldList);
+        return solrQuery;
     }
 
     @Override
