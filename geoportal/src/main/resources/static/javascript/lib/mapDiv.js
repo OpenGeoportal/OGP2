@@ -1508,6 +1508,7 @@ OpenGeoportal.MapController = function() {
 		return new OpenGeoportal.Models.ImageRequest(requestObj);
 	};
 
+/*
 	this.processMetadataSolrResponse = function(data) {
 		var solrResponse = data.response;
 		var totalResults = solrResponse.numFound;
@@ -1519,15 +1520,12 @@ OpenGeoportal.MapController = function() {
 		var doc = solrResponse.docs[0]; // get the first layer object
 		return doc;
 	};
+*/
 
-	this.getAttributeDescriptionJsonpSuccess = function(data) {
+	this.getAttributeDescriptionSuccess = function(attrMap) {
 		jQuery(".attributeName").css("cursor", "default");
 
 		var that = this;
-
-		var solrdoc = this.processMetadataSolrResponse(data);
-		var xmlDoc = jQuery.parseXML(solrdoc.FgdcText); // text was escaped on
-		// ingest into Solr
 
 		var layerId = jQuery("td.attributeName").first().closest("table").find(
 				"caption").attr("title");
@@ -1535,49 +1533,66 @@ OpenGeoportal.MapController = function() {
 			LayerId : layerId
 		}).get("layerAttributes");
 
-		jQuery(xmlDoc)
+		jQuery("td.attributeName").each(function(){
+			var $attr = jQuery(this);
+			var attributeName = $attr.text().trim();
+			attrMap.keys().forEach(function(attr){
+				if (attr.toLowerCase().trim() === attributeName.toLowerCase()) {
+					var attributeDescription = attrMap[attr];
+					$attr.attr('title', attributeDescription);
+
+					var attrModel = layerAttrs.findWhere({attributeName: attributeName});
+					if (typeof attrModel != "undefined") {
+						attrModel.set({ description: attributeDescription });
+					}
+					return;
+				}
+			});
+		});
+
+/*		jQuery(xmlDoc)
 				.find("attrlabl")
 				.each(
 						function() {
 							var currentXmlAttribute$ = jQuery(this);
 							jQuery("td.attributeName")
-									.each(
-											function() {
-												var attributeName = jQuery(this)
-														.text().trim();
-												if (currentXmlAttribute$.text()
-														.trim().toLowerCase() == attributeName
-														.toLowerCase()) {
-													var attributeDescription = currentXmlAttribute$
-															.siblings("attrdef")
-															.first();
-													attributeDescription = OpenGeoportal.Utility
-															.stripExtraSpaces(attributeDescription
-																	.text()
-																	.trim());
-													if (attributeDescription.length === 0) {
-														attributeDescription = "No description available";
-													}
-													jQuery(this)
-															.attr('title',
-																	attributeDescription);
-													var attr = layerAttrs.findWhere(
-																	{
-																		attributeName : attributeName
-																	});
-													if (typeof attr != "undefined"){
-															attr.set(
-																	{
-																		description : attributeDescription
-																	});
-													}
-													return;
-												}
-											});
-						});
+								.each(
+									function () {
+										var attributeName = jQuery(this)
+											.text().trim();
+										if (currentXmlAttribute$.text()
+											.trim().toLowerCase() == attributeName
+											.toLowerCase()) {
+											var attributeDescription = currentXmlAttribute$
+												.siblings("attrdef")
+												.first();
+											attributeDescription = OpenGeoportal.Utility
+												.stripExtraSpaces(attributeDescription
+													.text()
+													.trim());
+											if (attributeDescription.length === 0) {
+												attributeDescription = "No description available";
+											}
+											jQuery(this)
+												.attr('title',
+													attributeDescription);
+											var attr = layerAttrs.findWhere(
+												{
+													attributeName: attributeName
+												});
+											if (typeof attr != "undefined") {
+												attr.set(
+													{
+														description: attributeDescription
+													});
+											}
+											return;
+										}
+									});
+						});*/
 	};
 
-	this.getAttributeDescriptionJsonpError = function() {
+	this.getAttributeDescriptionError = function() {
 		jQuery(".attributeName").css("cursor", "default");
 		throw new Error("The attribute description could not be retrieved.");
 	};
@@ -1607,19 +1622,25 @@ OpenGeoportal.MapController = function() {
 								// short circuit if attributes have already been
 								// looked up
 							} else {
-								var solr = new OpenGeoportal.Solr();
-								var query = solr.getServerName()
-										+ "?"
-										+ jQuery.param(solr
-												.getMetadataParams(layerId));
 								jQuery(".attributeName").css("cursor", "wait");
-								solr
-										.sendToSolr(
-												query,
-												that.getAttributeDescriptionJsonpSuccess,
-												that.getAttributeDescriptionJsonpError,
-												that);
+
+								var query = "metadata/" + layerId + "/attributeInfo";
+								var params = {
+									type : "GET",
+									url : query,
+									dataType : 'json',
+									timeout : 5000,
+									success : function() {
+										that.getAttributeDescriptionSuccess.apply(that, arguments);
+									},
+									error : function() {
+										that.getAttributeDescriptionError.apply(that, arguments);
+									}
+								}
+								jQuery.ajax(params);
+
 							}
+
 						});
 	};
 

@@ -1,6 +1,9 @@
 package org.opengeoportal.download;
 
+import org.opengeoportal.download.exception.MetadataParsingException;
+
 import java.io.File;
+import java.util.Map;
 
 public interface MetadataRetriever {
 
@@ -10,4 +13,5 @@ public interface MetadataRetriever {
 	String getContactPhoneNumber(String layerId);
 	String getContactAddress(String layerID);
 	String getMetadataAsHtml(String layerID) throws Exception;
+	Map<String,String> getAttributeDescriptions(String layerID) throws MetadataParsingException;
 }

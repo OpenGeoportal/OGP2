@@ -440,13 +440,6 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 
 			// converts solr response object to backbone models
 			solrToCollection: function(solrLayers) {
-				// dataObj is a Javascript object (usually) returned by Solr
-
-				// var solrResponse = dataObj.response;
-				// var totalResults = solrResponse.numFound;
-				// var startIndex = solrResponse.start;
-				//var solrLayers = dataObj;
-
 				// solr docs holds an array of hashtables, each hashtable contains a
 				// layer
 

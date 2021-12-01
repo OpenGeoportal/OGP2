@@ -1,6 +1,8 @@
 package org.opengeoportal.download;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.xml.parsers.*;
@@ -8,8 +10,12 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
+import org.opengeoportal.download.exception.MetadataParsingException;
 import org.opengeoportal.search.MetadataRecord;
+import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.service.SearchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.xml.sax.*;
@@ -27,9 +33,9 @@ import org.w3c.dom.*;
 
 @Component
 public class MetadataFromSolr implements MetadataRetriever {
+	final Logger logger = LoggerFactory.getLogger(MetadataFromSolr.class);
+
 	private final SearchService searchService;
-	private String layerId;
-	private Document xmlDocument;
 	private DocumentBuilder builder;
 
 	@Value("${stylesheet.fgdc}")
@@ -99,24 +105,22 @@ public class MetadataFromSolr implements MetadataRetriever {
 	 * @throws SAXException
 	 */
 	Document buildXMLDocFromString(String layerId, String rawXMLString) throws ParserConfigurationException, SAXException, IOException{
-		if ((layerId.equalsIgnoreCase(this.layerId))&&(this.xmlDocument != null)){
-			return this.xmlDocument;
-		} else {
-			InputStream xmlInputStream = null;
 
-			try{
-				//parse the returned XML to make sure it is well-formed & to format
-				//filter extra spaces from xmlString
-				rawXMLString = rawXMLString.replaceAll(">[ \t\n\r\f]+<", "><").replaceAll("[\t\n\r\f]+", "");
-				xmlInputStream = new ByteArrayInputStream(rawXMLString.getBytes("UTF-8"));
+		InputStream xmlInputStream = null;
 
-				//Parse the document
-				Document document = builder.parse(xmlInputStream);
-				return document;
-			} finally {
-				IOUtils.closeQuietly(xmlInputStream);
-			}
+		try{
+			//parse the returned XML to make sure it is well-formed & to format
+			//filter extra spaces from xmlString
+			rawXMLString = rawXMLString.replaceAll(">[ \t\n\r\f]+<", "><").replaceAll("[\t\n\r\f]+", "");
+			xmlInputStream = new ByteArrayInputStream(rawXMLString.getBytes("UTF-8"));
+
+			//Parse the document
+			Document document = builder.parse(xmlInputStream);
+			return document;
+		} finally {
+			IOUtils.closeQuietly(xmlInputStream);
 		}
+
 	}
 	
 	/**
@@ -135,10 +139,8 @@ public class MetadataFromSolr implements MetadataRetriever {
 		} else if(descriptor.equalsIgnoreCase("layerid")){
 			record = this.searchService.findMetadataRecordById(identifier);
 		} else {
-			this.layerId = null;
-			return null;
+			throw new LayerNotFoundException("Unable to form search query for metadata.");
 		}
-		this.layerId = record.getLayerId();
 
 		return record.getFgdcText();
 	}
@@ -181,7 +183,7 @@ public class MetadataFromSolr implements MetadataRetriever {
 		
 		Document document = null;
 		try {
-			document = buildXMLDocFromString(layerId, xmlString);
+			document = buildXMLDocFromString(layerID, xmlString);
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -213,7 +215,72 @@ public class MetadataFromSolr implements MetadataRetriever {
 		return outputString;
 
 	}
-	
+
+	private Document getMetadataDocumentFromLayerId(String layerId) throws MetadataParsingException {
+		String xmlString = null;
+		try {
+			xmlString = getXMLStringFromSolr(layerId, "LayerId");
+			return buildXMLDocFromString(layerId, xmlString);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new MetadataParsingException("Unable to Parse metadata for: [" + layerId + "]");
+		}
+	}
+
+	@Override
+	public Map<String, String> getAttributeDescriptions(String layerId) throws MetadataParsingException {
+		Map<String,String> attrInfoMap = new HashMap<>();
+
+		Document doc = getMetadataDocumentFromLayerId(layerId);
+
+		MetadataType metadataType = getMetadataType(doc);
+
+		if (!metadataType.equals(MetadataType.FGDC)){
+			// currently unable to parse non fgdc metadata
+			return attrInfoMap;
+		}
+
+		NodeList attributeInfo = doc.getElementsByTagName("attr");
+
+		if (attributeInfo == null || attributeInfo.getLength() == 0){
+			return attrInfoMap;
+		}
+
+		logger.debug("found attr nodes: " + attributeInfo.getLength());
+		/*
+			<attrlabl>OBJECTID_1</attrlabl>
+			<attrdef>Unique identifier</attrdef>
+		 */
+
+		for (int i = 0; i < attributeInfo.getLength(); i++){
+			Node currentNode = attributeInfo.item(i);
+			NodeList currentChildNodes = currentNode.getChildNodes();
+			String attrLabel = "";
+			String attrDef = "No description available";
+			if (currentChildNodes == null){
+				continue;
+			}
+			for (int j = 0; j < currentChildNodes.getLength(); j++) {
+				Node currentChild = currentChildNodes.item(j);
+				if (currentChild.getNodeName().equalsIgnoreCase("attrlabl")) {
+					attrLabel = currentChild.getTextContent().trim();
+					logger.debug("attr label: " + attrLabel);
+				} else if (currentChild.getNodeName().equalsIgnoreCase("attrdef")){
+					attrDef = currentChild.getTextContent().trim();
+					logger.debug("attr definition: " + attrDef);
+				}
+			}
+			if (!attrLabel.isBlank()){
+				attrInfoMap.put(attrLabel, attrDef);
+			}
+
+		}
+
+
+
+		return attrInfoMap;
+	}
+
 	InputStream getStyleSheet(Document document) throws Exception{
 		MetadataType metadataType = getMetadataType(document);
 		//getMetadataType throws an exception if not fgdc or iso19139
@@ -224,7 +291,7 @@ public class MetadataFromSolr implements MetadataRetriever {
 		}
 	}
 	
-    public static MetadataType getMetadataType(Document document) throws Exception {
+    public static MetadataType getMetadataType(Document document) throws MetadataParsingException {
 
         MetadataType metadataType = null;
         try {
@@ -253,7 +320,7 @@ public class MetadataFromSolr implements MetadataRetriever {
 
         if (metadataType == null){
             //throw an exception...metadata type is not supported
-            throw new Exception("Metadata Type is not supported.");
+            throw new MetadataParsingException("Metadata Type is not supported.");
         }
         return metadataType;
     }
