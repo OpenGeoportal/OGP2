@@ -438,25 +438,23 @@ OpenGeoportal.Views.LayerTable = Backbone.View
 						});
 			},
 
-			// converts solr response object to backbone models
-			solrToCollection: function(solrLayers) {
-				// solr docs holds an array of hashtables, each hashtable contains a
-				// layer
+			// converts search response object to backbone models
+			solrToCollection: function(rowList) {
 
 				var arrModels = [];
-				_.each(solrLayers, function(solrLayer){
+				_.each(rowList, function(row){
 					//just parse the json here, so we can use the results elsewhere
 					var locationParsed = {};
 					try {
-						var rawVal = solrLayer.Location;
+						var rawVal = row.Location;
 						if (rawVal.length > 2){
 							locationParsed = jQuery.parseJSON(rawVal);
 						}
 					} catch (e){
-						console.log([solrLayer["LayerId"], e]);
+						console.log([row["LayerId"], e]);
 					}
-					solrLayer.Location = locationParsed;
-					arrModels.push(solrLayer);
+					row.Location = locationParsed;
+					arrModels.push(row);
 				});
 				return arrModels;
 			},

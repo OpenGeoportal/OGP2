@@ -96,51 +96,7 @@ OpenGeoportal.Views.SearchResultsRow = OpenGeoportal.Views.LayerRow.extend({
 		
 		this.expandState.setExpandState(this.model.get("LayerId"), !controls);
 	},
-	
-	/*
-	 * functions to display the abstract from the metadata in the expanded row, rather than the preview controls 
-	 */
-	
-	/*
-	renderExpand: function(){
-		var expand$ = "";
-		if (this.model.get("showControls")) {
-			var description = "";
-			if (this.model.has("layerInfo")){
-				description = this.model.get("layerInfo");
-			} else {
-				this.getLayerInfoFromSolr();
-			}
-			expand$ = '<div class="layerInfo">' + description + '</div>';
-		}
-		
-		return expand$;
-	},
-		
 
-	infoColumn: "Abstract",
-	
-	getLayerInfoFromSolr: function() {
-		
-		// make an ajax call to retrieve data from solr
-		var solr = new OpenGeoportal.Solr();
-		var url = solr.getServerName() + "?"
-				+ jQuery.param(solr.getArbitraryParams(this.model.get("LayerId"), this.infoColumn));
-		var query = solr.sendToSolr(url, this.getInfoSuccess,
-				this.getInfoError, this);
-
-	},
-	
-	getInfoSuccess: function(data){
-		var description = data.response.docs[0][this.infoColumn];
-		this.model.set({layerInfo: description});
-		this.$el.find(".layerInfo").text(description);
-	},
-	
-	getInfoError: function(){
-		console.log("error getting info");
-	},
-	*/
 	
 	broadcastModel: function(){
 		this.$el.closest(".rowContainer").trigger("topmodel", [this.model]);

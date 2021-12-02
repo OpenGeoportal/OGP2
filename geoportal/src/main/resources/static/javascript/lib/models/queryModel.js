@@ -105,7 +105,7 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		var request = null;
 
 		if (this.get("searchType") === 'advanced') {
-			request = 'advanced-search?' + jQuery.param(this.getAdvancedSearchQuery(), false);
+			request = 'advancedSearch?' + jQuery.param(this.getAdvancedSearchQuery(), false);
 		} else {
 			request = 'search?' + jQuery.param(this.getBasicSearchQuery(), false);
 		}
@@ -192,26 +192,27 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * Callbacks
 	 ******************************************************************/
 
-	// keeping track of the last solr search is useful in multiple cases
+	// keeping track of the last search is useful in multiple cases
 	// if a search that filter based on the map returned no results we
 	// want to
 	// re-run the search without the map filter and let user know if
 	// there are results
 	// after use login we re-run the query to update "login" buttons on
 	// layers
-	addToHistory : function(solr) {
+	addToHistory : function(searchQuery) {
 		// number of search objects to keep
 		var historyLength = 5;
 		var history = this.get("history");
-		history.push(solr);
+		history.push(searchQuery);
 		while (history.length > historyLength) {
 			history.shift();
 		}
 
 	},
+
 	rerunLastSearch : function() {
-		var solr = this.get("history").pop();
-		if (solr != null)
+		var searchQuery = this.get("history").pop();
+		if (searchQuery != null)
 			solr.executeSearchQuery(this.searchRequestJsonpSuccess,
 					this.searchRequestJsonpError);
 	},
@@ -225,10 +226,10 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * @return
 	 */
 	addSpatialToEmptySearchMessage : function() {
-		var solr = this.get("history").pop();
-		if (solr != null) {
-			solr.clearBoundingBox();
-			solr.executeSearchQuery(this.emptySearchMessageHandler,
+		var searchQuery = this.get("history").pop();
+		if (searchQuery != null) {
+			searchQuery.clearBoundingBox();
+			searchQuery.executeSearchQuery(this.emptySearchMessageHandler,
 					this.searchRequestJsonpError);
 		}
 	}

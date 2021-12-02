@@ -88,7 +88,6 @@ public class HomeController {
 		mav.addObject("extraJs", conf.getJsLocalized());	//<script type="text/javascript" src="resources/javascript/dataTables.scroller.min.js"></script>
 		mav.addObject("extraCss", conf.getCssLocalized());  //<link rel="stylesheet" href="resources/css/google.css" type="text/css" />
 		
-		mav.addObject("searchUrl", conf.getSearchUrl().toString());
 		mav.addObject("analyticsId", conf.getAnalyticsId());
 		mav.addObject("gmapsAPIKey", conf.getGmapsAPIKey());
 

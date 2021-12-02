@@ -30,59 +30,7 @@ OpenGeoportal.Utility.getImage = function(imageName) {
 };
 
 OpenGeoportal.Utility.CurrentTab = 0;
-/*OpenGeoportal.Utility.whichTab = function() {
-	var tabInfo = {};
-	var tabIndex;
-	if (arguments.length > 0) {
-		tabIndex = arguments[0];
-	} else {
-		tabIndex = OpenGeoportal.Utility.CurrentTab;
-	}
-	tabInfo.index = tabIndex;
-	switch (tabIndex) {
-	case 0:
-		tabInfo.name = 'search';
-		tabInfo.tableObject = function() {
-			return OpenGeoportal.ogp.resultsTableObj;
-		};
-		tabInfo.tableDiv = 'resultsTable';
-		tabInfo.tableName = 'searchResults';
-		break;
-	case 1:
-		tabInfo.name = 'saved';
-		tabInfo.tableObject = function() {
-			return OpenGeoportal.ogp.cartTableObj;
-		};
-		tabInfo.tableDiv = 'savedLayersTable';
-		tabInfo.tableName = 'savedLayers';
-		break;
-	default:
-		// throw new Error('No tab is selected.');
-	}
-	return tabInfo;
-};
-*/
-/*OpenGeoportal.Utility.whichSearch = function() {
-	var activeSearchDiv = null;
-	jQuery(".searchBox > div").each(function() {
-		if (jQuery(this).css("display") == 'block') {
-			activeSearchDiv = jQuery(this).attr("id");
-		}
-	});
-	var searchInfo = {};
-	// searchInfo.script = 'solrSearchHandler.jsp';
-	switch (activeSearchDiv) {
-	case "basicSearchBox":
-		searchInfo.type = 'basicSearch';
-		break;
-	case "advancedSearchBox":
-		searchInfo.type = 'advancedSearch';
-		break;
-	default:
-		// throw new Error('No tab is selected.');
-	}
-	return searchInfo;
-};*/
+
 OpenGeoportal.Utility.LocalStorage = {};
 OpenGeoportal.Utility.LocalStorage.setBool = function(key, boolVal){
 
@@ -131,7 +79,7 @@ OpenGeoportal.Utility.rgb2hex = function(rgb) {
 OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	var hex = [ r.toString(16), g.toString(16), b.toString(16) ];
 	jQuery.each(hex, function(nr, val) {
-		if (val.length == 1) {
+		if (val.length === 1) {
 			hex[nr] = '0' + val;
 		}
 	});

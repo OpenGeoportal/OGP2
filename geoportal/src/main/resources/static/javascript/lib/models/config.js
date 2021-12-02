@@ -22,14 +22,11 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
-//{"searchUrl":"http://geodata.tufts.edu/solr/select","analyticsId":"UA-19787732-1","loginConfig":{"repositoryId":"tufts","type":"form","url":"login","secureDomain":"https://localhost:8443"}}
-OpenGeoportal.Models.OgpConfig = Backbone.Model.extend({
-	url : "config/general"
-});
+//{"analyticsId":"abc123","loginConfig":{"repositoryId":"tufts","type":"form","url":"login","secureDomain":"https://localhost:8443"}}
+OpenGeoportal.Models.OgpConfig = Backbone.Model.extend();
 
 OpenGeoportal.Config.General = new OpenGeoportal.Models.OgpConfig();
 OpenGeoportal.Config.General.set({
-	searchUrl : OpenGeoportal.Config.searchUrl,
 	analyticsId : OpenGeoportal.Config.analyticsId,
 	loginConfig : {
 		repositoryId : OpenGeoportal.Config.loginRepository,

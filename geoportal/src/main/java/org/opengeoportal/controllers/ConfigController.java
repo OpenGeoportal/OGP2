@@ -2,8 +2,6 @@ package org.opengeoportal.controllers;
 
 import java.util.List;
 
-import org.opengeoportal.config.ogp.OgpConfig;
-import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.proxy.ProxyConfig;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.config.repositories.RepositoryConfig;
@@ -27,16 +25,12 @@ public class ConfigController {
 	RepositoryConfigRetriever repositoryConfigRetriever;
 	
 	final
-	OgpConfigRetriever ogpConfigRetriever;
-	
-	final
 	ProxyConfigRetriever proxyConfigRetriever;
 
 	@Autowired
 	public ConfigController(RepositoryConfigRetriever repositoryConfigRetriever,
-							OgpConfigRetriever ogpConfigRetriever, ProxyConfigRetriever proxyConfigRetriever) {
+							ProxyConfigRetriever proxyConfigRetriever) {
 		this.repositoryConfigRetriever = repositoryConfigRetriever;
-		this.ogpConfigRetriever = ogpConfigRetriever;
 		this.proxyConfigRetriever = proxyConfigRetriever;
 	}
 
@@ -44,12 +38,6 @@ public class ConfigController {
 	public @ResponseBody List<RepositoryConfig> getRepositoryConfig() throws Exception {
 
 		return repositoryConfigRetriever.getConfig();
-	}
-	
-	@RequestMapping(value="general", method=RequestMethod.GET, produces="application/json")
-	public @ResponseBody OgpConfig getSearchConfig() throws Exception {
-
-		return ogpConfigRetriever.getConfig();
 	}
 	
 	@RequestMapping(value="proxy", method=RequestMethod.GET, produces="application/json")

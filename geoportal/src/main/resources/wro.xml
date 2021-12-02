@@ -15,7 +15,6 @@
 		<js>/javascript/lib/geocoder.js</js>
 		<js>/javascript/lib/metadata.js</js>
 		<js>/javascript/lib/tableItems.js</js>
-		<js>/javascript/lib/solr.js</js>
 		<js>/javascript/lib/models/resultItem.js</js>
 		<js>/javascript/lib/models/basemapModel.js</js>
 		<js>/javascript/lib/models/tableConfig.js</js>

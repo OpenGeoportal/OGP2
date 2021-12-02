@@ -38,14 +38,13 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 
 	totalResults: 0,
     parse: function(resp) {
-        return this.solrToCollection(resp);
+        return this.searchResponseToCollection(resp);
       },
 		// converts solr response object to backbone models
-	solrToCollection: function(dataObj) {
-			// dataObj is a Javascript object (usually) returned by Solr
-			this.totalResults = dataObj.numFound;
-			var start = dataObj.start;
-			var solrLayers = dataObj.docs;
+	searchResponseToCollection: function(response) {
+			this.totalResults = response.numFound;
+			var start = response.start;
+			var rowList = response.docs;
 			var ids = [];
 			var previewed = OpenGeoportal.ogp.appState.get("previewed").each(function(model){
 				if (model.get("preview") === "on"){
@@ -57,37 +56,37 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			// layer
 			var arrModels = [];
 			
-			_.each(solrLayers, function(solrLayer){
+			_.each(rowList, function(row){
 
-				solrLayer.resultNum = start;
+				row.resultNum = start;
 				start++;
 				
 				//filter out layers in the preview pane
 
-				if (_.contains(ids, solrLayer.LayerId)){
-					solrLayer.hidden = true;
+				if (_.contains(ids, row.LayerId)){
+					row.hidden = true;
 				}
 				
 				//just parse the json here, so we can use the results elsewhere
 				var locationParsed = {};
 				try {
-					var rawVal = solrLayer.Location;
+					var rawVal = row.Location;
 					if (rawVal.length > 2){
 						locationParsed = jQuery.parseJSON(rawVal);
 					}
 				} catch (err){
-					console.log([solrLayer["LayerId"], err]);
+					console.log([row["LayerId"], err]);
 				}
-				solrLayer.Location = locationParsed;
+				row.Location = locationParsed;
 
                 // Collapse these values to "Paper Map".
-                var dType = solrLayer.DataType;
+                var dType = row.DataType;
                 dType = dType.replace(/\s/g, "").toLowerCase();
                 if (dType === "scannedmap" || dType === "papermap") {
-                    solrLayer.DataType = "Paper Map";
+                    row.DataType = "Paper Map";
                 }
 
-				arrModels.push(solrLayer);
+				arrModels.push(row);
 			});
 			return arrModels;
 		},
@@ -101,9 +100,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		      this.fetchOn = false;
 		    },
 		
-		extraParams: {
-			//does this get added by solr object?
-		},
+		extraParams: {},
 		
 		pageParams: {
 			start: 0,

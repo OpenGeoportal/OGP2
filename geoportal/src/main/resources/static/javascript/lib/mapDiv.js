@@ -1508,20 +1508,6 @@ OpenGeoportal.MapController = function() {
 		return new OpenGeoportal.Models.ImageRequest(requestObj);
 	};
 
-/*
-	this.processMetadataSolrResponse = function(data) {
-		var solrResponse = data.response;
-		var totalResults = solrResponse.numFound;
-		if (totalResults != 1) {
-			throw new Error("Request for Metadata returned " + totalResults
-					+ ".  Exactly 1 was expected.");
-			return;
-		}
-		var doc = solrResponse.docs[0]; // get the first layer object
-		return doc;
-	};
-*/
-
 	this.getAttributeDescriptionSuccess = function(attrMap) {
 		jQuery(".attributeName").css("cursor", "default");
 
