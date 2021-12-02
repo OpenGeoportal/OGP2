@@ -8,6 +8,11 @@ import org.opengeoportal.config.ogp.OgpConfigRetrieverImpl;
 import org.opengeoportal.config.search.SearchConfigRetriever;
 import org.opengeoportal.config.search.SearchConfigRetrieverImpl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -109,5 +114,31 @@ public class SearchParamCreatorImplTest {
     void filterDateValueNegativeTest() {
         String filtered = searchParamCreator.filterDateValue("-19");
         assertThat(filtered).isEqualTo("-0019");
+    }
+
+    @Test
+    void createInstitutionAccessFilterLocalInstitutionNotAddedTest() {
+        List<String> institutionList = List.of("Harvard", "GMU", "MassGIS");
+        String localInstitution = "Tufts";
+        String institutionFilter = searchParamCreator.createInstitutionAccessFilter(institutionList, localInstitution);
+        for (String institution: institutionList) {
+            assertThat(institutionFilter).contains(institution.toLowerCase());
+        }
+        assertThat(institutionFilter).doesNotContain(localInstitution.toLowerCase());
+    }
+
+    @Test
+    void createInstitutionAccessFilterBasicFilterTest() {
+        List<String> institutionList = Arrays.asList("Tufts", "GMU", "Harvard", "MassGIS");
+        String localInstitution = "Tufts";
+        String institutionFilter = searchParamCreator.createInstitutionAccessFilter(institutionList, localInstitution);
+
+        // Not sure that we can guarantee order, so just inspect the pieces
+        assertThat(institutionFilter).contains("(Institution:massgis AND Access:Public)");
+        assertThat(institutionFilter).contains("(Institution:harvard AND Access:Public)");
+        assertThat(institutionFilter).contains("Institution:tufts");
+        assertThat(institutionFilter).contains("(Institution:gmu AND Access:Public)");
+        assertThat(institutionFilter).doesNotContain("(Institution:tufts AND Access:Public)");
+
     }
 }

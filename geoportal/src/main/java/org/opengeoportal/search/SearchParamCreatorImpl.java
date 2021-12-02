@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class SearchParamCreatorImpl implements SearchParamCreator {
@@ -159,7 +157,6 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
      */
     void addAdvancedInstitutionAccessFilter(SolrQuery solrQuery, AdvancedSearchParams searchParams) {
         List<String> institutionList = searchParams.getRepositories();
-
         String institutionFilter;
         if (searchParams.isIncludeRestricted()) {
             institutionFilter = SearchClient.createFilterFromList(institutionList, "Institution", "OR");
@@ -216,8 +213,14 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
     String createInstitutionAccessFilter(List<String> institutions, String localInstitution) {
         // institutions should be list of selected institutions from application.properties. localInstitution should be the login institution
         // use a set to ensure there are no duplicates
-        Set<String> cleanedList = new HashSet<>(institutions);
-        cleanedList.remove(localInstitution);
+        Set<String> cleanedList = institutions.stream().map(String::toLowerCase).collect(Collectors.toCollection(HashSet::new));
+        boolean hasLocalInstitution = false;
+
+        localInstitution = localInstitution.toLowerCase().trim();
+        if (cleanedList.contains(localInstitution)) {
+            hasLocalInstitution = true;
+            cleanedList.remove(localInstitution);
+        }
 
         Set<String> filterList = new HashSet<>();
 
@@ -225,7 +228,10 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
             filterList.add("(Institution:" + ClientUtils.escapeQueryChars(val.trim()) + " AND Access:Public)");
         }
 
-        filterList.add("Institution:" + ClientUtils.escapeQueryChars(localInstitution.trim()));
+        // don't add the local institution back in if it wasn't in the original institution list
+        if (hasLocalInstitution) {
+            filterList.add("Institution:" + ClientUtils.escapeQueryChars(localInstitution.trim()));
+        }
 
         return String.join(" OR ", filterList);
     }
