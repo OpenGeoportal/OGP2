@@ -45,7 +45,7 @@ public class ImageRetrievalController {
 			}
 		}
 		if (counter > 0){
-			logger.info("Milliseconds slept: " + Long.toString(counter));
+			logger.debug("Milliseconds slept: " + Long.toString(counter));
 		}
 		logger.info(downloadPackage.getName());
 		logger.info(downloadPackage.getAbsolutePath());

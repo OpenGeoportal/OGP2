@@ -190,7 +190,7 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.AbstractQueueItem.ex
 			var currentLayer = layerInfo[i];
 			var status = currentLayer.status.toLowerCase();
 			var layerName = currentLayer.id;
-			if (status != "success") {
+			if (status !== "success") {
 				failed.push(currentLayer);
 			} else {
 				succeeded.push(currentLayer);
@@ -375,7 +375,7 @@ OpenGeoportal.Models.ImageRequest = OpenGeoportal.Models.AbstractQueueItem.exten
 	
 	createNotice : function() {
 		//nop
-
+		alert("failed to generate image!");
 	}
 
 });

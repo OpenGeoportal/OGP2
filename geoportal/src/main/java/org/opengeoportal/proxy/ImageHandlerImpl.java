@@ -13,7 +13,9 @@ import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
 import org.opengeoportal.proxy.ImageRequest.ImageStatus;
 import org.opengeoportal.proxy.ImageRequest.LayerImage;
+import org.opengeoportal.proxy.exception.EmptyImageRequestException;
 import org.opengeoportal.search.OGPRecord;
+import org.opengeoportal.search.exception.SearchServerException;
 import org.opengeoportal.service.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,20 +63,25 @@ public class ImageHandlerImpl implements ImageHandler {
 	}	
 
 	
-	private void downloadLayerImages(ImageRequest imageRequest) throws Exception {
+	private void downloadLayerImages(ImageRequest imageRequest) {
+		List<LayerImage> layerImageList = imageRequest.getLayers();
 
 		setBaseQuery(imageRequest.getFormat(), imageRequest.getBbox(), imageRequest.getSrs(), 
 				imageRequest.getHeight(), imageRequest.getWidth());
 		//populateImageRequest depends on setBaseQuery running first
-		populateImageRequest(imageRequest);
+		try {
+			populateImageRequest(imageRequest);
+		} catch (EmptyImageRequestException | SearchServerException e){
+			logger.error(e.getMessage());
+			return;
+		}
 		
-		List<LayerImage> layerImageList = imageRequest.getLayers();
 
 		for (LayerImage layerImage: layerImageList){			
 			//now we have everything we need to create a request
 			//this needs to be done for each image received
 			try {
-				logger.info(layerImage.getUrl().toString());
+				logger.debug(layerImage.getUrl().toString());
 				ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
 				Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl());
 				layerImage.setImageFileFuture(imgFile);
@@ -89,11 +96,13 @@ public class ImageHandlerImpl implements ImageHandler {
 
 	}
 	
-	private void populateImageRequest(ImageRequest imageRequest) throws Exception {	
+	private void populateImageRequest(ImageRequest imageRequest) throws EmptyImageRequestException, SearchServerException {
 		//only retrieve records the user has permission to access data for
 		List<OGPRecord> layerInfo = this.searchService.findAllowedRecordsById(new ArrayList<>(imageRequest.getLayerIds()));
-	    logger.info("Number of layers in image: " + Integer.toString(layerInfo.size()));
-		
+	    logger.debug("Number of layers in image: " + Integer.toString(layerInfo.size()));
+		if (layerInfo.size() == 0){
+			throw new EmptyImageRequestException("No layers in image request.");
+		}
 		for (LayerImage layerImage: imageRequest.getLayers()){
 			
 			String currentId = layerImage.getLayerId();

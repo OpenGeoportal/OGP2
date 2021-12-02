@@ -86,7 +86,7 @@ public class ImageCompositorImpl implements ImageCompositor {
 					
 					
 				try{	
-					logger.info("adding image to composite: " + layerImage.getLayerId());
+					logger.debug("adding image to composite: " + layerImage.getLayerId());
 					addImageToComposite(imgFile, layerImage.getOpacity());
 					layerImage.setImageStatus(ImageStatus.SUCCESS);
 				}  catch (Exception e){

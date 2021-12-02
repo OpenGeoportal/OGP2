@@ -12,6 +12,8 @@ import org.opengeoportal.proxy.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
 * This controller given the above parameters + z order, grabs images
@@ -51,12 +54,15 @@ public class ImageController {
 		ObjectMapper mapper = new ObjectMapper();
 		ImageRequest imageRequestObj = mapper.readValue(URLDecoder.decode(imageRequest, "UTF-8"), ImageRequest.class);
 
-		Map<String, String> map = new HashMap<String, String>();
-		
+		if (imageRequestObj.getLayerIds().size() == 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "no layers in request.");
+		}
+
 		ImageHandler imageHandler = imageHandlerFactory.getObject();
 		UUID requestId = imageHandler.requestImage(RequestContextHolder.currentRequestAttributes().getSessionId(), imageRequestObj);
 		logger.debug("Image requested.");
-		
+
+		Map<String, String> map = new HashMap<String, String>();
 		map.put("requestId", requestId.toString());
 		return map;
 	}
