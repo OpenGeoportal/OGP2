@@ -69,4 +69,13 @@ public interface SearchService {
      * @throws SearchServerException
      */
     MetadataRecord findMetadataRecordByName(String name) throws LayerNotFoundException, SearchServerException;
+
+    /***
+     * Do a terms search. Used to support autocomplete functions.
+     * @param field
+     * @param query
+     * @return
+     * @throws SearchServerException
+     */
+    List<String> findTerms(String field, String query) throws SearchServerException;
 }

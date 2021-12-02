@@ -4,10 +4,13 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.TermsResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocumentList;
 import org.opengeoportal.config.search.SearchConfigRetriever;
+import org.opengeoportal.download.types.generated.ogc.wms_describelayer.Query;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
 import org.slf4j.Logger;
@@ -97,6 +100,42 @@ class SearchClientImpl implements SearchClient {
         } else {
             return recordList.get(0);
         }
+    }
+
+    @Override
+    public List<String> termSearch(String field, String queryString) throws SearchServerException {
+
+        SolrQuery query = new SolrQuery();
+        query.setRequestHandler("/terms");
+        query.setTerms(true);
+        query.addTermsField(field);
+        query.setTermsRegex(".*" + queryString+ ".*");
+        query.setTermsRegexFlag("case_insensitive");
+        query.setTermsLimit(10);
+        query.setTermsMinCount(1);
+        query.setTermsSortString("count");
+
+        logger.debug(query.toQueryString());
+
+        QueryRequest request = new QueryRequest(query);
+        List<TermsResponse.Term> terms;
+
+        try {
+            terms = request.process(solrClient).getTermsResponse().getTerms(field);
+        } catch (SolrServerException | IOException e) {
+            e.printStackTrace();
+            throw new SearchServerException("The term search failed.");
+        }
+
+        List<String> termList = new ArrayList<>();
+        terms.forEach(term -> {
+            String matchedTerm = term.getTerm();
+            int termCount = Math.toIntExact(term.getFrequency());
+            logger.debug("matched term: " + matchedTerm + "[" + termCount + "]");
+            termList.add(matchedTerm);
+        });
+
+        return termList;
     }
 
     @Override

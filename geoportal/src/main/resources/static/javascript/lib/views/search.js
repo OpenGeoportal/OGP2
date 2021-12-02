@@ -44,7 +44,7 @@ OpenGeoportal.Views.Query = Backbone.View
 							that.fireSearchWithZoom();
 						}).addClass("searchButton");
 				
-				this.solrAutocomplete(
+				this.fieldAutocomplete(
 						jQuery("#advancedOriginatorText"), "OriginatorSort");
 				
 				this.createInstitutionsMenu();
@@ -80,7 +80,7 @@ OpenGeoportal.Views.Query = Backbone.View
 			},
 
 			/*******************************************************************
-			 * Interface between ui and solr query
+			 * Interface between ui and search query
 			 ******************************************************************/
 
 			/**
@@ -444,31 +444,25 @@ OpenGeoportal.Views.Query = Backbone.View
 						});
 			},
 
-			solrAutocomplete: function(textField$, solrField) {
+			fieldAutocomplete: function(textField$, solrField) {
 				textField$.autocomplete({
 					source : function(request, response) {
-						var solr = new OpenGeoportal.Solr();
-						var facetSuccess = function(data) {
-							var labelArr = [];
-							var dataArr = data.terms[solrField];
-							for ( var i in dataArr) {
-								if (i % 2 != 0) {
-									continue;
-								}
-								var temp = {
-									"label" : dataArr[i],
-									"value" : '"' + dataArr[i] + '"'
-								};
-								labelArr.push(temp);
-								i++;
-								i++;
-							}
-							response(labelArr);
+						var facetSuccess = function(termList) {
+							response(termList.map(term => {
+								return {"label": term, "value": term};
+							}));
 						};
 						var facetError = function() {
 						};
-						solr.termQuery(solrField, request.term, facetSuccess,
-								facetError, this);
+						var ajaxParams = {
+							type : "GET",
+							url : 'terms?' + jQuery.param({term: request.term, field: solrField}),
+							dataType : 'json',
+							timeout : 1000,
+							success : facetSuccess,
+							error : facetError
+						};
+						jQuery.ajax(ajaxParams);
 
 					},
 					minLength : 2,

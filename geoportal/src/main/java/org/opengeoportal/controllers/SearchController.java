@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -35,7 +36,7 @@ public class SearchController {
         return searchService.searchPortal(solrQuery);
     }
 
-    @GetMapping(value="advanced-search", produces = "application/json")
+    @GetMapping(value="advancedSearch", produces = "application/json")
     public @ResponseBody PortalSearchResponse advancedSearch(AdvancedSearchParams searchParams) throws SearchServerException {
 
         SolrQuery solrQuery = searchParamCreator.solrFromAdvancedSearchParams(searchParams);
@@ -45,5 +46,20 @@ public class SearchController {
     @GetMapping(value="searchByIds", produces = "application/json")
     public @ResponseBody List<OGPRecord> queryById(@RequestParam("layerIds") List<String> layerIdList) throws SearchServerException {
         return searchService.findRecordsById(layerIdList);
+    }
+
+    @GetMapping(value="terms", produces = "application/json")
+    public @ResponseBody List<String> getTerms(@RequestParam("term") String term, @RequestParam("field") String field) {
+        if (term != null && !term.isBlank() && term.trim().length() >= 2) {
+            try {
+                return searchService.findTerms(field, term);
+            } catch (SearchServerException e) {
+                e.printStackTrace();
+                logger.error(e.getMessage());
+
+            }
+        }
+        // return an empty list if there is a problem.
+        return new ArrayList<>();
     }
 }

@@ -78,6 +78,9 @@ public class SearchServiceImpl implements SearchService {
         return this.searchClient.metadataRecordSearch(queryString);
     }
 
-
+    @Override
+    public List<String> findTerms(String field, String query) throws SearchServerException {
+        return searchClient.termSearch(field, query.trim());
+    }
 
 }

@@ -28,6 +28,16 @@ interface SearchClient {
     MetadataRecord metadataRecordSearch(String queryString) throws LayerNotFoundException, SearchServerException;
 
     /***
+     * Performs a Solr term search.
+     *
+     * @param field
+     * @param queryString
+     * @return
+     * @throws SearchServerException
+     */
+    List<String> termSearch(String field, String queryString) throws SearchServerException;
+
+    /***
      * Generates a query string to search for layers by LayerId
      * @param layerIds  List of LayerIds to retrieve
      * @return
