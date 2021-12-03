@@ -61,7 +61,12 @@ OpenGeoportal.MapController = function() {
 			console.log(e);
 		}
 
-		this.initBasemaps();
+		if (userOptions.hasOwnProperty("basemap")){
+			var defaultBasemap = userOptions["basemap"];
+		} else {
+			defaultBasemap = "osm";
+		}
+		this.initBasemaps(defaultBasemap);
 		this.addMapToolbarElements();
 
 		var center = this.WGS84ToMercator(0, 0);
@@ -227,26 +232,31 @@ OpenGeoportal.MapController = function() {
 
 	};
 
-	/**
-	 * Initialize the Basemaps collection, set the initial basemap
-	 * 
-	 * @default - the default basemap is "googlePhysical"
-	 */
-	this.initBasemaps = function() {
-		// populate the basemaps collection
-		this.basemaps = this.createBaseMaps();
-
+	this.setBasemap = function(basemap) {
 		// set default background map; should get this value from config instead
 		var defaultBasemapModel = this.basemaps.findWhere({
-			name : "googlePhysical"
+			name : basemap
 		});
 		defaultBasemapModel.set({
 			selected : true
 		});
 		defaultBasemapModel.get("initialRenderCallback").apply(this,
-				[ defaultBasemapModel.get("type") ]);
-
+			[ defaultBasemapModel.get("type") ]);
 	};
+
+	/**
+	 * Initialize the Basemaps collection, set the initial basemap
+	 * 
+	 * @default - the default basemap is "googlePhysical"
+	 */
+	this.initBasemaps = function(defaultBasemap) {
+		// populate the basemaps collection
+		this.basemaps = this.createBaseMaps();
+
+		this.setBasemap(defaultBasemap);
+	};
+
+
 
 	/**
 	 * Populates the map toolbar with controls.
@@ -320,19 +330,20 @@ OpenGeoportal.MapController = function() {
 			that.basemaps.checkZoom(zoomLevel);
 
 			var mapHeight = Math.pow((zoomLevel + 1), 2) / 2 * 256;
-			var containerHeight = jQuery("#" + that.mapDiv).parent().parent()
+			var $mapDiv = jQuery("#" + that.mapDiv);
+			var containerHeight = $mapDiv.parent().parent()
 					.height();
 			if (mapHeight > containerHeight) {
 				mapHeight = containerHeight;
 			}
 
-			if (jQuery("#" + that.mapDiv).height() != mapHeight) {
-				jQuery("#" + that.mapDiv).height(mapHeight);// calculate min and
+			if ($mapDiv.height() !== mapHeight) {
+				$mapDiv.height(mapHeight);// calculate min and
 				// max sizes
 				that.updateSize();
 				//console.log("update map size");
 			}
-			if (zoomLevel == 1) {
+			if (zoomLevel === 1) {
 				that.setCenter(that.WGS84ToMercator(that.getSearchCenter().lon,
 						0));
 			}
@@ -429,10 +440,17 @@ OpenGeoportal.MapController = function() {
 		var bgMap = this.getLayersBy("basemapType", type)[0];
 		var that = this;
 		this.render(this.mapDiv);
+
+		// use OSM if google seems to be unavailable
+		var timeout = setTimeout(function(){ that.setBasemap("osm");}, 3000);
+
 		google.maps.event.addListener(bgMap.mapObject, "tilesloaded",
 				function() {
+					// cancel the timeout if this happens firstd
+					clearTimeout(timeout);
 					// let the application know that the map is ready
 					jQuery(document).trigger("mapReady");
+
 					// should only fire the first time (or should
 					// only listen the first time)
 					google.maps.event.clearListeners(bgMap.mapObject,
@@ -453,19 +471,7 @@ OpenGeoportal.MapController = function() {
 	};
 
 	this.initialRenderCallback = function(type) {
-		// console.log("osm initial render callback");
-		var that = this;
 		this.render(this.mapDiv);
-
-		var bgMap = this.getLayersBy("basemapType", type)[0];
-		bgMap.events.register(bgMap.mapObject, "loadend", function() {
-			// console.log("Tiles loaded");
-			// let the application know that the map is ready
-			jQuery(document).trigger("mapReady");
-			// really should only fire the first time
-			bgMap.events.unregister(bgMap.mapObject, "loadend");
-			jQuery("#" + that.containerDiv).fadeTo("slow", 1);
-		});
 	};
 
 	/**
@@ -516,6 +522,30 @@ OpenGeoportal.MapController = function() {
 		
 		if (model.has("secondaryZoomMap")){
 			model.collection.checkZoom(this.getZoom());
+		}
+	};
+
+	this.osmMapShow = function(model) {
+		// see if there is a basemap layer of the specified type
+		if (this.getLayersBy("basemapType", model.get("type")).length === 0) {
+			// add the appropriate basemap layer
+			var newLayer = model.get("getLayerDefinition").call(model);
+			var displayLayers = this.layers; // getLayerIndex
+			var highestBasemap = 0;
+			for ( var i in displayLayers) {
+				if (displayLayers[i].layerRole !== "basemap") {
+					var indx = this.getLayerIndex(displayLayers[i]);
+					this.setLayerIndex(displayLayers[i], indx + 1);
+				} else {
+					highestBasemap = Math.max(highestBasemap,
+						this.getLayerIndex(displayLayers[i]));
+				}
+			}
+			this.addLayer(newLayer);
+			this.setLayerIndex(newLayer, highestBasemap + 1);
+		} else {
+			var layer = this.getLayersBy("basemapType", model.get("type"))[0];
+			layer.setVisibility(true);
 		}
 	};
 
@@ -636,7 +666,16 @@ OpenGeoportal.MapController = function() {
 						null, {
 							attribution: attribution,
 							basemapType : this.get("type"),
-							layerRole : "basemap"
+							layerRole : "basemap",
+							eventListeners: {
+								loadend: function(evt) {
+									// let the application know that the map is ready
+									jQuery(document).trigger("mapReady");
+									// really should only fire the first time
+									this.events.unregister("loadend");
+									jQuery("#" + that.containerDiv).fadeTo("slow", 1);
+								}
+							}
 						});
 
 				
@@ -644,29 +683,7 @@ OpenGeoportal.MapController = function() {
 			},
 
 			showOperations : function() {
-				// see if there is a basemap layer of the specified type
-				if (that.getLayersBy("basemapType", this.get("type")).length === 0) {
-					// add the appropriate basemap layer
-					var newLayer = this.get("getLayerDefinition").call(this);
-					var displayLayers = that.layers; // getLayerIndex
-					var highestBasemap = 0;
-					for ( var i in displayLayers) {
-						if (displayLayers[i].layerRole != "basemap") {
-							var indx = that.getLayerIndex(displayLayers[i]);
-							that.setLayerIndex(displayLayers[i], indx + 1);
-						} else {
-							highestBasemap = Math.max(highestBasemap, that
-									.getLayerIndex(displayLayers[i]));
-						}
-					}
-					that.addLayer(newLayer);
-					that.setLayerIndex(newLayer, highestBasemap + 1);
-				} else {
-					var layer = that.getLayersBy("basemapType", this
-							.get("type"))[0];
-					layer.setVisibility(true);
-				}
-
+				that.osmMapShow(this);
 			},
 			hideOperations : function() {
 				that.baseMapHide(this);

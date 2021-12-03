@@ -1,21 +1,25 @@
 package org.opengeoportal.controllers;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FileUtils;
 import org.opengeoportal.download.RequestStatusManager;
 import org.opengeoportal.proxy.ImageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM;
 
 @Controller
 @RequestMapping("/getImage")
@@ -31,10 +35,11 @@ public class ImageRetrievalController {
 	}
 
 	@RequestMapping(method=RequestMethod.GET)
-	public void getDownload(@RequestParam("requestId") String requestId, HttpServletResponse response) throws IOException, InterruptedException  {
+	public ResponseEntity<Resource> getDownload(@RequestParam("requestId") String requestId) throws IOException, InterruptedException  {
 		
 		ImageRequest imageRequest = requestStatusManager.getImageRequest(UUID.fromString(requestId));
 		File downloadPackage = imageRequest.getDownloadFile();
+
 		long counter = 0;
 		while (!downloadPackage.exists()){
 			Thread.sleep(INTERVAL);
@@ -49,9 +54,13 @@ public class ImageRetrievalController {
 		}
 		logger.info(downloadPackage.getName());
 		logger.info(downloadPackage.getAbsolutePath());
-		response.setContentLength((int) downloadPackage.length());
-		response.setContentType("application/octet-stream");
-		response.addHeader("Content-Disposition", "attachment;filename=" + downloadPackage.getName());
-		FileUtils.copyFile(downloadPackage, response.getOutputStream());
+		InputStreamResource resource = new InputStreamResource(new FileInputStream(downloadPackage));
+
+		return ResponseEntity
+				.ok()
+				.contentType(APPLICATION_OCTET_STREAM)
+				.header("Content-Disposition", "attachment; filename=\"" + downloadPackage.getName() + "\"")
+				.header("Content-Length", (int) downloadPackage.length() + "")
+				.body(resource);
 	}
 }

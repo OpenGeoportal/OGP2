@@ -14,6 +14,7 @@
         OpenGeoportal.Config.sd=[[${secureDomain}]];
         OpenGeoportal.Config.shareIds=[[${shareIds}]];
         OpenGeoportal.Config.shareBbox=[[${shareBbox}]];
+        OpenGeoportal.Config.basemap=[[${basemap}]];
 
     </script>
 
@@ -24,8 +25,8 @@
     <script src="javascript/jquery.scrollTo-min.js"></script>
     <script src="javascript/spinners/spinners/spinners.min.js"></script>
     <script src="javascript/jquery.ba-postmessage.min.js"></script>
-    <script src="https://maps.google.com/maps/api/js?v=3.30&key=${gmapsAPIKey}"></script>
-    <script src="javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
+    <script th:src="|https://maps.google.com/maps/api/js?v=3.30&key=${gmapsAPIKey}|"></script>
+    <script src="javascript/openlayers/ol2-release-2.13.1/OpenLayers-min.js"></script>
     <script src="javascript/panZoom.js"></script>
 
     <link rel="stylesheet" href="css/jquery-ui-ogpTheme.custom.css" type="text/css" />
@@ -48,7 +49,7 @@
 </head>
 <body>
 
-<header id="header">
+<div id="header">
 
     <div id="logo" onclick="location.href=location.href">
         <div id="logoGraphic"></div><div class="logoText" th:text="${titlePrimary}"></div> <div class="logoText offsetColor" th:text="${titleOffset}"></div>
@@ -62,7 +63,7 @@
         <span class="separator">|</span>
         <button id="headerLogin" class="infoLinks login button headerButton">Login</button>
     </div>
-</header>
+</div>
 
 
 <div id="searchBox" class="searchBox shadowDownOuter">

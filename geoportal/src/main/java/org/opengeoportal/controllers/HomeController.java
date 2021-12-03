@@ -8,6 +8,7 @@ import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,9 @@ public class HomeController {
 	private final OgpConfigRetriever ogpConfigRetriever;
 	
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	@Value("${ogp.defaultBasemap:osm}")
+	String basemap;
 
 	@Autowired
 	public HomeController(OgpConfigRetriever ogpConfigRetriever) {
@@ -95,6 +99,8 @@ public class HomeController {
 		mav.addObject("loginType", conf.getLoginConfig().getType());
 		mav.addObject("loginUrl", conf.getLoginConfig().getUrl());
 		mav.addObject("secureDomain", conf.getLoginConfig().getSecureDomain());
+
+		mav.addObject("basemap", basemap);
 		
 	}
 }

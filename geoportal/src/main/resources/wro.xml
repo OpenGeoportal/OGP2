@@ -43,7 +43,6 @@
 		<js>/javascript/lib/views/abstractCartAction.js</js>
 		<js>/javascript/lib/views/download.js</js>
 		<js>/javascript/lib/views/shareCart.js</js>
-		<js>/javascript/lib/views/mapIt.js</js>
 		<js>/javascript/lib/views/dynamicWebServices.js</js>
 		<js>/javascript/lib/views/search.js</js>
 		<js>/javascript/lib/views/previewControls.js</js>
@@ -51,7 +50,6 @@
 		<js>/javascript/lib/views/previewedLayersTable.js</js>
 		<js>/javascript/lib/views/searchResultsRow.js</js>
 		<js>/javascript/lib/views/searchResultsTable.js</js>
-		<js>/javascript/lib/geoCommonsExport.js</js>
 		<js>/javascript/lib/mapDiv.js</js>
 		<js>/javascript/lib/userInterface.js</js>
 	</group>

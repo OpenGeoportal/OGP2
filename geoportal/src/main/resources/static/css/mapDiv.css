@@ -220,44 +220,44 @@ div.olControlMousePosition {
 .olControlNavigationHistory {
 	background-image: none;
 	background-repeat: no-repeat;
-	height: 38px;
-	width: 30px;
+	height: 38px !important;
+	width: 30px !important;
 	cursor: pointer;
 }
 
 .olControlNavigationHistoryPreviousItemActive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryPreviousItemActive:hover {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -183px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryPreviousItemInactive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryNextItemActive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryNextItemActive:hover {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -183px
-		transparent;
+		transparent !important;
 }
 
 .olControlNavigationHistoryNextItemInactive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
-		transparent;
+		transparent !important;
 }
 
 .olControlPanel .olControlNavigationItemActive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
-		-183px transparent;
+		-183px transparent !important;
 	width: 38px;
 	height: 38px;
 	cursor: pointer;
@@ -265,7 +265,7 @@ div.olControlMousePosition {
 
 .olControlPanel .olControlNavigationItemInactive {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
-		-139px transparent;
+		-139px transparent !important;
 	width: 38px;
 	height: 38px;
 	cursor: pointer;
@@ -273,7 +273,7 @@ div.olControlMousePosition {
 
 .olControlPanel .olControlNavigationItemInactive:hover {
 	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
-		-183px transparent;
+		-183px transparent !important;
 }
 
 .olControlPanel .olControlZoomBoxItemActive {

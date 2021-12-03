@@ -25,7 +25,7 @@ public class ImageDownloaderImpl implements ImageDownloader {
 	private final HttpRequester httpRequester;
 
 	@Autowired
-	public ImageDownloaderImpl(@Qualifier("httpRequester.generic") HttpRequester httpRequester) {
+	public ImageDownloaderImpl(HttpRequester httpRequester) {
 		this.httpRequester = httpRequester;
 	}
 

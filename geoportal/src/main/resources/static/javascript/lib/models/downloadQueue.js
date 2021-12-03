@@ -111,8 +111,10 @@ OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 		var url = this.get("retrieveUrl");
 
 		url += "?requestId=" + this.get("requestId");
-		jQuery('body').append(
-				'<iframe class="download" src="' + url + '"></iframe>');
+		var uid = _.uniqueId("download_");
+		var dlLink = '<a id="' + uid + '" class="download" href="' + url + '" download></a>';
+		jQuery('body').append(dlLink);
+		document.querySelector('#' + uid).click();
 	},
 
 	createNotice : function() {
@@ -375,7 +377,7 @@ OpenGeoportal.Models.ImageRequest = OpenGeoportal.Models.AbstractQueueItem.exten
 	
 	createNotice : function() {
 		//nop
-		alert("failed to generate image!");
+		//alert("failed to generate image!");
 	}
 
 });

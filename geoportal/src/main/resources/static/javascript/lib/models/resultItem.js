@@ -46,7 +46,7 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			var start = response.start;
 			var rowList = response.docs;
 			var ids = [];
-			var previewed = OpenGeoportal.ogp.appState.get("previewed").each(function(model){
+			OpenGeoportal.ogp.appState.get("previewed").each(function(model){
 				if (model.get("preview") === "on"){
 					ids.push(model.get("LayerId"));
 				}
@@ -121,7 +121,6 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 
 	        var xhr = this.fetch({
 	          dataType: "json",
-			  //jsonp: "json.wrf",
 	          complete: function(){that.fetchComplete.apply(that, arguments); jQuery(document).trigger("newResults");},
 	          reset: true,
 	          data: $.extend(this.pageParams, this.extraParams)
@@ -145,10 +144,6 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	       var that = this;
 	       this.fetchStatus = this.fetch({
 	          dataType: "json",
-			  //jsonp: "json.wrf",
-
-	         // success: this.fetchSuccess,
-	         // error: this.fetchError,
 	          complete: function(){that.fetchComplete.apply(that, arguments);},
 	          remove: false,
 	          data: $.extend(this.pageParams, this.extraParams)

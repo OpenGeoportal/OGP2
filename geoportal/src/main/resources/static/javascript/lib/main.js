@@ -48,7 +48,7 @@ jQuery(document)
 
 					// create the map and handle map related functions
 					ogp.map = new OpenGeoportal.MapController();
-					ogp.map.initMap("map");
+					ogp.map.initMap("map", {"basemap": OpenGeoportal.Config.basemap});
 
 					// creating the cart
 					new OpenGeoportal.Views.CartHeader({
@@ -61,7 +61,7 @@ jQuery(document)
 					});
 
 					jQuery(document)
-							.on(
+							.one(
 									"mapReady",
 									function() {
 										// wait to do this until the base map is

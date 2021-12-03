@@ -166,7 +166,7 @@ OpenGeoportal.Views.CollectionSelect = OpenGeoportal.Views.AbstractSelectMenu.ex
 		var valueAttr = this.getValueAttribute();
 		var displayAttr = this.getDisplayAttribute();
 		var itemClass = this.getItemClass();
-		that = this;
+		var that = this;
 		this.collection.each(function(currModel){
 			var value = currModel.get(valueAttr);
 			var name = currModel.get(displayAttr);
@@ -519,7 +519,7 @@ OpenGeoportal.Views.Sort = OpenGeoportal.Views.AbstractSelectMenu.extend({
 		var buttonLabel = "Sort Results";
 		var displayAttr  = "displayName";
 		var valueAttr = "columnName";
-		that = this;
+		var that = this;
 
 		this.headings.each(function(currModel){
 

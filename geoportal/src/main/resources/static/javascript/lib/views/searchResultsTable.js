@@ -147,7 +147,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					return num < topResultNum && num >= Math.max(topResultNum - pageSize, 0);
 				});
 
-				var spacer$ = this.$(".topSpacer").first();;
+				var spacer$ = this.$(".topSpacer").first();
 				spacer$.css("min-height", 0);
 				var container$ = this.$el.children(".tableWrapper").children(".rowContainer");
 				//add them to the top in reverse order
