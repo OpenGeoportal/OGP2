@@ -1148,10 +1148,11 @@ OpenGeoportal.MapController = function() {
 		var sphericalMercator = new OpenLayers.Projection('EPSG:3857');
 		var geodetic = new OpenLayers.Projection('EPSG:4326');
 		var topLeft = this.getMapOffset();
-		var width = jQuery(".olMap").width();
-		var height = jQuery(".olMap").height();
-		topLeft.x = topLeft.x + width / 2;
-		topLeft.y = topLeft.y - height / 2;
+		var $olMap = jQuery(".olMap");
+		var width = $olMap.width();
+		var height = $olMap.height();
+		topLeft.x = topLeft.x + (width - topLeft.x) / 2;
+		topLeft.y = (height - topLeft.y) / 2;
 		var center = this.getLonLatFromViewPortPx(topLeft);
 		return center.transform(sphericalMercator, geodetic);
 	};
@@ -1538,8 +1539,11 @@ OpenGeoportal.MapController = function() {
 
 		jQuery("td.attributeName").each(function(){
 			var $attr = jQuery(this);
+			// initialize values:
+			$attr.attr('title', "No description found.");
+
 			var attributeName = $attr.text().trim();
-			attrMap.keys().forEach(function(attr){
+			Object.keys(attrMap).forEach(function(attr){
 				if (attr.toLowerCase().trim() === attributeName.toLowerCase()) {
 					var attributeDescription = attrMap[attr];
 					$attr.attr('title', attributeDescription);
