@@ -193,7 +193,7 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
      */
     void addSpatial(SolrQuery solrQuery, OGPSearchParams searchParams) {
         Double minx = searchParams.getMinX();
-        Double miny = searchParams.getMinX();
+        Double miny = searchParams.getMinY();
         Double maxx = searchParams.getMaxX();
         Double maxy = searchParams.getMaxY();
 
