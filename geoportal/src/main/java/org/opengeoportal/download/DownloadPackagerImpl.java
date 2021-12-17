@@ -14,6 +14,7 @@ import org.opengeoportal.download.exception.DownloadPackagingException;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.LayerRequest.Status;
 import org.opengeoportal.layer.GeometryType;
+import org.opengeoportal.metadata.MetadataRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.opengeoportal.utilities.ZipFilePackager;
 import org.slf4j.Logger;

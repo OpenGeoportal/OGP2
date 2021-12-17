@@ -2,8 +2,7 @@ package org.opengeoportal.controllers;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.opengeoportal.config.search.SearchConfig;
-import org.opengeoportal.download.MetadataRetriever;
+import org.opengeoportal.metadata.MetadataRetriever;
 import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.OgpFileUtils;
 import org.slf4j.Logger;
@@ -64,10 +63,10 @@ public class MetadataDownloadController {
 	private String getMetadataString(String layerId, String format) throws Exception{
 		String metadataString = "";
 		if (format.equalsIgnoreCase("xml")){
-			metadataString = this.metadataRetriever.getXMLStringFromId(layerId, "fgdc");
+			metadataString = this.metadataRetriever.getXMLStringFromId(layerId);
 
 		} else if (format.equalsIgnoreCase("html")){
-			metadataString = this.metadataRetriever.getMetadataAsHtml(layerId);
+			metadataString = this.metadataRetriever.getMetadataAsHtml(layerId, false);
 		} else {
 			throw new Exception("Unrecognized format: " + format);
 		}
