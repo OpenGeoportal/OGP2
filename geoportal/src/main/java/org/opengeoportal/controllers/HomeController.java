@@ -3,8 +3,15 @@ package org.opengeoportal.controllers;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.opengeoportal.config.DataTypeConfig;
+import org.opengeoportal.config.TopicConfig;
 import org.opengeoportal.config.ogp.OgpConfig;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
+import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
+import org.opengeoportal.security.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +24,29 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class HomeController {
 	private final OgpConfigRetriever ogpConfigRetriever;
-	
+	private final LoginService loginService;
+	private final ProxyConfigRetriever proxyConfigRetriever;
+	private final RepositoryConfigRetriever repositoryConfigRetriever;
+	private final TopicConfig topicConfig;
+	private final DataTypeConfig dataTypeConfig;
+
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Value("${ogp.defaultBasemap:osm}")
 	String basemap;
 
 	@Autowired
-	public HomeController(OgpConfigRetriever ogpConfigRetriever) {
+	public HomeController(OgpConfigRetriever ogpConfigRetriever,
+						  LoginService loginService,
+						  ProxyConfigRetriever proxyConfigRetriever,
+						  RepositoryConfigRetriever repositoryConfigRetriever,
+						  TopicConfig topicConfig, DataTypeConfig dataTypeConfig) {
 		this.ogpConfigRetriever = ogpConfigRetriever;
+		this.loginService = loginService;
+		this.proxyConfigRetriever = proxyConfigRetriever;
+		this.repositoryConfigRetriever = repositoryConfigRetriever;
+		this.topicConfig = topicConfig;
+		this.dataTypeConfig = dataTypeConfig;
 	}
 
 	@GetMapping({"/", "/index"})
@@ -41,7 +62,7 @@ public class HomeController {
 		//create the model to return
 		ModelAndView mav = new ModelAndView("ogp_home");
 
-		mav.addObject("dev", isDev);
+		//mav.addObject("dev", isDev);
 		
 		//if ogpids exists, add them to the Model
 		
@@ -101,6 +122,27 @@ public class HomeController {
 		mav.addObject("secureDomain", conf.getLoginConfig().getSecureDomain());
 
 		mav.addObject("basemap", basemap);
+
+		//mav.addObject("loginStatus", toJsonString(loginService.getStatus()));
+		mav.addObject("topics", toJsonString(topicConfig.getItems()));
+
+		mav.addObject("dataTypes", toJsonString(dataTypeConfig.getItems()));
+		mav.addObject("proxies", toJsonString(proxyConfigRetriever.getPublicConfig()));
+
+		mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
+
+
+		//mav.addObject("userState", toJsonString(userState.getStateMap()));
 		
+	}
+
+	private String toJsonString(Object obj) {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			return mapper.writeValueAsString(obj);
+		} catch (JsonProcessingException e) {
+			logger.error("error converting object to JSON string");
+			return "{}";
+		}
 	}
 }

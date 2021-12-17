@@ -11,14 +11,15 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 }
 
 /**
- * A Backbone View of the Cart Collection
+ * The CartActionView is an abstract class for actions to perform on the
+ * CartCollection. Extend this class to add new cart actions.
  * 
  * @constructor
  */
 
 OpenGeoportal.Views.CartActionView = Backbone.View.extend({
 	initialize : function() {
-		this.template = OpenGeoportal.ogp.template;
+        this.template = OpenGeoportal.Template;
 		this.initView();
 	},
 	//defaut initView is a nop.  override if subclasses require additional initialization
