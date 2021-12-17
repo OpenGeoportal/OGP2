@@ -10,24 +10,28 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * The SearchResultsTable displays the search results. It extends LayerTable. Adds logic for infinite scroll. It's
+ * backed by the ResultsCollection
+ *
+ * @extends OpenGeoportal.Views.LayerTable
+ */
 OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 		.extend({
 			events: {
 				"render" : "attachEvents",
 				"topmodel" : "renderPrevPage"
 			},
-			
-			initSubClass: function(){
-				
-				this.cart = OpenGeoportal.ogp.appState.get("cart");
-				
-				this.tableOrganize = new OpenGeoportal.TableSortSettings();
+
+            initSubClass: function (options) {
+                _.extend(this, _.pick(options, "cart", "previewed", "layerState"));
 
 				this.sortView = new OpenGeoportal.Views.Sort({
-					model : this.tableOrganize,
+                    model: this.collection.sort,
 					el : $("#sortDropdown"),
 					headings: this.tableConfig
 				});
+
 				var that = this;
 				this.sortView.listenTo(this.sortView.model, "change", function(){ that.collection.newSearch();});
 				
@@ -54,11 +58,13 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				
 				this.listenTo(this.collection, "add", this.appendRender);
 
-				this.listenTo(this.collection, "reset", this.closeAllSubview);
+                //this.listenTo(this.collection, "reset", this.closeAllSubview);
 				this.listenTo(this.collection, "reset", this.render);
 				this.listenTo(this.collection, "reset", this.updateResultsNumber);
 				//should call setFrameHeight whenever the search panel height changes or on render or render of previewPanel, or row render
-				jQuery(document).on("search.resize previewRow.expand",  function(){that.setFrameHeight.apply(that, arguments);});
+				jQuery(document).on("searchform.resize previewRow.expand", function () {
+					that.setFrameHeight.apply(that, arguments);
+				});
 
 			
 				this.fireSearchHandler();
@@ -66,22 +72,48 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 
 			afterRender: function(){
+
+                if (typeof this.previewedLayersTable === "undefined") {
+                    var previewed$ = this.$(".previewedLayers");
+                    this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({
+                        el: previewed$[0],
+                        collection: this.previewed,
+                        tableConfig: this.tableConfig,
+                        userAuth: this.userAuth,
+                        config: this.config,
+                        layerState: this.layerState,
+                        template: this.template,
+                        tableConfig: this.tableConfig,
+                        cart: this.cart
+                    });
+                }
 				var that = this;
-				var previewed$ = this.$(".previewedLayers");
-				this.previewedLayersTable = new OpenGeoportal.Views.PreviewedLayersTable({el: previewed$[0], collection: this.previewed, tableConfig: this.tableConfig});
 				this.tableConfig.listenTo(this.tableConfig, "change:visible", function(model){that.renderHeaders.apply(that, arguments); that.updateSubviews.call(that); 
 					that.previewedLayersTable.render();that.adjustColumnSizes(); that.resizeColumns();});
 
 			},
-			
-			scrollOffset: 200,
+
+			scrollOffset: 300,
 			
 			attachEvents: function(){
 				this.collection.enableFetch();
 				var that = this;
 				this.setFrameHeight();
 				var scrollTarget$ = this.$el.children(".tableWrapper").children(".rowContainer");
-				scrollTarget$.off("scroll").on("scroll", function(){that.watchScroll.apply(that, arguments);});
+                scrollTarget$.off("scroll").on("scroll", function () {
+                    that.watchScroll.apply(that, arguments);
+
+                    _.each(that.subviews.rows, function (view) {
+                        view.pauseMouseEvents();
+                    });
+
+                    clearTimeout($.data(this, 'scrollTimer'));
+                    $.data(this, 'scrollTimer', setTimeout(function () {
+                        _.each(that.subviews.rows, function (view) {
+                            view.resumeMouseEvents();
+                        });
+                    }, 500));
+                });
 				   
 			},
 			prevScrollY: 0,
@@ -108,7 +140,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 						}
 					}
 				}
-				this.prevScrollY = scrollY;
+                this.prevScrollY = scrollY;
 			},
 			
 			setFrameHeight: function(){
@@ -165,32 +197,6 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					that.collection.remove(last);
 				});
 			},
-			
-			/*renderNextPage: function(event, model){
-				var that = this;
-				var pageSize = this.collection.pageParams.rows;
-
-				var bottomResultNum = model.get("resultNum");
-				var nextPage = model.collection.filter(function(currModel){
-					var num = currModel.get("resultNum");
-					return num > bottomResultNum && num <= bottomResultNum + pageSize;
-				});
-				
-
-				var spacer$ = this.$(".bottomSpacer");
-				spacer$.css("min-height", 0);
-				_.each(nextPage, function(currModel){
-					var newRow = that.createNewRow(currModel);
-					var currentBottom$ = that.$(".tableRow").last();
-					var ht = jQuery(newRow.el).insertAfter(currentBottom$).height();
-					spacer$.css("height", "-=" + ht);
-				});
-				
-				var lastNum = _.last(nextPage).get("resultNum");
-				if (lastNum < this.collection.totalResults && lastNum < bottomResultNum + pageSize){
-					this.collection.nextPage();
-				}
-			},*/
 
 			
 			appendRender: function(model){
@@ -218,7 +224,13 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				var row = new OpenGeoportal.Views.SearchResultsRow(
 						{
 							model : model,
-							tableConfig: this.tableConfig
+                            tableConfig: this.tableConfig,
+                            previewed: this.previewed,
+                            userAuth: this.userAuth,
+                            config: this.config,
+                            layerState: this.layerState,
+                            template: this.template,
+                            cart: this.cart
 						});
 				if (typeof toTop !== "undefined" && toTop){
 					this.prependSubview(row);
@@ -229,7 +241,10 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: this.template.tableHeader(this.getHeaderInfo()), tableFooter: ""}));
+                return jQuery(this.template.get('tableView')({
+                    tableHeader: this.template.get('tableHeader')(this.getHeaderInfo()),
+                    tableFooter: ""
+                }));
 			},
 			
 			render : function() {
@@ -239,9 +254,9 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 				if (this.$(".previewedLayers").length > 0){
 					previewedTable = this.$(".previewedLayers").detach();
 				}
-				
-				var template$ = this.getTable();
-								
+
+                this.closeAllSubview();
+
 				var rowcount = 0;
 				var rows = [];
 				this.collection.each(function(model) {
@@ -249,9 +264,12 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 					rows.push(row.el);
 					rowcount++;
 				});
-				
-				if (rowcount === 0){
-					template$.append(this.template.emptyTable({message: this.emptyTableMessage}));
+
+
+                var template$ = this.getTable();
+
+                if (rows.length === 0) {
+                    template$.append(this.template.get('emptyTable')({message: this.emptyTableMessage}));
 					
 				} else {
 					template$.children(".rowContainer").append(rows);
@@ -279,218 +297,33 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			},
 			
 			addColumns: function(tableConfigCollection) {
-				var that = this;
-				tableConfigCollection
-						.add([
-								{
-									order : 0,
-									columnName : "expandControls",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "",
-									columnClass : "colExpand",
-									width : 10,
-									modelRender : function(model) {
-										var showControls = model.get("showControls");
-										return that.tableControls
-												.renderExpandControl(showControls);
-									}
+                var columns = this.columnsTemplate();
+                var that = this;
+                columns.splice(1, 1, {
+                    order: 1,
+                    columnName: "Save",
+                    resizable: false,
+                    organize: false,
+                    visible: true,
+                    hidable: false,
+                    header: "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>",
+                    columnClass: "colSave",
+                    width: 19,
+                    modelRender: function (model) {
+                        var layerId = model.get("LayerId");
 
-								},
-								{
-									order : 1,
-									columnName : "Save",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "<div class=\"cartIconTable\" title=\"Add layers to your cart for download.\" ></div>",
-									columnClass : "colSave",
-									width : 19,
-									modelRender : function(model) {
-										var layerId = model.get("LayerId");
-								
-										var stateVal = false;
-										var selModel =	that.cart.findWhere({
-											LayerId : layerId
-										});
-										if (typeof selModel !== 'undefined') {
-											stateVal = true;
-										}
-													
-										
-										return that.tableControls.renderSaveControl(stateVal);
-									}
-									},
-									{
-										order : 2,
-										columnName : "DataType",
-										resizable : false,
-										organize : "group",
-										visible : true,
-										hidable : true,
-										displayName : "Data Type",
-										header : "Type",
-										columnClass : "colType",
-										width : 30,
-										modelRender : function(model) {
-											var dataType = model.get("DataType");
-											return that.tableControls.renderTypeIcon(dataType);
-										}
+                        var stateVal = false;
+                        var selModel = that.cart.findWhere({
+                            LayerId: layerId
+                        });
+                        if (typeof selModel !== 'undefined') {
+                            stateVal = true;
+                        }
 
-									}, {
-										order : 3,
-										columnName : "score",
-										resizable : true,
-										minWidth : 27,
-										width : 27,
-										organize : "numeric",
-										visible : false,
-										hidable : false,
-										displayName : "Relevancy",
-										header : "Relev",
-										columnClass : "colScore"
-									}, {
-										order : 4,
-										columnName : "LayerDisplayName",
-										resizable : true,
-										minWidth : 35,
-										width : 200,
-										organize : "alpha",
-										visible : true,
-										hidable : false,
-										displayName : "Name",
-										header : "Name",
-										columnClass : "colTitle"
-									}, {
-										order : 5,
-										columnName : "Originator",
-										resizable : true,
-										minWidth : 62,
-										width : 86,
-										organize : "group",
-										visible : true,
-										hidable : true,
-										displayName : "Originator",
-										header : "Originator",
-										columnClass : "colOriginator"
-
-									}, {
-										order : 6,
-										columnName : "Publisher",
-										resizable : true,
-										minWidth : 58,
-										width : 80,
-										organize : "group",
-										visible : false,
-										hidable : true,
-										displayName : "Publisher",
-										header : "Publisher",
-										columnClass : "colPublisher"
-
-									}, {
-										order : 7,
-										columnName : "ContentDate",
-										organize : "numeric",
-										visible : false,
-										displayName : "Date",
-										resizable : true,
-										minWidth : 30,
-										width : 30,
-										hidable : true,
-										header : "Date",
-										columnClass : "colDate",
-										modelRender : function(model) {
-											var date = model.get("ContentDate");
-											return that.tableControls.renderDate(date);
-										}
-
-									}, {
-										order : 8,
-										columnName : "Institution",
-										organize : "alpha",
-										visible : true,
-										hidable : true,
-										resizable : false,
-										displayName : "Repository",
-										header : "Rep",
-										columnClass : "colSource",
-										width : 24,
-										modelRender : function(model) {
-											var repository = model.get("Institution");
-											return that.tableControls.renderRepositoryIcon(repository);
-
-										}
-
-									}, {
-										order : 9,
-										columnName : "Access",
-										resizable : false,
-										organize : false,
-										visible : false,
-										hidable : false,
-										header : "Access"
-									}, 
-								{
-									order : 10,
-									columnName : "Metadata",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "Meta",
-									columnClass : "colMetadata",
-									width : 30,
-									modelRender : function(model) {
-										return that.tableControls.renderMetadataControl();
-									}
-								},
-								{
-									order : 11,
-									columnName : "View",
-									resizable : false,
-									organize : false,
-									visible : true,
-									hidable : false,
-									header : "View",
-									columnClass : "colPreview",
-									width : 39,
-									modelRender : function(model) {
-										var layerId = model.get("LayerId");
-										var location = model.get("Location");
-										var access = model.get("Access").toLowerCase();
-										var institution = model.get("Institution").toLowerCase();
-
-										var stateVal = false;
-										var selModel =	that.previewed.findWhere({
-											LayerId : layerId
-										});
-										if (typeof selModel !== 'undefined') {
-											if (selModel.get("preview") === "on"){
-												stateVal = true;
-											}
-										}
-										
-										var canPreview = function(location){
-											//where is a good place to centralize this?
-											return OpenGeoportal.Utility.hasLocationValueIgnoreCase(location, ["wms", "arcgisrest", "imagecollection"]);
-										};
-										
-										var hasAccess = true;
-										var canLogin = true;
-										
-										var previewable = canPreview(location);
-										if (previewable){
-											var loginModel = OpenGeoportal.ogp.appState.get("login").model;
-											hasAccess = loginModel.hasAccessLogic(access, institution);
-											canLogin = loginModel.canLoginLogic(institution);
-										} 
-
-										return that.tableControls.renderPreviewControl(previewable, hasAccess, canLogin, stateVal);
-									}
-								} ]);
+                        return that.tableControls.renderSaveControl(stateVal);
+                    }
+                });
+                tableConfigCollection.add(columns);
 			}
 
 

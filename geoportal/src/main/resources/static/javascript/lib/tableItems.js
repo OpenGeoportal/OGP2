@@ -16,11 +16,26 @@ if (typeof OpenGeoportal === 'undefined') {
  * 
  * @requires OpenGeoportal.Config, OpenGeoportal.Template
  */
-OpenGeoportal.TableItems = function TableItems() {
-	
-	var template = OpenGeoportal.ogp.template;
+OpenGeoportal.TableItems = function TableItems(params) {
 
-	/***************************************************************************
+    var template = params.template;
+    var config = params.config;
+
+    var validateParams = function (params) {
+        var valid = true;
+        var required = ["template", "config"];
+        _.each(required, function (prop) {
+            valid = valid && _.has(params, prop);
+        });
+
+        if (!valid) {
+            throw new Error("TableItems is missing parameters!");
+        }
+    };
+
+    validateParams(params);
+
+    /***************************************************************************
 	 * 
 	 * Render table columns
 	 **************************************************************************/
@@ -28,7 +43,7 @@ OpenGeoportal.TableItems = function TableItems() {
 	// maps returned data type to appropriate image
 	this.renderTypeIcon = function(dataType) {
 
-		var typeIcon = OpenGeoportal.Config.DataTypes;
+        var typeIcon = config.DataTypes;
 		var params = {};
 		params.controlClass = "typeIcon";
 
@@ -37,8 +52,9 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.tooltip = "Unspecified";
 			params.text = "?";
 		} else {
+			// dataType = dataType.toLowerCase();
 
-            var iconModel = typeIcon.findWhere({
+			var iconModel = typeIcon.findWhere({
 				value : dataType
 			});
 			if (typeof iconModel == 'undefined') {
@@ -46,14 +62,13 @@ OpenGeoportal.TableItems = function TableItems() {
 				params.tooltip = "Unspecified";
 				params.text = "?";
 			} else {
-				params.displayClass = iconModel.get("uiClass");
+                params.displayClass = iconModel.get("iconClass");
 				params.tooltip = iconModel.get("displayName");
 				params.text = "";
 			}
 		}
-		var icon = template.genericIcon(params);
+        return template.get('genericIcon')(params);
 
-		return icon;
 	};
 
 	this.renderExpandControl = function(layerExpanded) {
@@ -67,7 +82,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.displayClass = "notExpanded";
 			params.tooltip = "Show preview controls";
 		}
-		return template.genericControl(params);
+        return template.get('genericControl')(params);
 	};
 
 	this.renderPreviewControl = function(canPreview, hasAccess, canLogin, stateVal){
@@ -78,24 +93,38 @@ OpenGeoportal.TableItems = function TableItems() {
 				if (canLogin) {
 					return this.renderLoginPreviewControl();
 				} else {
-					return this.renderLinkControl();
+                    return this.renderLinkControl(hasAccess);
 				}
 			}
 		} else {
 			//render an empty control if no location elements to support preview
-			return "";
+            return this.renderPreviewNotAvailableControl();
 		}
 	};
-	
 
-	this.renderLinkControl = function() {
+
+    this.renderPreviewNotAvailableControl = function () {
 		var params = {};
+        params.controlClass = "previewNA";
+        params.text = "";
+        params.tooltip = "No preview is available for this layer.";
+        params.displayClass = "";
+
+        return template.get('genericControl')(params);
+    };
+
+    this.renderLinkControl = function (hasAccess) {
+        var params = {};
 		params.controlClass = "previewLink";
 		params.text = "";
-		params.tooltip = "Preview layer at external site.";
+        if (hasAccess) {
+            params.tooltip = "Preview layer at external site.";
+        } else {
+            params.tooltip = "Preview layer at external site. Login required.";
+        }
 		params.displayClass = "";
 
-		return template.genericControl(params);
+        return template.get('genericControl')(params);
 	};
 
 	this.renderLoginPreviewControl = function() {
@@ -105,7 +134,7 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.tooltip = "Login to access this layer";
 		params.displayClass = "login";
 
-		return template.genericControl(params);
+        return template.get('genericControl')(params);
 
 	};
 
@@ -118,20 +147,20 @@ OpenGeoportal.TableItems = function TableItems() {
 		var params = {};
 		params.controlClass = "previewControl";
 		params.text = "";
+        params.elId = _.uniqueId('preview_check_');
+        params.isChecked = stateVal;
 		switch (stateVal) {
 		case false:
 			params.tooltip = "Preview layer on the map";
-			params.displayClass = "checkOff";
 			break;
 		case true:
 			params.tooltip = "Turn off layer preview on the map";
-			params.displayClass = "checkOn";
 			break;
 		default:
 			break;
 		}
 
-		return template.genericControl(params);
+        return template.get('checkboxControl')(params);
 	};
 
 	this.renderDate = function(date) {
@@ -162,7 +191,7 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.displayClass = "undefinedInstitution";
 		params.controlClass = "repositoryIcon";
 		params.text = "?";
-		var repositoryModel = OpenGeoportal.Config.Repositories.get(repository);
+        var repositoryModel = config.Repositories.get(repository);
 		if (typeof repositoryModel === 'undefined') {
 			//
 		} else {
@@ -170,7 +199,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.displayClass = repositoryModel.get("iconClass");
 			params.text = "";
 		}
-		return template.genericIcon(params);
+        return template.get('genericIcon')(params);
 	};
 
 
@@ -187,7 +216,7 @@ OpenGeoportal.TableItems = function TableItems() {
 			params.tooltip = "Add this layer to your cart for download.";
 			params.displayClass = "notInCart";
 		}
-		return template.genericControl(params);
+        return template.get('genericControl')(params);
 	};
 
 	this.renderMetadataControl = function() {
@@ -199,11 +228,15 @@ OpenGeoportal.TableItems = function TableItems() {
 		params.displayClass = "viewMetadataControl";
 		params.tooltip = "Show metadata";
 
-		return template.genericControl(params);
+        return template.get('genericControl')(params);
 	};
 
 	this.renderDownloadControl = function(isChecked) {
-		return template.defaultDownloadCheckbox({isChecked: isChecked});
+        return template.get('defaultDownloadCheckbox')({elId: _.uniqueId("download_"), isChecked: isChecked});
+    };
+
+    this.renderDownloadHeader = function (isChecked) {
+        return template.get('defaultDownloadCheckbox')({elId: "downloadHeaderCheck", isChecked: isChecked});
 	};
 
 };

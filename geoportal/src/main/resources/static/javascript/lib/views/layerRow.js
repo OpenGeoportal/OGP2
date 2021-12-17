@@ -10,12 +10,17 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * Base View for rendering individual rows in a table. Controls are shown depending on attributes in the underlying
+ * models, as well as auth state.
+ * @type {any}
+ */
 OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	tagName : "div",
 	className : "tableRow",
 	events : {
 		"click .viewMetadataControl" : "viewMetadata",
-		"click .previewControl" : "togglePreview",
+        "change .previewControl > input[type=checkbox]": "togglePreview",
 		"click .previewLink"	: "handlePreviewLink",
 		"click .colExpand" : "toggleExpand",
 		"click .colTitle" : "toggleExpand",
@@ -25,24 +30,19 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	
 	constructor: function (options) {
 		//allow options to be passed in the constructor argument as in previous Backbone versions.
-		    this.options = options;
+        _.extend(this, _.pick(options, "userAuth", "template", "previewed", "cart", "config", "layerState", "tableConfig"));
 		    Backbone.View.apply(this, arguments);
 		  },
 		  
 	initialize : function() {
-		this.template = OpenGeoportal.ogp.template;
-		this.metadataViewer = new OpenGeoportal.MetadataViewer();
-		this.previewed = OpenGeoportal.ogp.appState.get("previewed");
-
-		this.login = OpenGeoportal.ogp.appState.get("login").model;
 
 		var that = this;
-		this.login.listenTo(this.login, "change:authenticated", function() {
+        this.userAuth.listenTo(this.userAuth, "change:authenticated", function () {
 			that.removeOnLogout.apply(that, arguments);
 			that.render.apply(that, arguments);
 		});
 		this.listenTo(this.model, "change:showControls change:hidden", this.render);
-		
+        this.listenTo(this.model, "change:selected", this.handleSelection);
 		this.subClassInit();
 		this.addSubClassEvents();
 		//console.log("init render");
@@ -64,16 +64,46 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	removeOnLogout : function(loginView) {
-		if (!this.login.hasAccess(this.model)) {
+        if (!this.userAuth.hasAccess(this.model)) {
 			this.model.set({
 				preview : "off"
 			});
 		}
 	},
 
+    mouseon: true,
+
+    pauseMouseEvents: function () {
+        if (this.mouseon) {
+            this.off("mouseover");
+            this.off("mouseout");
+            this.mouseon = false;
+        }
+    },
+
+    resumeMouseEvents: function () {
+        if (!this.mouseon) {
+            this.on("mouseover", this.doMouseoverOn);
+            this.on("mouseout", this.doMouseoverOff);
+            this.mouseon = true;
+        }
+    },
+
+    getMetadataViewer: function () {
+        if (typeof this.metadataViewer === "undefined") {
+            this.metadataViewer = new OpenGeoportal.MetadataViewer();
+        }
+        return this.metadataViewer;
+    },
+
 	viewMetadata : function() {
-		// console.log(arguments);
-		this.metadataViewer.viewMetadata(this.model);
+        //temporarily disable mouseout event listener. reenable once the dialog is open.
+        this.stopListening(this, "mouseout");
+        var promise = this.getMetadataViewer().viewMetadata(this.model);
+        var that = this;
+        $.when(promise).then(function () {
+            that.listenTo(that, "mouseout", that.doMouseoverOff);
+        });
 	},
 	
 	handlePreviewLink: function(){
@@ -99,6 +129,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			if (typeof this.model.get("Location").previewLink !== "undefined"){
 				//go to the previewLink url
 				url = this.model.get("Location").previewLink;
+            } else if (typeof this.model.get("Location").externalLink !== "undefined") {
+                url = this.model.get("Location").externalLink;
 			}
 		}
 		return url;
@@ -108,7 +140,7 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		var url = null;
 		var model = this.model;
 		//try to assemble a link from the config
-		var rep = OpenGeoportal.Config.Repositories.findWhere({id: model.get("Institution").toLowerCase()});
+        var rep = this.config.Repositories.findWhere({id: model.get("Institution").toLowerCase()});
 				
 		if (typeof rep == "undefined"){
 				throw new Error("Repository could not be found");
@@ -147,8 +179,14 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			} else if (nodeType == "geoweb"){
 
 					url += "/layer/" + model.get("LayerId");
-	
-			}
+
+            } else if (nodeType == "geoblacklight") {
+                var inst = model.get("Institution") + ".";
+                var id = model.get("LayerId");
+                url = "http://" + id.substring(inst.length);
+            } else {
+                throw new Error("Repository type is not defined.");
+            }
 			
 	
 		} else {
@@ -174,27 +212,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	},
 	
 	togglePreview : function(e) {
-		var layerId = this.model.get("LayerId");
-		var model = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (typeof model === "undefined") {
-			var layerAttr = null;
-			try {
+        var model = this.previewed.getLayerModel(this.model);
 
-				layerAttr = this.model.attributes;
-				layerAttr.preview = "on";
-			} catch (err) {
-				console.log(err);
-			}
-			// add them to the previewed collection. Add them as attributes
-			// since we
-			// are using different models in the previewed collection, and we
-			// want
-			// "model" to be called
-			this.previewed.add(_.clone(layerAttr));
-
-		} else {
 			var update = "";
 			if (model.get("preview") === "on") {
 				update = "off";		
@@ -202,41 +221,11 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 			} else {
 				update = "on";
 			}
-			
-			model.set({preview: update});	
 
-		}
+        model.set({preview: update});
 	
 	},
 
-	getModelFromPreviewed: function(){
-		var layerId = this.model.get("LayerId");
-		var model = this.previewed.findWhere({
-			LayerId : layerId
-		});
-		if (typeof model === "undefined") {
-			// get the attributes for the layer retrieved from solr
-			var layerAttr = null;
-			try {
-
-				layerAttr = this.model.attributes;
-			} catch (e) {
-				console.log(e);
-			}
-			// add them to the previewed collection. Add them as attributes
-			// since we
-			// are using different models in the previewed collection, and we
-			// want
-			// "model" to be called
-			this.previewed.add(_.clone(layerAttr));
-			var newmodel = this.previewed.findWhere({
-				LayerId : layerId
-			});
-			return newmodel;
-		} else {
-			return model;
-		}
-	},
 	
 	toggleExpand : function() {
 		// console.log("toggleExpand");
@@ -271,6 +260,9 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 				view.stopListening();
 			}
 		});
+        if (this.expandView !== null) {
+            this.expandView.close();
+        }
 		this.subviews = [];
 	},
 
@@ -288,22 +280,25 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		var model = this.model;
 		// determine which td elements are visible from the the
 		// tableConfig model
-		var visibleColumns = this.options.tableConfig.where({
+        if (_.isUndefined(this.tableConfig)) {
+            throw new Error("Table Config is not defined");
+        }
+        var visibleColumns = this.tableConfig.where({
 			visible : true
-		});
+            }) || [];
 
 		_.each(visibleColumns, function(currCol){
 			
 			var contents = "";
 			if (currCol.has("modelRender")) {
 				contents = currCol.get("modelRender")(model);
-				html += that.template.cartCell({
+                html += that.template.get('cartCell')({
 					colClass : currCol.get("columnClass"),
 					contents : contents
 				});
 			} else {
 				contents = model.get(currCol.get("columnName"));
-				html += that.template.textCartCell({
+                html += that.template.get('textCartCell')({
 					colClass : currCol.get("columnClass"),
 					contents : contents
 				});
@@ -318,8 +313,8 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		} else {
 			this.$el.html(html);
 		}
-		
-		this.options.tableConfig.each(
+
+        this.tableConfig.each(
 				function(model){
 					var width = model.get("width");
 					var cclass = model.get("columnClass"); 
@@ -329,33 +324,61 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 		return this;
 
 	},
-	
+
+    expandView: null,
+
 	renderExpand: function(){
 		var expand$ = "";
-		this.closeSubviews();
 		if (this.model.get("showControls")) {
 
-				expand$ = jQuery(this.template.cartPreviewToolsContainer());
+            expand$ = $(this.template.get('cartPreviewToolsContainer')());
 				// a view that watches expand state
 				// Open this row
 				var tools$ = expand$.find(".previewTools").first();
-				var previewModel = this.getModelFromPreviewed();
-				var view = new OpenGeoportal.Views.PreviewTools({
+
+            var previewModel = this.previewed.getLayerModel(this.model);
+
+
+            this.expandView = new OpenGeoportal.Views.PreviewTools({
 					model : previewModel,
 					el : tools$
 				});// render to the container
-				this.subviews.push(view);
-		
-		} 
+
+        } else {
+            if (this.expandView !== null) {
+
+                this.expandView.close();
+            }
+        }
+
 		return expand$;
 	},
-	
-	doMouseoverOn : function(){
+
+    handleSelection: function () {
+        if (this.model.get("selected")) {
+            //this.stopListening(this, ["mouseover", "mouseout"]);
+            this.doSelectionOn();
+        } else {
+            this.doSelectionOff();
+            //this.listenTo(this, "mouseover", this.doMouseoverOn);
+            //this.listenTo(this, "mouseout", this.doMouseoverOff);
+        }
+    },
+
+    doMouseoverOn: function () {
+        this.model.set({selected: true});
+    },
+
+    doMouseoverOff: function () {
+        this.model.set({selected: false});
+    },
+
+    doSelectionOn: function () {
 		this.highlightRow();
 		this.showBounds();
 	},
-	
-	doMouseoverOff: function(){
+
+    doSelectionOff: function () {
 		this.unHighlightRow();
 		this.hideBounds();
 	},
@@ -369,20 +392,26 @@ OpenGeoportal.Views.LayerRow = Backbone.View.extend({
 	unHighlightRow: function(){
 		this.$el.removeClass("rowHover");
 	},
-	
+
+    getBounds: function () {
+        var currModel = this.model;
+        var bbox = {};
+        bbox.south = currModel.get("MinY");
+        bbox.north = currModel.get("MaxY");
+        bbox.west = currModel.get("MinX");
+        bbox.east = currModel.get("MaxX");
+        return bbox;
+    },
+
 	showBounds : function() {
-		var currModel = this.model;
-		var bbox = {};
-		bbox.south = currModel.get("MinY");
-		bbox.north = currModel.get("MaxY");
-		bbox.west = currModel.get("MinX");
-		bbox.east = currModel.get("MaxX");
-		jQuery(document).trigger("map.showBBox", bbox);
-		// console.log("triggered map.showBBox");
+        var bbox = this.getBounds();
+        $(document).trigger("map.showBBox", bbox);
 
 	},
 	
 	hideBounds : function() {
-		jQuery(document).trigger("map.hideBBox");
-	}
+        var bbox = this.getBounds();
+        $(document).trigger("map.hideBBox", bbox);
+
+    }
 });

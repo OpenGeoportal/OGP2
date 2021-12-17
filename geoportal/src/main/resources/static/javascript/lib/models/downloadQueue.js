@@ -10,16 +10,24 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * A Queue that holds QueueItems. Generally, these are long running requests. The Queue makes the request asynchronously,
+ * polls a status endpoint, then requests the object when the processing is complete. Used by download, image requests,
+ * and mapit.
+ *
+ * @type {any}
+ */
+
 OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 	initialize : function() {
 		this.listenTo(this, "change:status",
 				this.handleStatusChange);
 		this.listenTo(this, "add", this.submitRequest);
-		this.widgets = OpenGeoportal.ogp.widgets;
 
 		this.subClassInit();
 	},
 
+	itemType: "request",
 	/*
 	 * attributes: type: layer, image, export, etc. bbox: (if no clipping requested,
 	 * set this to full extent; we want to keep track of if a user has requested
@@ -36,6 +44,7 @@ OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 	},
 
 	submitRequest : function() {
+
 		var that = this;
 		var params = {
 				url : this.get("requestUrl"),
@@ -64,22 +73,14 @@ OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 		// do some stuff depending on the item's status
 		if ((status == "COMPLETE_SUCCEEDED")
 				|| (status == "COMPLETE_PARTIAL")) {
-			// get the download
-			try {
-				this.handleDownload();
-			} catch (e) {
-				console.log(e);
-				console.log("Download handler failed.");
-			}
-			try {
-				this.createNotice();
-			} catch (e) {
-				console.log("Download notice creation failed.");
-			}
-		} else if (status == "COMPLETE_FAILED") {
-			// should be a note to user that the download failed
-			this.createNotice();
-		}
+            // get the download
+            try {
+                this.handleDownload();
+            } catch (e) {
+                console.log(e);
+                console.log("Download handler failed.");
+            }
+        }
 
 		this.collection.checkPoll();
 	},
@@ -111,15 +112,8 @@ OpenGeoportal.Models.AbstractQueueItem = Backbone.Model.extend({
 		var url = this.get("retrieveUrl");
 
 		url += "?requestId=" + this.get("requestId");
-		var uid = _.uniqueId("download_");
-		var dlLink = '<a id="' + uid + '" class="download" href="' + url + '" download></a>';
-		jQuery('body').append(dlLink);
-		document.querySelector('#' + uid).click();
-	},
-
-	createNotice : function() {
-		throw new Error("Implement me!");
-
+		jQuery('body').append(
+				'<iframe class="download" src="' + url + '"></iframe>');
 	}
 
 
@@ -177,69 +171,6 @@ OpenGeoportal.Models.DownloadRequest = OpenGeoportal.Models.AbstractQueueItem.ex
 	},
 
 
-
-	createNotice : function() {
-		var layerInfo = this.get("layerStatuses");
-		// generate a notice using the info in requestedLayerStatuses
-		// if all succeeded, no need to pop up a message; the user
-		// should see the save file dialog
-		// "requestedLayerStatuses":[{"status":"PROCESSING","id":"Tufts.WorldShorelineArea95","bounds":"-66.513260443112,-314.6484375,66.513260443112,314.6484375","name":"sde:GISPORTAL.GISOWNER01.WORLDSHORELINEAREA95"}]}]}
-		//console.log(model);
-		var failed = [];
-		var succeeded = [];
-		var i = null;
-		for (i in layerInfo) {
-			var currentLayer = layerInfo[i];
-			var status = currentLayer.status.toLowerCase();
-			var layerName = currentLayer.id;
-			if (status !== "success") {
-				failed.push(currentLayer);
-			} else {
-				succeeded.push(currentLayer);
-			}
-
-		}
-
-		var email = "";
-		if (this.has("email")){
-			email = this.get("email");
-		}
-
-		this.noticeDialog(succeeded, failed, email);
-
-	},
-
-	noticeDialog: function(succeeded, failed, email){
-		var text = "";
-		var failedIds = [];
-		if (failed.length > 0) {
-			_.each(failed, function(status){
-				failedIds.push(status.id);
-			});
-			text += "The following layers failed to download: " + failedIds.join(", ");
-		}
-
-		var emailedIds = [];
-		if (succeeded.length > 0) {
-			_.each(succeeded, function(status){
-				if (status.responseType === "email"){
-					emailedIds.push(status.id);
-				}
-			});
-			if (emailedIds.length > 0){
-				text += "The following layers have been emailed to " + email + ": " + emailedIds.join();
-			}
-		}
-
-		if (text.length > 0){
-			var dialog$ = this.widgets.genericModalDialog(text, "Download Notice");
-			var buttonsObj = [{text: "OK", click: function(){jQuery(this).dialog('close');}}];
-			dialog$.dialog("option", "buttons", buttonsObj);
-		}
-	},
-	
-
-
 validate : function(attrs, options) {
 	var emailAddressProperty = "email";
 	var emailAddress = attrs[emailAddressProperty];
@@ -277,29 +208,30 @@ OpenGeoportal.Models.GeoCommonsRequest = OpenGeoportal.Models.AbstractQueueItem.
 		var params = {
 				url : url,
 				dataType : "json",
-				success : this.retrievalSuccess,
-				error: this.retrievalFailure
+            success: function (data, textStatus, jqXHR) {
+                this.retrievalSuccess(data, textStatus)
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                this.retrievalFailure(errorThrown)
+            }
 		};
 
 		jQuery.ajax(params);
 	},
-	
-	retrievalSuccess: function(data, textStatus, jqXHR){
+
+    retrievalSuccess: function (data, textStatus) {
 		if (textStatus === 200){
-			window.open(data.location);
+            this.set({location: data.location});
 		} else {
 			var errorThrown = "unknown";
 			//check textStatus to give us a clue.
-			this.retrievalFailure(jqXHR, textStatus, errorThrown);
+            this.retrievalFailure(errorThrown);
 		}
 
 	},
 
 	retrievalFailure: function(jqXHR, textStatus, errorThrown){
-		var text = "OGP failed to export your layers.  Reason: " + errorThrown;
-		var dialog$ = this.widgets.genericModalDialog(text, "Request Failed");
-		var buttonsObj = [{text: "OK", click: function(){jQuery(this).dialog('close');}}];
-		dialog$.dialog("option", "buttons", buttonsObj);
+        this.set({failureReason: errorThrown});
 	},
 	
 	getRequestParams: function() {
@@ -321,11 +253,6 @@ OpenGeoportal.Models.GeoCommonsRequest = OpenGeoportal.Models.AbstractQueueItem.
 			console.log(e);
 			throw new Error("Error creating params");
 		}
-	},
-
-	createNotice : function() {
-		//nop
-		alert("failed to export layers to GeoCommons!");
 	}
 });
 
@@ -373,21 +300,21 @@ OpenGeoportal.Models.ImageRequest = OpenGeoportal.Models.AbstractQueueItem.exten
 			console.log(e);
 			throw new Error("Error creating params");
 		}
-	},
-	
-	createNotice : function() {
-		//nop
-		//alert("failed to generate image!");
 	}
 
 });
 
 
+OpenGeoportal.RequestQueue = Backbone.Collection.extend({
+	//Backbone no longer recognizes subclassed models, so we will validate for
+	// a particular property
 
-OpenGeoportal.RequestQueue = Backbone.Collection
-.extend({
-	model : OpenGeoportal.Models.QueueItem,
+	//model : OpenGeoportal.Models.QueueItem,
 
+	validate: function (attrs, options) {
+		return (_.has(attrs, "itemType") && attrs['itemType'] == "request");
+
+	},
 	poll: {
 		id : "",
 		isRunning : false,

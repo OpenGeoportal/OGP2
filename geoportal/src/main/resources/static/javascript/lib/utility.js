@@ -1,11 +1,3 @@
-/* This javascript module includes utility functions for OpenGeoPortal plus
- * extra functions with no current home. OpenGeoportal.Utility is a
- * namespace rather than an object.  The XML functions might go away when we
- * upgrade to a newer version of jQuery, as it contains functions to parse XML.
- * 
- * author: Chris Barnett
- * 
- */
 
 if (typeof OpenGeoportal === 'undefined') {
 	OpenGeoportal = {};
@@ -19,6 +11,10 @@ if (typeof OpenGeoportal.Utility === 'undefined') {
 	throw new Error("OpenGeoportal.Utility already exists and is not an object");
 }
 
+
+/**
+ * Some utility functions and settings.
+ */
 OpenGeoportal.Utility.ImageLocation = "resources/media/";
 OpenGeoportal.Utility.CssLocation = "resources/css/";
 OpenGeoportal.Utility.JspfLocation = "jspf/";
@@ -79,22 +75,13 @@ OpenGeoportal.Utility.rgb2hex = function(rgb) {
 OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	var hex = [ r.toString(16), g.toString(16), b.toString(16) ];
 	jQuery.each(hex, function(nr, val) {
-		if (val.length === 1) {
+		if (val.length == 1) {
 			hex[nr] = '0' + val;
 		}
 	});
 	return hex.join('').toUpperCase();
 };
 
-/*OpenGeoportal.Utility.idEscape = function(domElementId) {
-	return domElementId.replace(/(:|\.)/g, '\\$1');
-};*/
-
-/*
- * OpenGeoportal.Utility.getMetadata = function (layerId){ var params = { url:
- * "getMetadata.jsp?layer=" + layerId, dataType: 'xml', success: function(data){
- * console.log(data); } }; jQuery.ajax(params); };
- */
 
 OpenGeoportal.Utility.escapeQuotes = function(stringOfInterest) {
 	return stringOfInterest.replace("'", "\\'").replace('"', '\\"');
@@ -343,22 +330,54 @@ OpenGeoportal.Utility.arrayContainsIgnoreCase = function(arr, val) {
 
 OpenGeoportal.Utility.hasLocationValueIgnoreCase = function(location, keyArr) {
 
-	var keyArrLower = OpenGeoportal.Utility.getArrayToLower(_.keys(location));
-	var lowerArr = OpenGeoportal.Utility.getArrayToLower(keyArr);
-
 	var hasKey = false;
+    var locArr = _.keys(location);
 
-	for ( var i in lowerArr) {
-		if (_.has(lowerArr, i)) {
+    _.each(keyArr, function (el) {
+        _.each(locArr, function (el2) {
+            if (el.toLowerCase() === el2.toLowerCase()) {
+                hasKey = true;
+            }
+        });
+    });
 
-			if (_.indexOf(keyArrLower, lowerArr[i]) >= 0) {
-				hasKey = true;
-			}
 
-		}
+    return hasKey;
+};
+
+OpenGeoportal.Utility.StringHash = function (str) {
+
+    /*    var hval = 0x811c9dc5;
+     var fnv_32_prime = 0x01000193;
+     var uint32_max = 2 * * 32;
+     for (var i=0; i < str.length; i++) {
+     hval = hval ^ ord(str.charAt(i));
+     hval = (hval * fnv_32_prime) % uint32_max;
+     }
+     return hval*/
+
+    var hash = 0;
+
+    for (var i = 0; i < str.length; i++) {
+        hash ^= str.charCodeAt(i);
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return hash;
+
+};
+
+OpenGeoportal.Utility.getLocationValueIgnoreCase = function (location, key) {
+    var locKeys = _.keys(location);
+    var locKeysLower = OpenGeoportal.Utility.getArrayToLower(locKeys);
+
+    var keyLower = key.toLowerCase();
+
+    var j = _.indexOf(locKeysLower, keyLower);
+    if (j >= 0) {
+        return location[locKeys[j]];
 	}
 
-	return hasKey;
+    throw new Error("Location key not found!");
 };
 
 OpenGeoportal.Utility.hasLocationValue = function(location, keyArr) {

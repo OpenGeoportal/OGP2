@@ -9,9 +9,8 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 } else if (typeof OpenGeoportal.Models !== "object") {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
-/*
- * OpenGeoportal.LayerSettings object to hold display setting info, where it
- * exists (opacity, etc.)
+/**
+ * the PreviewedLayers Collection holds layers that are currently being previewed.
  */
 
 /*
@@ -52,7 +51,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 				sld : ""
 			},
 
-			"paper map" : {
+            scannedmap: {
 				opacity : 100
 			},
 			// it's understood that point, line, polygon, are vector types
@@ -74,6 +73,7 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 			},
 			polygon : {
 				getFeature : false,
+				opacity : 100,
 				colorPickerOn : false,
 				sld : "",
 				opacity : 80,
@@ -92,13 +92,62 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 	}, {
 		type : "tilecache",
 		attributes : {
-			opacity : 100
+            opacity: 80
 		}
 	}, {
 		type : "arcgisrest",
-		attributes : {
-			opacity : 100
+        attributes: {
+            getFeature: false,
+            opacity: 80
 		}
+
+//changing styles only works for arcgis server 10.1 +
+        /*		discriminator: "DataType",
+         attributes : {
+         raster : {
+         getFeature : false,
+         opacity : 100,
+         sld : ""
+         },
+
+         scannedmap : {
+         opacity : 100
+         },
+         // it's understood that point, line, polygon, are vector types
+         point : {
+         getFeature : false,
+         opacity : 100,
+         colorPickerOn : false,
+         drawingInfo : "",
+         color : "#ff0000",
+         graphicWidth : 2
+         },
+         line : {
+         getFeature : false,
+         opacity : 100,
+         colorPickerOn : false,
+         drawingInfo : "",
+         color : "#0000ff",
+         graphicWidth : 1
+         },
+         polygon : {
+         getFeature : false,
+         opacity : 100,
+         colorPickerOn : false,
+         drawingInfo : "",
+         opacity : 80,
+         color : "#aaaaaa",
+         graphicWidth : 1
+         },
+         "undefined" : {
+         getFeature : false,
+         opacity : 100,
+         colorPickerOn : false,
+         drawingInfo : "",
+         color : "#aaaaaa",
+         graphicWidth : 1
+         }
+         }*/
 	} ],
 
 	setPreviewType : function() {
@@ -131,9 +180,6 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 			// "http://www.lib.berkeley.edu/EART/mapviewer/collections/histoposf"}}
 			previewType = "imagecollection";
 		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
-				locationObj, [ "arcgisrest" ])) {
-			previewType = "arcgisrest";
-		} else if (OpenGeoportal.Utility.hasLocationValueIgnoreCase(
 				locationObj, [ "externalLink" ])) {
 			previewType = "externalLink";
 		}
@@ -141,17 +187,18 @@ OpenGeoportal.Models.PreviewLayer = OpenGeoportal.Models.ProtocolAware.extend({
 
 		this.set({
 			previewType : previewType
-		});
+        }, {silent: true});
 
 		return previewType;
 	},
 
-	assignAttributes : function() {
-		// do some categorization
-		var previewType = this.setPreviewType();
-		var attr = this.getAttributesByType(previewType);
-		this.set(attr);
-	}
+    assignAttributes: function () {
+        // do some categorization
+        var previewType = this.setPreviewType();
+        var attr = _.omit(this.getAttributesByType(previewType), _.keys(this.attributes));
+
+        this.set(attr, {silent: true});
+    }
 });
 
 OpenGeoportal.Models.Attribute = Backbone.Model.extend({});
@@ -162,70 +209,71 @@ OpenGeoportal.Attributes = Backbone.Collection.extend({
 
 
 OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
-	model : OpenGeoportal.Models.PreviewLayer,
-	initialize : function() {
-		this.listenTo(this, "change:preview add", this.changePreview);
+    model: OpenGeoportal.Models.PreviewLayer,
+    initialize: function () {
+        this.listenTo(this, "change:preview", this.changePreview);
+        this.listenTo(this, "add", this.addPreview);
 		this.listenTo(this, "change:graphicWidth change:color",
-				this.changeLayerStyle);
+            this.changeLayerStyle);
 		this.listenTo(this, "change:opacity", this.changeLayerOpacity);
 		this.listenTo(this, "change:zIndex", this.changeZIndex);
 		this.listenTo(this, "change:getFeature", this.changeGetFeatureState);
 
 	},
-	
-	comparator: function(model1, model2){
-		var getComparison = function(model){
+
+    comparator: function (model1, model2) {
+        var getComparison = function (model) {
 			var comp = 0;
-			if (model.has("zIndex")){
+            if (model.has("zIndex")) {
 				comp = model.get("zIndex");
 			}
 			return comp;
 		};
-		
+
 		var val1 = getComparison(model1);
 		var val2 = getComparison(model2);
-		if (val1 > val2){
+        if (val1 > val2) {
 			return -1;
-		} else if (val2 > val1){
+        } else if (val2 > val1) {
 			return 1;
 		} else {
 			return 0;
-		}	
+        }
 	},
-	
-	changeLayerStyle : function(model, val, options) {
+
+    changeLayerStyle: function (model, val, options) {
 		var layerId = model.get("LayerId");
 		// tell map to change the linewidth/pointsize/borderwidth for this layer
 		// this event should be attached to the model, so it only fires once;
 		// better yet, have a map view that listens for this change event
 		jQuery(document).trigger("map.styleChange", {
-			LayerId : layerId
+            LayerId: layerId
 		});
 	},
-	
-	changeLayerOpacity : function(model, val, options) {
+
+    changeLayerOpacity: function (model, val, options) {
 		var value = model.get("opacity");
 		var layerId = model.get("LayerId");
 		// tell map to change the opacity for this layer
 		jQuery(document).trigger("map.opacityChange", {
-			LayerId : layerId,
-			opacity : value
+            LayerId: layerId,
+            opacity: value
 		});
 	},
-	
-	changeZIndex : function(model, val, options) {
+
+    changeZIndex: function (model, val, options) {
 		this.sort();
 
 		var value = model.get("zIndex");
 		var layerId = model.get("LayerId");
 		// tell map to change the zIndex for this layer
 		jQuery(document).trigger("map.zIndexChange", {
-			LayerId : layerId,
-			zIndex : value
+            LayerId: layerId,
+            zIndex: value
 		});
 	},
-	
-	changeGetFeatureState : function(model, val, options) {
+
+    changeGetFeatureState: function (model, val, options) {
 		var value = model.get("getFeature");
 		var layerId = model.get("LayerId");
 		// tell map to change the getFeature status for this layer
@@ -239,23 +287,23 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 			mapEvent = "map.getFeatureInfoOff";
 		}
 		jQuery(document).trigger(mapEvent, {
-			LayerId : layerId
+            LayerId: layerId
 		});
-		
+
 		this.checkGetFeatureState();
 	},
-	
+
 	/**
 	 * check to see if getFeature is turned on for any layers and fire
 	 * appropriate event
 	 */
-	checkGetFeatureState : function(){
+    checkGetFeatureState: function () {
 		var gfEvent = "map.attributeInfoOff";
-		this.each(function(model){
-			if (model.get("getFeature")){
+        this.each(function (model) {
+            if (model.get("getFeature")) {
 				gfEvent = "map.attributeInfoOn";
-				return;
-			}
+
+            }
 		});
 
 		jQuery(document).trigger(gfEvent);
@@ -264,32 +312,44 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 	},
 
 
-	changePreview : function(model, val, options) {
+    changePreview: function (model, val, options) {
 		// console.log(arguments);
 		var preview = model.get("preview");
 		var layerId = model.get("LayerId");
 		if (preview === "on") {
 			jQuery(document).trigger("previewLayerOn", {
-				LayerId : layerId
+                LayerId: layerId
 			});// show layer on map
 		} else {
 
 			jQuery(document).trigger("previewLayerOff", {
-				LayerId : layerId
+                LayerId: layerId
 			});
 			// also set getFeature state to off.
 			if (model.has("getFeature")) {
 				model.set({
-					getFeature : false
+                    getFeature: false
 				});
 			}
 		}
 		// console.log(model.get("LayerId") + " changed preview to " + preview);
 	},
 
-	isPreviewed : function(layerId) {
+    addPreview: function (model, val, options) {
+        // console.log("add preview called.");
+        // console.log(arguments);
+        var preview = model.get("preview");
+        var layerId = model.get("LayerId");
+        if (preview === "on") {
+            jQuery(document).trigger("previewLayerOn", {
+                LayerId: layerId
+            });// show layer on map
+        }
+    },
+
+    isPreviewed: function (layerId) {
 		var currModel = this.findWhere({
-			LayerId : layerId
+            LayerId: layerId
 		});
 		var stateVal = false;
 		if (typeof currModel !== "undefined") {
@@ -301,40 +361,41 @@ OpenGeoportal.PreviewedLayers = Backbone.Collection.extend({
 		return stateVal;
 	},
 
-	getLayerModel : function(resultModel) {
+    getLayerModel: function (resultModel) {
 		var layerId = resultModel.get("LayerId");
 		var arrModel = this.where({LayerId: layerId});
 		var layerModel;
-		if (arrModel.length > 1){
-			throw new Error("There are " + arrModel.length + " layers in the previewed layers collection.  This should never happen.");
+        if (arrModel.length > 1) {
+            throw new Error("There are " + arrModel.length + " layers in the previewed layers collection with the same LayerId.  This should never happen.");
 		}
-		if (arrModel.length > 0){
+        if (arrModel.length > 0) {
 			layerModel = arrModel[0];
 		} else {
-			this.add(resultModel.attributes);
+            this.add(_.clone(resultModel.attributes));
 			layerModel = this.findWhere({
-				LayerId : layerId
+                LayerId: layerId
 			});
 		}
 		return layerModel;
 	},
 
-	clearGetFeature : function(turnOnModel) {
+    clearGetFeature: function (turnOnModel) {
 		// console.log("clearGetFeature");
 		var layerId = "dummy";
 		if (typeof turnOnModel !== "undefined") {
 			layerId = turnOnModel.get("LayerId");
 		}
-		this.each(function(model) {
+        this.each(function (model) {
 			if (model.get("LayerId") === layerId) {
 				return;
 			}
 			if (model.get("getFeature")) {
 				model.set({
-					getFeature : false
+                    getFeature: false
 				});
 			}
 		});
 	}
-
 });
+
+

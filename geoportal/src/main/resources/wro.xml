@@ -2,11 +2,23 @@
 
 <groups xmlns="http://www.isdc.ro/wro">
 	<group name='ogpLib'>
+
+		<css>/css/structure.css</css>
+		<css>/css/header.css</css>
 		<css>/css/google.css</css>
 		<css>/css/mapDiv.css</css>
-		<css>/css/structure.css</css>
-		<css>/css/localize.css</css>
-		
+		<css>/css/footer.css</css>
+		<css>/css/icons.css</css>
+		<css>/css/dialogs.css</css>
+		<css>/css/spinner.css</css>
+		<css>/css/dropdown.css</css>
+		<css>/css/infoBubble.css</css>
+		<css>/css/search.css</css>
+		<css>/css/layerTable.css</css>
+		<css>/css/previewControls.css</css>
+		<css>/css/attributeInfo.css</css>
+		<css>/css/metadata.css</css>
+
 		<js>/javascript/lib/models/config.js</js>
 		<js>/javascript/lib/utility.js</js>
 		<js>/javascript/lib/templates/template.js</js>
@@ -15,6 +27,8 @@
 		<js>/javascript/lib/geocoder.js</js>
 		<js>/javascript/lib/metadata.js</js>
 		<js>/javascript/lib/tableItems.js</js>
+
+		<js>/javascript/lib/models/facetModel.js</js>
 		<js>/javascript/lib/models/resultItem.js</js>
 		<js>/javascript/lib/models/basemapModel.js</js>
 		<js>/javascript/lib/models/tableConfig.js</js>
@@ -38,20 +52,27 @@
 		<js>/javascript/lib/views/cartRow.js</js>
 		<js>/javascript/lib/views/cartTable.js</js>
 		<js>/javascript/lib/views/leftPanel.js</js>
-		<js>/javascript/lib/views/tableRowSettings.js</js>
 		<js>/javascript/lib/models/externalPreviewWindowsCollection.js</js>
 		<js>/javascript/lib/views/abstractCartAction.js</js>
+		<js>/javascript/lib/views/geoCommonsRequestView.js</js>
+		<js>/javascript/lib/views/downloadRequestView.js</js>
 		<js>/javascript/lib/views/download.js</js>
 		<js>/javascript/lib/views/shareCart.js</js>
+		<js>/javascript/lib/views/mapIt.js</js>
 		<js>/javascript/lib/views/dynamicWebServices.js</js>
 		<js>/javascript/lib/views/search.js</js>
+		<js>/javascript/lib/views/colorPicker.js</js>
 		<js>/javascript/lib/views/previewControls.js</js>
 		<js>/javascript/lib/views/previewedLayersRow.js</js>
 		<js>/javascript/lib/views/previewedLayersTable.js</js>
 		<js>/javascript/lib/views/searchResultsRow.js</js>
 		<js>/javascript/lib/views/searchResultsTable.js</js>
+		<js>/javascript/lib/models/featureInfoModel.js</js>
+		<js>/javascript/lib/views/featureInfoView.js</js>
 		<js>/javascript/lib/mapDiv.js</js>
 		<js>/javascript/lib/userInterface.js</js>
+		<js>/javascript/lib/userState.js</js>
+		<js>/javascript/lib/bootstrapModels.js</js>
 	</group>
 	<group name='ogp'>
 		<group-ref>ogpLib</group-ref>

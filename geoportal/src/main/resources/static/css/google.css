@@ -11,12 +11,14 @@
     right: 69px !important;
 }
 
-.googleLogo {
-    margin-bottom: 19px !important;
+div.googleLogo a > div {
+    position: relative;
+    bottom: 20px;
+    left: 30px;
 }
 
 .poweredByGoogleAttr {
-    background: url("../media/powered-by-google/desktop/powered-by-google-on-white.png") no-repeat scroll 0 0 #FFFFFF;
+    background: url("../media/powered-by-google/powered-by-google-on-white.png") no-repeat scroll 0 0 #FFFFFF;
     float: right;
     height: 20px;
     width: 110px;

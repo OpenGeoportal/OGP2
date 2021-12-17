@@ -9,8 +9,16 @@ if (typeof OpenGeoportal.Models == 'undefined'){
     throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
-
+/**
+ * QueryTerms sets defaults for OGP search queries, as well as setting behavior for basic and advanced query types.
+ * @type {any}
+ */
 OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
+    constructor: function (attributes, options) {
+        _.extend(this, _.pick(options, "config"));
+        Backbone.Model.apply(this, arguments);
+    },
+
 	defaults: {
 
 		what: "",
@@ -28,29 +36,80 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 		mapExtent: {minX: -180, maxX: 180, minY: -90, maxY: 90},
 		mapCenter: {centerX: 0, centerY: 0},
 		ignoreSpatial: false,
+        includeRestricted: true,
+        includeRestrictedBasic: false,
+        alwaysIncludeRestrictedFrom: [],
+        initialQuery: {},
+        firstQueryFired: false,
+        geocodedBbox: null,
 		isoTopicList: null,
 		dataTypeList: null,
 		repositoryList: null,
-		showRestricted: false,
+		displayRestrictedBasic: [],
 		whatExample: "(Example: buildings)",
 		whereExample:"(Example: Boston, MA)",
 		searchType: "basic",
 		history: []
-	}, 
-	
-	initialize: function(){
-		this.set({
-			isoTopicList: OpenGeoportal.Config.IsoTopics,
-			dataTypeList: OpenGeoportal.Config.DataTypes,
-			repositoryList: OpenGeoportal.Config.Repositories});
 	},
-	
+
+    initialize: function (options) {
+
+        // Always show restricted layers for repositories you can log in to
+        var restricted = this.config.General.get("loginConfig").repositoryId;
+        var alwaysInclude = this.get("alwaysIncludeRestrictedFrom");
+        alwaysInclude.push(restricted);
+
+        //show restricted layers from all repositories
+        //var repositories = OpenGeoportal.Config.Repositories.pluck("shortName")[0];
+
+        this.set({
+            alwaysIncludeRestrictedFrom: alwaysInclude,
+            isoTopicList: this.config.IsoTopics,
+            dataTypeList: this.config.DataTypes,
+            repositoryList: this.config.Repositories
+
+        });
+
+        this.listenTo(this, "change:geocodedBbox", function () {
+            //console.log("geocoder map zoom");
+            var geoBbox = this.get("geocodedBbox");
+            if (geoBbox !== null) {
+                jQuery(document).trigger("map.zoomToLayerExtent", {
+                    bbox: geoBbox
+                });
+            }
+        });
+	},
+
+
+    getSelected: function (list) {
+        var selected = [];
+        this.get(list).each(function (item) {
+            if (item.has('selected') && item.get('selected')) {
+                selected.push(item.get('value'));
+            }
+        });
+        return selected;
+    },
+
+    getSelectedRepositories: function () {
+        var selected = [];
+        this.get("repositoryList").each(function (item) {
+            if (item.has('selected') && item.get('selected')) {
+                selected.push(item.get('shortName'));
+            }
+        });
+        return selected;
+    },
+
+
 	/*
 	 * adds spatial search params to solr object if pertinent
 	 */
 	setMapExtent : function(extent, center) {
 		// make sure we're getting the right values for the extent
-
+		console.log("mapextent");
+		console.log(arguments);
 		var minX = extent.left;
 		var maxX = extent.right;
 		var minY = extent.bottom;
@@ -110,14 +169,33 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 			request = 'search?' + jQuery.param(this.getBasicSearchQuery(), false);
 		}
 
-		this.addToHistory(request);
-
+        this.addToHistory(request);
+        this.set("firstQueryFired", true);
+		// console.log(solr.getURL());
 		return request;
 	},
-	getSortInfo : function() {
-		return OpenGeoportal.ogp.resultsTableObj.tableOrganize;
 
-	},
+    sort: null,
+    setSortInfo: function (sortModel) {
+        this.sort = sortModel;
+    },
+
+    getSortInfo: function () {
+        if (this.sort !== null) {
+            return this.sort;
+        } else {
+            throw new Error("Must associate results table with the Query Model.");
+        }
+
+    },
+
+    getInitialQuery: function () {
+		return;
+/*        var initQuery = this.get("initialQuery");
+        if (!_.has(initQuery, "ExternalLayerId")) {
+            throw new Error("Initial Query can only handle ExternalLayerId queries at this time.");
+        }*/
+    },
 	/**
 	 * add elements specific to basic search
 	 */
@@ -182,39 +260,40 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 			this.process_term(params, "centerY",  center.centerY);
 		}
 
-		params["dataTypes"] = this.get("dataType");
-		params["repositories"] = this.get("repository");
+		params["dataTypes"] = this.getSelected("dataTypeList");
+		params["repositories"] = this.getSelectedRepositories();
 
 		return params;
 	},
+	
 
 	/*******************************************************************
 	 * Callbacks
 	 ******************************************************************/
 
-	// keeping track of the last search is useful in multiple cases
+	// keeping track of the last solr search is useful in multiple cases
 	// if a search that filter based on the map returned no results we
 	// want to
 	// re-run the search without the map filter and let user know if
 	// there are results
 	// after use login we re-run the query to update "login" buttons on
 	// layers
-	addToHistory : function(searchQuery) {
+	addToHistory : function(solr) {
 		// number of search objects to keep
 		var historyLength = 5;
 		var history = this.get("history");
-		history.push(searchQuery);
+		history.push(solr);
 		while (history.length > historyLength) {
 			history.shift();
 		}
 
 	},
-
 	rerunLastSearch : function() {
-		var searchQuery = this.get("history").pop();
-		if (searchQuery != null)
+		return;
+/*		var solr = this.get("history").pop();
+		if (solr != null)
 			solr.executeSearchQuery(this.searchRequestJsonpSuccess,
-					this.searchRequestJsonpError);
+					this.searchRequestJsonpError);*/
 	},
 
 	/**
@@ -226,11 +305,12 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 * @return
 	 */
 	addSpatialToEmptySearchMessage : function() {
-		var searchQuery = this.get("history").pop();
-		if (searchQuery != null) {
-			searchQuery.clearBoundingBox();
-			searchQuery.executeSearchQuery(this.emptySearchMessageHandler,
+		return;
+/*		var solr = this.get("history").pop();
+		if (solr != null) {
+			solr.clearBoundingBox();
+			solr.executeSearchQuery(this.emptySearchMessageHandler,
 					this.searchRequestJsonpError);
-		}
+		}*/
 	}
 });

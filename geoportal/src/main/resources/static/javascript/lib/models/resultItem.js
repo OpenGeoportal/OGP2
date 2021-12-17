@@ -10,6 +10,12 @@ if (typeof OpenGeoportal.Models == 'undefined'){
     throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * The ResultsCollection holds search results. It also contains some logic for parsing results from Solr and for
+ * paging. The ResultsCollection is where the actually Solr search query is fired, using Backbone fetch.
+ * @type {any}
+ */
+
 
 OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
 	//there are some cases where the LayerId doesn't make a good id for a Backbone model
@@ -17,41 +23,76 @@ OpenGeoportal.Models.ResultItem = Backbone.Model.extend({
 
 });
 
-OpenGeoportal.ResultCollection = Backbone.Collection.extend({
-	model: OpenGeoportal.Models.ResultItem
-});
 
-//collection for the bbview results table (to replace above)
 OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem,
-	initialize: function(){
-		if (this.searcher === null){
-			this.searcher = OpenGeoportal.ogp.appState.get("queryTerms"); 
-		}
-	},
+
+    constructor: function (attributes, options) {
+        _.extend(this, _.pick(options, "previewed", "queryTerms", "sort", "facets"));
+        Backbone.Collection.apply(this, arguments);
+    },
+
+    initialize: function () {
+        this.queryTerms.setSortInfo(this.sort);
+    },
 	
     fetchOn: false,
-	searcher: null,
+
+    queryTerms: null,
+
 	url : function(){
-		return this.searcher.getSearchRequest();
+        return this.queryTerms.getSearchRequest();
 		},
 
 	totalResults: 0,
+
     parse: function(resp) {
         return this.searchResponseToCollection(resp);
       },
+
+    parseFacets: function (facetResponse) {
+        var facets = [];
+        _.each(facetResponse.facet_fields, function (v, k) {
+            var f = {
+                field_id: k
+            };
+            for (var i = 0; i < v.length; i += 2) {
+                f[v[i]] = v[i + 1];
+            }
+            facets.push(f);
+        });
+
+        return facets;
+    },
+
+    updateFacets: function (facetResponse) {
+        var updatedFacets = this.parseFacets(facetResponse);
+        var self = this;
+        _.each(updatedFacets, function (facet) {
+            var f = self.facets.findWhere({field_id: facet.field_id});
+            if (_.isUndefined(f)) {
+                self.facets.add(facet);
+            } else {
+                f.set(facet);
+            }
+        });
+
+    },
 		// converts solr response object to backbone models
 	searchResponseToCollection: function(response) {
+			// dataObj is a Javascript object (usually) returned by Solr
 			this.totalResults = response.numFound;
 			var start = response.start;
 			var rowList = response.docs;
 			var ids = [];
-			OpenGeoportal.ogp.appState.get("previewed").each(function(model){
-				if (model.get("preview") === "on"){
-					ids.push(model.get("LayerId"));
-				}
-			});
-
+        var previewed = this.previewed.each(function (model) {
+            if (model.get("preview") === "on") {
+                ids.push(model.get("LayerId"));
+            }
+        });
+		if (response.hasOwnProperty("facet_counts")) {
+			this.updateFacets(response.facet_counts);
+		}
 			// solr docs holds an array of hashtables, each hashtable contains a
 			// layer
 			var arrModels = [];
@@ -78,14 +119,12 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 					console.log([row["LayerId"], err]);
 				}
 				row.Location = locationParsed;
-
-                // Collapse these values to "Paper Map".
-                var dType = row.DataType;
-                dType = dType.replace(/\s/g, "").toLowerCase();
-                if (dType === "scannedmap" || dType === "papermap") {
-                    row.DataType = "Paper Map";
-                }
-
+				// Collapse these values to "ScannedMap".
+				var dType = row.DataType;
+				dType = dType.replace(/\s/g, "").toLowerCase();
+				if (dType === "scannedmap" || dType === "papermap") {
+					row.DataType = "ScannedMap";
+				}
 				arrModels.push(row);
 			});
 			return arrModels;
@@ -100,9 +139,12 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		      this.fetchOn = false;
 		    },
 		
-		extraParams: {},
+		extraParams: {
+			//does this get added by solr object?
+		},
 		
 		pageParams: {
+            // these parameters are used directly by Solr, so we need to maintain the naming conventions
 			start: 0,
 			rows: 50
 		},

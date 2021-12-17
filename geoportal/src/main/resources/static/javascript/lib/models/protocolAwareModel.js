@@ -9,26 +9,13 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 } else if (typeof OpenGeoportal.Models !== "object") {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
-/*
- * OpenGeoportal.LayerSettings object to hold display setting info, where it
- * exists (opacity, etc.)
+/**
+ * ProtocolAware extends ResultItem models by adding attributes relating to data type, what location endpoints are
+ * defined, and access level.
  */
-
-/*
- * 
- * 
- * Attributes: - resourceName: this is the layer name value needed to preview
- * the layer. Unfortunately, this may be different from the solr "Name" value,
- * which should be the layer name used to access ogc web services (ex: Harvard's
- * name value to access their tilecache does not include the database prefixes,
- * while ogc layer names (GeoServer) do.)
- * 
- * 
- */
-
 OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 		.extend({
-			initialize : function() {
+            initialize: function () {
 				this.assignAttributes();
 			},
 

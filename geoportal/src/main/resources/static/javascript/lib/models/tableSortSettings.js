@@ -28,7 +28,7 @@ OpenGeoportal.TableSortSettings = Backbone.Model.extend({
 		
 		  
 		  setColumn: function(newColumn){
-			  if (newColumn === 'score'){
+			  if (newColumn == 'score'){
 					this.set({column: "score", direction: "desc"});
 			  } else {
 				  //if it's a different column, default to direction "asc"
@@ -43,7 +43,7 @@ OpenGeoportal.TableSortSettings = Backbone.Model.extend({
 		  
 		  toggleDirection: function(){
 			  var newDirection = "desc";
-			  if (this.get("direction") === "desc"){
+			  if (this.get("direction") == "desc"){
 				  newDirection = "asc";
 			  }
 			  this.set({direction: newDirection});

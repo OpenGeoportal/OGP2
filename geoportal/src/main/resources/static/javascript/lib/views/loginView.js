@@ -27,7 +27,7 @@ OpenGeoportal.Views.Login = Backbone.View
 			model : OpenGeoportal.Models.User,
 
 			initialize : function() {
-				this.model.fetch();
+                //this.model.set(OpenGeoportal.Config.LoginState);
 				// we could put this on setInterval, so that when the user's
 				// session expires, they get properly logged out
 				// or will this just keep the session open?
@@ -105,7 +105,14 @@ OpenGeoportal.Views.Login = Backbone.View
 						resizable : false,
 						zIndex : 3000,
 						stack : true,
-						buttons : loginButtons
+                        buttons: loginButtons,
+                        dragStart: function (event, ui) {
+                            $(document).trigger('eventMaskOn');
+                        },
+                        dragStop: function (event, ui) {
+                            $(document).trigger('eventMaskOff');
+
+                        }
 					});
 				} else {
 					// replace dialog text/controls & open the instance of
@@ -200,7 +207,7 @@ OpenGeoportal.Views.Login = Backbone.View
 
 			showLoginMessage : function(passedMessage) {
 				if (passedMessage.length > 0) {
-					jQuery("#loginDialog .warning").text(passedMessage);
+                    jQuery("#loginDialog").find(".warning").text(passedMessage);
 				}
 			},
 

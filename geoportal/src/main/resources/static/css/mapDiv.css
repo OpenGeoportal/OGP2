@@ -8,9 +8,7 @@
 }
 
 .map_expanded {
-	/*width: 1000px !important;*/
 	z-index: 500;
-	/*position:absolute;*/
 }
 
 .clearfloats {
@@ -74,6 +72,10 @@
 	margin-right: 6px;
 }
 
+#ogpMapButtons > .mapStyledButton, #ogpMapButtons > .dropdown button {
+    box-shadow: 1px 3px 3px 1px rgba(0, 0, 0, 0.22);
+}
+
 #basemapMenu {
 	display: inline-block;
 }
@@ -82,11 +84,10 @@
 	height: 20px;
 	width: auto;
 	padding: 0 2px;
-	/*background: #cccccc url(../media/bg_grayfade.png)  repeat-x;*/
 	background: #FFFFFF;
 	color: #666666;
 	border: 1px solid #AEAEAE;
-	font-family: tahoma;
+    font-family: tahoma, arial, sans-serif;
 	font-size: 12px;
 	-moz-border-radius: 4px 4px 4px 4px;
 	border-radius: 4px 4px 4px 4px;
@@ -109,7 +110,7 @@
     margin: 3px;
     padding: 0 2px 3px 1px;
     width: 26px;
-    visibility: none;
+    display: none;
     -moz-box-shadow: 2px 5px 4px -1px #777777;
 	-webkit-box-shadow: 2px 5px 4px -1px #777777;
 	box-shadow: 2px 5px 4px -1px #777777;
@@ -118,7 +119,7 @@
 
 div.olControlMousePosition {
 	background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.05));
-    background: -moz-linear-gradient(left center , rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.05)) repeat scroll 0 0 rgba(255, 255, 255, 0);
+    background: -moz-linear-gradient(right, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.05)) repeat scroll 0 0 rgba(255, 255, 255, 0);
     height: 19px;
     line-height: 19px;
     padding-left: 15px;
@@ -126,13 +127,6 @@ div.olControlMousePosition {
     left: 25px;
     right: auto !important;
 }
-
-#geoportalMap {
-	margin: 0px;
-	padding: 0px;
-	opacity: 0;
-}
-
 
 .olControlAttribution {
     bottom: 0 !important;
@@ -154,9 +148,6 @@ div.olControlMousePosition {
 	top: 5px;
 }
 
-/*.olImageLoadError_custom {
-	display: none;
-}*/
 .olControlPanel div {
 	float: left;
 }
@@ -177,20 +168,19 @@ div.olControlMousePosition {
 }
 
 .olControlOverviewMapMinimizeButton {
-	right: 0px;
-	bottom: 0px;
+    right: 0;
+    bottom: 0;
 	cursor: pointer;
 }
 
 .olControlOverviewMapMaximizeButton {
-	right: 0px;
-	bottom: 0px;
+    right: 0;
+    bottom: 0;
 	cursor: pointer;
 }
 
 .olControlOverviewMapExtentRectangle {
 	overflow: hidden;
-	/*background-image: url("img/blank.gif");*/
 	cursor: move;
 	border: 2px dotted red;
 }
@@ -198,7 +188,6 @@ div.olControlMousePosition {
 .olControlOverviewMapRectReplacement {
 	overflow: hidden;
 	cursor: move;
-	background-image: url("img/overview_replacement.gif");
 	background-repeat: no-repeat;
 	background-position: center;
 }
@@ -220,118 +209,101 @@ div.olControlMousePosition {
 .olControlNavigationHistory {
 	background-image: none;
 	background-repeat: no-repeat;
-	height: 38px !important;
-	width: 30px !important;
+    height: 38px !important;
+    width: 30px !important;
 	cursor: pointer;
 }
 
 .olControlNavigationHistoryPreviousItemActive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
-		transparent !important;
+    background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px transparent !important;
 }
 
 .olControlNavigationHistoryPreviousItemActive:hover {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -183px
-		transparent !important;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -183px transparent;
 }
 
 .olControlNavigationHistoryPreviousItemInactive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px
-		transparent !important;
+    background: url("../media/ogp-sprite.png") no-repeat scroll -31px -139px transparent !important;
 }
 
 .olControlNavigationHistoryNextItemActive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
-		transparent !important;
+    background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px transparent !important;
 }
 
 .olControlNavigationHistoryNextItemActive:hover {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -183px
-		transparent !important;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -183px transparent;
 }
 
 .olControlNavigationHistoryNextItemInactive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px
-		transparent !important;
+    background: url("../media/ogp-sprite.png") no-repeat scroll -61px -139px transparent !important;
 }
 
 .olControlPanel .olControlNavigationItemActive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
-		-183px transparent !important;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
 	width: 38px;
 	height: 38px;
 	cursor: pointer;
 }
 
 .olControlPanel .olControlNavigationItemInactive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
-		-139px transparent !important;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -122px -139px transparent;
 	width: 38px;
 	height: 38px;
 	cursor: pointer;
 }
 
 .olControlPanel .olControlNavigationItemInactive:hover {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -122px
-		-183px transparent !important;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -122px -183px transparent;
 }
 
 .olControlPanel .olControlZoomBoxItemActive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
 	width: 31px;
 	height: 38px;
 	cursor: pointer;
 }
 
 .olControlPanel .olControlZoomBoxItemInactive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -139px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -139px transparent;
 	width: 31px;
 	height: 38px;
 	cursor: pointer;
 }
 
 .olControlPanel .olControlZoomBoxItemInactive:hover {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -91px -183px transparent;
 }
 
 .olControlPanel .olControlZoomToMaxExtentItemInactive {
-	background: url("../media/ogp-sprite.png") no-repeat scroll 0 -139px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll 0 -139px transparent;
 	width: 31px;
 	height: 38px;
 	cursor: pointer;
 }
 
 .olControlPanel .olControlZoomToMaxExtentItemInactive:hover {
-	background: url("../media/ogp-sprite.png") no-repeat scroll 0 -183px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll 0 -183px transparent;
 }
 
 .zoomPlus {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -165px -12px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -165px -12px transparent;
 }
 
 .zoomMinus {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -165px
-		-240px transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -165px -240px transparent;
 }
 
 .zoomSlideBar {
-	background: url("../media/ogp-sprite.png") no-repeat scroll -170px -30px
-		transparent;
+	background: url("../media/ogp-sprite.png") no-repeat scroll -170px -30px transparent;
 }
 
 .zoomSlider {
 	background-color: #ffffff;
 	border: 1px solid #555555;
 	z-index: 9;
-	-moz-box-shadow: 3px 0px 5px -1px #777777;
-	-webkit-box-shadow: 3px 0px 5px -1px #777777;
-	box-shadow: 3px 0px 5px -1px #777777;
+    -moz-box-shadow: 3px 0 5px -1px #777777;
+    -webkit-box-shadow: 3px 0 5px -1px #777777;
+    box-shadow: 3px 0 5px -1px #777777;
 }
 
 .olHandlerBoxZoomBox {
@@ -352,15 +324,6 @@ div.olControlMousePosition {
 	filter: alpha(opacity = 50);
 }
 
-.olControlPanPanel {
-	top: 37px;
-	left: 5px;
-	width: 41px;
-	height: 41px;
-	background: url("../media/panarrows_bg.png") no-repeat scroll 0 0
-		transparent;
-}
-
 .olControlPanPanel div {
 	cursor: pointer;
 	position: absolute;
@@ -368,82 +331,10 @@ div.olControlMousePosition {
 	height: 41px;
 }
 
-.olControlPanPanel .olControlPanNorthItemInactive {
-	width: 18px;
-	height: 18px;
-	top: 2px;
-	left: 13px;
-	background: url("../media/pandarrows_north.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanSouthItemInactive {
-	width: 18px;
-	height: 18px;
-	top: 30px;
-	left: 13px;
-	background: url("../media/pandarrows_south.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanWestItemInactive {
-	width: 18px;
-	height: 18px;
-	top: 15px;
-	left: 2px;
-	background: url("../media/pandarrows_west.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanEastItemInactive {
-	width: 18px;
-	height: 18px;
-	top: 15px;
-	left: 28px;
-	background: url("../media/pandarrows_east.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanNorth {
-	width: 18px;
-	height: 18px;
-	top: 2px;
-	left: 13px;
-	background: url("../media/pandarrows_north.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanSouth {
-	width: 18px;
-	height: 18px;
-	top: 30px;
-	left: 13px;
-	background: url("../media/pandarrows_south.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanWest {
-	width: 18px;
-	height: 18px;
-	top: 15px;
-	left: 2px;
-	background: url("../media/pandarrows_west.png") no-repeat scroll 0 0
-		transparent;
-}
-
-.olControlPanPanel .olControlPanEast {
-	width: 18px;
-	height: 18px;
-	top: 15px;
-	left: 28px;
-	background: url("../media/pandarrows_east.png") no-repeat scroll 0 0
-		transparent;
-}
-
 .olControlZoomPanel .olControlZoomOutItemInactive {
 	top: 36px;
-	left: 0px;
-	background-position: 0px 0px;
+    left: 0;
+    background-position: 0 0;
 }
 
 .olImageLoadError {
@@ -457,7 +348,7 @@ div.olControlMousePosition {
 }
 
 .olControlModPanZoomBar {
-	top: 0px !important;
+    top: 0 !important;
 	left: 25px !important;
 }
 
@@ -467,10 +358,19 @@ div.olControlMousePosition {
 	background-repeat: repeat-y;
 }
 
-.olLayerGoogleCopyright {
-	z-index: 0 !important;
+div.olMap {
+    background: none repeat scroll 0 0 #eeeeee;
 }
 
-.googleLogo img {
-	left: 25px !important;
+.olMapViewport > div {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
 }
+
+div.olMap .eventMask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+

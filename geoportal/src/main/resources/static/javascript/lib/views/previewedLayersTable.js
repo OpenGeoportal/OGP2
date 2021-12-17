@@ -10,18 +10,16 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-
+/**
+ * The PreviewedLayersTable extends LayerTable and renders and controls the preview pane.
+ */
 OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 		.extend({
-			constructor: function (options) {
-				//allow options to be passed in the constructor argument as in previous Backbone versions.
-				    this.options = options;
-				    Backbone.View.apply(this, arguments);
-			},
-					
-			initSubClass: function(){
-				this.tableConfig = this.options.tableConfig;
-				this.listenTo(this.collection, "add remove change:preview", this.render);
+
+            initSubClass: function (options) {
+                _.extend(this, _.pick(options, "cart", "tableConfig"));
+                this.previewed = this.collection;
+                this.listenTo(this.collection, "change:preview add remove", this.render);
 				var that = this;
 				this.tableConfig.listenTo(this.collection, "change:visible", function(model){ that.updateSubviews.call(that);});
 				this.listenTo(this.collection, "change:showControls", function(){jQuery(document).trigger("previewRow.expand");});
@@ -41,13 +39,22 @@ OpenGeoportal.Views.PreviewedLayersTable = OpenGeoportal.Views.LayerTable
 				var row = new OpenGeoportal.Views.PreviewedLayersRow(
 						{
 							model : model,
-							tableConfig: this.tableConfig
-						});
+                            tableConfig: this.tableConfig,
+                            template: this.template,
+                            cart: this.cart,
+                            userAuth: this.userAuth,
+                            config: this.config,
+                            layerState: this.layerState,
+                            previewed: this.collection
+
+                        });
+                this.appendSubview(row);
+
 				return row;
 			},
 			
 			getTable: function(){
-				return jQuery(this.template.tableView({tableHeader: "", tableFooter: ""}));
+                return jQuery(this.template.get('tableView')({tableHeader: "", tableFooter: ""}));
 			},
 			
 			shouldProcessRow: function(model){

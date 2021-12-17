@@ -43,6 +43,11 @@ Backbone.sync = _.wrap(Backbone.sync, function(sync, method, model, options) {
 });
 
 OpenGeoportal.Models.User = Backbone.Model.extend({
+    constructor: function (attributes, options) {
+        _.extend(this, _.pick(options, "config"));
+
+        Backbone.Model.apply(this, arguments);
+    },
 
 	defaults : {
 		repository : "",
@@ -58,7 +63,8 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 		// login url (relative)
 		// https: domain, port, etc
 
-		var loginConfig = OpenGeoportal.Config.General.get("loginConfig");
+        this.set(this.config.LoginState);
+        var loginConfig = this.config.General.get("loginConfig");
 		var institution = loginConfig.repositoryId;
 		var labelPrefix = "";// institution;
 		if (loginConfig.secureDomain.length > 0) {
@@ -109,14 +115,14 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 		} else {
 			var hostname = window.location.hostname;
 			var port = window.location.port;
-			if ((port == "") || (port == null)) {
+			if ((port === "") || (port == null)) {
 				port = "";
 			} else {
 				port = ":" + port;
 			}
-			var protocol = "https";
+			var protocol = window.location.protocol;
 
-			secureDomain = protocol + "://" + hostname + port;
+			secureDomain = protocol + "//" + hostname + port;
 
 		}
 

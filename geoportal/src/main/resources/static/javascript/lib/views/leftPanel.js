@@ -10,23 +10,58 @@ if (typeof OpenGeoportal.Views == 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * This View handles resizing behavior of the results pane.
+ * @type {any}
+ */
 OpenGeoportal.Views.LeftPanel = Backbone.View
 		.extend({
 			initialize : function() {
-
+                //TODO: account for mode open on initial load
+                this.initializeTabs();
 				this.listenTo(this.model, "change:mode", this.showPanel);
-
+                this.listenTo(this.model, "change:currentTab", this.changeTab);
 				var width = this.model.get("openWidth");
-				var margin = width - jQuery("#roll_right").width();
-				jQuery("#left_col").show().width(width).css({
-					"margin-left" : "-" + margin  + "px"
-				});
+                this.$rollRight = $("#roll_right");
+                this.$leftCol = $("#left_col");
+                var margin = width - this.$rollRight.width();
+                this.$leftCol.show().width(width).css({
+                    "margin-left": "-" + margin + "px"
+                });
+                if (this.model.get("mode") == "open") {
+                    this.showPanelMidRight(true);
+                }
 
 			},
 			events : {
 				"click .arrow_right" : "goRight",
 				"click .arrow_left" : "goLeft"
 			},
+
+            changeTab: function (model) {
+                $("#tabs").tabs("active", model.get("currentTab"));
+            },
+            initializeTabs: function () {
+                var self = this;
+                $("#tabs").tabs(
+                    {
+                        active: self.model.get("currentTab"),
+
+                        activate: function (event, ui) {
+
+                            self.$el.trigger("adjustContents");
+
+                            var label, idx = ui.index;
+
+                            label = (idx == 1) && "Cart Tab" || (idx == 0)
+                                && "Search Tab" || "Getting Started Tab";
+                            //analytics.track("Interface", "Change Tab", label);
+                        }
+
+                    });
+
+            },
+
 			// these are really controllers
 			goRight : function() {
 				// analytics.track("Interface", "Expand/Collapse Buttons",
@@ -57,11 +92,16 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				}
 			},
 
+            /**
+             * some displayed items (map controls, etc.) should move with the panel so they are not obscured. Add a css class
+             * to these so they can all be selected and moved easily with jQuery
+             */
+            alsoMoves: [".olControlPanel", ".olControlModPanZoomBar", ".olControlMousePosition"
+                , ".googleLogo"],
 			setAlsoMoves : function() {
-				if (!jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
-						.hasClass("slideHorizontal")) {
-					jQuery(".olControlPanel,.olControlModPanZoomBar,.olControlMousePosition,.googleLogo")
-							.addClass("slideHorizontal");
+                var ams = this.alsoMoves.join();
+                if (!$(ams).hasClass("slideHorizontal")) {
+                    $(ams).addClass("slideHorizontal");
 				}
 				// beyond extent arrows "#nwCorner" and "#swCorner" also have
 				// class "slideHorizontal"
@@ -83,49 +123,57 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				}
 			},
 
-			showPanelMidRight : function() {
-				if (jQuery(".slideHorizontal").is(":hidden")) {
+            showPanelMidRight: function (immediate) {
+                this.setAlsoMoves();
+                var time = 500;
+                if (typeof immediate != "undefined") {
+                    if (immediate) {
+                        time = 0;
+                    }
+                }
+                var $slide = $(".slideHorizontal");
+                if ($slide.is(":hidden")) {
 					// extent arrows need to move, but shouldn't be made visible
 					// when the the panel opens
-					jQuery(".slideHorizontal").not(".corner").show();
+                    $slide.not(".corner").show();
 				}
 
-				if (jQuery("#roll_right").is(":visible")) {
-					jQuery("#roll_right").hide();
+                if (this.$rollRight.is(":visible")) {
+                    this.$rollRight.hide();
 				}
 
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
+                var panelOffset = panelWidth - this.$rollRight.width();
 
 				this.$el.show().width(panelWidth).css({
 					"margin-left" : -1 * panelOffset
 				});
 				var that = this;
+                var element = this.$el;
+                var hasFired = false;
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '+=' + panelOffset
 				}, {
 					queue : false,
-					duration : 500,
+                    duration: time,
 					complete : function() {
-
-						jQuery(this).trigger("adjustContents");
-						that.resizablePanel();
-						jQuery(document).trigger("panelOpen");
-					}
-				});
-				try {
-					this.$el.resizable( "enable" );
-				} catch (e){
-					//console.log(e);
-				}
-
+                        //we don't want this to fire for each animated element...just once
+                        if (!hasFired) {
+                            hasFired = true;
+                            that.resizablePanel();
+                            $(document).trigger("panelOpen");
+                            element.resizable("enable");
+                            element.trigger("adjustContents");
+                        }
+                    }
+                });
 
 			},
 
 			showPanelMidLeft : function() {
 
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
+                var panelOffset = panelWidth - this.$rollRight.width();
 				var that = this;
 				
 				this.$el.show().animate({
@@ -134,11 +182,11 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					queue : false,
 					duration : 500,
 					complete : function() {
-						jQuery(".slideHorizontal").css({
+                        $(".slideHorizontal").css({
 							'margin-left' : panelOffset
 						}).not(".corner").fadeIn();
-						
-						jQuery(this).trigger("adjustContents");
+
+                        $(this).trigger("adjustContents");
 						that.resizablePanel();
 					}
 				});
@@ -147,12 +195,12 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 
 			showPanelClosed : function() {
 				// display full width map
-				if (jQuery(".slideHorizontal").is(":hidden")) {
-					jQuery(".slideHorizontal").not(".corner").show();
+                var $slide = $(".slideHorizontal");
+                if ($slide.is(":hidden")) {
+                    $slide.not(".corner").show();
 				}
-				var that = this;
 				var panelWidth = this.model.get("openWidth");
-				var panelOffset = panelWidth - jQuery("#roll_right").width();
+                var panelOffset = panelWidth - this.$rollRight.width();
 				
 				this.$el.add(".slideHorizontal").animate({
 					'margin-left' : '-=' + panelOffset
@@ -161,7 +209,7 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 					duration : 500,
 					complete : function() {
 
-						jQuery("#roll_right").show();
+                        $("#roll_right").show();
 					}
 				});
 				
@@ -169,21 +217,21 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 			},
 
 			showPanelFullScreen : function() {
-				if (jQuery("#roll_right").is(":visible")) {
-					jQuery("#roll_right").hide();
+                if (this.$rollRight.is(":visible")) {
+                    this.$rollRight.hide();
 				}
 				if (this.$el.is(":hidden")) {
 					this.$el.show();
 				}
-				jQuery(".slideHorizontal").fadeOut();
+                $(".slideHorizontal").fadeOut();
 
 				this.$el.animate({
-					'width' : jQuery('#container').width()
+                    'width': $('#container').width()
 				}, {
 					queue : false,
 					duration : 500,
 					complete : function() {
-						jQuery(this).trigger("adjustContents");
+                        $(this).trigger("adjustContents");
 					}
 				});
 			},
@@ -192,47 +240,58 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
 				this.setAlsoMoves();
 				var that = this;
 				this.$el.resizable({
-					handles : 'se', // for some reason "e" handle doesn't work
-									// correctly
+                    handles: 'e',
 					start : function(event, ui) {
-						var margin = parseInt(jQuery(".slideHorizontal").css(
-								"margin-left"));
+                        //trigger an event mask so map doesn't grab mouseover events
+                        $(document).trigger('eventMaskOn');
 
-						that.model.set({
-							alsoMovesMargin : margin
-						});
-						this.prevWidth = ui.originalSize.width;
-						ui.element.resizable("option", "minWidth", that.model
-								.get("panelMinWidth"));
-						var maxWidth = jQuery("#container").width()
-								- that.model.get("mapMinWidth");
-						ui.element.resizable("option", "maxWidth", maxWidth);
-						ui.element.resizable("option", "minHeight", jQuery(
-								"#container").height());
-						ui.element.resizable("option", "maxHeight", jQuery(
-								"#container").height());
+                        this.$slide = $(".slideHorizontal");
+                        var margin = parseInt(this.$slide.css(
+                            "margin-left"));
+
+                        that.model.set({
+                            alsoMovesMargin: margin
+                        });
+
+                        this.prevWidth = ui.originalSize.width;
+                        ui.element.resizable("option", "minWidth", that.model
+                            .get("panelMinWidth"));
+                        var maxWidth = $("#container").width()
+                            - that.model.get("mapMinWidth");
+                        ui.element.resizable("option", "maxWidth", maxWidth);
+
 
 					},
 					prevWidth: null,
 					resize : function(event, ui) {
 
-						var delta = ui.size.width - this.prevWidth;
-						this.prevWidth = ui.size.width;
-						//var newMargin = that.model.get("alsoMovesMargin") + delta;
-						jQuery(".slideHorizontal").css({
-							"margin-left" : "+=" + delta
-						});
-						jQuery(this).trigger("panelResizing");
+                        var delta = ui.size.width - this.prevWidth;
+                        this.prevWidth = ui.size.width;
+
+                        this.$slide.css({
+                            "margin-left": "+=" + delta
+                        });
+
+                        $(this).trigger("panelResizing");
 
 					},
 					
 					stop : function(event, ui) {
-						// console.log("resize stop");
-						var newWidth = ui.size.width;
-						that.model.set({
-							openWidth : newWidth
-						});
-						jQuery(this).trigger("adjustContents");
+                        $(document).trigger('eventMaskOff');
+
+                        var newWidth = ui.size.width;
+                        that.model.set({
+                            openWidth: newWidth
+                        });
+
+
+                        $(this).trigger("adjustContents");
+                        //if the size difference is more than 10 percent, fire a search
+                        if (Math.abs(ui.originalSize.width - newWidth) > ui.originalSize.width * .1) {
+                            $(document).trigger("fireSearch");
+                        }
+
+
 
 					}
 				});

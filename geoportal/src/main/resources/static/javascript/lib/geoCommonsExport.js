@@ -25,8 +25,7 @@ if (typeof OpenGeoportal.Export === 'undefined') {
 OpenGeoportal.Export.GeoCommons = function GeoCommons(exportObj) {
 	// console.log(exportObj);
 
-	this.requestQueue = OpenGeoportal.ogp.appState.get("requestQueue");
-	this.template = OpenGeoportal.ogp.template;
+    this.requestQueue = OpenGeoportal.ogp.requestQueue;
 	this.widgets = OpenGeoportal.ogp.widgets;
 
 	// an array of Backbone Models representing layers to export

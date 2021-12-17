@@ -47,10 +47,10 @@ public class OgpConfigRetrieverImpl implements OgpConfigRetriever {
 	@Value("${login.type}")
 	private String loginType;
 
-	@Value("${login.url}")
+	@Value("${login.url:login}")
 	private String loginUrl;
 
-	@Value("${login.secureDomain}")
+	@Value("")
 	private String secureDomain;  //todo: do we need this, or just require https?
 
 

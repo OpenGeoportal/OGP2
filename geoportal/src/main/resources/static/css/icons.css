@@ -1,0 +1,130 @@
+
+.shoppingCartIcon {
+    background: url("../media/ogp-sprite.png") no-repeat scroll -127px -61px transparent;
+    width: 31px;
+    height: 19px;
+}
+
+/*************************************
+Icons for data types and repositories
+**************************************/
+/*******
+DataTypes
+********/
+
+.typeIcon {
+    height: 17px;
+    width: 17px;
+    vertical-align: middle;
+}
+
+.polygonIcon {
+    background: url("../media/ogp-sprite.png") no-repeat scroll -101px -36px transparent;
+    width: 17px;
+    height: 17px;
+}
+
+.pointIcon {
+    background: url("../media/ogp-sprite.png") no-repeat scroll -80px -36px transparent;
+    width: 17px;
+    height: 17px;
+}
+
+.lineIcon {
+    background: url("../media/ogp-sprite.png") no-repeat scroll -10px -36px transparent;
+    width: 17px;
+    height: 17px;
+}
+
+.rasterIcon {
+    background: url("../media/ogp-sprite.png") no-repeat scroll -35px -36px transparent;
+    width: 17px;
+    height: 17px;
+}
+
+.mapIcon {
+    background: url("../media/ogp-sprite.png") no-repeat scroll -58px -36px transparent;
+    width: 17px;
+    height: 17px;
+}
+
+.tabularIcon {
+    background: url("../media/icon_table.gif") no-repeat transparent;
+    width: 17px;
+    height: 17px;
+}
+
+.documentIcon {
+    background: url("../media/documentIcon.gif") no-repeat transparent;
+    width: 17px;
+    height: 17px;
+}
+
+/*************
+Repositories
+*************/
+
+.repositoryIcon {
+    height: 17px;
+    width: 17px;
+}
+
+.tuftsIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -33px -10px transparent;
+}
+
+.mitIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -129px -10px transparent;
+}
+
+.harvardIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -79px -10px transparent;
+}
+
+.berkeleyIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -35px -35px transparent;
+}
+
+.marylandIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -12px -35px transparent;
+}
+
+.unIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -10px -10px transparent;
+}
+
+.massgisIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -102px -10px transparent;
+}
+
+.princetonIcon {
+    background: url("../media/ogp-institutions.png") no-repeat scroll -56px -10px transparent;
+}
+
+.columbiaIcon {
+    background: url("../media/src_columbia.png") no-repeat transparent;
+}
+
+.ctdeepIcon {
+    background: url("../media/ctdeep_icon.png") no-repeat transparent;
+}
+
+.pasdaIcon {
+    background: url("../media/pasda_icon.png") no-repeat transparent;
+}
+
+.nygisIcon {
+    background: url("../media/nygis_icon.png") no-repeat transparent;
+}
+
+.usgsIcon {
+    background: url("../media/usgs_icon.png") no-repeat transparent;
+}
+
+.princetonIcon {
+    background: url("../media/src_princeton.png") no-repeat transparent;
+}
+
+.stanfordIcon {
+    background: url("../media/src_stanford.png") no-repeat transparent;
+}

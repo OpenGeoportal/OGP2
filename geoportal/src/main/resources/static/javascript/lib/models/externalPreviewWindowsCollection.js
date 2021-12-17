@@ -10,6 +10,10 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
 
+/**
+ * Contains logic for displaying ungeoreferenced maps as images in a pop up window.
+ * @type {any}
+ */
 OpenGeoportal.Models.ImageCollectionUnGeoreferenced = Backbone.Model
 		.extend({
 			defaults : {

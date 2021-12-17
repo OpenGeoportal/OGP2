@@ -10,14 +10,10 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
-/**
- * A Backbone View of the Cart Collection
- * 
- * @constructor
- */
+
 
 /**
- * a backing model for setting download preferences
+ * A backing model for setting download preferences
  */
 OpenGeoportal.Models.DownloadPreferences = Backbone.Model.extend({
 	defaults : {
@@ -44,7 +40,12 @@ OpenGeoportal.Models.DownloadPreferences = Backbone.Model.extend({
 	}
 });
 
-
+/**
+ * A Backbone View of the Cart Collection. The Download view handles the download dialogs and creates a download
+ * request object which is then passed to the request queue. It extends CartActionView.
+ *
+ * @extends OpenGeoportal.Views.CartActionView
+ */
 OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 		.extend({
 
@@ -56,7 +57,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				// check permissions
 				if (!isAvailable) {
-					isAvailable = OpenGeoportal.ogp.appState.get("login").model
+                    isAvailable = OpenGeoportal.ogp.login.model
 							.hasAccess(model);
 				}
 
@@ -217,7 +218,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var rasterControlId = "rasterControl";
 
 				if (showVectorControl) {
-					html += this.template.formatSelectionControl({
+                    html += this.template.get('formatSelectionControl')({
 						controlId : vectorControlId,
 						controlClass : "downloadSelect",
 						controlLabel : "Vector files",
@@ -242,7 +243,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				}
 
 				if (showRasterControl) {
-					html += this.template.formatSelectionControl({
+                    html += this.template.get('formatSelectionControl')({
 						controlId : rasterControlId,
 						controlClass : "downloadSelect",
 						controlLabel : "Raster files",
@@ -255,7 +256,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 						rasterChoice : defaultFormat
 					});
 					// update the preferences model when the ui element changes
-					jQuery(document).on("change", "#" + rasterControlId,
+                    $(document).on("change", "#" + rasterControlId,
 							function() {
 								var uiValue = jQuery(this).val();
 								that.preferences.set({
@@ -273,9 +274,12 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				} else {
 					// create the clip control
 					var clipControlId = "downloadClipControl";
-					html += this.template.clipControl({
+                    html += this.template.get('checkboxControl')({
 						elId : clipControlId,
-						isClipped : this.preferences.get("isClipped")
+                        controlClass: "",
+                        tooltip: "",
+                        isChecked: this.preferences.get("isClipped"),
+                        text: this.template.get("clipControlLabel")()
 					});
 
 					// update the preferences model when the ui element changes
@@ -283,7 +287,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					jQuery(document).on("change", "#" + clipControlId,
 							function() {
 								that.preferences.set({
-									isClipped : jQuery(this).is(":checked")
+                                    isClipped: $(this).is(":checked")
 								});
 							});
 				}
@@ -327,12 +331,19 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					resizable : false,
 					modal : true,
 					show : "fade",
-					hide : "fade"
+                    hide: "fade",
+                    dragStart: function (event, ui) {
+                        $(document).trigger('eventMaskOn');
+                    },
+                    dragStop: function (event, ui) {
+                        $(document).trigger('eventMaskOff');
+
+                    }
 				};
 
 				var dialogId = "downloadSettingsDialog";
 				if (jQuery('#' + dialogId).length === 0) {
-					var downloadDiv = this.template.genericDialogShell({
+                    var downloadDiv = this.template.get('genericDialogShell')({
 						elId : dialogId
 					});
 					jQuery('#dialogs').append(downloadDiv);
@@ -408,7 +419,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				// set the bounds on the request object if "clipped" is checked
 				if (this.preferences.get("isClipped")) {
 					// set bounds in the downloadRequest model
-					var extent = OpenGeoportal.ogp.map.getGeodeticExtent();
+                    var extent = OpenGeoportal.ogp.map.getWGS84VisibleExtent();
 					this.downloadRequest.set({
 						bbox : extent
 					});
@@ -480,7 +491,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				if (required) {
 
-					template = this.template.requireEmailAddress();
+                    template = this.template.get('requireEmailAddress')();
 				}
 
 				return template;
@@ -488,9 +499,6 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 			getLayerDownloadNotice : function() {
 				var arrModels = this.downloadRequest.get("layers");
-
-				var template = "";
-
 				var downloadCount = 0;
 				var emailCount = 0;
 				var that = this;
@@ -506,7 +514,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var total = emailCount + downloadCount;
 				var plural = (total > 1);
 
-				template = this.template.layerDownloadNotice({
+                var template = this.template.get('layerDownloadNotice')({
 					emailCount : emailCount,
 					downloadCount : downloadCount,
 					total : total,
@@ -521,7 +529,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 
 				var dialogId = "downloadFinalizeDialog";
 				if (jQuery('#' + dialogId).length === 0) {
-					var downloadDiv = this.template.genericDialogShell({
+                    var downloadDiv = this.template.get('genericDialogShell')({
 						elId : dialogId
 					});
 					jQuery('#dialogs').append(downloadDiv);
@@ -560,7 +568,14 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 					show : "fade",
 					hide : "fade",
 					modal : true,
-					buttons : buttons
+                    buttons: buttons,
+                    dragStart: function (event, ui) {
+                        $(document).trigger('eventMaskOn');
+                    },
+                    dragStop: function (event, ui) {
+                        $(document).trigger('eventMaskOff');
+
+                    }
 				};
 
 				dialog$.dialog(params);
@@ -623,7 +638,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 				var layers = this.downloadRequest.get("layers");
 				var emailLayers = [];
 				var dlLayers = [];
-				var requestQ = OpenGeoportal.ogp.appState.get("requestQueue");
+                var requestQ = OpenGeoportal.ogp.requestQueue;
 				
 				_.each(layers, function(model){
 					if (model.has("requiresEmail") && model.get("requiresEmail")){

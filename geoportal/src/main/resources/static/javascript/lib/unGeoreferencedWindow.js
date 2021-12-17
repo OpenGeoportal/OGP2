@@ -5,6 +5,9 @@ if (typeof OpenGeoportal === 'undefined') {
 	throw new Error("OpenGeoportal already exists and is not an object");
 }
 
+/**
+ * Code for creating the ungeoreferenced map pop up.
+ */
 // "main" for the ungeoreferenced window
 jQuery(document).ready(function() {
 	// the values are being read from the parent window;

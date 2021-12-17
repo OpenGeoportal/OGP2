@@ -8,7 +8,7 @@ if (typeof OpenGeoportal.Models === 'undefined') {
 } else if (typeof OpenGeoportal.Models !== "object") {
 	throw new Error("OpenGeoportal.Models already exists and is not an object");
 }
-/*
+/**
  * OpenGeoportal.Ogpsettings object to hold setting info for the application
  */
 

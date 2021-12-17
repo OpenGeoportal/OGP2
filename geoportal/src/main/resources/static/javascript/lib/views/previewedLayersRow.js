@@ -10,6 +10,9 @@ if (typeof OpenGeoportal.Views === 'undefined') {
 	throw new Error("OpenGeoportal.Views already exists and is not an object");
 }
 
+/**
+ * The PreviewedLayersRow subclasses LayerRow and handles rows in the preview pane.
+ */
 OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 
 	subClassEvents: {
@@ -17,9 +20,6 @@ OpenGeoportal.Views.PreviewedLayersRow = OpenGeoportal.Views.LayerRow.extend({
 	},
 	subClassInit: function(){
 		//listen for saved items (in cart collection)
-		this.cart = OpenGeoportal.ogp.appState.get("cart");
-		this.listenTo(this.model, "change:preview", this.render);
-		
 		var that = this;
 		jQuery(document).on("cartUpdated", this.$el, function(){that.updateView.apply(that, arguments);});
 	},
