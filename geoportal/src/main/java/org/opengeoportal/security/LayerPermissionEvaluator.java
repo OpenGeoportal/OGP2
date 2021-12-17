@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
+
 /**
  * use this class to determine if the user has permission to perform an action on a layer
  * Use this in conjunction with Spring Security hasPermission annotation expression
@@ -18,12 +20,17 @@ import org.springframework.security.core.GrantedAuthority;
  * @author cbarne02
  *
  */
+@Component
 public class LayerPermissionEvaluator implements PermissionEvaluator {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
+	final OgpConfigRetriever ogpConfigRetriever;
+
 	@Autowired
-	OgpConfigRetriever ogpConfigRetriever;
-	
+	public LayerPermissionEvaluator(OgpConfigRetriever ogpConfigRetriever) {
+		this.ogpConfigRetriever = ogpConfigRetriever;
+	}
+
 	@Override
 	public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission){
 		logger.info("checking permission...");
@@ -36,6 +43,7 @@ public class LayerPermissionEvaluator implements PermissionEvaluator {
 			  } else if (authentication.isAuthenticated() && hasAuthority(authentication, "ROLE_USER")){
 
 				  String repId = ogpConfigRetriever.getConfig().getLoginConfig().getRepositoryId();
+				  logger.debug("login repository: " + repId);
 				  if (sr.getInstitution().equalsIgnoreCase(repId)){
 					  hasPermission = true;
 				  }
@@ -45,7 +53,7 @@ public class LayerPermissionEvaluator implements PermissionEvaluator {
 			  }
 			 
 		  } else {
-			  logger.error("Only allowed to authorize using SolrRecord Object.");
+			  logger.error("Only allowed to authorize using OGPRecord Object.");
 		  }
 		  	 //user should have access:
 			  //1. layer is public
@@ -53,16 +61,16 @@ public class LayerPermissionEvaluator implements PermissionEvaluator {
 			  //Permissions: data access
 			  //currently, it's really just yes, the user can access the data, or no they can't
 			  //all metadata is available to the user
-
+		  logger.debug("has permission: " + hasPermission);
 		  return hasPermission;
 		  
 		   
 	}
 
 	private boolean hasAuthority(Authentication authentication, String role) {
-		  logger.info(authentication.getName());
+		  logger.debug(authentication.getName());
 		  for (GrantedAuthority ga: authentication.getAuthorities()){
-			  logger.info(ga.getAuthority());
+			  logger.debug(ga.getAuthority());
 			  if (ga.getAuthority().equalsIgnoreCase(role)){
 				  return true;
 			  }
@@ -74,6 +82,7 @@ public class LayerPermissionEvaluator implements PermissionEvaluator {
 	@Override
 	public boolean hasPermission(Authentication auth, Serializable targetId, String targetType, Object permission) {
 		// TODO Auto-generated method stub
+		logger.debug("wrong method...");
 		return false;
 	}
 

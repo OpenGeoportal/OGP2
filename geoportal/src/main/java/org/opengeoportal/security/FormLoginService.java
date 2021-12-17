@@ -20,9 +20,13 @@ import org.springframework.stereotype.Service;
 public class FormLoginService implements LoginService {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired(required = false)
-    @Qualifier("authenticationManager")
+    final
     AuthenticationManager authenticationManager;
+
+    @Autowired
+    public FormLoginService(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
     public LoginStatus getStatus() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

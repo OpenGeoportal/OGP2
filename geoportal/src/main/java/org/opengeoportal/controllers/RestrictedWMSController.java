@@ -10,7 +10,7 @@ import org.opengeoportal.proxy.ProxyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +35,7 @@ public class RestrictedWMSController {
 		this.proxyFactory = proxyFactory;
 	}
 
+	@PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
 	@RequestMapping(value="/{repositoryId}/wms", method=RequestMethod.GET)
 	public void forwardWMSRequest(@PathVariable String repositoryId, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		//If the request went through to the controller, we know that the user has authenticated

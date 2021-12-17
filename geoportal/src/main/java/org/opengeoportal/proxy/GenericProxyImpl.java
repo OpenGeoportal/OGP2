@@ -26,7 +26,7 @@ public class GenericProxyImpl implements GenericProxy {
 	protected final OgpHttpClient ogpHttpClient;
 
 	@Autowired
-	public GenericProxyImpl(@Qualifier("httpClient.pooling") OgpHttpClient ogpHttpClient) {
+	public GenericProxyImpl(OgpHttpClient ogpHttpClient) {
 		this.ogpHttpClient = ogpHttpClient;
 	}
 
