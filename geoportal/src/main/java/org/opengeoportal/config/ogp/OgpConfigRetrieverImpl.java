@@ -2,6 +2,7 @@ package org.opengeoportal.config.ogp;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.config.ogp.OgpConfig.LoginConfig;
@@ -41,18 +42,14 @@ public class OgpConfigRetrieverImpl implements OgpConfigRetriever {
 	@Value("${login.repository}")
 	private String loginRepository;
 
-	@Value("${ogp.localRepository}")
-	private String localRepository;
-
 	@Value("${login.type}")
 	private String loginType;
 
 	@Value("${login.url:login}")
 	private String loginUrl;
 
-	@Value("")
-	private String secureDomain;  //todo: do we need this, or just require https?
-
+	@Value("${search.basic.showRestricted}")
+	private String[] basicRestrictedRepositories;
 
 	private OgpConfig ogpConfig;
 	
@@ -96,15 +93,13 @@ public class OgpConfigRetrieverImpl implements OgpConfigRetriever {
 		
 		ogpConfig.setCssLocalized(extraCss);
 
+		ogpConfig.setBasicRestrictedRepositories(List.of(basicRestrictedRepositories));
+
 		LoginConfig logConf = ogpConfig.getLoginConfig();
 		
 		//This should throw an error if LOGIN_REPOSITORY is not set properly
 		if (StringUtils.isNotEmpty(loginRepository)){
-			if (loginRepository.equalsIgnoreCase("useLocal")) {
-				logConf.setRepositoryId(localRepository);
-			} else {
-				logConf.setRepositoryId(loginRepository);
-			}
+			logConf.setRepositoryId(loginRepository);
 		} else {
 			throw new Exception("Must set a value for Login Repository!");
 		}
@@ -112,8 +107,6 @@ public class OgpConfigRetrieverImpl implements OgpConfigRetriever {
 		logConf.setType(loginType);
 		
 		logConf.setUrl(loginUrl);
-
-		logConf.setSecureDomain(secureDomain);
 
 		return ogpConfig;
 	}

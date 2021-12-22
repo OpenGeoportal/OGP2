@@ -1,6 +1,7 @@
 package org.opengeoportal.config.ogp;
 
 import java.net.URL;
+import java.util.List;
 
 public class OgpConfig {
 /*
@@ -14,6 +15,7 @@ public class OgpConfig {
 	String jsLocalized;
 	String cssLocalized;
 	URL searchUrl;
+	List<String> basicRestrictedRepositories;
 	String analyticsId;
 	String gmapsAPIKey;
 	LoginConfig loginConfig = new LoginConfig();
@@ -82,12 +84,19 @@ public class OgpConfig {
 		this.gmapsAPIKey = gmapsAPIKey;
 	}
 
+	public List<String> getBasicRestrictedRepositories() {
+		return basicRestrictedRepositories;
+	}
+
+	public void setBasicRestrictedRepositories(List<String> basicRestrictedRepositories) {
+		this.basicRestrictedRepositories = basicRestrictedRepositories;
+	}
+
 	public class LoginConfig {
 		String repositoryId;
 		String type;
 		String url;
-		String secureDomain;
-		
+
 		public String getRepositoryId() {
 			return repositoryId;
 		}
@@ -105,12 +114,6 @@ public class OgpConfig {
 		}
 		public void setUrl(String url) {
 			this.url = url;
-		}
-		public String getSecureDomain() {
-			return secureDomain;
-		}
-		public void setSecureDomain(String secureDomain) {
-			this.secureDomain = secureDomain;
 		}
 	}
 

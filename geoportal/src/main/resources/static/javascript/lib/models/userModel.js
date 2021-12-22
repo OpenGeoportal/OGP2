@@ -67,12 +67,7 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
         var loginConfig = this.config.General.get("loginConfig");
 		var institution = loginConfig.repositoryId;
 		var labelPrefix = "";// institution;
-		if (loginConfig.secureDomain.length > 0) {
-			// console.log("setting secureDomain");
-			this.set({
-				secureDomain : loginConfig.secureDomain
-			});
-		}
+
 		this.set({
 			repository : institution
 		});

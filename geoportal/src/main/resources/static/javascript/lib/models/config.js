@@ -41,7 +41,6 @@ OpenGeoportal.Config.General.set({
 		repositoryId : OpenGeoportal.Config.loginRepository,
 		type : OpenGeoportal.Config.loginType,
 		url : OpenGeoportal.Config.loginUrl,
-		secureDomain : OpenGeoportal.Config.sd
 	}
 });
 

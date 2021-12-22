@@ -176,7 +176,7 @@ OpenGeoportal.Views.Login = Backbone.View
 					type : "POST",
 					url : url,
 					context : that,
-					crossDomain : true,
+					crossDomain : false,
 					xhrFields : {
 						withCredentials : true
 					},

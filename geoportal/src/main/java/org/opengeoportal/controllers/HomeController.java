@@ -1,5 +1,6 @@
 package org.opengeoportal.controllers;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -95,7 +96,7 @@ public class HomeController {
 
 	}
 	
-	private Set<String> getQuotedSet(Set<String> uqSet){
+	private Set<String> getQuotedSet(Collection<String> uqSet){
 		Set<String> quotedSet = new HashSet<String>();
 		for (String item: uqSet){
 			quotedSet.add("\"" + item + "\""); 
@@ -119,7 +120,6 @@ public class HomeController {
 		mav.addObject("loginRepository", conf.getLoginConfig().getRepositoryId());
 		mav.addObject("loginType", conf.getLoginConfig().getType());
 		mav.addObject("loginUrl", conf.getLoginConfig().getUrl());
-		mav.addObject("secureDomain", conf.getLoginConfig().getSecureDomain());
 
 		mav.addObject("basemap", basemap);
 
@@ -130,7 +130,6 @@ public class HomeController {
 		mav.addObject("proxies", toJsonString(proxyConfigRetriever.getPublicConfig()));
 
 		mav.addObject("repositories", toJsonString(repositoryConfigRetriever.getConfig()));
-
 
 		//mav.addObject("userState", toJsonString(userState.getStateMap()));
 		

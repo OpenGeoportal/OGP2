@@ -144,7 +144,7 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
             }
         }
 
-        String localRepository = ogpConfigRetriever.getConfig().getLoginConfig().getRepositoryId();
+        String localRepository = ogpConfigRetriever.getConfig().getBasicRestrictedRepositories().get(0);
         solrQuery.add("fq", "{!tag=insf}" + createInstitutionAccessFilter(institutionList, localRepository));
     }
 
@@ -161,7 +161,7 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
         if (searchParams.isIncludeRestricted()) {
             institutionFilter = SearchClient.createFilterFromList(institutionList, "Institution", "OR");
         } else {
-            String localRepository = ogpConfigRetriever.getConfig().getLoginConfig().getRepositoryId();
+            String localRepository = ogpConfigRetriever.getConfig().getBasicRestrictedRepositories().get(0);
             institutionFilter = createInstitutionAccessFilter(institutionList, localRepository);
         }
 

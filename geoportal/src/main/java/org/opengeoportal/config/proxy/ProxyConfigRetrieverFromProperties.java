@@ -2,10 +2,10 @@ package org.opengeoportal.config.proxy;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import com.fasterxml.jackson.core.JsonParseException;
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpUtils;
 import org.slf4j.Logger;
@@ -35,11 +35,8 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	@Value("${proxy.geoserver.password:}")
 	private String geoserverPassword;
 
-	@Value("${ogp.localRepository:}")
-	private String localRepository;
-
-	@Value("${login.repository:}")
-	private String loginRepository;
+	@Value("${proxy.institution:}")
+	private String proxyInstitution;
 
 	protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -56,12 +53,8 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 		//populate a List of ProxyConfig objects
 		//This should throw an error if LOGIN_REPOSITORY is not set properly
 		String repositoryId = "";
-		if (org.apache.commons.lang3.StringUtils.isNotEmpty(loginRepository)){
-			if (loginRepository.equalsIgnoreCase("useLocal")) {
-				repositoryId = localRepository;
-			} else {
-				repositoryId = loginRepository;
-			}
+		if (!proxyInstitution.isBlank()){
+			repositoryId = proxyInstitution.trim();
 		} else {
 			throw new IOException("Must set a value for Login Repository!");
 		}
@@ -80,7 +73,6 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 
 			InternalServerMapping sm = getServerMapping(pc, type);
 			sm.setInternalUrl(geoserverInternal + "/" + type);
-			// todo: what?
 			sm.setExternalUrl(geoserverExternal + "/" + repositoryId + "/" + type);
 			sm.setUsername(geoserverUserName);
 			sm.setPassword(geoserverPassword);
@@ -128,7 +120,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	}
 
 	@Override
-	public String getInternalUrl(String type, String repository, String accessLevel, String locationField) throws Exception {
+	public String getInternalUrl(String type, String repository, String accessLevel, String locationField) throws ConfigException, JsonParseException {
 		String url = null;
 		if (hasProxy(type, repository, accessLevel)){
 			url =  getInternalProxyUrl(type, repository, accessLevel);
@@ -140,7 +132,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	}
 	
 	@Override
-	public String getExternalUrl(String type, String repository, String accessLevel, String locationField) throws Exception{
+	public String getExternalUrl(String type, String repository, String accessLevel, String locationField) throws Exception, ConfigException {
 	    String url = null;
 	    Boolean hasProxy = hasProxy(type, repository, accessLevel);
 	    if (hasProxy){
@@ -153,7 +145,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 	}
 	@Override
 	public String getExternalProxyUrl(String type, String repository, String accessLevel)
-			throws Exception {
+			throws ConfigException {
 		ServerMapping sm = getMatchingServerMapping(type, repository, accessLevel);
 		return sm.getExternalUrl();
 	}
@@ -177,7 +169,7 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 		return false;
 	}
 
-	private ServerMapping getMatchingServerMapping(String type, String repository, String accessLevel) throws Exception{
+	private ServerMapping getMatchingServerMapping(String type, String repository, String accessLevel) throws ConfigException{
 		for (ProxyConfig pc: proxyConfig){
 			if (pc.getRepositoryId().equalsIgnoreCase(repository)){
 				if (OgpUtils.containsIgnoreCase(pc.getAccessLevels(), accessLevel)){
@@ -190,26 +182,25 @@ public class ProxyConfigRetrieverFromProperties implements ProxyConfigRetriever 
 			}
 		}
 		
-		throw new Exception("Server Mapping not found.");
+		throw new ConfigException("Server Mapping not found.");
+	}
+
+	@Override
+	public InternalServerMapping getInternalServerMapping(String type, String repository, String accessLevel) throws ConfigException {
+		return (InternalServerMapping) getMatchingServerMapping(type, repository, accessLevel);
 	}
 		
 	
 	@Override
-	public String getInternalProxyUrl(String type, String repository, String accessLevel) throws Exception {
-		InternalServerMapping sm = (InternalServerMapping) getMatchingServerMapping(type, repository, accessLevel);
+	public String getInternalProxyUrl(String type, String repository, String accessLevel) throws ConfigException {
+		InternalServerMapping sm = getInternalServerMapping(type, repository, accessLevel);
 		return sm.getInternalUrl();
 	}
 
 	@Override
-	public boolean hasCredentials(String type, String repository, String accessLevel) {
-		InternalServerMapping sm = null;
-		try {
-			sm = (InternalServerMapping) getMatchingServerMapping(type, repository, accessLevel);
-		} catch (Exception e){
-			return false;
-		}
+	public boolean hasCredentials(InternalServerMapping sm) {
 		
-		if ( StringUtils.isNotEmpty(sm.getUsername()) && StringUtils.isNotEmpty(sm.getPassword()) ){
+		if ( !sm.getUsername().isBlank() && !sm.getPassword().isBlank() ){
 			return true;
 		} else {
 			return false;
