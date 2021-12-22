@@ -1,5 +1,6 @@
 package org.opengeoportal.featureinfo;
 
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.search.OGPRecord;
 import org.springframework.ui.ModelMap;
 
@@ -27,6 +28,6 @@ public interface FeatureInfo {
 
     boolean hasInfoUrl();
 
-    String getInfoUrl() throws Exception;
+    String getInfoUrl() throws Exception, ConfigException;
 
 }

@@ -1,5 +1,6 @@
 package org.opengeoportal.featureinfo;
 
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.featureinfo.exception.FeatureInfoException;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.OgpUtils;
@@ -59,7 +60,13 @@ public abstract class AbstractFeatureInfo {
         model.addAttribute("layerId", OGPRecord.getLayerId());
 
         if (hasInfoUrl()) {
-            String url = getInfoUrl();
+            String url = null;
+            try {
+                url = getInfoUrl();
+            } catch (ConfigException e) {
+                e.printStackTrace();
+                throw new Exception(OPERATION_NOT_SUPPORTED_MESSAGE);
+            }
 
             String layerName = OgpUtils.getLayerNameNS(
                     OGPRecord.getWorkspaceName(), OGPRecord.getName());
@@ -88,7 +95,7 @@ public abstract class AbstractFeatureInfo {
 
     protected abstract boolean hasInfoUrl();
 
-    protected abstract String getInfoUrl() throws Exception;
+    protected abstract String getInfoUrl() throws Exception, ConfigException;
 
 
     /**

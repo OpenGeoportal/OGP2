@@ -15,12 +15,12 @@ import java.util.concurrent.Future;
 public class PerLayerDownloadMethodImpl implements PerLayerDownloadMethod {
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final GenericDownloader genericDownloader;
+    private final FileDownloader fileDownloader;
 
     private final PerLayerDownloadMethodHelper perLayerDownloadMethodHelper;
 
-    public PerLayerDownloadMethodImpl(GenericDownloader genericDownloader, PerLayerDownloadMethodHelper perLayerDownloadMethodHelper) {
-        this.genericDownloader = genericDownloader;
+    public PerLayerDownloadMethodImpl(FileDownloader fileDownloader, PerLayerDownloadMethodHelper perLayerDownloadMethodHelper) {
+        this.fileDownloader = fileDownloader;
         this.perLayerDownloadMethodHelper = perLayerDownloadMethodHelper;
     }
 
@@ -36,12 +36,20 @@ public class PerLayerDownloadMethodImpl implements PerLayerDownloadMethod {
 
     }
 
+    public FileDownloader getFileDownloader() {
+        return fileDownloader;
+    }
+
+    public PerLayerDownloadMethodHelper getPerLayerDownloadMethodHelper() {
+        return perLayerDownloadMethodHelper;
+    }
+
     public Future<Set<File>> download(LayerRequest currentLayer) throws Exception {
         currentLayer.setMetadata(perLayerDownloadMethodHelper.includesMetadata());
 
         RequestParams requestParams = createDownloadRequest(currentLayer);
         String name = currentLayer.getLayerInfo().getName();
-        return genericDownloader.download(requestParams, name, perLayerDownloadMethodHelper.getExpectedContentType());
+        return fileDownloader.download(requestParams, name, perLayerDownloadMethodHelper.getExpectedContentType());
     }
 
     public Boolean hasRequiredInfo(LayerRequest layerRequest){

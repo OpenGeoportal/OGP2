@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.download.exception.RequestCreationException;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.RequestParams.Method;
@@ -70,7 +71,7 @@ public class WcsDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 			try {
 				AugmentedSolrRecord asr = wcsInfoRequester.getOgcAugment(layerRequest.getLayerInfo());
 				describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(asr.getOwsInfo()).getInfoMap();
-			} catch (Exception ex) {
+			} catch (Exception | ConfigException ex) {
 				ex.printStackTrace();
 				throw new RequestCreationException("unable to retrieve WCS envelope information to form request");
 			}

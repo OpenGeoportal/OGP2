@@ -3,7 +3,9 @@ package org.opengeoportal.controllers;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
+import org.opengeoportal.config.proxy.InternalServerMapping;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.proxy.GenericProxy;
 import org.opengeoportal.proxy.ProxyFactory;
@@ -44,21 +46,32 @@ public class RestrictedWMSController {
 		//probably a better place to centralize/abstract this
 		if (ogpConfigRetriever.getConfig().getLoginConfig().getRepositoryId().equalsIgnoreCase(repositoryId)  && proxyConfigRetriever.hasProxy("wms", repositoryId, "restricted")){
 			// forward the request to the protected GeoServer instance
-			
-			String remoteUrl = this.getProxyTo(repositoryId) + "?"
+
+			InternalServerMapping proxyServer = null;
+			try {
+				proxyServer = this.getProxyTo(repositoryId);
+			} catch (ConfigException e) {
+				e.printStackTrace();
+				response.sendError(403);
+			}
+			assert proxyServer != null;
+			String remoteUrl = proxyServer.getInternalUrl() + "?"
 					+ request.getQueryString();
 			logger.info("executing WMS request to protected GeoServer: "
 					+ remoteUrl);
 			GenericProxy proxy = proxyFactory.getObject();
-			proxy.proxyRequest(request, response, remoteUrl);
+			if (proxyConfigRetriever.hasCredentials(proxyServer)){
+				proxy.proxyRequest(request, response, remoteUrl, proxyServer.getUsername(), proxyServer.getPassword());
+			} else {
+				proxy.proxyRequest(request, response, remoteUrl);
+			}
 		} else {
 			response.sendError(403);
 		}
 	}
 	
-	public String getProxyTo(String repositoryId) throws Exception {
-		
-		return proxyConfigRetriever.getInternalProxyUrl("wms", repositoryId, "restricted");
+	public InternalServerMapping getProxyTo(String repositoryId) throws ConfigException {
+		return proxyConfigRetriever.getInternalServerMapping("wms", repositoryId, "restricted");
 	}
 
 

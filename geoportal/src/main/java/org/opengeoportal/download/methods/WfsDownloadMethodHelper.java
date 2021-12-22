@@ -3,6 +3,7 @@ package org.opengeoportal.download.methods;
 import java.net.MalformedURLException;
 import java.util.*;
 
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.download.exception.RequestCreationException;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.download.types.RequestParams.Method;
@@ -87,7 +88,7 @@ public class WfsDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 				// if the wfs layer info is not there, make a request to the WFS server
 				AugmentedSolrRecord asr = wfsInfoRequester.getOgcAugment(layerInfo);
 				describeLayerInfo = OwsInfo.findWfsInfo(asr.getOwsInfo()).getInfoMap();
-			} catch (Exception ex) {
+			} catch (Exception | ConfigException ex) {
 				logger.debug("Failed to get additional info from WFS server.");
 				ex.printStackTrace();
 			}

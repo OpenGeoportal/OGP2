@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
@@ -12,17 +13,16 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.opengeoportal.http.HttpRequester;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.service.SearchService;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.LocationFieldUtils;
 import org.opengeoportal.utilities.OgpFileUtils;
-import org.opengeoportal.http.OgpHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -39,19 +39,15 @@ public class QuickWfsDownload implements QuickDownload {
 	/*http://geoserver01.uit.tufts.edu:80/wfs?request=GetFeature&version=1.1.0&typeName=topp:states&BBOX=-75.102613,40.212597,-72.361859,41.512517,EPSG:4326
 	*/
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
-	final
-	DirectoryRetriever directoryRetriever;
-	final
-	SearchService searchService;
-	final
-	OgpHttpClient ogpHttpClient;
+	final DirectoryRetriever directoryRetriever;
+	final SearchService searchService;
+	final HttpRequester httpRequester;
 
 	@Autowired
-	public QuickWfsDownload(DirectoryRetriever directoryRetriever, SearchService searchService,
-							OgpHttpClient ogpHttpClient) {
+	public QuickWfsDownload(DirectoryRetriever directoryRetriever, SearchService searchService, HttpRequester httpRequester) {
 		this.directoryRetriever = directoryRetriever;
 		this.searchService = searchService;
-		this.ogpHttpClient = ogpHttpClient;
+		this.httpRequester = httpRequester;
 	}
 
 	/**
@@ -84,7 +80,6 @@ public class QuickWfsDownload implements QuickDownload {
 		requestString += "&typeName=" + workspace + ":" + layerName;
 		requestString += "&srsName=EPSG:4326";
 		requestString += "&BBOX=" + requestBounds.toString() + ",EPSG:4326";
-		HttpClient httpclient = ogpHttpClient.getCloseableHttpClient();
 		File outputFile = null;
     
     	String wfsLocation = LocationFieldUtils.getWfsUrl(layerInfo.getLocation());
@@ -92,40 +87,28 @@ public class QuickWfsDownload implements QuickDownload {
 
         logger.info("executing request " + httpget.getURI());
         
-		try {
-			HttpResponse response = httpclient.execute(httpget);
-			logger.info("Response code: " + Integer.toString(response.getStatusLine().getStatusCode()));
-			if (response.getStatusLine().getStatusCode() != 200){
+		try (InputStream inputStream = httpRequester.sendRequest(wfsLocation + "?" + requestString, "", "GET", "*/*")){
+			logger.info("Response code: " + Integer.toString(httpRequester.getStatus()));
+			if (httpRequester.getStatus() != 200){
 				throw new Exception("Attempt to download " + layerName + " failed.");
 			}
 			
-			HttpEntity entity = response.getEntity();
-			String contentType = entity.getContentType().getValue();
+			String contentType = httpRequester.getContentType();
 			logger.info("returned content type:" + contentType);
 			if (contentType.toLowerCase().contains("xml")){
-				String responseContent = EntityUtils.toString(entity);
+				String responseContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 				logger.error(responseContent);
 				throw new Exception("Remote server reported an error");
 			}
 			File directory = directoryRetriever.getDirectory("download");
 			outputFile = new File(directory, OgpFileUtils.filterName(layerName) + ".zip");
 			
-			InputStream inputStream = null;
-			BufferedInputStream bufferedIn = null;
-			try {
-				inputStream = entity.getContent();
-				bufferedIn = new BufferedInputStream(inputStream);
+			try (BufferedInputStream bufferedIn = new BufferedInputStream(inputStream)) {
 				FileUtils.copyInputStreamToFile(bufferedIn, outputFile);
 			} catch (Exception e){
-				
-			} finally {
-				bufferedIn.close();
-				inputStream.close();
+				logger.error(e.getMessage());
 			}
 			
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

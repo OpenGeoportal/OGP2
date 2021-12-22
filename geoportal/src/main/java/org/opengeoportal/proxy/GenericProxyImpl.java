@@ -6,15 +6,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.opengeoportal.http.OgpHttpClient;
+import org.opengeoportal.http.HttpRequester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -23,54 +18,41 @@ import org.springframework.stereotype.Component;
 public class GenericProxyImpl implements GenericProxy {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	protected final OgpHttpClient ogpHttpClient;
+	protected final HttpRequester httpRequester;
 
 	@Autowired
-	public GenericProxyImpl(OgpHttpClient ogpHttpClient) {
-		this.ogpHttpClient = ogpHttpClient;
+	public GenericProxyImpl(HttpRequester httpRequester) {
+		this.httpRequester = httpRequester;
 	}
+
 
 	@Override
 	public void proxyRequest(HttpServletRequest request,
 			HttpServletResponse response, String remoteUrl){
 
 			try {
-				this.doProxy(request, response, remoteUrl);
+				IOUtils.copy(httpRequester.sendRequest(remoteUrl, "", "GET", "*/*"), response.getOutputStream());
 			} catch (IOException e) {
 				logger.error(e.getLocalizedMessage());
 				
 			}
-
-
 	}
-	
-	protected void doProxy(HttpServletRequest request,
-			HttpServletResponse response, String remoteUrl) throws IOException{
-            
-            CloseableHttpClient httpClient = ogpHttpClient.getCloseableHttpClient();
-            
-            
-            HttpGet proxyRequest = new HttpGet(remoteUrl);
 
+	@Override
+	public void proxyRequest(HttpServletRequest request,
+							 HttpServletResponse response, String remoteUrl, String username, String password){
 
-            CloseableHttpResponse proxyResponse = null;
-			try {
-				proxyResponse = httpClient.execute(proxyRequest);
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-            try {
-                logger.info(proxyResponse.getStatusLine().getReasonPhrase());
-                IOUtils.copy(proxyResponse.getEntity().getContent(), response.getOutputStream());
-            } finally {
-                proxyResponse.close();
-            }
+		try {
+			IOUtils.copy(httpRequester.sendRequest(remoteUrl,
+					"",
+					"GET",
+					"*/*",
+					username, password), response.getOutputStream());
+		} catch (IOException e) {
+			logger.error(e.getLocalizedMessage());
 
-	};
+		}
+	}
+
 	
 }

@@ -1,8 +1,10 @@
 package org.opengeoportal.ogc;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
+import org.opengeoportal.config.exception.ConfigException;
+import org.opengeoportal.config.proxy.InternalServerMapping;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.utilities.OgpUtils;
@@ -16,7 +18,8 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 	final Logger logger = LoggerFactory.getLogger(this.getClass());
 	private ProxyConfigRetriever proxyConfigRetriever;
 
-	public OgcInfoRequesterImpl(HttpRequester httpRequester, OgcInfoRequest ogcInfoRequest, ProxyConfigRetriever proxyConfigRetriever) {
+	public OgcInfoRequesterImpl(HttpRequester httpRequester, OgcInfoRequest ogcInfoRequest,
+								ProxyConfigRetriever proxyConfigRetriever) {
 		this.httpRequester = httpRequester;
 		this.ogcInfoRequest = ogcInfoRequest;
 		this.proxyConfigRetriever = proxyConfigRetriever;
@@ -46,73 +49,60 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 		this.proxyConfigRetriever = proxyConfigRetriever;
 	}
 
-	private OwsInfo handleResponse(String contentType, InputStream inputStream) throws Exception{
-		logger.info(contentType);
-		Boolean contentMatch = contentType.toLowerCase().contains("xml");
-		if (!contentMatch){
-			logger.error("Unexpected content type: " + contentType);
-			//If there is a mismatch with the expected content, but the response is text, we want to at least log the response
-			if (contentType.toLowerCase().contains("text")||contentType.toLowerCase().contains("html")||contentType.toLowerCase().contains("xml")){
-				logger.error("Returned text: " + IOUtils.toString(inputStream));
-			} 
-		
-			throw new Exception("Unexpected content type");
+	private InputStream sendRequest(String url, OGPRecord ogpRecord) throws Exception, ConfigException {
+		String layerName = OgpUtils.getLayerNameNS(ogpRecord.getWorkspaceName(), ogpRecord.getName());
 
+		String request = ogcInfoRequest.createRequest(layerName);
+		String method = ogcInfoRequest.getMethod();
+
+		InternalServerMapping sm = null;
+		try {
+			sm = proxyConfigRetriever.getInternalServerMapping("wms", ogpRecord.getInstitution(), ogpRecord.getAccess());
+		} catch (ConfigException e) {
+			e.printStackTrace();
+		}
+		if (proxyConfigRetriever.hasProxy("wms", ogpRecord.getInstitution(), ogpRecord.getAccess()) &&
+				proxyConfigRetriever.hasCredentials(sm)){
+			return httpRequester.sendRequest(url, request, method, "text/xml",
+					sm.getUsername(), sm.getPassword());
 		} else {
-			try{
-				return ogcInfoRequest.parseResponse(inputStream);
-			} catch (Exception e){
-				e.printStackTrace();
-				throw new Exception("Could not parse response");
-			}
+			return httpRequester.sendRequest(url, request, method, "text/xml");
 		}
+
 	}
-		
-	public OwsInfo getOwsInfo(OGPRecord ogpRecord, String owsUrl) throws Exception {
-		InputStream is = null;
-		try{
-			String layerName = OgpUtils.getLayerNameNS(ogpRecord.getWorkspaceName(), ogpRecord.getName());
 
-			String request = ogcInfoRequest.createRequest(layerName);
-			String method = ogcInfoRequest.getMethod();
+	public OwsInfo getOwsInfo(OGPRecord ogpRecord, String url) throws Exception{
 
-			is = httpRequester.sendRequest(owsUrl, request, method);
+		try (InputStream inputStream = sendRequest(url, ogpRecord)){
 
 			int status = httpRequester.getStatus();
-			if (status == 200){
+			if (status == 200) {
 				String contentType = httpRequester.getContentType().toLowerCase();
-				return handleResponse(contentType, is);
+				logger.info(contentType);
+				Boolean contentMatch = contentType.toLowerCase().contains("xml");
+				if (!contentMatch) {
+					logger.error("Unexpected content type: " + contentType);
+					//If there is a mismatch with the expected content, but the response is text, we want to at least log the response
+					if (contentType.toLowerCase().contains("text") || contentType.toLowerCase().contains("html") || contentType.toLowerCase().contains("xml")) {
+						logger.error("Returned text: " + new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+					}
+
+					throw new Exception("Unexpected content type");
+
+				} else {
+					try {
+						return ogcInfoRequest.parseResponse(inputStream);
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new Exception("Could not parse response");
+					}
+				}
 			} else {
 				throw new Exception("Error communicating with server! response: " + Integer.toString(status));
 			}
-		} finally {
-			IOUtils.closeQuietly(is);
-		}
-	}
-	
-
-	public OwsInfo getOwsInfo(OGPRecord ogpRecord) throws Exception {
-		InputStream is = null;
-		try{
-			String layerName = OgpUtils.getLayerNameNS(ogpRecord.getWorkspaceName(), ogpRecord.getName());
-
-			String request = ogcInfoRequest.createRequest(layerName);
-			String method = ogcInfoRequest.getMethod();
-			String protocol = ogcInfoRequest.getOgcProtocol().toLowerCase();
-			String url = proxyConfigRetriever.getInternalUrl(protocol, ogpRecord.getInstitution(),
-					ogpRecord.getAccess(), ogpRecord.getLocation());
-
-			is = httpRequester.sendRequest(url, request, method);
-
-			int status = httpRequester.getStatus();
-			if (status == 200){
-				String contentType = httpRequester.getContentType().toLowerCase();
-				return handleResponse(contentType, is);
-			} else {
-				throw new Exception("Error communicating with server! response: " + Integer.toString(status));
-			}
-		} finally {
-			IOUtils.closeQuietly(is);
+		} catch (ConfigException e) {
+			e.printStackTrace();
+			throw new Exception("Misconfigured proxy");
 		}
 	}
 	
@@ -129,11 +119,15 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 
 	@Override
 	public AugmentedSolrRecord getOgcAugment(OGPRecord ogpRecord)
-			throws Exception {
+			throws Exception, ConfigException {
 		
 		AugmentedSolrRecord asr = new AugmentedSolrRecord();
 		asr.setOgpRecord(ogpRecord);
-		OwsInfo info = getOwsInfo(ogpRecord);
+		String protocol = ogcInfoRequest.getOgcProtocol().toLowerCase();
+		String url = proxyConfigRetriever.getInternalUrl(protocol, ogpRecord.getInstitution(),
+				ogpRecord.getAccess(), ogpRecord.getLocation());
+
+		OwsInfo info = getOwsInfo(ogpRecord, url);
 		asr.getOwsInfo().add(info);
 		return asr;
 	}

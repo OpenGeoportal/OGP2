@@ -1,5 +1,6 @@
 package org.opengeoportal.download.methods;
 
+import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.http.HttpRequester;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -12,57 +13,59 @@ public class DownloadMethodConfig {
     @Bean("downloadMethod.wms")
     @Scope("prototype")
     public PerLayerDownloadMethod wmsDownloadMethod(
-            GenericDownloader genericDownloader,
+            FileDownloader fileDownloader,
             @Qualifier("wmsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+        return new PerLayerDownloadMethodImpl(fileDownloader, perLayerDownloadMethodHelper);
     }
 
     @Bean("downloadMethod.kmlReflector")
     @Scope("prototype")
     public PerLayerDownloadMethod kmlDownloadMethod(
-            GenericDownloader genericDownloader,
+            FileDownloader fileDownloader,
             @Qualifier("kmlDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+        return new PerLayerDownloadMethodImpl(fileDownloader, perLayerDownloadMethodHelper);
     }
 
     @Bean("downloadMethod.wfs")
     @Scope("prototype")
     public PerLayerDownloadMethod wfsDownloadMethod(
-            GenericDownloader genericDownloader,
+            FileDownloader fileDownloader,
             @Qualifier("wfsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+        return new PerLayerDownloadMethodImpl(fileDownloader, perLayerDownloadMethodHelper);
     }
 
     @Bean("downloadMethod.wfs.proxied")
     @Scope("prototype")
     public PerLayerDownloadMethod proxiedWfsDownloadMethod(
-            GenericDownloader genericDownloader,
-            @Qualifier("proxiedWfsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+            FileDownloader fileDownloader,
+            @Qualifier("proxiedWfsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper,
+            ProxyConfigRetriever proxyConfigRetriever){
+        return new ProxiedPerLayerDownloadMethod(fileDownloader, perLayerDownloadMethodHelper, proxyConfigRetriever);
     }
 
     @Bean("downloadMethod.wcs")
     @Scope("prototype")
     public PerLayerDownloadMethod wcsDownloadMethod(
-            GenericDownloader genericDownloader,
+            FileDownloader fileDownloader,
             @Qualifier("wcsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+        return new PerLayerDownloadMethodImpl(fileDownloader, perLayerDownloadMethodHelper);
     }
 
     @Bean("downloadMethod.wcs.proxied")
     @Scope("prototype")
     public PerLayerDownloadMethod proxiedWcsDownloadMethod(
-            GenericDownloader genericDownloader,
-            @Qualifier("proxiedWcsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+            FileDownloader fileDownloader,
+            @Qualifier("proxiedWcsDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper,
+            ProxyConfigRetriever proxyConfigRetriever){
+        return new ProxiedPerLayerDownloadMethod(fileDownloader, perLayerDownloadMethodHelper, proxyConfigRetriever);
     }
 
     @Bean("downloadMethod.file")
     @Scope("prototype")
     public PerLayerDownloadMethod fileDownloadMethod(
-            GenericDownloader genericDownloader,
+            FileDownloader fileDownloader,
             @Qualifier("fileDownloadMethodHelper") PerLayerDownloadMethodHelper perLayerDownloadMethodHelper){
-        return new PerLayerDownloadMethodImpl(genericDownloader, perLayerDownloadMethodHelper);
+        return new PerLayerDownloadMethodImpl(fileDownloader, perLayerDownloadMethodHelper);
     }
 
     @Bean("downloadMethod.hgl")

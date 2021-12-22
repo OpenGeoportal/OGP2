@@ -6,6 +6,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.opengeoportal.config.exception.ConfigException;
+import org.opengeoportal.config.proxy.InternalServerMapping;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.featureinfo.exception.FeatureInfoException;
 import org.opengeoportal.http.HttpRequester;
@@ -50,10 +52,11 @@ public class WmsGetFeatureInfo extends AbstractFeatureInfo implements FeatureInf
     }
 
     @Override
-    public String getInfoUrl() throws Exception {
+    public String getInfoUrl() throws Exception, ConfigException {
         String url = proxyConfigRetriever.getInternalUrl("wms",
                 ogpRecord.getInstitution(), ogpRecord.getAccess(),
                 ogpRecord.getLocation());
+
         // filter any query terms
         url = OgpUtils.filterQueryString(url);
         return url;
@@ -120,12 +123,26 @@ public class WmsGetFeatureInfo extends AbstractFeatureInfo implements FeatureInf
                 .map(p -> URLEncoder.encode((p.getKey()), StandardCharsets.UTF_8)+ "=" + URLEncoder.encode(p.getValue(), StandardCharsets.UTF_8))
                 .reduce((p1, p2) -> p1 + "&" + p2)
                 .orElse("");
-        InputStream response =  httpRequester.sendRequest(url, queryString, "GET");
+
+        InternalServerMapping sm = null;
+        try {
+            sm = proxyConfigRetriever.getInternalServerMapping("wms", ogpRecord.getInstitution(), ogpRecord.getAccess());
+        } catch (ConfigException e) {
+            e.printStackTrace();
+        }
+        InputStream response;
+        if (proxyConfigRetriever.hasProxy("wms", ogpRecord.getInstitution(), ogpRecord.getAccess()) &&
+                proxyConfigRetriever.hasCredentials(sm)){
+            response =  httpRequester.sendRequest(url, queryString, "GET", "text/xml", sm.getUsername(), sm.getPassword());
+        } else {
+            response = httpRequester.sendRequest(url, queryString, "GET", "text/xml");
+        }
         String returnedContentType = httpRequester.getContentType();
         logger.debug("returned content type: " + returnedContentType);
         if (!returnedContentType.toLowerCase().contains("html")) {
             throw new FeatureInfoException("Unable to parse response");
         }
+
         return response;
     }
 

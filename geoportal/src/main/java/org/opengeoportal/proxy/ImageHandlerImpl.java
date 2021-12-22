@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Future;
 
+import org.opengeoportal.config.exception.ConfigException;
+import org.opengeoportal.config.proxy.InternalServerMapping;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.RequestStatusManager;
 import org.opengeoportal.proxy.ImageRequest.ImageStatus;
@@ -50,9 +52,15 @@ public class ImageHandlerImpl implements ImageHandler {
 
 		UUID requestId = registerRequest(sessionId, imageRequest);
 		logger.debug("Image Request registered: " + requestId.toString());
-		downloadLayerImages(imageRequest);
-		imageCompositor.createComposite(imageRequest);
-		
+		try {
+			downloadLayerImages(imageRequest);
+			imageCompositor.createComposite(imageRequest);
+
+		} catch (ConfigException e) {
+			e.printStackTrace();
+			throw new Exception("Problem with configuration.");
+		}
+
 		return requestId;
 	}
 	
@@ -63,7 +71,7 @@ public class ImageHandlerImpl implements ImageHandler {
 	}	
 
 	
-	private void downloadLayerImages(ImageRequest imageRequest) {
+	private void downloadLayerImages(ImageRequest imageRequest) throws Exception, ConfigException {
 		List<LayerImage> layerImageList = imageRequest.getLayers();
 
 		setBaseQuery(imageRequest.getFormat(), imageRequest.getBbox(), imageRequest.getSrs(), 
@@ -75,25 +83,56 @@ public class ImageHandlerImpl implements ImageHandler {
 			logger.error(e.getMessage());
 			return;
 		}
-		
 
 		for (LayerImage layerImage: layerImageList){			
 			//now we have everything we need to create a request
 			//this needs to be done for each image received
-			try {
-				logger.debug(layerImage.getUrl().toString());
-				ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
-				Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl());
-				layerImage.setImageFileFuture(imgFile);
+			logger.debug(layerImage.getUrl().toString());
+			ImageDownloader imageDownloader = imageDownloaderFactory.getObject();
+			OGPRecord record = layerImage.getOgpRecord();
 
-			} catch (Exception e) {
-				//just skip it
-				layerImage.setImageStatus(ImageStatus.FAILED);
-				logger.error("There was a problem getting this image.  Skipping.");
-				e.printStackTrace();
-			} 
+			if (hasCredentials(record)) {
+				InternalServerMapping serverMapping = proxyConfigRetriever.getInternalServerMapping("wms",
+						record.getInstitution(), record.getAccess());
+				try {
+					Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl(),
+							serverMapping.getUsername(), serverMapping.getPassword());
+					layerImage.setImageFileFuture(imgFile);
+
+				} catch (Exception e) {
+					//just skip it
+					layerImage.setImageStatus(ImageStatus.FAILED);
+					logger.error("There was a problem getting this image.  Skipping.");
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					Future<File> imgFile = imageDownloader.getImage(layerImage.getUrl());
+					layerImage.setImageFileFuture(imgFile);
+
+				} catch (Exception e) {
+					//just skip it
+					layerImage.setImageStatus(ImageStatus.FAILED);
+					logger.error("There was a problem getting this image.  Skipping.");
+					e.printStackTrace();
+				}
+			}
+
 		}
 
+	}
+
+	private boolean hasCredentials(OGPRecord ogpRecord) {
+		InternalServerMapping serverMapping = null;
+		try {
+			serverMapping = proxyConfigRetriever.getInternalServerMapping("wms",
+					ogpRecord.getInstitution(), ogpRecord.getAccess());
+			return proxyConfigRetriever.hasCredentials(serverMapping);
+		} catch (ConfigException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 	
 	private void populateImageRequest(ImageRequest imageRequest) throws EmptyImageRequestException, SearchServerException {
@@ -140,7 +179,7 @@ public class ImageHandlerImpl implements ImageHandler {
 					record.getAccess(), record.getLocation());
 	   		layerImage.setUrl(new URL(baseUrl + "?" + baseQuery + layerQueryString));
 
-	   	} catch (Exception e1) {
+	   	} catch (Exception | ConfigException e1) {
 	   		e1.printStackTrace();
 	   		logger.error("Problem retrieving a URL for this layer.");
 	   		//there's some problem retrieving a url.  skip the layer

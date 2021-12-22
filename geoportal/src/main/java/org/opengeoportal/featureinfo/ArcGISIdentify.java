@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.apache.commons.lang.StringUtils;
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.featureinfo.exception.FeatureInfoException;
 import org.opengeoportal.utilities.LocationFieldUtils;
@@ -82,7 +83,7 @@ public class ArcGISIdentify extends AbstractFeatureInfo implements FeatureInfo {
 
 
     @Override
-    public String getInfoUrl() throws Exception {
+    public String getInfoUrl() throws Exception, ConfigException {
         String url = proxyConfigRetriever.getInternalUrl("ArcGISRest",
                 ogpRecord.getInstitution(), ogpRecord.getAccess(),
                 ogpRecord.getLocation());

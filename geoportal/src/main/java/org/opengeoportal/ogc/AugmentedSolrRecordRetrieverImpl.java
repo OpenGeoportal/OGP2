@@ -1,6 +1,7 @@
 package org.opengeoportal.ogc;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.ogc.OwsInfo.OwsType;
 import org.opengeoportal.search.OGPRecord;
 import org.opengeoportal.service.SearchService;
@@ -157,7 +158,7 @@ public class AugmentedSolrRecordRetrieverImpl implements AugmentedSolrRecordRetr
 				if (asr != null){
 					return asr;
 				}
-			} catch (Exception e){
+			} catch (Exception | ConfigException e){
 				logger.warn("Error requesting ogc info: " + e.getMessage());
 			}
 			Thread.sleep(PAUSE * (i + 1));

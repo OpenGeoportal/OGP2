@@ -3,6 +3,7 @@ package org.opengeoportal.download.methods;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.download.exception.RequestCreationException;
 import org.opengeoportal.download.types.LayerRequest;
@@ -36,14 +37,14 @@ public class ProxiedWcsDownloadMethodHelper extends
 			url = getProxyTo(layer);
 			urls.add(url);
 
-		} catch (Exception e) {
+		} catch (ConfigException e) {
 			e.printStackTrace();
 			throw new RequestCreationException("Proxy url not found.");
 		}
 		return urls;
 	}
 	
-	public String getProxyTo(LayerRequest layer) throws Exception {
+	public String getProxyTo(LayerRequest layer) throws ConfigException {
 		OGPRecord sr = layer.getLayerInfo();
 		return proxyConfigRetriever.getInternalProxyUrl("wcs", sr.getInstitution(), sr.getAccess());
 	}
