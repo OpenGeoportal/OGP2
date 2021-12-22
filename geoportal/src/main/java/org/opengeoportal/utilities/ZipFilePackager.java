@@ -49,20 +49,13 @@ public class ZipFilePackager{
 		File zipFile = new File(fileToZip.getParent(), zipFileName);
 		ZipArchiveEntry zipEntry = new ZipArchiveEntry(fileToZip.getName());
 
-		FileInputStream currentFileStream = null;
-		ZipArchiveOutputStream newZipStream = null;
-
-		try {
-			newZipStream = new ZipArchiveOutputStream(zipFile);
+		try (ZipArchiveOutputStream newZipStream = new ZipArchiveOutputStream(zipFile);
+			 FileInputStream currentFileStream = new FileInputStream(fileToZip)){
 			//add this uncompressed file to the archive
 			newZipStream.putArchiveEntry(zipEntry);
-
-			currentFileStream = new FileInputStream(fileToZip);
 			IOUtils.copy(currentFileStream, newZipStream);
-		} finally {
 			newZipStream.closeArchiveEntry();
-			IOUtils.closeQuietly(newZipStream);
-			IOUtils.closeQuietly(currentFileStream);
+		} finally {
 			try {
 				logger.info("Deleting: " + fileToZip.getName());
 				fileToZip.delete();
@@ -97,84 +90,74 @@ public class ZipFilePackager{
 	    		return;
 	    	}
 	    }
-	    
-	    ZipArchiveOutputStream newZipStream = null;
-	    try{
-	    	newZipStream = new ZipArchiveOutputStream(zipArchive);
 
-	    	for (File currentFile : filesToPackage){
-	    		FileInputStream currentFileStream = null;
-	    		try{
+		try (ZipArchiveOutputStream newZipStream = new ZipArchiveOutputStream(zipArchive)){
+			for (File currentFile : filesToPackage){
+				try (FileInputStream currentFileStream = new FileInputStream(currentFile)) {
+					if (!currentFile.getName().toLowerCase().endsWith(".zip")){
 
-	    			currentFileStream = new FileInputStream(currentFile);
-	    			if (!currentFile.getName().toLowerCase().endsWith(".zip")){
+						logger.debug("Adding uncompressed file...");
+						//add this uncompressed file to the archive
+						//create a new archive entry with the file's name
+						String entryName = currentFile.getName();
+						logger.debug("Zipping: " + entryName);
+						ZipArchiveEntry zipEntry = new ZipArchiveEntry(entryName);
+						try{
+							newZipStream.putArchiveEntry(zipEntry);
+							IOUtils.copy(currentFileStream, newZipStream);
+						} finally {
+							//always close the archive entry
+							newZipStream.closeArchiveEntry();
+						}
 
-	    				logger.debug("Adding uncompressed file...");
-	    				//add this uncompressed file to the archive
-	    				//create a new archive entry with the file's name
-	    				String entryName = currentFile.getName();
-	    				logger.debug("Zipping: " + entryName);
-	    				ZipArchiveEntry zipEntry = new ZipArchiveEntry(entryName);
+					} else {
+						logger.debug("Adding entries from compressed file...");
+						//read the entries from the zip file and copy them to the new zip archive
+						//so that we don't have to recompress them.
 
-	    				try{
-	    					newZipStream.putArchiveEntry(zipEntry);
-	    					IOUtils.copy(currentFileStream, newZipStream);
-	    				} finally {
-	    					//always close the archive entry
-	    					newZipStream.closeArchiveEntry();
-	    					//InputStreams are closed elsewhere
-	    				}
-	    			} else {
-	    				logger.debug("Adding entries from compressed file...");
-	    				//read the entries from the zip file and copy them to the new zip archive
-	    				//so that we don't have to recompress them.
-	    				ZipArchiveInputStream currentZipStream = null;
-	    				try{
-	    					ArchiveEntry currentEntry = null;
-	    					currentZipStream = new ZipArchiveInputStream(currentFileStream);
+						try(ZipArchiveInputStream currentZipStream = new ZipArchiveInputStream(currentFileStream)) {
+							try{
+								ArchiveEntry currentEntry = null;
 
-	    					while ((currentEntry = currentZipStream.getNextEntry()) != null) {
-	    						String entryName = currentEntry.getName();
-	    						logger.debug("Zipping: " + entryName);
-	    						ZipArchiveEntry zipEntry = new ZipArchiveEntry(entryName);
-	    						try {
-	    							newZipStream.putArchiveEntry(zipEntry);
-	    						} catch (Exception e){
-	    							//duplicate names should never happen.
-	    							entryName = Math.round(Math.random() * 10000) + "_" + entryName;
-	    							ZipArchiveEntry zipEntry2 = new ZipArchiveEntry(entryName);
-	    							newZipStream.putArchiveEntry(zipEntry2);
-	    						}
-	    						IOUtils.copy(currentZipStream, newZipStream);
+								while ((currentEntry = currentZipStream.getNextEntry()) != null) {
+									String entryName = currentEntry.getName();
+									logger.debug("Zipping: " + entryName);
+									ZipArchiveEntry zipEntry = new ZipArchiveEntry(entryName);
+									try {
+										newZipStream.putArchiveEntry(zipEntry);
+									} catch (Exception e){
+										//duplicate names should never happen.
+										entryName = Math.round(Math.random() * 10000) + "_" + entryName;
+										ZipArchiveEntry zipEntry2 = new ZipArchiveEntry(entryName);
+										newZipStream.putArchiveEntry(zipEntry2);
+									}
+									IOUtils.copy(currentZipStream, newZipStream);
 
 
-	    					}
-	    				} finally {
-	    					newZipStream.closeArchiveEntry();
-	    					IOUtils.closeQuietly(currentZipStream);
-	    				}
-	    			}	
-	    		} catch (FileNotFoundException e) {
-	    			String filename = currentFile.getName();
-	    			logger.error("File not found ['" + filename + "']");
+								}
+							} finally {
+								newZipStream.closeArchiveEntry();
+							}
 
-	    		} catch (IOException e) {
-	    			// TODO Auto-generated catch block
-	    			e.printStackTrace();
-	    		} finally {
-	    			IOUtils.closeQuietly(currentFileStream);
-	    			//always delete the file
-	    			logger.debug("Deleting: " + currentFile.getName());
-	    			currentFile.delete();
+						}
 
-	    		}
-	    	}
+					}
+				} catch (FileNotFoundException e) {
+					String filename = currentFile.getName();
+					logger.error("File not found ['" + filename + "']");
 
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} finally {
+					//always delete the file
+					logger.debug("Deleting: " + currentFile.getName());
+					currentFile.delete();
 
-	    } finally {
-	    	IOUtils.closeQuietly(newZipStream);
-	    }
+				}
 
+			}
+		}
 	}
 
 	/**
@@ -223,16 +206,9 @@ public class ZipFilePackager{
 						}
 						destFile.createNewFile();
 						logger.debug("created file: " + destFile.getAbsolutePath());
-						InputStream zipStream = null;
-						FileOutputStream fos = null;
-						try{
-							zipStream = zipFile.getInputStream(currentEntry);
-							fos = new FileOutputStream(destFile);
+						try (InputStream zipStream = zipFile.getInputStream(currentEntry);
+							 FileOutputStream fos = new FileOutputStream(destFile)) {
 							IOUtils.copy(zipStream, fos);
-						} finally {
-							IOUtils.closeQuietly(zipStream);
-							IOUtils.closeQuietly(fos);
-							
 						}
 						unarchivedFiles.add(destFile);
 						logger.info("Unzipped file : " + destFile.getName());

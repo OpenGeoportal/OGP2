@@ -2,7 +2,6 @@ package org.opengeoportal.download.methods;
 
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.opengeoportal.download.exception.RequestCreationException;
 import org.opengeoportal.download.types.LayerRequest;
 import org.opengeoportal.http.HttpRequester;
@@ -69,15 +68,15 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 	
 	@Override
 	public boolean sendEmail(LayerRequest layerRequest) {
-		InputStream inputStream = null;
+
 		try {
-			inputStream = this.httpRequester.sendRequest(this.getUrl(layerRequest), createQueryString(layerRequest), "GET");
-			return true;
+			try (InputStream inputStream = this.httpRequester.sendRequest(this.getUrl(layerRequest), createQueryString(layerRequest), "GET", "text/xml") ) {
+				return true;
+			}
+
 		} catch (Exception e){
 			logger.error(e.getMessage());
 			return false;
-		} finally {
-			IOUtils.closeQuietly(inputStream);
 		}
 	}
 

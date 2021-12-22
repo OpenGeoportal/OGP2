@@ -1,6 +1,5 @@
 package org.opengeoportal.metadata;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -33,14 +32,10 @@ public class XmlParserImpl implements XmlParser {
 
     @Override
     public Document parse(InputStream inputStream) throws SAXException, IOException {
-        try {
-            initializeXPath();
-            //Parse the document
-            document = documentBuilder.parse(inputStream);
-            return document;
-        } finally {
-            IOUtils.closeQuietly(inputStream);
-        }
+        initializeXPath();
+        //Parse the document
+        document = documentBuilder.parse(inputStream);
+        return document;
     }
 
     @Override
@@ -48,8 +43,9 @@ public class XmlParserImpl implements XmlParser {
         //parse the returned XML to make sure it is well-formed & to format
         //filter extra spaces from xmlString
         rawXMLString = rawXMLString.replaceAll(">[ \t\n\r\f]+<", "><").replaceAll("[\t\n\r\f]+", "");
-        InputStream xmlInputStream = new ByteArrayInputStream(rawXMLString.getBytes("UTF-8"));
-        return parse(xmlInputStream);
+        try (InputStream xmlInputStream = new ByteArrayInputStream(rawXMLString.getBytes("UTF-8"))) {
+            return parse(xmlInputStream);
+        }
     }
 
     @Override

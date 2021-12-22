@@ -1,7 +1,6 @@
 package org.opengeoportal.download;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.opengeoportal.http.HttpRequester;
 import org.opengeoportal.utilities.DirectoryRetriever;
 import org.opengeoportal.utilities.OgpFileUtils;
@@ -15,9 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Component
 public class DownloadDirectoryTester {
@@ -65,16 +62,11 @@ public class DownloadDirectoryTester {
         String request = "<wfs:GetFeature service=\"WFS\" version=\"1.0.0\" outputFormat=\"shape-zip\" xmlns:sde=\"http://sde.tufts.edu\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd\"><wfs:Query typeName=\"sde:GISPORTAL.GISOWNER01.MADISTRICTBOUNDARIES1213\"></wfs:Query></wfs:GetFeature>\n";
         String request2 = "<wfs:GetFeature service=\"WFS\" version=\"1.0.0\" outputFormat=\"shape-zip\" xmlns:massgis=\"http://massgis.state.ma.us/featuretype\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd\"><wfs:Query typeName=\"massgis:MORIS.PROT_CLP_POLY\"></wfs:Query></wfs:GetFeature>";
 
-        InputStream inputStream = httpRequester.sendRequest("http://giswebservices.massgis.state.ma.us/geoserver/wfs", request2, "POST");
-
-
-        BufferedInputStream bufferedIn = null;
-        try {
-            bufferedIn = new BufferedInputStream(inputStream);
+        try (InputStream inputStream = httpRequester.sendRequest("http://giswebservices.massgis.state.ma.us/geoserver/wfs", request2, "POST", "text/xml");
+            BufferedInputStream bufferedIn = new BufferedInputStream(inputStream)) {
             FileUtils.copyInputStreamToFile(bufferedIn, testFile.toFile());
-        } finally {
-            IOUtils.closeQuietly(bufferedIn);
         }
+
     }
 
 }

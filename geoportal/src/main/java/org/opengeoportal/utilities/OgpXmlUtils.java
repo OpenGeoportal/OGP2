@@ -12,7 +12,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -40,22 +39,19 @@ public class OgpXmlUtils {
 	 * @throws ParserConfigurationException
 	 */
 	public static Document getDocument(InputStream inputStream) throws SAXException, IOException, ParserConfigurationException{
-		try{
-			// Create a factory
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
-			documentBuilderFactory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
-			documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-			documentBuilderFactory.setNamespaceAware(true);
+		// Create a factory
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 
-			// Use document builder factory
-			DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
-			//Parse the document
-			Document document = builder.parse(inputStream);
-			return document;
-		} finally {
-			IOUtils.closeQuietly(inputStream);
-		}
+		documentBuilderFactory.setValidating(false);  // dtd isn't always available; would be nice to attempt to validate
+		documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		documentBuilderFactory.setNamespaceAware(true);
+
+		// Use document builder factory
+		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+		//Parse the document
+		return builder.parse(inputStream);
+
 	}
 
 
@@ -67,12 +63,12 @@ public class OgpXmlUtils {
 	 * @throws Exception
 	 */
 	public static String alwaysGetName(Node node) throws Exception{
-		if (node.equals(null)){
+		if (node == null){
 			throw new Exception("This node is null.");
 		}
 		String localName = "";
 		try{
-			if (!node.getLocalName().equals(null)){
+			if (node.getLocalName() != null){
 				localName = node.getLocalName();
 			}
 		} catch (NullPointerException e){
@@ -101,7 +97,7 @@ public class OgpXmlUtils {
 			</ows:ExceptionReport>
 		  */
 
-		 logger.debug("Full response: " + baseNode.getTextContent());
+		 logger.debug("Full response: " + baseNode.toString());
 			String errorMessage = "";
 			
 			if (alwaysGetName(baseNode).toLowerCase().contains("serviceexception")){
