@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -55,6 +56,7 @@ public class CleanupDirectoryImpl implements CleanupDirectory {
 	/* (non-Javadoc)
 	 * @see org.OpenGeoPortal.Utilities.CleanupDirectory#cleanupDownloadDirectory()
 	 */
+	@Scheduled(fixedDelayString = "${cleanupInterval:30000}")
 	public void cleanupDownloadDirectory(){
 		logger.debug("Attempting to clean directory...");
 		//this is not great...only handles one level of directories
