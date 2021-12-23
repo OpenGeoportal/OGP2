@@ -6,3 +6,4 @@
 .project
 
 geoportal.iml
+/src/main/resources/application-prod.properties

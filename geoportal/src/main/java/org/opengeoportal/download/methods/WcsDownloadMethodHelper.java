@@ -72,7 +72,7 @@ public class WcsDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 				AugmentedSolrRecord asr = wcsInfoRequester.getOgcAugment(layerRequest.getLayerInfo());
 				describeLayerInfo = (CoverageOffering1_0_0) OwsInfo.findWcsInfo(asr.getOwsInfo()).getInfoMap();
 			} catch (Exception | ConfigException ex) {
-				ex.printStackTrace();
+				logger.error(ex.getMessage());
 				throw new RequestCreationException("unable to retrieve WCS envelope information to form request");
 			}
 		}

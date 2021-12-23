@@ -64,7 +64,7 @@ public abstract class AbstractFeatureInfo {
             try {
                 url = getInfoUrl();
             } catch (ConfigException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
                 throw new Exception(OPERATION_NOT_SUPPORTED_MESSAGE);
             }
 

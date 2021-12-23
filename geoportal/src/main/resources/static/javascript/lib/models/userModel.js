@@ -143,8 +143,8 @@ OpenGeoportal.Models.User = Backbone.Model.extend({
 				withCredentials : true
 			},
 			context : that,
-			dataType : "json"
-
+			dataType : "json",
+			method: "POST"
 		};
 		// meh. should modify spring security to return a 200 instead of a 302 ?
 

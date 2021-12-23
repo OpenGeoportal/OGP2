@@ -66,24 +66,7 @@ public final class LocationFieldUtils {
 		}
 		return false;
 	}
-	
-	/**
-	 * determines if the SolrRecord Location field contains a value for the key "serviceStart"
-	 * 
-	 * the service start url refers to a custom servlet at Harvard that configures a layer in GeoServer so
-	 * that it can be accessed via OGC web protocols
-	 * 
-	 * @param locationField		The Solr record Location field as a String
-	 * @return true if the SolrRecord Location field contains a key for "serviceStart"
-	 */
-	public static Boolean hasServiceStart(String locationField){
-		try {
-			return hasKey(locationField, "serviceStart");
-		} catch (JsonParseException e) {
 
-		}
-		return false;
-	}
 	
 	/**
 	 * Get the value for the "tilecache" key from the Location field
@@ -131,7 +114,7 @@ public final class LocationFieldUtils {
 			return hasKey(locationField, "wfs");
 
 		} catch (JsonParseException e) {
-
+			logger.debug(e.getMessage());
 		}
 
 		return false;
@@ -168,7 +151,6 @@ public final class LocationFieldUtils {
 		JsonNode pathNode = rootNode.path(key);
 		Set<String> url = new HashSet<String>();
 		if (pathNode.isMissingNode()){
-			
 			throw new JsonParseException("The Object '" + key + "' could not be found.", null);
 			
 		} else if (pathNode.isArray()){
@@ -298,14 +280,10 @@ public final class LocationFieldUtils {
 		try {
 			rootNode = mapper.readTree(locationField);
 			
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.warn(e.getMessage());
 		}
-		
+
 		return rootNode;
 		
 	}

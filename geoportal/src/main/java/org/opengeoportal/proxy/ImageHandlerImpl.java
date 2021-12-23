@@ -57,7 +57,7 @@ public class ImageHandlerImpl implements ImageHandler {
 			imageCompositor.createComposite(imageRequest);
 
 		} catch (ConfigException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new Exception("Problem with configuration.");
 		}
 
@@ -129,7 +129,7 @@ public class ImageHandlerImpl implements ImageHandler {
 					ogpRecord.getInstitution(), ogpRecord.getAccess());
 			return proxyConfigRetriever.hasCredentials(serverMapping);
 		} catch (ConfigException e) {
-			e.printStackTrace();
+			logger.debug(e.getMessage());
 		}
 
 		return false;
@@ -180,8 +180,7 @@ public class ImageHandlerImpl implements ImageHandler {
 	   		layerImage.setUrl(new URL(baseUrl + "?" + baseQuery + layerQueryString));
 
 	   	} catch (Exception | ConfigException e1) {
-	   		e1.printStackTrace();
-	   		logger.error("Problem retrieving a URL for this layer.");
+	   		logger.error("Problem retrieving a URL for this layer: " + e1.getMessage());
 	   		//there's some problem retrieving a url.  skip the layer
 	   	}
 	}

@@ -59,7 +59,7 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 		try {
 			sm = proxyConfigRetriever.getInternalServerMapping("wms", ogpRecord.getInstitution(), ogpRecord.getAccess());
 		} catch (ConfigException e) {
-			e.printStackTrace();
+			logger.warn(e.getMessage());
 		}
 		if (proxyConfigRetriever.hasProxy("wms", ogpRecord.getInstitution(), ogpRecord.getAccess()) &&
 				proxyConfigRetriever.hasCredentials(sm)){
@@ -101,7 +101,7 @@ public class OgcInfoRequesterImpl implements OgcInfoRequester {
 				throw new Exception("Error communicating with server! response: " + Integer.toString(status));
 			}
 		} catch (ConfigException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new Exception("Misconfigured proxy");
 		}
 	}

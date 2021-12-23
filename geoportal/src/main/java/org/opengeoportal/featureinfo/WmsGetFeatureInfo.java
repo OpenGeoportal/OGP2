@@ -128,7 +128,7 @@ public class WmsGetFeatureInfo extends AbstractFeatureInfo implements FeatureInf
         try {
             sm = proxyConfigRetriever.getInternalServerMapping("wms", ogpRecord.getInstitution(), ogpRecord.getAccess());
         } catch (ConfigException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         }
         InputStream response;
         if (proxyConfigRetriever.hasProxy("wms", ogpRecord.getInstitution(), ogpRecord.getAccess()) &&

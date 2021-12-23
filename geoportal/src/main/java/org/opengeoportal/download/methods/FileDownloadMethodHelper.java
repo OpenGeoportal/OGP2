@@ -44,7 +44,7 @@ public class FileDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 		try {
 			urls = layer.getDownloadUrl();
 		} catch (JsonParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new RequestCreationException("Problem parsing download url from record.");
 		}
 		for (String currentUrl: urls){
@@ -52,7 +52,7 @@ public class FileDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 			try {
 				checkUrl(currentUrl);
 			} catch (MalformedURLException e){
-				e.printStackTrace();
+				logger.error(e.getMessage());
 				throw new RequestCreationException("Download url from record is malformed.");
 			}
 		}

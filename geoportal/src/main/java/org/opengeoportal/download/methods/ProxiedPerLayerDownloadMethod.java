@@ -32,7 +32,7 @@ public class ProxiedPerLayerDownloadMethod extends PerLayerDownloadMethodImpl im
         try {
             sm = proxyConfigRetriever.getInternalServerMapping("wms", ogpRecord.getInstitution(), ogpRecord.getAccess());
         } catch (ConfigException e) {
-            e.printStackTrace();
+            logger.warn(e.getMessage());
         }
         if (proxyConfigRetriever.hasProxy("wms", ogpRecord.getInstitution(), ogpRecord.getAccess()) &&
                 proxyConfigRetriever.hasCredentials(sm)){

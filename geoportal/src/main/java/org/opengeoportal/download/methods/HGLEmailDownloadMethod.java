@@ -59,7 +59,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 		try {
 			emailRequestQuery = "LayerName=" + layerRequest.getLayerNameNS() + "UserEmail=" + userEmail;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new RequestCreationException("Unable to get layer name with namespace.");
 		}
 
@@ -87,7 +87,6 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 			createQueryString(layerRequest);
 		} catch (RequestCreationException e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
 			return false;
 		}
 
@@ -108,7 +107,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 			logger.info("Download URL: " + layer.getDownloadUrl());
 			return layer.getDownloadUrl().get(0);
 		} catch (JsonParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new RequestCreationException("Unable to parse email request url from download url");
 		}
 	}

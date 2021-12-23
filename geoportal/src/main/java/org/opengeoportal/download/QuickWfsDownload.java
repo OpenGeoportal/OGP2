@@ -7,12 +7,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.opengeoportal.http.HttpRequester;
 import org.opengeoportal.layer.BoundingBox;
 import org.opengeoportal.search.OGPRecord;
@@ -83,11 +77,9 @@ public class QuickWfsDownload implements QuickDownload {
 		File outputFile = null;
     
     	String wfsLocation = LocationFieldUtils.getWfsUrl(layerInfo.getLocation());
-        HttpGet httpget = new HttpGet(wfsLocation + "?" + requestString);
+		String url = wfsLocation + "?" + requestString;
 
-        logger.info("executing request " + httpget.getURI());
-        
-		try (InputStream inputStream = httpRequester.sendRequest(wfsLocation + "?" + requestString, "", "GET", "*/*")){
+		try (InputStream inputStream = httpRequester.sendRequest(url, "", "GET", "*/*")){
 			logger.info("Response code: " + Integer.toString(httpRequester.getStatus()));
 			if (httpRequester.getStatus() != 200){
 				throw new Exception("Attempt to download " + layerName + " failed.");

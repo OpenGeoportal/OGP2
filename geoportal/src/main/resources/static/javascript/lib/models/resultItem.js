@@ -34,6 +34,12 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 
     initialize: function () {
         this.queryTerms.setSortInfo(this.sort);
+		var self = this;
+		$(document).on("container.resize", function (e, data) {
+
+			var newHeight = Math.max(data.ht, data.minHt);
+			self.pageParams.rows = Math.max(50, Math.floor(newHeight / 25));
+		});
     },
 	
     fetchOn: false,

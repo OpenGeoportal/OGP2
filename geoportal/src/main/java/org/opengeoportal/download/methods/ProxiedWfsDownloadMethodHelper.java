@@ -37,7 +37,7 @@ public class ProxiedWfsDownloadMethodHelper extends
 			urls.add(url);
 
 		} catch (ConfigException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new RequestCreationException("Proxy url not found.");
 		}
 		return urls;

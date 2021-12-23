@@ -108,8 +108,8 @@ OpenGeoportal.Models.QueryTerms = Backbone.Model.extend({
 	 */
 	setMapExtent : function(extent, center) {
 		// make sure we're getting the right values for the extent
-		console.log("mapextent");
-		console.log(arguments);
+		//console.log("mapextent");
+		//console.log(arguments);
 		var minX = extent.left;
 		var maxX = extent.right;
 		var minY = extent.bottom;

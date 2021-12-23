@@ -51,7 +51,7 @@ public class RestrictedWMSController {
 			try {
 				proxyServer = this.getProxyTo(repositoryId);
 			} catch (ConfigException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage());
 				response.sendError(403);
 			}
 			assert proxyServer != null;

@@ -90,7 +90,7 @@ public class WfsDownloadMethodHelper implements PerLayerDownloadMethodHelper {
 				describeLayerInfo = OwsInfo.findWfsInfo(asr.getOwsInfo()).getInfoMap();
 			} catch (Exception | ConfigException ex) {
 				logger.debug("Failed to get additional info from WFS server.");
-				ex.printStackTrace();
+				logger.warn(ex.getMessage());
 			}
 		}
 
