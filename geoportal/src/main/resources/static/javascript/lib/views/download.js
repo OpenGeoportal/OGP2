@@ -36,7 +36,7 @@ OpenGeoportal.Models.DownloadPreferences = Backbone.Model.extend({
 		},
 		vectorChoice : "",
 		rasterChoice : "",
-		isClipped : true
+		isClipped : false
 	}
 });
 
@@ -455,10 +455,7 @@ OpenGeoportal.Views.Download = OpenGeoportal.Views.CartActionView
 			},
 
 			shouldUseHGLOpenDelivery : function(model, format) {
-				var bool1 = model.get("Institution").toLowerCase() === "harvard";
-				var bool2 = model.isRaster();
-				var bool3 = OpenGeoportal.Utility.arrayContainsIgnoreCase(["geotiff"], model.get("requestedFormat"));
-				return bool1 && bool2 && bool3;
+				return model.get("Institution").toLowerCase() === "harvard";
 			},
 			/* emailKeys : [ "emailUrl" ], */
 			requiresEmailAddress : function(model, format) {

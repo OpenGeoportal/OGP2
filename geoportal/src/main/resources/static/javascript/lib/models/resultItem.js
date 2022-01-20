@@ -28,18 +28,18 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 	model: OpenGeoportal.Models.ResultItem,
 
     constructor: function (attributes, options) {
-        _.extend(this, _.pick(options, "previewed", "queryTerms", "sort", "facets"));
+        _.extend(this, _.pick(options, "previewed", "queryTerms", "sort", "facets", "structure"));
         Backbone.Collection.apply(this, arguments);
     },
 
     initialize: function () {
         this.queryTerms.setSortInfo(this.sort);
-		var self = this;
+/*		var self = this;
 		$(document).on("container.resize", function (e, data) {
 
 			var newHeight = Math.max(data.ht, data.minHt);
 			self.pageParams.rows = Math.max(50, Math.floor(newHeight / 25));
-		});
+		});*/
     },
 	
     fetchOn: false,
@@ -51,6 +51,12 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		},
 
 	totalResults: 0,
+
+	getRowSize: function(){
+		var containerSize = this.structure.getContainerSize();
+		var newHeight = Math.max(containerSize.ht, containerSize.minHt);
+		return Math.max(50, Math.floor(newHeight / 25));
+	},
 
     parse: function(resp) {
         return this.searchResponseToCollection(resp);
@@ -148,11 +154,16 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 		extraParams: {
 			//does this get added by solr object?
 		},
-		
-		pageParams: {
-            // these parameters are used directly by Solr, so we need to maintain the naming conventions
-			start: 0,
-			rows: 50
+
+		rowStart: 0,
+
+		getPageParams: function(){
+			var self = this;
+			return {
+				// these parameters are used directly by Solr, so we need to maintain the naming conventions
+				start: this.rowStart,
+				rows: function(){return self.getRowSize.apply(self, arguments);}()
+			}
 		},
 		
 		fetchStatus: null,
@@ -164,14 +175,15 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			}
 			
 	        this.disableFetch();
-	        this.pageParams.start = 0;
+	        this.rowStart = 0;
 	        var that = this;
 
+			var pageParams = this.getPageParams();
 	        var xhr = this.fetch({
 	          dataType: "json",
 	          complete: function(){that.fetchComplete.apply(that, arguments); jQuery(document).trigger("newResults");},
 	          reset: true,
-	          data: $.extend(this.pageParams, this.extraParams)
+	          data: $.extend(pageParams, this.extraParams)
 	        });
 	        this.fetchStatus = xhr;
 	        return xhr;
@@ -184,17 +196,18 @@ OpenGeoportal.ResultsCollection = Backbone.Collection.extend({
 			
 	       this.disableFetch();
 	        
-	       this.pageParams.start = this.last().get("resultNum") + 1;
+	       this.rowStart = this.last().get("resultNum") + 1;
 	       
-	       if (this.pageParams.start > this.totalResults){
+	       if (this.rowStart > this.totalResults){
 	    	   return;
 	       }
 	       var that = this;
+		   var pageParams = this.getPageParams();
 	       this.fetchStatus = this.fetch({
 	          dataType: "json",
 	          complete: function(){that.fetchComplete.apply(that, arguments);},
 	          remove: false,
-	          data: $.extend(this.pageParams, this.extraParams)
+	          data: $.extend(pageParams, this.extraParams)
 	        });
 		},
 

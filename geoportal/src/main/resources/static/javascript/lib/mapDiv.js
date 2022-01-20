@@ -357,10 +357,9 @@ OpenGeoportal.MapController = function (params) {
 		var initialZoom = 1;
 
 		if (jQuery('#' + this.containerDiv).parent().height() > 810) {
-			initialZoom = 2;
 			// TODO: this should be more sophisticated. width is also important
-			// initialZoom = Math.ceil(Math.sqrt(Math.ceil(jQuery('#' +
-			// this.containerDiv).parent().height() / 256)));
+			initialZoom = Math.max(2, Math.floor(Math.log2(jQuery('#' + this.containerDiv).parent().height() / 256)));
+			//39135.7584765625
 		}
 		return initialZoom;
 	};
@@ -382,15 +381,16 @@ OpenGeoportal.MapController = function (params) {
 				20037508.34, 20037508.34);
 
 		var controls = this.createOLControls();
-		//var initialZoom = this.getInitialZoomLevel();
+		var initialZoom = this.getInitialZoomLevel();
 		var options = {
 			allOverlays : true,
 			projection: new OpenLayers.Projection("EPSG:3857"),
 			maxResolution : 2.8125,
+			minResolution: 78271.516953125,
 			maxExtent : mapBounds,
 			numZoomLevels: 19,
 			units : "m",
-			//zoom : initialZoom,
+			zoom : initialZoom,
 			controls : controls
 		};
 
@@ -400,14 +400,14 @@ OpenGeoportal.MapController = function (params) {
 
 		// div defaults to 0 height for certain doc-types; we want the map to
 		// fill the parent container
-		/*		var initialHeight;
+		var initialHeight;
 		if (initialZoom === 1){
 			initialHeight = 512;
 		} else {
-		 initialHeight = $container.height();
-		 }*/
+		 	initialHeight = $container.height();
+		}
 
-		this.$mapDiv.height($container.height()).width($container.width());
+		this.$mapDiv.height(initialHeight).width($container.width());
 		
 		// attempt to reload tile if load fails
 		OpenLayers.IMAGE_RELOAD_ATTEMPTS = 3;
@@ -415,30 +415,6 @@ OpenGeoportal.MapController = function (params) {
 		// make OL compute scale according to WMS spec
 		OpenLayers.DOTS_PER_INCH = 91;//0.71428571428572;
 		OpenLayers.Util.onImageLoadErrorColor = 'transparent';
-
-		//OpenLayers 2.12+ changes zoom handling in a way not usable for us. Override with this function
-		var adjustZoom = function (zoom) {
-			if (this.baseLayer && this.baseLayer.wrapDateLine) {
-				var resolution, resolutions = this.baseLayer.resolutions,
-					//add a multiplier for maxResolution
-					maxResolution = this.getMaxExtent().getWidth() * 1.5 / this.size.w;
-
-				if (this.getResolutionForZoom(zoom) > maxResolution) {
-					if (this.fractionalZoom) {
-						zoom = this.getZoomForResolution(maxResolution) - 1;
-					} else {
-						for (var i = zoom | 0, ii = resolutions.length; i < ii; ++i) {
-							if (resolutions[i] <= maxResolution) {
-								zoom = i - 1;
-								break;
-							}
-						}
-					}
-				}
-			}
-			return zoom;
-
-		};
 
 		//customized setGMapVisibility function that listens for google maps "idle" instead of "tilesloaded"
 		var setGMapVisibility = function (visible) {
@@ -524,11 +500,11 @@ OpenGeoportal.MapController = function (params) {
 			}
 		};
 
-		OpenLayers.Renderer.prototype.calculateFeatureDx = calculateFeatureDx;
+		//OpenLayers.Renderer.prototype.calculateFeatureDx = calculateFeatureDx;
 
-		OpenLayers.Layer.Google.v3.setGMapVisibility = setGMapVisibility;
+		//OpenLayers.Layer.Google.v3.setGMapVisibility = setGMapVisibility;
 
-		OpenLayers.Map.prototype.adjustZoom = adjustZoom;
+		//OpenLayers.Map.prototype.adjustZoom = adjustZoom;
 		// call OpenLayers.Map with function arguments
 		this.ol = new OpenLayers.Map("ogpMap", options);
 
@@ -631,7 +607,7 @@ OpenGeoportal.MapController = function (params) {
 		// OpenLayers event
 
 		this.ol.events.register('zoomend', this, function () {
-			//console.log("zoomend");
+			//console.log("zoomend event");
 			//clear previous update function. we only want to run the last one
 			clearTimeout(this.zoomendId);
 
@@ -639,12 +615,12 @@ OpenGeoportal.MapController = function (params) {
 
 			that.basemaps.checkZoom(zoomLevel);
 
-			var tilesHeight = Math.pow((zoomLevel + 1), 2) / 2 * 256;
+			var tilesHeight = Math.pow(2, zoomLevel) * 256;
 			var containerHeight = that.$mapDiv.parent().parent().height();
 
 			tilesHeight = Math.min(tilesHeight, containerHeight);
 
-			if (that.$mapDiv.height() != tilesHeight) {
+			if (that.$mapDiv.height() !== tilesHeight) {
 
 				that.$mapDiv.height(tilesHeight);// calculate min and
 				// max sizes
@@ -654,17 +630,19 @@ OpenGeoportal.MapController = function (params) {
 					that.ol.updateSize();
 					//only trigger our event if we are zooming.
 					if (zoomingToExtent) {
-						that.$mapDiv.trigger('updatedSizeOnZoom');
+						//that.$mapDiv.trigger('updatedSizeOnZoom');
 					}
 				};
 
 				//collate update functions
 				this.zoomendId = setTimeout(update, 100);
-				return;
-			}
 
-			if (zoomLevel == 1) {
-				that.ol.setCenter(that.getAdjustedCenter().lon, 0);
+				if (zoomLevel === 1) {
+					var adjustedCenter = that.getAdjustedCenter();
+					adjustedCenter.lat = 0;
+					that.ol.setCenter(adjustedCenter, 1);
+				}
+
 			}
 
 			that.isZoomingToExtent = false;
@@ -1014,8 +992,7 @@ OpenGeoportal.MapController = function (params) {
 							var indx = that.ol.getLayerIndex(displayLayers[i]);
 							that.ol.setLayerIndex(displayLayers[i], indx + 1);
 						} else {
-							highestBasemap = Math.max(highestBasemap, that
-								.ol.getLayerIndex(displayLayers[i]));
+							highestBasemap = Math.max(highestBasemap, that.ol.getLayerIndex(displayLayers[i]));
 						}
 					}
 					that.ol.addLayer(newLayer);
@@ -1428,7 +1405,7 @@ OpenGeoportal.MapController = function (params) {
         if (_.has(this.panel, "openWidth")) {
             offset.x = this.panel.get("openWidth");
 		}
-		return new OpenLayers.Pixel(offset.x, offset.y);
+		return new OpenLayers.Pixel(offset.x, -1 * offset.y);
 	};
 
 
@@ -1460,15 +1437,18 @@ OpenGeoportal.MapController = function (params) {
 	this.getAdjustedZoom = function (extent, offset) {
 
 		//ideal resolution for extent
-		var viewSize = this.ol.getSize();
-		viewSize.w = viewSize.w - offset.x;
-		viewSize.h = viewSize.h - offset.y;
+		var viewSize = {w: 0, h: 0};
+		var $container = this.$mapDiv.parent().parent();
+		viewSize.w = $container.width() - offset.x;
+		viewSize.h = $container.height() - offset.y;
 
 		//the long side has to fit in the extent (max)
-		var idealResolution = Math.max(extent.getWidth() / viewSize.w,
+		var idealResolution = Math.min(extent.getWidth() / viewSize.w,
 			extent.getHeight() / viewSize.h);
 
-		return this.ol.getZoomForResolution(idealResolution);
+		var adjustedZoom = Math.max(1,this.ol.getZoomForResolution(idealResolution));
+
+		return adjustedZoom;
 
 	};
 
@@ -1479,7 +1459,7 @@ OpenGeoportal.MapController = function (params) {
 			return new OpenLayers.LonLat(0, 0);
 		}
 
-		var $viewport = jQuery(this.ol.getViewport());
+		var $viewport = jQuery(".olMapViewport").first();
 		var width = $viewport.width();
 		var height = $viewport.height();
 
@@ -1603,9 +1583,13 @@ OpenGeoportal.MapController = function (params) {
 
 		var lonlat = layerExtent.getCenterLonLat();
 		lonlat.lon = lonlat.lon - offset.x / 2 * resAtZoom;
-		lonlat.lat = lonlat.lat - offset.y * resAtZoom;
+		//lonlat.lat = lonlat.lat + offset.y / 2 * resAtZoom;
 
 		return lonlat;
+		/*
+				clickedLonLat.lon = clickedLonLat.lon - res * offset.x / 2;
+		clickedLonLat.lat = clickedLonLat.lat - res * offset.y / 2;
+		 */
 	};
 
 	this.getZoomForAdjustedLayerExtent = function (extent, offset, doCallback) {
@@ -1753,13 +1737,12 @@ OpenGeoportal.MapController = function (params) {
 
 
 		return new OpenLayers.Layer.Vector(name, {
-			style: style_bbox,
-			displayOutsideMaxExtent: true,
-			wrapDateline: true
+			style: style_bbox
 		});
 	};
 
 	this.generateBounds = function (bbox, displayCentroid) {
+
 		var arrFeatures = [];
 		if (bbox[0] > bbox[2]) {
 			var dateline = this.WGS84ToMercator(180, 0).lon;
@@ -1779,7 +1762,7 @@ OpenGeoportal.MapController = function (params) {
 		} else {
 			var geom = new OpenLayers.Bounds(
 				bbox[0], bbox[1], bbox[2], bbox[3]).toGeometry();
-			
+
 			var box = new OpenLayers.Feature.Vector(geom);
 			
 			arrFeatures.push(box);
@@ -1788,6 +1771,7 @@ OpenGeoportal.MapController = function (params) {
 				arrFeatures.push(new OpenLayers.Feature.Vector(geom.getCentroid()));
 			}
 		}
+
 		return arrFeatures;
 	};
 
@@ -1821,6 +1805,12 @@ OpenGeoportal.MapController = function (params) {
 
 
 		featureLayer.addFeatures(this.generateBounds([bottomLeft.lon, bottomLeft.lat, topRight.lon, topRight.lat], displayMarker));
+
+		var topLeft = this.ol.getLonLatFromViewPortPx(this.getMapOffset());
+		var fullExtent = this.ol.getExtent();
+		//fullExtent['left'] = topLeft.lon + 2 * -20037508.34;
+		featureLayer.renderer.setExtent(fullExtent);
+
 		this.ol.setLayerIndex(featureLayer, (this.ol.layers.length - 1));
 
 		// do a comparison with current map extent
@@ -1857,8 +1847,6 @@ OpenGeoportal.MapController = function (params) {
 			showEWArrows = false;
 			mapLeft = -20037510;
 			mapRight = 20037510;
-			extent.left = mapLeft;
-			extent.Right = mapRight;
 		}
 
 		if (layerLeft < mapLeft || layerRight > mapRight || layerTop > mapTop

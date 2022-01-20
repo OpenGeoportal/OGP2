@@ -171,7 +171,7 @@ OpenGeoportal.Views.SearchResultsTable = OpenGeoportal.Views.LayerTable
 			
 			renderPrevPage: function(event, model){
 				var that = this;
-				var pageSize = this.collection.pageParams.rows;
+				var pageSize = this.collection.getPageParams().rows;
 				var topResultNum = model.get("resultNum");
 				
 				var prevPage = this.collection.filter(function(currModel){

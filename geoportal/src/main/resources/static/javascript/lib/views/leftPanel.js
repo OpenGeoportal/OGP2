@@ -254,10 +254,8 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
                         });
 
                         this.prevWidth = ui.originalSize.width;
-                        ui.element.resizable("option", "minWidth", that.model
-                            .get("panelMinWidth"));
-                        var maxWidth = $("#container").width()
-                            - that.model.get("mapMinWidth");
+                        ui.element.resizable("option", "minWidth", that.model.get("panelMinWidth"));
+                        var maxWidth = $("#container").width() - that.model.get("mapMinWidth");
                         ui.element.resizable("option", "maxWidth", maxWidth);
 
 

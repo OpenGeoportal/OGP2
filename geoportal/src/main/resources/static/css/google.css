@@ -23,3 +23,10 @@ div.googleLogo a > div {
     height: 20px;
     width: 110px;
 }
+
+.olControlOverviewMapExtentRectangle {
+    overflow: hidden;
+    background-image: url("../media/blank.gif");
+    cursor: move;
+    border: 2px dotted red;
+}

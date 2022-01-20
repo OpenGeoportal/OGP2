@@ -184,7 +184,8 @@ $(document)
                 previewed: ogp.previewed,
                 facets: ogp.facets,
                 queryTerms: ogp.queryTerms,
-                sort: new OpenGeoportal.TableSortSettings()
+                sort: new OpenGeoportal.TableSortSettings(),
+                structure: ogp.structure
             });
 
 
@@ -217,6 +218,9 @@ $(document)
                 // shared layers to the cart
                 var hasSharedLayers = ogp.cartView.addSharedLayers();
 
+                jQuery(document).one("panelOpen", function() {
+                    ogp.map.zoomToAdjustedLayerExtent("-180,-90,180,90");
+                });
                 // introFlow dictates behavior of info
                 // bubbles, first search opens Search
                 // Results, etc.

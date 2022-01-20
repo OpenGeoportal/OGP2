@@ -91,7 +91,6 @@ button.closeBubble {
     background: -o-linear-gradient(#6B91D5, #577CBE);
     background: linear-gradient(#6B91D5, #577CBE);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
-    zoom: 1;
 }
 
 .triangle-isosceles.left-arrow {
@@ -103,7 +102,6 @@ button.closeBubble {
     background: -o-linear-gradient(#6B91D5, #577CBE);
     background: linear-gradient(#6B91D5, #577CBE);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
-    zoom: 1;
 }
 
 .triangle-isosceles {
@@ -115,7 +113,6 @@ button.closeBubble {
     background: -o-linear-gradient(#6B91D5, #577CBE);
     background: linear-gradient(#6B91D5, #577CBE);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6B91D5', endColorstr='#577CBE');
-    zoom: 1;
     border-radius: 15px;
     position: absolute;
 }

@@ -381,7 +381,6 @@ th > .ui-resizable-e {
     background: -ms-linear-gradient(#EAEAEA, #D3D3D3);
     background: -o-linear-gradient(#EAEAEA, #D3D3D3);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#EAEAEA', endColorstr='#D3D3D3');
-    zoom: 1;
     border-bottom: 1px solid #999999;
     padding: 2px;
 }

@@ -30,7 +30,7 @@
 }
 
 #toMetadataTop:hover {
-    background: url("/resources/media/arrow_up_white.png") no-repeat scroll 5px 50% black;
+    background: url("../media/arrow_up_white.png") no-repeat scroll 5px 50% black;
 }
 
 #toMetadataTop > span {

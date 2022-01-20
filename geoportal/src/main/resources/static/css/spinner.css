@@ -19,7 +19,6 @@
     background: -o-linear-gradient(#BBBBBB, #DDDDDD);
     background: linear-gradient(#BBBBBB, #DDDDDD);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#BBBBBB', endColorstr='#DDDDDD');
-    zoom: 1;
 
     z-index: 2000;
 }

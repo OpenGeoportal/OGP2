@@ -32,9 +32,8 @@ OpenGeoportal.Structure = function (params) {
     this.template = params.template;
     this.panelModel = params.panelModel;
 
-
-	this.template = OpenGeoportal.Template;
 	var analytics = new OpenGeoportal.Analytics();
+	var self = this;
 
     this.panelView = new OpenGeoportal.Views.LeftPanel({
         model: this.panelModel,
@@ -66,13 +65,12 @@ OpenGeoportal.Structure = function (params) {
 	};
 
 	this.resetHandler = function() {
-		var that = this;
 		jQuery(".reset").on("click", function() {
 			analytics.track("Interface", "Reset Page");
 			
 			var cartAuthWarningArr = ["showAuthenticationWarningExternal", "showAuthenticationWarningLocal"];
 			OpenGeoportal.Utility.LocalStorage.resetItems(cartAuthWarningArr);
-			that.resetShowInfo();
+			self.resetShowInfo();
 			
 			
 			window.location = window.location;
@@ -139,20 +137,19 @@ OpenGeoportal.Structure = function (params) {
 
 			this.triggerInitialSearch();
 
-			var that = this;
 			jQuery(document).one("fireSearch", function(event) {
 				$bubble1.hide({
 					effect : "drop",
 					duration : 250,
 					//queue : false,
 					complete : function() {
-						that.panelView.model.set({
+						self.panelView.model.set({
 							mode : "open"
 						});
 						jQuery(document).one("panelOpen", function() {
 							var bubble2 = "directionsBubble";
-							if (that.doShowInfo(bubble2)){
-								var $bubbleDir = that.showDirectionsBubble_1(bubble2);
+							if (self.doShowInfo(bubble2)){
+								var $bubbleDir = self.showDirectionsBubble_1(bubble2);
 								jQuery(document).one("click focus", function() {
 									$bubbleDir.hide("drop");
 								});
@@ -266,38 +263,55 @@ OpenGeoportal.Structure = function (params) {
 		});
 	};
 
+	this.getContainerSize = function (){
+		var $container = $("#container");
+		var minHeight = parseInt($container.css("min-height"));
+		var minWidth = parseInt($container.css("min-width"));
+
+		var headerHeight = $("#header").height();
+		var footerHeight = $("#footer").height();
+		var fixedHeights = headerHeight + footerHeight + 3;
+
+		var newContainerWidth = Math.max(window.innerWidth, minWidth);
+		var newContainerHeight = Math.max(window.innerHeight - fixedHeights, minHeight);
+
+		return {
+			ht: newContainerHeight,
+			wd: newContainerWidth,
+			minHt: minHeight,
+			minWd: minWidth
+		};
+	};
+
+	this.currentHeight = 0;
+
+	this.currentWidth = 0;
+
+	this.setCurrentSize = function() {
+		var $container = $("#container");
+		this.currentHeight = $container.height();
+		this.currentWidth = $container.width();
+	}
 
 
 	this.resizeWindowHandler = function() {
 		var $container = $("#container");
-		var minHeight = parseInt($container.css("min-height"));
-		var minWidth = parseInt($container.css("min-width"));
+		var self = this;
 		
 		var resizeElements = function() {
 
-			var headerHeight = $("#header").height();
-			var footerHeight = $("#footer").height();
-			var fixedHeights = headerHeight + footerHeight + 3;
+			var containerSize = self.getContainerSize();
 
-
-			var oldContainerWidth = $container.width();
-			var newContainerWidth = Math.max(window.innerWidth, minWidth);
-
-			var oldContainerHeight = $container.height();
-			var newContainerHeight = Math.max(window.innerHeight - fixedHeights, minHeight);
-			
 			//resize the container if there is a change.
-			if ((newContainerWidth !== oldContainerWidth)||(newContainerHeight !== oldContainerHeight)){
-				$container.height(newContainerHeight).width(newContainerWidth);
-				$(document).trigger("container.resize", {
-					ht: newContainerHeight,
-					wd: newContainerWidth,
-					minHt: minHeight,
-					minWd: minWidth
-				});
+			if ((containerSize.wd !== self.currentWidth)||(containerSize.ht !== self.currentHeight)){
+				$container.height(containerSize.ht).width(containerSize.wd);
+				self.setCurrentSize();
+				$(document).trigger("container.resize", containerSize);
 			}
 			
 		};
+
+		self.setCurrentSize();
 		resizeElements();
 		$(window).resize(resizeElements);
 	};
