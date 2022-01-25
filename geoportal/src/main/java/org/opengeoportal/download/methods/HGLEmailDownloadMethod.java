@@ -57,7 +57,7 @@ public class HGLEmailDownloadMethod implements EmailDownloadMethod {
 		}
 		String emailRequestQuery = null;
 		try {
-			emailRequestQuery = "LayerName=" + layerRequest.getLayerNameNS() + "UserEmail=" + userEmail;
+			emailRequestQuery = "LayerName=" + layerRequest.getLayerNameNS() + "&UserEmail=" + userEmail;
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			throw new RequestCreationException("Unable to get layer name with namespace.");
