@@ -30,12 +30,6 @@ public class OgpConfigRetrieverImpl implements OgpConfigRetriever {
 	@Value("${ogp.pageTitle.offset:}")
 	private String titleOffset;
 
-	@Value("${ogp.jsLocalized:}")
-	private String extraJs;
-
-	@Value("${ogp.cssLocalized:}")
-	private String extraCss;
-
 	@Value("${search.url:}")
 	private String searchUrl;  // todo: where does this get used? if just in search client, then remove from here
 
@@ -88,10 +82,6 @@ public class OgpConfigRetrieverImpl implements OgpConfigRetriever {
 		ogpConfig.setPageTitlePrimary(titlePrimary);
 	
 		ogpConfig.setPageTitleOffset(titleOffset);
-		
-		ogpConfig.setJsLocalized(extraJs);
-		
-		ogpConfig.setCssLocalized(extraCss);
 
 		ogpConfig.setBasicRestrictedRepositories(List.of(basicRestrictedRepositories));
 

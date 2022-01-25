@@ -12,8 +12,6 @@ public class OgpConfig {
 
 	String pageTitlePrimary;
 	String pageTitleOffset;
-	String jsLocalized;
-	String cssLocalized;
 	URL searchUrl;
 	List<String> basicRestrictedRepositories;
 	String analyticsId;
@@ -34,22 +32,6 @@ public class OgpConfig {
 
 	public void setPageTitleOffset(String pageTitleOffset) {
 		this.pageTitleOffset = pageTitleOffset;
-	}
-
-	public String getJsLocalized() {
-		return jsLocalized;
-	}
-
-	public void setJsLocalized(String jsLocalized) {
-		this.jsLocalized = jsLocalized;
-	}
-
-	public String getCssLocalized() {
-		return cssLocalized;
-	}
-
-	public void setCssLocalized(String cssLocalized) {
-		this.cssLocalized = cssLocalized;
 	}
 
 	public URL getSearchUrl() {
