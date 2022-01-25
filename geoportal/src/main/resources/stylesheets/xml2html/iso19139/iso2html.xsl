@@ -56,7 +56,10 @@
         FMRC ID's appear like "wrf_hi/WRF_Hawaii_Regional_Atmospheric_Model_best.ncd";
         to simplify the ID's, strip everything after "/": -->
 
-    <xsl:variable name="datasetIdentifier">
+    <xsl:variable name="datasetIdentifier"
+                  select="//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString"/>
+
+<!--    <xsl:variable name="datasetIdentifier">
         <xsl:variable name="datasetIdentifierOriginal"
                       select="//gmd:MD_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:citation/gmd:CI_Citation/gmd:identifier/gmd:MD_Identifier/gmd:code/gco:CharacterString"/>
         <xsl:choose>
@@ -67,7 +70,7 @@
                 <xsl:value-of select="$datasetIdentifierOriginal"/>
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:variable>
+    </xsl:variable>-->
 
     <!-- Define a variable which creates a JavaScript array of the bounding
         box of the Spatial_Domain/Bounding element in the ISO for use in the Google

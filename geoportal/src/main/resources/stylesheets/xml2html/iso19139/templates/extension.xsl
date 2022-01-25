@@ -10,7 +10,7 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <!-- METADATA_EXTENSION_INFORMATION: ************************************** -->
 
-    <xsl:import href="common.xsl"/>
+    <xsl:import href="./templates/common.xsl"/>
 
     <xsl:template
             match="gmd:metadataExtensionInfo/gmd:MD_MetadataExtensionInformation">

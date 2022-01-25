@@ -9,7 +9,7 @@
                 xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xlink="http://www.w3.org/1999/xlink"
                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-    <xsl:import href="common.xsl"/>
+    <xsl:import href="./templates/common.xsl"/>
 
 
     <!-- CONTENT_INFORMATION: ************************************************* -->

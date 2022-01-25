@@ -10,7 +10,7 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
 
-    <xsl:import href="common.xsl"/>
+    <xsl:import href="./templates/common.xsl"/>
 
     <!-- METADATA_REFERENCE_INFORMATION: *****************************************
         NOTE: I have combined the following sections under this heading: 1. METADATA_ENTITY_SET_INFORMATION
