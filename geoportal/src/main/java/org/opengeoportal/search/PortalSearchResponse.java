@@ -3,7 +3,7 @@ package org.opengeoportal.search;
 import java.util.List;
 
 public class PortalSearchResponse {
-    public PortalSearchResponse(List<OGPRecord> docs, int start, int rows, int numFound) {
+    public PortalSearchResponse(List<? extends OGPRecord> docs, int start, int rows, int numFound) {
         this.start = start;
         this.rows = rows;
         this.numFound = numFound;
@@ -14,7 +14,7 @@ public class PortalSearchResponse {
     int rows;
     int numFound;
 
-    List<OGPRecord> docs;
+    List<? extends OGPRecord> docs;
 
     public int getStart() {
         return start;
@@ -36,7 +36,7 @@ public class PortalSearchResponse {
 
     public void setNumFound(int numFound) { this.numFound = numFound;}
 
-    public List<OGPRecord> getDocs() {
+    public List<? extends OGPRecord> getDocs() {
         return docs;
     }
 

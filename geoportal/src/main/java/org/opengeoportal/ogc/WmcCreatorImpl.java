@@ -199,7 +199,7 @@ public class WmcCreatorImpl implements WmcCreator {
 
 	public LayerListType getLayerList(Map<String, OwsType> idsAndFormats) throws Exception {
 		
-		List<OGPRecord> records = searchService.findRecordsById(new ArrayList<>(idsAndFormats.keySet()));
+		List<? extends OGPRecord> records = searchService.findRecordsById(new ArrayList<>(idsAndFormats.keySet()));
 		LayerListType layerList = new LayerListType();
 		for (OGPRecord record: records){
 			try {

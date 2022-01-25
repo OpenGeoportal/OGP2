@@ -1,20 +1,21 @@
 package org.opengeoportal.search;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opengeoportal.config.PropertiesFile;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
 import org.opengeoportal.config.ogp.OgpConfigRetrieverImpl;
-import org.opengeoportal.config.search.SearchConfigRetriever;
+import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
+import org.opengeoportal.config.repositories.RepositoryConfigRetrieverFromProperties;
 import org.opengeoportal.config.search.SearchConfigRetrieverImpl;
+import org.springframework.core.io.ClassPathResource;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class SearchParamCreatorImplTest {
 
@@ -22,10 +23,12 @@ public class SearchParamCreatorImplTest {
 
     @BeforeEach
     void doSetup() {
-        SearchConfigRetriever searchConfigRetriever = new SearchConfigRetrieverImpl();
+        RepositoryConfigRetriever repositoryConfigRetriever = new RepositoryConfigRetrieverFromProperties(
+                new SearchConfigRetrieverImpl(),
+                new PropertiesFile(new ClassPathResource("repositories.properties")));
         OgpConfigRetriever ogpConfigRetriever = new OgpConfigRetrieverImpl();
         SpatialSearchParamCreator spatialSearchParamCreator = new SpatialSearchParamCreatorImpl();
-        searchParamCreator = new SearchParamCreatorImpl(searchConfigRetriever,
+        searchParamCreator = new SearchParamCreatorImpl(repositoryConfigRetriever,
                 ogpConfigRetriever, spatialSearchParamCreator);
     }
 
@@ -87,12 +90,6 @@ public class SearchParamCreatorImplTest {
     }
 
     @Test
-    void parseDatesAndAddFilter() {
-        SolrQuery solrQuery = new SolrQuery();
-
-    }
-
-    @Test
     void filterDateValueNullTest() {
         String filtered = searchParamCreator.filterDateValue(null);
         assertThat(filtered).isEqualTo("");
@@ -122,9 +119,9 @@ public class SearchParamCreatorImplTest {
         String localInstitution = "Tufts";
         String institutionFilter = searchParamCreator.createInstitutionAccessFilter(institutionList, localInstitution);
         for (String institution: institutionList) {
-            assertThat(institutionFilter).contains(institution.toLowerCase());
+            assertThat(institutionFilter).contains(institution);
         }
-        assertThat(institutionFilter).doesNotContain(localInstitution.toLowerCase());
+        assertThat(institutionFilter).doesNotContain(localInstitution);
     }
 
     @Test
@@ -134,11 +131,162 @@ public class SearchParamCreatorImplTest {
         String institutionFilter = searchParamCreator.createInstitutionAccessFilter(institutionList, localInstitution);
 
         // Not sure that we can guarantee order, so just inspect the pieces
-        assertThat(institutionFilter).contains("(Institution:massgis AND Access:Public)");
-        assertThat(institutionFilter).contains("(Institution:harvard AND Access:Public)");
-        assertThat(institutionFilter).contains("Institution:tufts");
-        assertThat(institutionFilter).contains("(Institution:gmu AND Access:Public)");
-        assertThat(institutionFilter).doesNotContain("(Institution:tufts AND Access:Public)");
+        assertThat(institutionFilter).contains("(Institution:MassGIS AND Access:Public)");
+        assertThat(institutionFilter).contains("(Institution:Harvard AND Access:Public)");
+        assertThat(institutionFilter).contains("Institution:Tufts");
+        assertThat(institutionFilter).contains("(Institution:GMU AND Access:Public)");
+        assertThat(institutionFilter).doesNotContain("(Institution:Tufts AND Access:Public)");
 
+    }
+
+    @Test
+    void createSortingClauseDefaultBasicV2() {
+        searchParamCreator.setSchemaVersion("OGPv2");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("score desc");
+    }
+
+    @Test
+    void createSortingClauseDefaultAdvancedV2() {
+        searchParamCreator.setSchemaVersion("OGPv2");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new AdvancedSearchParams();
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("score desc");
+    }
+
+    @Test
+    void createSortingClauseDefaultBasicV3() {
+        searchParamCreator.setSchemaVersion("OGPv3");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("score desc");
+    }
+
+    @Test
+    void createSortingClauseDefaultAdvancedV3() {
+        searchParamCreator.setSchemaVersion("OGPv3");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new AdvancedSearchParams();
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("score desc");
+    }
+
+    @Test
+    void createSortingClauseNoSchemaVersion() {
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+
+        Assertions.assertThrows(NullPointerException.class, () -> searchParamCreator.addSorting(solrQuery, searchParams));
+    }
+
+    @Test
+    void createSortingClauseLayerDisplayName() {
+        searchParamCreator.setSchemaVersion("OGPv2");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("LayerDisplayName");
+        searchParams.setDirection("asc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("LayerDisplayNameSort asc");
+    }
+
+    @Test
+    void createSortingClauseOriginatorV2() {
+        searchParamCreator.setSchemaVersion("OGPv2");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("Originator");
+        searchParams.setDirection("asc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("OriginatorSort asc");
+    }
+
+    @Test
+    void createSortingClausePublisherV2() {
+        searchParamCreator.setSchemaVersion("OGPv2");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("Publisher");
+        searchParams.setDirection("asc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("PublisherSort asc");
+    }
+
+    @Test
+    void createSortingClauseOriginatorV3Asc() {
+        searchParamCreator.setSchemaVersion("OGPv3");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("Originator");
+        searchParams.setDirection("asc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("field(OriginatorSort, min) asc");
+    }
+
+    @Test
+    void createSortingClausePublisherAscV3() {
+        searchParamCreator.setSchemaVersion("OGPv3");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("Publisher");
+        searchParams.setDirection("asc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("field(PublisherSort, min) asc");
+    }
+
+    @Test
+    void createSortingClauseOriginatorDescV3() {
+        searchParamCreator.setSchemaVersion("OGPv3");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("Originator");
+        searchParams.setDirection("desc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("field(OriginatorSort, max) desc");
+    }
+
+    @Test
+    void createSortingClausePublisherDescV3() {
+        searchParamCreator.setSchemaVersion("OGPv3");
+
+        SolrQuery solrQuery = new SolrQuery();
+        OGPSearchParams searchParams = new BasicSearchParams();
+        searchParams.setColumn("Publisher");
+        searchParams.setDirection("desc");
+
+        searchParamCreator.addSorting(solrQuery, searchParams);
+
+        assertThat(solrQuery.getSortField()).isEqualTo("field(PublisherSort, max) desc");
     }
 }

@@ -5,7 +5,7 @@ import org.apache.solr.client.solrj.beans.Field;
 
 import java.util.*;
 
-public class OGPRecord {
+public class OGPRecordV2 implements OGPRecord {
 	@Field("LayerId")
 	@JsonProperty("LayerId")
 	String layerId;
@@ -82,13 +82,6 @@ public class OGPRecord {
 	@JsonProperty("ContentDate")
 	Date contentDate;
 
-	private static final List<String> fieldList = new ArrayList<>(Arrays.asList("LayerId", "Name", "CollectionId", "Institution",
-			"Access", "DataType", "Availability", "LayerDisplayName", "Publisher", "Originator", "GeoReferenced",
-			"Abstract", "Location", "MinX", "MinY", "MaxX", "MaxY", "WorkspaceName", "ContentDate"));
-
-	public static String getFieldList() {
-		return String.join(",", fieldList);
-	}
 
 	public String getLayerId() {
 		return layerId;

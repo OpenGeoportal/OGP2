@@ -10,11 +10,11 @@ import org.apache.solr.client.solrj.response.TermsResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrDocumentList;
 import org.opengeoportal.config.search.SearchConfigRetriever;
-import org.opengeoportal.download.types.generated.ogc.wms_describelayer.Query;
 import org.opengeoportal.search.exception.LayerNotFoundException;
 import org.opengeoportal.search.exception.SearchServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -27,6 +27,9 @@ class SearchClientImpl implements SearchClient {
 
     private final SearchConfigRetriever searchConfigRetriever;
     private SolrClient solrClient;
+
+    @Value("${search.schema:OGPv2}")
+    String schemaVersion;
 
     final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -75,8 +78,16 @@ class SearchClientImpl implements SearchClient {
         SolrDocumentList results = response.getResults();
         int numFound = (int) results.getNumFound();
         int start = (int) results.getStart();
-        List<OGPRecord> records = response.getBeans(OGPRecord.class);
-        return new PortalSearchResponse(records, start, records.size(), numFound);
+
+        if (schemaVersion.equalsIgnoreCase("OGPv2")) {
+            List<OGPRecordV2> records = response.getBeans(OGPRecordV2.class);
+            return new PortalSearchResponse(records, start, records.size(), numFound);
+        } else if (schemaVersion.equalsIgnoreCase("OGPv3")){
+            List<OGPRecordV3> records = response.getBeans(OGPRecordV3.class);
+            return new PortalSearchResponse(records, start, records.size(), numFound);
+        } else {
+            throw new SearchServerException("unsupported OGP schema version: " + schemaVersion);
+        }
     }
 
     @Override

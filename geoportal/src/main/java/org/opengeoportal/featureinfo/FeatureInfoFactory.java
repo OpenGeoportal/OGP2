@@ -60,7 +60,7 @@ public class FeatureInfoFactory implements ApplicationContextAware {
         Set<String> layerIds = new HashSet<String>();
         layerIds.add(layerId);
 
-        List<OGPRecord> allLayerInfo = searchService.findAllowedRecordsById(new ArrayList<>(layerIds));
+        List<? extends OGPRecord> allLayerInfo = searchService.findAllowedRecordsById(new ArrayList<>(layerIds));
 
         if (allLayerInfo.isEmpty()) {
             logger.error("No allowed records returned for Layer Id: ['" + layerId + "'");

@@ -44,7 +44,7 @@ public class SearchController {
     }
 
     @GetMapping(value="searchByIds", produces = "application/json")
-    public @ResponseBody List<OGPRecord> queryById(@RequestParam("layerIds") List<String> layerIdList) throws SearchServerException {
+    public @ResponseBody List<? extends OGPRecord> queryById(@RequestParam("layerIds") List<String> layerIdList) throws SearchServerException {
         return searchService.findRecordsById(layerIdList);
     }
 

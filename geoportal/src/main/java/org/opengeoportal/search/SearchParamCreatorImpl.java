@@ -3,8 +3,8 @@ package org.opengeoportal.search;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.opengeoportal.config.ogp.OgpConfigRetriever;
-import org.opengeoportal.config.search.SearchConfigRetriever;
-import org.opengeoportal.config.search.SearchRepository;
+import org.opengeoportal.config.repositories.RepositoryConfig;
+import org.opengeoportal.config.repositories.RepositoryConfigRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class SearchParamCreatorImpl implements SearchParamCreator {
@@ -25,17 +24,20 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
     @Value("${search.advanced.fields}")
     List<String> advancedSearchFields;
 
-    final SearchConfigRetriever searchConfigRetriever;
+    @Value("${search.schema:OGPv2}")
+    String schemaVersion;
+
+    final RepositoryConfigRetriever repositoryConfigRetriever;
 
     final OgpConfigRetriever ogpConfigRetriever;
 
     final SpatialSearchParamCreator spatialSearchParamCreator;
 
     @Autowired
-    public SearchParamCreatorImpl(SearchConfigRetriever searchConfigRetriever,
+    public SearchParamCreatorImpl(RepositoryConfigRetriever repositoryConfigRetriever,
                                   OgpConfigRetriever ogpConfigRetriever,
                                   SpatialSearchParamCreator spatialSearchParamCreator) {
-        this.searchConfigRetriever = searchConfigRetriever;
+        this.repositoryConfigRetriever = repositoryConfigRetriever;
         this.ogpConfigRetriever = ogpConfigRetriever;
         this.spatialSearchParamCreator = spatialSearchParamCreator;
     }
@@ -122,6 +124,7 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
 
         solrQuery.set("defType", "edismax")
                 .set("fl", OGPRecord.getFieldList())
+                .set("sow", true)
                 .set("start", searchParams.getStart())
                 .set("rows", searchParams.getRows());
 
@@ -136,11 +139,11 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
      */
     void addBasicInstitutionAccessFilter(SolrQuery solrQuery) {
         // get list of institutions that should be selected for search
-        List<SearchRepository> repositories = searchConfigRetriever.getSearchRepositories();
+        List<RepositoryConfig> repositories = repositoryConfigRetriever.getConfig();
         ArrayList<String> institutionList = new ArrayList<>();
-        for (SearchRepository repo : repositories) {
+        for (RepositoryConfig repo : repositories) {
             if (repo.getSelected()) {
-                institutionList.add(repo.getId());
+                institutionList.add(repo.getShortName());
             }
         }
 
@@ -183,6 +186,23 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
             sortDir = "desc";
         }
 
+        if (sortCol.equalsIgnoreCase("LayerDisplayName")){
+            sortCol = "LayerDisplayNameSort";
+        } else if (sortCol.equalsIgnoreCase("Publisher")){
+            sortCol = "PublisherSort";
+        } else if (sortCol.equalsIgnoreCase("Originator")){
+            sortCol = "OriginatorSort";
+        }
+
+        if (schemaVersion.equalsIgnoreCase("OGPv3")){
+            if (sortCol.equalsIgnoreCase("PublisherSort") || sortCol.equalsIgnoreCase("OriginatorSort")){
+                if (sortDir.equalsIgnoreCase("asc")) {
+                    sortCol = "field(" + sortCol + ", min)";
+                } else if (sortDir.equalsIgnoreCase("desc")){
+                    sortCol = "field(" + sortCol + ", max)";
+                }
+            }
+        }
         solrQuery.set("sort", sortCol + " " + sortDir);
     }
 
@@ -213,24 +233,31 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
     String createInstitutionAccessFilter(List<String> institutions, String localInstitution) {
         // institutions should be list of selected institutions from application.properties. localInstitution should be the login institution
         // use a set to ensure there are no duplicates
-        Set<String> cleanedList = institutions.stream().map(String::toLowerCase).collect(Collectors.toCollection(HashSet::new));
+        Set<String> cleanedList = new HashSet<>(institutions);
         boolean hasLocalInstitution = false;
 
-        localInstitution = localInstitution.toLowerCase().trim();
-        if (cleanedList.contains(localInstitution)) {
-            hasLocalInstitution = true;
-            cleanedList.remove(localInstitution);
+        localInstitution = localInstitution.trim();
+        String localMatch = "";
+        for (String inst: cleanedList){
+            if (inst.equalsIgnoreCase(localInstitution) && !inst.isBlank()) {
+                hasLocalInstitution = true;
+                localMatch = inst;
+                break;
+            }
+        }
+        if (!localMatch.isBlank()) {
+            cleanedList.remove(localMatch);
         }
 
         Set<String> filterList = new HashSet<>();
 
         for (String val : cleanedList) {
-            filterList.add("(Institution:" + ClientUtils.escapeQueryChars(val.trim()) + " AND Access:Public)");
+            filterList.add("(Institution:" + (val.trim()) + " AND Access:Public)");
         }
 
         // don't add the local institution back in if it wasn't in the original institution list
         if (hasLocalInstitution) {
-            filterList.add("Institution:" + ClientUtils.escapeQueryChars(localInstitution.trim()));
+            filterList.add("Institution:" + localMatch);
         }
 
         return String.join(" OR ", filterList);
@@ -314,10 +341,38 @@ public class SearchParamCreatorImpl implements SearchParamCreator {
      * @param field
      * @param queryValue
      */
-    void addSimpleFilter(SolrQuery solrQuery, String field, String queryValue) {
-        String queryString = field + ":" + ClientUtils.escapeQueryChars(queryValue.trim());
-        solrQuery.add("fq", queryString);
+    private void addSimpleFilter(SolrQuery solrQuery, String field, String queryValue) {
+        if (queryValue.trim().startsWith("\"") && queryValue.trim().endsWith("\"")){
+            String queryString = field + ":" + queryValue.trim();
+            solrQuery.add("fq", queryString);
+        } else {
+            String queryString = field + ":" + ClientUtils.escapeQueryChars(queryValue.trim());
+            solrQuery.add("fq", queryString);
+        }
+
     }
 
+    public List<String> getBasicSearchFields() {
+        return basicSearchFields;
+    }
 
+    public void setBasicSearchFields(List<String> basicSearchFields) {
+        this.basicSearchFields = basicSearchFields;
+    }
+
+    public List<String> getAdvancedSearchFields() {
+        return advancedSearchFields;
+    }
+
+    public void setAdvancedSearchFields(List<String> advancedSearchFields) {
+        this.advancedSearchFields = advancedSearchFields;
+    }
+
+    public String getSchemaVersion() {
+        return schemaVersion;
+    }
+
+    public void setSchemaVersion(String schemaVersion) {
+        this.schemaVersion = schemaVersion;
+    }
 }

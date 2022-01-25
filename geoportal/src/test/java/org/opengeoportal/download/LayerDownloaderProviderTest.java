@@ -1,13 +1,9 @@
 package org.opengeoportal.download;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opengeoportal.config.download.DownloadConfigRetriever;
 import org.opengeoportal.config.download.OgpDownloadConfigRetriever;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -37,7 +33,7 @@ public class LayerDownloaderProviderTest {
      */
     @Test
     public void getGeneralizedDataTypeVectorTest() {
-        List<String> testVector = Lists.newArrayList("Point", "Line", "Polygon", "Undefined", "random garbage");
+        List<String> testVector = List.of("Point", "Line", "Polygon", "Undefined", "random garbage");
 
         for (String testVal : testVector) {
             String actual = LayerDownloaderProvider.getGeneralizedDataType(testVal);
@@ -50,7 +46,7 @@ public class LayerDownloaderProviderTest {
      */
     @Test
     public void getGeneralizedDataTypeRasterTest() {
-        List<String> testVector = Lists.newArrayList("Raster");
+        List<String> testVector = List.of("Raster");
 
         for (String testVal : testVector) {
             String actual = LayerDownloaderProvider.getGeneralizedDataType(testVal);
@@ -65,7 +61,7 @@ public class LayerDownloaderProviderTest {
      */
     @Test
     public void getGeneralizedDataTypeScannedMapTest() {
-        List<String> testVector = Lists.newArrayList("Scanned Map", "Paper Map", "ScannedMap");
+        List<String> testVector = List.of("Scanned Map", "Paper Map", "ScannedMap");
 
         for (String testVal : testVector) {
             String actual = LayerDownloaderProvider.getGeneralizedDataType(testVal);

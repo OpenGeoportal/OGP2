@@ -108,7 +108,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 	private void populateDownloadRequest (DownloadRequest dlRequest) throws Exception {
 		Set<String> layerIdSet = dlRequest.getRequestedLayerIds();
 		List<String> layerIds = new ArrayList<>(layerIdSet);
-		List<OGPRecord> layerInfo = searchService.findAllowedRecordsById(layerIds);
+		List<? extends OGPRecord> layerInfo = searchService.findAllowedRecordsById(layerIds);
 
 		for (OGPRecord layerMatch: layerInfo) {
 			logger.debug("found info for: " + layerMatch.getLayerId());
@@ -118,7 +118,7 @@ public class DownloadHandlerImpl implements DownloadHandler {
 			OGPRecord record = null;
 			try{
 				//layerIdSet can contain layerIds for layers the user is not allowed to access
-				record = OgpUtils.findRecordById(layerId, layerInfo);
+				record = OgpUtils.findRecordById(layerId, (List<OGPRecord>) layerInfo);
 			} catch (Exception e){
 				//if the user is not allowed to download the layer, here's our opportunity to record that in a way that we can relay back to the user
 				//create a dummy LayerRequest so we can set status failed?

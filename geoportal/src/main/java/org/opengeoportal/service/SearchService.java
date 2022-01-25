@@ -24,7 +24,7 @@ public interface SearchService {
      * @return
      * @throws SearchServerException
      */
-    List<OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException;
+    List<? extends OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException;
 
     /***
      * Returns a list of OGPRecords by LayerIds. Records that the user is not allowed to download are filtered out.
@@ -32,7 +32,7 @@ public interface SearchService {
      * @return
      * @throws SearchServerException
      */
-    List<OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException;
+    List<? extends OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException;
 
     /***
      * find an OGP record by LayerId. throws an exception if a layer is not found.

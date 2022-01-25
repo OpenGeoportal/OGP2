@@ -29,7 +29,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException {
+    public List<? extends OGPRecord> findRecordsById(List<String> layerIds) throws SearchServerException {
         String queryString = searchClient.createLayerIdQueryString(layerIds);
         PortalSearchResponse psr = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
         return psr.getDocs();
@@ -37,7 +37,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     @PostFilter("hasPermission(filterObject, 'download')")
-    public List<OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException {
+    public List<? extends OGPRecord> findAllowedRecordsById(List<String> layerIds) throws SearchServerException {
         String queryString = searchClient.createLayerIdQueryString(layerIds);
         PortalSearchResponse psr = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
         return psr.getDocs();
@@ -46,7 +46,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public OGPRecord findRecordById(String layerId) throws LayerNotFoundException, SearchServerException {
 
-        List<OGPRecord> recordList = findRecordsById(List.of(layerId));
+        List<? extends OGPRecord> recordList = findRecordsById(List.of(layerId));
         if (recordList.isEmpty()){
             throw new LayerNotFoundException("Layer with id ['" + layerId.trim() + "'] not found in the search index.");
         } else {
@@ -58,7 +58,7 @@ public class SearchServiceImpl implements SearchService {
     public OGPRecord findRecordByName(String name) throws LayerNotFoundException, SearchServerException {
         String queryString = searchClient.createNameQueryString(name);
         PortalSearchResponse psr = searchClient.ogpRecordSearch(searchClient.buildSimpleParams(queryString, OGPRecord.getFieldList()));
-        List<OGPRecord> recordList = psr.getDocs();
+        List<? extends OGPRecord> recordList = psr.getDocs();
         if (recordList.isEmpty()){
             throw new LayerNotFoundException("Layer with name ['" + name.trim() + "'] not found in the search index.");
         } else {

@@ -137,7 +137,7 @@ public class ImageHandlerImpl implements ImageHandler {
 	
 	private void populateImageRequest(ImageRequest imageRequest) throws EmptyImageRequestException, SearchServerException {
 		//only retrieve records the user has permission to access data for
-		List<OGPRecord> layerInfo = this.searchService.findAllowedRecordsById(new ArrayList<>(imageRequest.getLayerIds()));
+		List<? extends OGPRecord> layerInfo = this.searchService.findAllowedRecordsById(new ArrayList<>(imageRequest.getLayerIds()));
 	    logger.debug("Number of layers in image: " + Integer.toString(layerInfo.size()));
 		if (layerInfo.size() == 0){
 			throw new EmptyImageRequestException("No layers in image request.");
