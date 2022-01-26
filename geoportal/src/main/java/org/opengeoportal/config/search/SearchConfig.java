@@ -12,16 +12,12 @@ public class SearchConfig {
 ogp.repositories=tufts,harvard,berkeley,mit,massgis
 ogp.repositories.defaultSelected=tufts,harvard,berkeley,mit,massgis
 
-solr.url.internal=http://localhost:8080/solr
+search.url=http://localhost:8983/solr/ogp
 # the url given to the web browser so that it can query solr directly
-# if .internal is blank the external value will be used internally as well
-# By default, this value will point to the Tufts production solr instance
-solr.url.external=http://geodata.tufts.edu/solr
  * 
  * 
  */
 	URL searchUrl;
-	URL internalSearchUrl;
 	List<SearchRepository> searchRepositories;
 
 	public URL getSearchUrl() {
@@ -30,14 +26,6 @@ solr.url.external=http://geodata.tufts.edu/solr
 
 	public void setSearchUrl(URL searchUrl) {
 		this.searchUrl = searchUrl;
-	}
-
-	public URL getInternalSearchUrl() {
-		return internalSearchUrl;
-	}
-
-	public void setInternalSearchUrl(URL internalSearchUrl) {
-		this.internalSearchUrl = internalSearchUrl;
 	}
 
 	public List<SearchRepository> getSearchRepositories() {

@@ -1,0 +1,40 @@
+
+#requestTickerContainer {
+    border-left: 1px solid #AAAAAA;
+    border-radius: 4px 0 0 4px;
+    border-top: 1px solid #AAAAAA;
+    bottom: 71px;
+    color: #333333;
+    display: none;
+    height: 31px;
+    position: fixed;
+    right: 0;
+    width: 170px;
+    background-color: #DDDDDD;
+
+    /*background: -webkit-gradient(linear, left, right, from(#BBBBBB), to(#DDDDDD));*/
+    background: -webkit-linear-gradient(#BBBBBB, #DDDDDD);
+    background: -moz-linear-gradient(left, #BBBBBB, #DDDDDD);
+    background: -ms-linear-gradient(#BBBBBB, #DDDDDD);
+    background: -o-linear-gradient(#BBBBBB, #DDDDDD);
+    background: linear-gradient(#BBBBBB, #DDDDDD);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#BBBBBB', endColorstr='#DDDDDD');
+
+    z-index: 2000;
+}
+
+#requestTicker {
+    text-align: right;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    padding-left: 31px;
+    padding-right: 9px;
+    display: inline-block;
+}
+
+#processingIndicator {
+    height: 28px;
+    margin: 2px;
+    position: absolute;
+    width: 28px;
+}

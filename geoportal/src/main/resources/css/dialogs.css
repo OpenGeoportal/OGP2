@@ -1,0 +1,203 @@
+/* dialogs */
+#organizeDialog th {
+    text-align: left;
+}
+
+.columnVisibility {
+    margin-right: 5px;
+}
+
+.linkText {
+    width: 465px;
+}
+
+.shareServicesText {
+    width: 460px;
+}
+
+#metadataDownloadButton {
+    right: 2.3em;
+}
+
+#toMetadataTop {
+    position: absolute;
+    background: transparent;
+    opacity: .35;
+    height: 15px;
+    left: 0;
+    margin-right: -21px;
+    width: 100%;
+}
+
+#toMetadataTop:hover {
+    background: url("../static/media/arrow_up_white.png") no-repeat scroll 5px 50% black;
+}
+
+#toMetadataTop > span {
+    color: white;
+    font-size: 0.9em;
+    padding-left: 20px;
+    padding-top: 5px;
+}
+
+.metadataDialogFooter {
+    color: white;
+}
+
+#metadataDialog {
+    padding: 0 0 15px;
+    font-size: .7rem;
+}
+
+.metadataDialogContent {
+    overflow: auto;
+    height: 100%;
+
+    /*word-wrap: break-word;*/
+}
+
+.metadataDialogContent .metadataDescription {
+    overflow: hidden;
+    max-height: 6em;
+}
+
+.metadataDialogContent .metadataDescription.unelided {
+    max-height: unset;
+}
+
+.moreWords {
+    float: right;
+    padding: 5px;
+    text-decoration: underline;
+}
+
+.metadata-paging {
+    padding: 10px;
+    position: absolute;
+    right: 2px;
+}
+
+.metadataIframe {
+    height: 100%;
+    width: 100%;
+    border: none;
+}
+
+td div.button {
+    margin: auto;
+}
+
+td div.typeIcon {
+    margin: auto;
+}
+
+td div.repositoryIcon {
+    margin: auto;
+}
+
+.exampleControl {
+    display: inline-block;
+    padding: 0 2px;
+}
+
+.dialog {
+    text-align: left;
+    cursor: default;
+}
+
+.dialog input {
+    margin-left: 9px;
+}
+
+.infoDialog {
+    padding: 1.5em 4em !important;
+}
+
+span.columnNote {
+    display: block;
+    float: right;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.downloadDialog {
+    margin-left: 17px;
+    line-height: 20px;
+    margin-top: 5px;
+}
+
+.downloadDialog div {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#emailAddress {
+    width: 300px;
+    border: 1px solid #CCCCCC;
+    margin-left: 0;
+}
+
+#emailAddress:focus {
+    border: 1px solid #417DC1;
+}
+
+.downloadDialog select {
+    width: 100px;
+    position: absolute;
+    left: 126px;
+}
+
+.downloadDialog label.downloadSelect {
+    display: inline-block;
+    text-align: right;
+    width: 90px;
+}
+
+#downloadDialog label {
+    padding-right: 5px;
+}
+
+#checkClip {
+    margin-left: -1px;
+    margin-top: 15px;
+}
+
+#checkClipLabel {
+    margin-left: 5px;
+}
+
+.ignoreWarning {
+    bottom: 0;
+    display: block;
+    left: 0;
+    padding: 14px;
+}
+
+#owsServicesArea .sub_headerTitle {
+    margin-left: 0;
+}
+
+.sub_headerTitle {
+    margin-left: 20px;
+    color: #003366;
+    font-family: Trebuchet MS, arial, sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 25px;
+}
+
+.owsServicesLinkContainer > label, .owsServicesLinkContainer > select, .owsServicesLinkContainer > div {
+    margin: 4px;
+}
+
+.genericModalDialog {
+    padding: 1.5em 1.5em 0 !important;
+}
+
+#about {
+    font-size: 1.25em;
+}
+
+.geodataContact {
+    color: #417DC1;
+}
