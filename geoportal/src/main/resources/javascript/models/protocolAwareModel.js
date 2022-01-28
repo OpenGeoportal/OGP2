@@ -68,11 +68,7 @@ OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 			},
 			isPublic : function() {
 				var access = this.get("Access").toLowerCase();
-				if (access !== "public") {
-
-					return false;
-				}
-				return true;
+				return access === "public";
 			},
 			attributeIsOneOf : function(attr, attrVals) {
 				if (this.has(attr)) {
@@ -104,7 +100,7 @@ OpenGeoportal.Models.ProtocolAware = OpenGeoportal.Models.ResultItem
 							location, [ ogcProtocol ]);
 				}
 
-				this.missingAttribute(att);
+				this.missingAttribute(attr);
 			}
 
 		});

@@ -99,32 +99,53 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 			
 			generateContent : function(arrModels) {
 
-				var arrWmsIds = [];
-				var arrWfsIds = [];
-				
-				var uniqueAdd = function(arr, item){
-					if (!_.contains(arr, item)){
-						arr.push(item);
-					}
-				};
+				var wmsMap = {};
+				var wfsMap = {};
+				var wcsMap = {};
+
 				_.each(arrModels, function(model) {
 					_.each(model.get("dynamicWebService"), function(ogctype){
 						var layerId = model.get("LayerId");
-/*						if (ogctype === "wms"){
-							uniqueAdd(arrWmsIds, layerId);
+						var location = model.get("Location");
+						if (ogctype === "wms"){
+							var wmsurl = OpenGeoportal.Utility.getLocationValue(location, ['wms']);
+							if (_.has(wmsMap, wmsurl)){
+								wmsMap[wmsurl].push(layerId);
+							} else {
+								wmsMap[wmsurl] = [layerId];
+							}
 
 						} else if (ogctype === "wfs"){
-							uniqueAdd(arrWfsIds, layerId);
-
-						} else */if (ogctype === "wcs"){
-							uniqueAdd(arrWmsIds, layerId);
-
+							var wfsurl = OpenGeoportal.Utility.getLocationValue(location, ['wfs']);
+							if (_.has(wfsMap, wfsurl)){
+								wfsMap[wfsurl].push(layerId);
+							} else {
+								wfsMap[wfsurl] = [layerId];
+							}
+						} else if (ogctype === "wcs"){
+							var wcsurl = OpenGeoportal.Utility.getLocationValue(location, ['wcs']);
+							if (_.has(wcsMap, wcsurl)){
+								wcsMap[wcsurl].push(layerId);
+							} else {
+								wcsMap[wcsurl] = [layerId];
+							}
 						}
 					});
-					
 
 				});
-				
+
+				var arrWfsUrls = [];
+				var arrWmsUrls = [];
+				var arrWcsUrls = [];
+
+				_.each(Object.keys(wmsMap), function(key){
+					arrWmsUrls.push({"url": key + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities", 'layerIds': wmsMap[key].join(', ')});
+				});
+
+				_.each(Object.keys(wfsMap), function(key){
+					arrWfsUrls.push({"url": key + "?SERVICE=WFS&REQUEST=GetCapabilities", 'layerIds': wfsMap[key].join(', ')});
+				});
+
 				
 				var serviceTypes = {webservices:[]};
 				
@@ -149,16 +170,17 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
 					var bbox = new OpenLayers.Bounds(-180,-90,180,90);
 					var pref = jQuery("#" + wmcPreferenceId).val();
 					//use wms ids; server side will pick the appropriate service based on preference and availability
-					that.generateWmc(arrWmsIds, pref, bbox);
+					var ids = Object.values(wmsMap).flat();
+					that.generateWmc(ids, pref, bbox);
 				});
 
                 var ws = {dynamic: []};
-				if (arrWfsIds.length > 0) {
-					var wfsUrl = this.getWfsUrl(arrWfsIds);
+				if (arrWfsUrls.length > 0) {
+					//var wfsUrls = this.getWfsUrl(arrWfsUrls);
 
 					var wfsService =		
 						             {
-						            	 url : wfsUrl,
+						            	 urls : arrWfsUrls,
 						            	 title : "Web Feature Service (WFS):",
 						            	 caption : "Suitable for analysis. Creates a vector web service. Only available for vector data. Paste the selected link into your desktop mapping software."
 						             };
@@ -166,12 +188,12 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
                     ws.dynamic.push(wfsService);
 				}
 				
-				if (arrWmsIds.length > 0){
-					var wmsUrl = this.getWmsUrl(arrWmsIds);
+				if (arrWmsUrls.length > 0){
+					//var wmsUrls = this.getWmsUrl(arrWmsUrls);
 
 					var wmsService = 
 						             {
-						            	 url : wmsUrl,
+						            	 urls : arrWmsUrls,
 						            	 title : "Web Mapping Service (WMS):",
 						            	 caption : "Suitable for base maps. Creates a raster web service for all your data. Vector data will be converted to raster format. Paste the selected link into your desktop mapping software."
 						             };
@@ -182,6 +204,7 @@ OpenGeoportal.Views.WebServices = OpenGeoportal.Views.CartActionView
                 var dialogContent = "";
 
                 if (ws.dynamic.length > 0) {
+					console.log(ws);
                     var content = this.template.get('dynamicWSDialog')(ws);
                     content += this.template.get('wmcDialog')(wmcService);
                     dialogContent = this.template.get('webServicesDialog')({content: content});

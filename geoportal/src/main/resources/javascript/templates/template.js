@@ -252,7 +252,10 @@ OpenGeoportal.Template = {
             '<span class="sub_headerTitle">{{ serviceInfo.title }}</span>',
             '<br/><span>{{ serviceInfo.caption }}</span>',
             '<div class="owsServicesLinkContainer">',
-            '<textarea class="shareServicesText linkText" >{{ serviceInfo.url }}</textarea> <br /></div><br/><% }); %>']
+            '<% _.each(serviceInfo.urls, function(urlInfo){ %>',
+            '<input type="text" title="applies to {{ urlInfo.layerIds }}" class="shareServicesText linkText" value="{{ urlInfo.url }}" /> <br />',
+            '<% }); %>',
+            '</div><br/>', '<% }); %>']
             .join('\n'),
         webServicesDialog: ['<div id="owsServicesArea">',
             '{{ content }}', '</div>'].join('\n')

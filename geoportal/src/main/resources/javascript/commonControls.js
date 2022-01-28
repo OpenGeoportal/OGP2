@@ -55,7 +55,7 @@ OpenGeoportal.Widgets = function Widgets(template) {
 	// * *
 	this.genericModalDialog = function(customMessage, dialogTitle) {
 
-		var divId = "genericModalDialog" + jQuery('.genericModalDialog').size();
+		var divId = "genericModalDialog" + _.uniqueId();
 		var div = '<div id="' + divId + '" class="dialog genericModalDialog">';
 		div += customMessage;
 		div += '</div>';

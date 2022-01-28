@@ -99,9 +99,14 @@ OpenGeoportal.Views.LeftPanel = Backbone.View
             alsoMoves: [".olControlPanel", ".olControlModPanZoomBar", ".olControlMousePosition"
                 , ".googleLogo"],
 			setAlsoMoves : function() {
+				var googleLogo = $('div.gm-style img[src$="google4.png"]').parent().parent().parent();
+				if (!googleLogo.hasClass("googleLogo")){
+					googleLogo.addClass("googleLogo");
+				}
                 var ams = this.alsoMoves.join();
-                if (!$(ams).hasClass("slideHorizontal")) {
-                    $(ams).addClass("slideHorizontal");
+				var $selection = $(ams);
+                if (!$selection.hasClass("slideHorizontal")) {
+                    $selection.addClass("slideHorizontal");
 				}
 				// beyond extent arrows "#nwCorner" and "#swCorner" also have
 				// class "slideHorizontal"

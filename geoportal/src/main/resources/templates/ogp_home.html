@@ -86,7 +86,6 @@
 
 <div id="searchBox" class="searchBox shadowDownOuter">
     <form id="searchForm" onsubmit="return false;">
-        <!--  <div id="searchCol1" class="searchCol">-->
         <div id="geosearchDiv"
              class="basicSearch whereBox searchFormRow searchRow1 searchCol searchCol1">
             <label for="whereField"><span class="labelText">Where:</span></label>
@@ -103,8 +102,7 @@
             <label>Topic:</label>
             <div id="topicDropdown" class="searchFormInput"></div>
         </div>
-        <!--  </div>
-            <div id="searchCol2" class="searchCol">-->
+
         <div class="basicSearch whatBox searchFormRow searchCol searchCol2">
             <label for="whatField"> <span class="labelText">What:</span>
             </label> <input id="whatField" type="search"/>
@@ -129,22 +127,8 @@
 					<label for="restrictedCheck"><div class="checkBox"></div><div class="checkLabel">Include Restricted Data</div></label>
 				</span>
         </div>
-        <!--  </div> -->
-        <!-- 		<div id="searchCol3" class="searchCol"> -->
-        <div class="basicSearch basicSearchButtons searchFormRow  searchCol searchCol3">
-            <!-- Uncomment to add checkbox for restricted data to basic search  -->
-            <!--
 
-            <div id="basicRestrictedCheckContainer" class="basicSearch">
-            <span class="formCheckbox searchFormInput">
-                <input type="checkbox" name="restrictedCheck" id="basicRestrictedCheck"/>
-                <label for="basicRestrictedCheck">
-                    <div class="checkBox"></div>
-                    <div class="checkLabel">Include Restricted Data</div>
-                </label>
-            </span>
-            </div>
-            -->
+        <div class="basicSearch basicSearchButtons searchFormRow  searchCol searchCol3">
             <button id="moreSearchOptions" class="searchToggle button offsetColor" tabindex="0">Advanced
                 Search
             </button>
@@ -167,7 +151,6 @@
                 Search
             </button>
         </div>
-        <!-- 		</div> -->
     </form>
 </div>
 
@@ -221,71 +204,15 @@
     <div id="map"></div>
 </div>
 
-<div id="footer">
-    <div id="footerLogos">
-        <div class="institutionLogo" title="Tufts"
-            onclick="location.href='http://tufts.edu'"></div>
-        <div class="itLogo infoLinks" title="TTS"
-            onclick="location.href='https://it.tufts.edu/'">Technology
-            Services</div>
-        <div class="gisLogo infoLinks" title="GIS@Tufts"
-            onclick="location.href='http://gis.tufts.edu'">GIS@Tufts.edu</div>
-
-    </div>
-    <span id="footerInfo"> <span id="ogpLink" class="infoLinks"
-                                 onclick="location.href='http://www.opengeoportal.org'">Powered
-			by OpenGeoportal</span>
-	</span>
-</div>
+<div th:replace="fragments/institution_specific.html :: footer"></div>
 
 <div id="dialogs" class="hiddenElements">
     <div id="about" class="dialog infoDialog">
-        <p>GeoData@Tufts is developed and maintained by Tufts University
-            Information Technology. Tufts is leading the development in
-            collaboration with Harvard of this open source, federated web
-            application to rapidly discover, preview, and retrieve geospatial data
-            from multiple repositories. GeoData@Tufts combines an intuitive,
-            map-based search interface along with traditional text-based metadata
-            search tools for rapid data discovery and for use in teaching,
-            learning, and research.</p>
-        <p>
-            GeoData@Tufts is part of <a href="http://www.opengeoportal.org">The
-            Open Geoportal</a>. The Open Geoportal is a consortium comprised of
-            contributions of several universities and organizations to help
-            facilitate the discovery and acquisition of geospatial data across
-            many organizations and platforms. Built on open source technology, The Open Geoportal
-            provides organizations the opportunity to share thousands of
-            geospatial data layers, maps, metadata, and development resources
-            through a single common interface.
-        </p>
-        <p>
-            <span class="geodataContact">For questions, comments, or to
-                report problems, please contact:
-                <a href="mailto:geodata@elist.tufts.edu">geodata@elist.tufts.edu</a>
-            </span>
-        </p>
+        <div th:replace="fragments/institution_specific.html :: about"> </div>
     </div>
 
     <div id="contact" class="dialog infoDialog">
-        <p>
-            <span class="geodataContact">For questions, comments, or to
-                report problems, please contact:
-                <a href="mailto:geodata@elist.tufts.edu">geodata@elist.tufts.edu</a>
-            </span>
-        </p>
-
-        <div>
-            <h3>Project Management:</h3>
-            Patrick Florance, Manager of Geospatial Technology Services, UIT,
-            Tufts University
-        </div>
-
-        <div id="contactLogos">
-            <div class="gisLogo" title="GIS@Tufts"
-                 onclick="location.href='http://gis.tufts.edu/'"></div>
-            <div class="itLogo" title="UIT"
-                 onclick="location.href='http://uit.tufts.edu/'"></div>
-        </div>
+        <div th:replace="fragments/institution_specific.html :: contact"> </div>
     </div>
 
 </div>

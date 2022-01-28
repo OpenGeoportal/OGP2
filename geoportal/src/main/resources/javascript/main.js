@@ -73,7 +73,7 @@ $(document)
             ogp.cart = new OpenGeoportal.CartCollection(cart, {
                 userAuth: ogp.login.model,
                 template: OpenGeoportal.Template,
-                widgets: OpenGeoportal.Widgets
+                widgets: ogp.widgets
             });
 
 

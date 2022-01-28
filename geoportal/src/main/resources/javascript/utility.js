@@ -48,7 +48,7 @@ OpenGeoportal.Utility.LocalStorage.getBool = function(key, defaultVal){
 	if (window.localStorage){
 		var item = window.localStorage.getItem(key);
 		if (item !== null){
-			bool = item == "true";
+			bool = item === "true";
 		}
 	}
 	
@@ -75,7 +75,7 @@ OpenGeoportal.Utility.rgb2hex = function(rgb) {
 OpenGeoportal.Utility.hexFromRGB = function(r, g, b) {
 	var hex = [ r.toString(16), g.toString(16), b.toString(16) ];
 	jQuery.each(hex, function(nr, val) {
-		if (val.length == 1) {
+		if (val.length === 1) {
 			hex[nr] = '0' + val;
 		}
 	});
