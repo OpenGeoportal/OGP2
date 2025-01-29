@@ -3,7 +3,7 @@ package org.opengeoportal.featureinfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.opengeoportal.config.exception.ConfigException;
 import org.opengeoportal.config.proxy.ProxyConfigRetriever;
 import org.opengeoportal.featureinfo.exception.FeatureInfoException;

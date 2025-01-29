@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 public class IframeLoginController {
 	final LoginService loginService;
 
-	@Value("${ogp.domain}:")
+	@Value("${ogp.domain}")
 	private String ogpDomain;
 
 	final Logger logger = LoggerFactory.getLogger(this.getClass());

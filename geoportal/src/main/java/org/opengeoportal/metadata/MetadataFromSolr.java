@@ -11,7 +11,6 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.*;
 import javax.xml.transform.stream.*;
 
-import org.apache.solr.client.solrj.cloud.autoscaling.Variable;
 import org.opengeoportal.metadata.exception.MetadataParsingException;
 import org.opengeoportal.metadata.exception.MetadataRetrievalException;
 import org.opengeoportal.search.MetadataRecord;
@@ -24,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
 import org.xml.sax.*;
-import org.apache.commons.io.IOUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
