@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <!-- default header name is X-CSRF-TOKEN -->
+    <meta id="_csrf" name="_csrf" th:content="${_csrf.token}"/>
+    <meta id="_csrf_header" name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <title th:text="${titlePrimary + ' ' + titleOffset}"></title>
+
+    <link rel="icon"
+          type="image/x-icon"
+          href="/media/favicon.ico">
+    <!-- add analyticsId, searchUrl, login info here -->
+    <script th:inline="javascript">
+
+        OpenGeoportal = {};
+        OpenGeoportal.Config = {};
+        OpenGeoportal.Config.analyticsId=[[${analyticsId}]];
+        OpenGeoportal.Config.loginRepository=[[${loginRepository}]];
+        OpenGeoportal.Config.loginType=[[${loginType}]];
+        OpenGeoportal.Config.loginUrl=[[${loginUrl}]];
+        OpenGeoportal.Config.shareIds=[[${shareIds}]];
+        OpenGeoportal.Config.shareBbox=[[${shareBbox}]];
+        OpenGeoportal.Config.basemap=[[${basemap}]];
+        OpenGeoportal.Config.TopicsBootstrap=[(${topics})];
+        OpenGeoportal.Config.DataTypesBootstrap = [(${dataTypes})];
+        OpenGeoportal.Config.ProxyCollectionBootstrap = [(${proxies})];
+        OpenGeoportal.Config.RepositoriesBootstrap = [(${repositories})];
+        OpenGeoportal.Config.BasicRestrictedRepositories = [(${basicRestrictedRepositories})]
+        OpenGeoportal.Config.userStateBootstrap = {};
+    </script>
+
+
+
+    <script src="javascript/underscore-umd-min-1.13.2.js"></script>
+    <script src="javascript/jquery/js/jquery-3.6.0.min.js"></script>
+    <script src="javascript/backbone-min-1.4.0.js"></script>
+
+    <script src="javascript/jquery-ui-1.13.0.custom/jquery-ui.js"></script>
+
+    <script src="javascript/jquery.scrollTo-min.js"></script>
+    <script src="javascript/spinners/spinners/spinners.min.js"></script>
+    <script src="javascript/jquery.ba-postmessage.min.js"></script>
+    <script th:src="|https://maps.google.com/maps/api/js?v=3&key=${gmapsAPIKey}|"></script>
+    <script src="javascript/openlayers/OpenLayers-2.11/OpenLayers.js"></script>
+    <script src="javascript/panZoom.js"></script>
+
+    <link rel="stylesheet" href="css/jquery-ui-ogpTheme.custom.css" type="text/css" />
+
+    <script>
+        if (!Object.create) {
+            Object.create = function(o) {
+                function F() {
+                }
+                F.prototype = o;
+                return new F();
+            };
+        };
+    </script>
+
+    <link rel="stylesheet" href="resources/ogp.css" type="text/css" />
+
+    <script type="text/javascript" src="resources/ogp.js"></script>
+
+</head>
+<body>
+
+<div id="header">
+
+    <div id="logo" onclick="location.href=location.href">
+        <div id="logoGraphic"></div><div class="logoText" th:text="${titlePrimary}"></div> <div class="logoText offsetColor" th:text="${titleOffset}"></div>
+    </div>
+    <div id="top_menu">
+        <button class="reset button headerButton">Reset</button>
+        <span class="separator">|</span>
+        <button id="userGuideLink" class="infoLinks button headerButton">Help</button>
+        <span class="separator">|</span>
+        <button id="aboutLink" class="infoLinks button headerButton">About</button>
+        <span class="separator">|</span>
+        <button id="headerLogin" class="infoLinks login button headerButton">Login</button>
+    </div>
+</div>
+
+
+<div id="searchBox" class="searchBox shadowDownOuter">
+    <form id="searchForm" onsubmit="return false;">
+        <div id="geosearchDiv"
+             class="basicSearch whereBox searchFormRow searchRow1 searchCol searchCol1">
+            <label for="whereField"><span class="labelText">Where:</span></label>
+            <input id="whereField" type="search"/>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow2 searchCol searchCol1">
+				<span class="formCheckbox searchFormInput"> <input
+                        type="checkbox" name="mapFilterCheck" id="mapFilterCheck"
+                        class="mapFilterFlag" value="ignore"/> <label
+                        for="mapFilterCheck"><div class="checkBox"></div><div class="checkLabel">Ignore map extent (Where)</div></label>
+				</span>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow3 searchCol searchCol1">
+            <label>Topic:</label>
+            <div id="topicDropdown" class="searchFormInput"></div>
+        </div>
+
+        <div class="basicSearch whatBox searchFormRow searchCol searchCol2">
+            <label for="whatField"> <span class="labelText">What:</span>
+            </label> <input id="whatField" type="search"/>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow1 searchCol searchCol2">
+            <label for="advancedKeywordText">Keyword:</label> <input
+                name="advancedKeywordText" type="search" class="searchFormInput"
+                id="advancedKeywordText"/>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow2 searchCol searchCol2">
+            <label>Data Type:</label>
+            <div id="dataTypeDropdown" class="styledDropdown searchFormInput">
+            </div>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow3 searchCol searchCol2">
+            <label>Repository:</label>
+            <div id="repositoryDropdown" class="searchFormInput"></div>
+        </div>
+        <div id="restrictedCheckContainer" class="advancedSearch searchFormRow searchRow4 searchCol searchCol2">
+				<span class="formCheckbox searchFormInput">
+					<input type="checkbox" name="restrictedCheck" id="restrictedCheck"/>
+					<label for="restrictedCheck"><div class="checkBox"></div><div class="checkLabel">Include Restricted Data</div></label>
+				</span>
+        </div>
+
+        <div class="basicSearch basicSearchButtons searchFormRow  searchCol searchCol3">
+            <button id="moreSearchOptions" class="searchToggle button offsetColor" tabindex="0">Advanced
+                Search
+            </button>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow1 searchCol searchCol3">
+            <label for="advancedOriginatorText">Originator:</label> <input
+                name="advancedOriginatorText" type="search" class="searchFormInput"
+                id="advancedOriginatorText"/>
+        </div>
+        <div class="advancedSearch searchFormRow searchRow2 searchCol searchCol3">
+            <label for="advancedDateFromText">Year(s):</label> <span
+                class="searchFormInput"> <input name="advancedDateFromText"
+                                                type="search" id="advancedDateFromText" size="4"/> to <input
+                name="advancedDateToText" type="search" id="advancedDateToText"
+                size="4"/>
+				</span>
+        </div>
+        <div class="advancedSearch searchFormRow advancedSearchButtons searchRow4 searchCol searchCol3">
+            <button id="lessSearchOptions" class="searchToggle button offsetColor" tabindex="0">Basic
+                Search
+            </button>
+        </div>
+    </form>
+</div>
+
+<div id="container">
+    <div id="left_col" class="shadowRightOuter">
+        <div class="contents slideVertical" >
+            <div class="arrow_buttons">
+                <button class="arrow_left button" title="collapse left"></button>
+                <div class="arrow_separator"></div>
+                <button class="arrow_right button" title="expand right"></button>
+            </div>
+            <div id="tabs">
+                <ul>
+                    <li><a href="#searchTab">
+					<span id="searchTabText" class="tabText">
+						<span>
+							<span id="resultsNumber" class="resultsNumber"> 0 </span> Results
+						</span>
+					</span>
+                    </a></li>
+                    <li><a href="#cartTab">
+					<span id="cartTabText" class="tabText">
+						<span class="shoppingCartIcon"></span>
+						<span id="cartTabTextInner">
+							Cart <span id="savedLayersNumberTab" class="savedLayersNumber">(0)</span>
+						</span>
+					</span>
+                    </a></li>
+                </ul>
+                <div id="searchTab">
+                    <div id="resultsTableHeader" class="tableHeader">
+                        <div id="sortDropdown">Sort Results</div>
+                        <div id="columnDropdown">Columns</div>
+                        <button id="mapClearButton" title="Clear all layers from the map">
+                            Clear Views</button>
+                    </div>
+                    <div id="searchResults">
+                        <div id="searchResultsMessage" class="tableFooter"></div>
+                    </div>
+                </div>
+                <div id="cartTab">
+                    <div id="cartHeader" class="tableHeader"></div>
+                    <div id="cart"></div>
+                </div>
+            </div>
+        </div>
+        <div id="roll_right" class="slideVertical">
+            <button class="arrow_right button"></button>
+        </div>
+    </div>
+    <div id="map"></div>
+</div>
+
+<div th:replace="fragments/institution_specific.html :: footer"></div>
+
+<div id="dialogs" class="hiddenElements">
+    <div id="about" class="dialog infoDialog">
+        <div th:replace="fragments/institution_specific.html :: about"> </div>
+    </div>
+
+    <div id="contact" class="dialog infoDialog">
+        <div th:replace="fragments/institution_specific.html :: contact"> </div>
+    </div>
+
+</div>
+
+<div id="iframes" class="hiddenElements"></div>
+<div id="infoBubbles"></div>
+</body>
+
+</html>

@@ -1,0 +1,448 @@
+/*
+main structural elements
+*/
+:focus {
+    outline: none;
+}
+
+body {
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    font-family: arial, sans-serif;
+    font-size: 12px;
+    color: black;
+}
+
+.hiddenElements {
+    display: none;
+}
+
+img {
+    border: none;
+}
+
+h1 {
+    color: #003366;
+    font-size: 14px;
+}
+
+h2 {
+    color: #3366cc;
+    font-size: 13px;
+    margin-bottom: 3px;
+}
+
+h3 {
+    font-size: 12px;
+    color: #003366;
+}
+
+form input[type=search] {
+    border: 1px solid #999999;
+    line-height: 15px;
+    padding: 2px;
+    -moz-box-shadow: 0 2px 3px 0 #878888 inset;
+    -webkit-box-shadow: 0 2px 3px 0 #878888 inset;
+    box-shadow: 0 2px 3px 0 #878888 inset;
+    -webkit-appearance: textfield;
+}
+
+form input[type=search]:focus {
+    border: 1px solid #417DC1;
+}
+
+form input[type=text] {
+    border: 1px solid #999999;
+    line-height: 15px;
+    padding: 2px;
+    -moz-box-shadow: 0 2px 3px 0 #878888 inset;
+    -webkit-box-shadow: 0 2px 3px 0 #878888 inset;
+    box-shadow: 0 2px 3px 0 #878888 inset;
+}
+
+form input[type=text]:focus {
+    border: 1px solid #417DC1;
+}
+
+form input[type=password] {
+    border: 1px solid #CCCCCC;
+}
+
+form input[type=password]:focus {
+    border: 1px solid #417DC1;
+}
+
+textarea {
+    border: 1px solid #CCCCCC;
+}
+
+textarea:focus {
+    border: 1px solid #417DC1;
+}
+
+.button {
+    cursor: pointer;
+}
+
+.raised {
+    -webkit-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1);
+}
+
+.shadowDown {
+    -moz-box-shadow: 0 3px 4px -1px #888888 inset;
+    -webkit-box-shadow: 0 3px 4px -1px #888888 inset;
+    box-shadow: 0 3px 4px -1px #888888 inset;
+}
+
+.shadowDownOuter {
+    -moz-box-shadow: 0 4px 6px -2px #888888;
+    -webkit-box-shadow: 0 4px 6px -2px #888888;
+    box-shadow: 0 4px 6px -2px #888888;
+}
+
+.shadowRight {
+    -moz-box-shadow: 3px 0 4px 1px #888888 inset;
+    -webkit-box-shadow: 3px 0 4px 1px #888888 inset;
+    box-shadow: 3px 0 4px 1px #888888 inset;
+}
+
+.shadowRightOuter {
+    -moz-box-shadow: 2px 0 9px 1px #888888;
+    -webkit-box-shadow: 2px 0 9px 1px #888888;
+    box-shadow: 2px 0 9px 1px #888888;
+}
+
+iframe.download {
+    display: none;
+}
+
+.linkButton {
+    color: blue;
+    text-decoration: underline;
+}
+
+.warning {
+    color: #FF5555;
+}
+
+.notice {
+    font-weight: bold;
+}
+
+.offsetColor {
+    color: #587CBC;
+}
+
+a.offsetColor {
+    color: #587CBC;
+}
+
+.ui-effects-transfer {
+    background-color: #edf4fa;
+    opacity: .5;
+    filter: Alpha(Opacity=50);
+}
+
+.introMask {
+    background: none repeat scroll 0 0 white;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: 10000;
+}
+
+/* Header */
+#header {
+    height: 135px;
+    background-color: #ffffff;
+    border-bottom: #999999 solid 1px;
+    min-width: 1024px;
+}
+
+#logo {
+    color: #492318;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 35px;
+    left: 49px;
+    position: absolute;
+    top: 25px;
+    z-index: 15000;
+}
+
+#top_menu {
+    float: right;
+    margin-top: 18px;
+    margin-right: 17px;
+}
+
+.separator {
+    padding: 0 5px;
+}
+
+#top_menu a {
+    color: #000;
+    text-decoration: none;
+}
+
+#top_menu a:hover {
+    color: #0755AC;
+}
+
+.headerButton {
+    color: #000;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.headerButton:hover {
+    color: #0755AC;
+}
+
+/* Container */
+#container {
+    background-color: #fff;
+    overflow: hidden;
+    min-height: 512px;
+    min-width: 1024px;
+    position: relative;
+}
+
+#map {
+    min-width: 999px;
+}
+
+/* left column panel */
+#left_col {
+    height: 100%;
+    float: left;
+    cursor: default;
+    display: none;
+    z-index: 1200;
+    position: relative;
+    background-color: #ffffff;
+}
+
+#left_col .contents {
+    height: 100%;
+}
+
+/******
+tabs
+******/
+
+#tabs {
+    border: none;
+    border-right: #999 solid 1px;
+    z-index: 1001;
+    min-height: 100%;
+    border-radius: 0;
+}
+
+.tabText {
+    display: block;
+    height: 22px;
+    padding-top: 2px;
+}
+
+.tabText > span {
+    /*line-height: 22px;*/
+    vertical-align: top;
+}
+
+#searchTabText {
+    width: 119px;
+}
+
+#searchTabText > div {
+    margin-top: 2px;
+}
+
+#cartTabText .shoppingCartIcon {
+    display: inline-block;
+}
+
+#cartTabText {
+    width: 107px;
+}
+
+#cartTabTextInner {
+    margin-right: 24px;
+    margin-left: -3px;
+}
+
+/**************
+resize arrows
+***************/
+.arrow_buttons {
+    float: right;
+    margin-top: 3px;
+    position: relative;
+    z-index: 1002;
+}
+
+.arrow_buttons .arrow_left {
+    background: url("../static/media/ogp-sprite.png") no-repeat scroll 0 -58px transparent;
+    width: 30px;
+    height: 26px;
+    display: inline-block;
+    margin-top: 1px;
+    vertical-align: top;
+    border: none;
+}
+
+.arrow_buttons .arrow_separator {
+    background: url("../static/media/ogp-sprite.png") no-repeat scroll -29px -58px transparent;
+    width: 10px;
+    height: 26px;
+    display: inline-block;
+}
+
+.arrow_right {
+    background: url("../static/media/ogp-sprite.png") no-repeat scroll -39px -58px transparent;
+    width: 27px;
+    height: 26px;
+    display: block;
+    border: none;
+}
+
+.arrow_buttons .arrow_right {
+    background: url("../static/media/ogp-sprite.png") no-repeat scroll -39px -58px transparent;
+    display: inline-block;
+    margin-top: 1px;
+    vertical-align: top;
+}
+
+#roll_right {
+    min-height: 512px;
+    width: 25px;
+    background-color: #eeeeee;
+    vertical-align: top;
+    position: absolute;
+    padding: 0;
+    padding-top: 4px;
+    height: 100%;
+    top: 0;
+    right: 0;
+    z-index: 1010;
+}
+
+/*****************
+resize handles
+******************/
+
+th > .ui-resizable-e {
+    cursor: col-resize;
+    float: right;
+    height: 14px;
+    margin: -14px -9px 0 0;
+    position: static;
+    width: 7px;
+}
+
+#left_col > .ui-resizable-e {
+    cursor: col-resize;
+    height: 100% !important;
+    right: -1px;
+    width: 7px;
+    z-index: 2147483647 !important
+}
+
+/***/
+
+.scrollFiller {
+    position: absolute;
+    background-color: white;
+    width: 14px;
+    height: 49px;
+    z-index: 9999999;
+    border-left: 1px solid lightgray;
+    right: 0;
+}
+
+#leftColSpacer {
+    background-color: #FFFFFF;
+    position: relative;
+    z-index: 1490;
+    height: 0;
+}
+
+/* layer table headers */
+.tableHeader {
+    background: #EAEAEA;
+    background: linear-gradient(#EAEAEA, #D3D3D3) repeat scroll 0 0 transparent;
+    background: -webkit-gradient(linear, left top, left bottom, from(#EAEAEA), to(#D3D3D3));
+    background: -webkit-linear-gradient(#EAEAEA, #D3D3D3);
+    background: -moz-linear-gradient(top, #EAEAEA, #D3D3D3);
+    background: -ms-linear-gradient(#EAEAEA, #D3D3D3);
+    background: -o-linear-gradient(#EAEAEA, #D3D3D3);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#EAEAEA', endColorstr='#D3D3D3');
+    border-bottom: 1px solid #999999;
+    padding: 2px;
+}
+
+.tableHeader > div {
+    display: inline-block;
+}
+
+.tableHeader .button {
+    margin-right: 5px;
+}
+
+/* cart */
+#cart {
+    padding-bottom: 50px;
+}
+
+#cartHeader {
+    padding-right: 40px;
+    text-align: right;
+}
+
+#removeFromCartButton {
+    float: left;
+    margin-left: 20px;
+}
+
+#mapClearButton {
+    float: right;
+    margin-top: 1px;
+    right: 17px;
+}
+
+.owsServicesButton {
+    width: 100%;
+    text-align: left;
+}
+
+.owsServicesButton > span.ui-button-text {
+    width: 100%;
+}
+
+#optionDetails {
+    display: none;
+    background: none repeat scroll 0 0 #4B8ACF;
+    height: 34px;
+    left: 0;
+    position: absolute;
+    text-align: left;
+    top: 0;
+    width: 100%;
+    overflow: visible;
+    color: white;
+    font-size: 14px;
+}
+
+#optionDetails > div {
+    padding: 9px 5px 9px 20px;
+}
+
+
+
+
+
+

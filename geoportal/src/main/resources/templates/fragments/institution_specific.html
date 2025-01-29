@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+<div th:fragment="about">
+  <p>GeoData@Tufts is developed and maintained by Tufts University
+    Information Technology. Tufts is leading the development in
+    collaboration with Harvard of this open source, federated web
+    application to rapidly discover, preview, and retrieve geospatial data
+    from multiple repositories. GeoData@Tufts combines an intuitive,
+    map-based search interface along with traditional text-based metadata
+    search tools for rapid data discovery and for use in teaching,
+    learning, and research.</p>
+  <p>
+    GeoData@Tufts is part of <a href="http://www.opengeoportal.org">The
+    Open Geoportal</a>. The Open Geoportal is a consortium comprised of
+    contributions of several universities and organizations to help
+    facilitate the discovery and acquisition of geospatial data across
+    many organizations and platforms. Built on open source technology, The Open Geoportal
+    provides organizations the opportunity to share thousands of
+    geospatial data layers, maps, metadata, and development resources
+    through a single common interface.
+  </p>
+  <p>
+            <span class="geodataContact">For questions, comments, or to
+                report problems, please contact:
+                <a href="mailto:geodata@elist.tufts.edu">geodata@elist.tufts.edu</a>
+            </span>
+  </p>
+</div>
+
+<div th:fragment="contact">
+  <p>
+            <span class="geodataContact">For questions, comments, or to
+                report problems, please contact:
+                <a href="mailto:geodata@elist.tufts.edu">geodata@elist.tufts.edu</a>
+            </span>
+  </p>
+
+  <div>
+    <h3>Project Management:</h3>
+    Patrick Florance, Manager of Geospatial Technology Services, UIT,
+    Tufts University
+  </div>
+
+  <div id="contactLogos">
+    <div class="gisLogo" title="GIS@Tufts"
+         onclick="location.href='http://gis.tufts.edu/'"></div>
+    <div class="itLogo" title="UIT"
+         onclick="location.href='http://uit.tufts.edu/'"></div>
+  </div>
+</div>
+
+<div th:fragment="footer" id="footer">
+  <div id="footerLogos">
+    <div class="institutionLogo" title="Tufts"
+         onclick="location.href='http://tufts.edu'"></div>
+    <div class="itLogo infoLinks" title="TTS"
+         onclick="location.href='https://it.tufts.edu/'">Technology
+      Services</div>
+    <div class="gisLogo infoLinks" title="GIS@Tufts"
+         onclick="location.href='http://gis.tufts.edu'">GIS@Tufts.edu</div>
+
+  </div>
+  <span id="footerInfo"> <span id="ogpLink" class="infoLinks"
+                               onclick="location.href='http://www.opengeoportal.org'">Powered
+			by OpenGeoportal</span>
+	</span>
+</div>
+
+</body>
+</html>

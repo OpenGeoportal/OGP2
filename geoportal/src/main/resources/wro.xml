@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<groups xmlns="http://www.isdc.ro/wro">
+	<group name='ogpLib'>
+
+		<css>classpath:/css/structure.css</css>
+		<css>classpath:/css/header.css</css>
+		<css>classpath:/css/google.css</css>
+		<css>classpath:/css/mapDiv.css</css>
+		<css>classpath:/css/footer.css</css>
+		<css>classpath:/css/icons.css</css>
+		<css>classpath:/css/dialogs.css</css>
+		<css>classpath:/css/spinner.css</css>
+		<css>classpath:/css/dropdown.css</css>
+		<css>classpath:/css/infoBubble.css</css>
+		<css>classpath:/css/search.css</css>
+		<css>classpath:/css/layerTable.css</css>
+		<css>classpath:/css/previewControls.css</css>
+		<css>classpath:/css/attributeInfo.css</css>
+		<css>classpath:/css/metadata.css</css>
+
+		<js>classpath:/javascript/models/config.js</js>
+		<js>classpath:/javascript/utility.js</js>
+		<js>classpath:/javascript/templates/template.js</js>
+		<js>classpath:/javascript/analytics.js</js>
+		<js>classpath:/javascript/commonControls.js</js>
+		<js>classpath:/javascript/geocoder.js</js>
+		<js>classpath:/javascript/metadata.js</js>
+		<js>classpath:/javascript/tableItems.js</js>
+
+		<js>classpath:/javascript/models/facetModel.js</js>
+		<js>classpath:/javascript/models/resultItem.js</js>
+		<js>classpath:/javascript/models/basemapModel.js</js>
+		<js>classpath:/javascript/models/tableConfig.js</js>
+		<js>classpath:/javascript/models/tableLayerSettings.js</js>
+		<js>classpath:/javascript/models/tableSortSettings.js</js>
+		<js>classpath:/javascript/models/protocolAwareModel.js</js>
+		<js>classpath:/javascript/models/previewedLayers.js</js>
+		<js>classpath:/javascript/models/cartCollection.js</js>
+		<js>classpath:/javascript/models/downloadQueue.js</js>
+		<js>classpath:/javascript/models/loadIndicator.js</js>
+		<js>classpath:/javascript/models/userModel.js</js>
+		<js>classpath:/javascript/views/loginView.js</js>
+		<js>classpath:/javascript/models/appSettings.js</js>
+		<js>classpath:/javascript/models/queryModel.js</js>
+		<js>classpath:/javascript/models/leftPanelModel.js</js>
+		<js>classpath:/javascript/views/selectBoxes.js</js>
+		<js>classpath:/javascript/views/mapLoadIndicator.js</js>
+		<js>classpath:/javascript/views/layerRow.js</js>
+		<js>classpath:/javascript/views/layerTable.js</js>
+		<js>classpath:/javascript/views/cartHeader.js</js>
+		<js>classpath:/javascript/views/cartRow.js</js>
+		<js>classpath:/javascript/views/cartTable.js</js>
+		<js>classpath:/javascript/views/leftPanel.js</js>
+		<js>classpath:/javascript/models/externalPreviewWindowsCollection.js</js>
+		<js>classpath:/javascript/views/abstractCartAction.js</js>
+		<js>classpath:/javascript/views/geoCommonsRequestView.js</js>
+		<js>classpath:/javascript/views/downloadRequestView.js</js>
+		<js>classpath:/javascript/views/download.js</js>
+		<js>classpath:/javascript/views/shareCart.js</js>
+		<js>classpath:/javascript/views/mapIt.js</js>
+		<js>classpath:/javascript/views/dynamicWebServices.js</js>
+		<js>classpath:/javascript/views/search.js</js>
+		<js>classpath:/javascript/views/colorPicker.js</js>
+		<js>classpath:/javascript/views/previewControls.js</js>
+		<js>classpath:/javascript/views/previewedLayersRow.js</js>
+		<js>classpath:/javascript/views/previewedLayersTable.js</js>
+		<js>classpath:/javascript/views/searchResultsRow.js</js>
+		<js>classpath:/javascript/views/searchResultsTable.js</js>
+		<js>classpath:/javascript/models/featureInfoModel.js</js>
+		<js>classpath:/javascript/views/featureInfoView.js</js>
+		<js>classpath:/javascript/mapDiv.js</js>
+		<js>classpath:/javascript/userInterface.js</js>
+		<js>classpath:/javascript/userState.js</js>
+		<js>classpath:/javascript/bootstrapModels.js</js>
+	</group>
+	<group name="local">
+		<css>/local/local.css</css>
+		<js>/local/local.js</js>
+	</group>
+	<group name='ogp'>
+		<group-ref>ogpLib</group-ref>
+		<group-ref>local</group-ref>
+		<js>classpath:/javascript/main.js</js>
+	</group>
+</groups>

@@ -1,0 +1,9 @@
+/target
+
+# eclipse config
+.settings
+.classpath
+.project
+
+geoportal.iml
+/src/main/resources/application-prod.properties
