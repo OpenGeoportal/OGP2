@@ -119,6 +119,16 @@
 					<groupId>org.apache.solr</groupId>
 					<artifactId>solr-solrj-streaming</artifactId>
 				</exclusion>
+				<!-- Jetty backs Http2SolrClient only; HttpSolrClient uses Apache HttpClient.
+				     Spring Boot 2.7 also pins Jetty to 9.4, older than the 10.x solrj needs. -->
+				<exclusion>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.jetty.http2</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
