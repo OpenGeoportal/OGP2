@@ -37,6 +37,8 @@
 		<warFile.name>opengeoportal</warFile.name>
 		<!-- overrides of Spring Boot managed versions; drop these when moving off Spring Boot 2.7 -->
 		<hsqldb.version>2.7.4</hsqldb.version>
+		<tomcat.version>9.0.124</tomcat.version>
+		<logback.version>1.2.13</logback.version>
 	</properties>
 	<dependencies>
 
