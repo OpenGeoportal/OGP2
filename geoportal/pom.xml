@@ -109,6 +109,17 @@
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
 			<version>9.4.1</version>
+			<!-- only HttpSolrClient is used; SolrCloud (ZooKeeper) and streaming expressions are not -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.solr</groupId>
+					<artifactId>solr-solrj-zookeeper</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.solr</groupId>
+					<artifactId>solr-solrj-streaming</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
