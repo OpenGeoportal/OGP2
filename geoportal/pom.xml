@@ -28,13 +28,17 @@
 	</parent>
 
 	<properties>
-		<geotools.version>30.2</geotools.version>
-		<validator.version>1.8.0</validator.version>
+		<geotools.version>30.5</geotools.version>
+		<validator.version>1.11.0</validator.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
 		<warFile.name>opengeoportal</warFile.name>
+		<!-- overrides of Spring Boot managed versions; drop these when moving off Spring Boot 2.7 -->
+		<hsqldb.version>2.7.4</hsqldb.version>
+		<tomcat.version>9.0.124</tomcat.version>
+		<logback.version>1.2.13</logback.version>
 	</properties>
 	<dependencies>
 
@@ -108,7 +112,28 @@
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
-			<version>9.4.1</version>
+			<version>9.11.0</version>
+			<!-- only HttpSolrClient is used; SolrCloud (ZooKeeper) and streaming expressions are not -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.solr</groupId>
+					<artifactId>solr-solrj-zookeeper</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.solr</groupId>
+					<artifactId>solr-solrj-streaming</artifactId>
+				</exclusion>
+				<!-- Jetty backs Http2SolrClient only; HttpSolrClient uses Apache HttpClient.
+				     Spring Boot 2.7 also pins Jetty to 9.4, older than the 10.x solrj needs. -->
+				<exclusion>
+					<groupId>org.eclipse.jetty</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.jetty.http2</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -120,7 +145,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
+			<version>3.22.0</version>
 		</dependency>
 
 		<dependency>
