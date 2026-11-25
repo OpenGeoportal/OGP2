@@ -29,7 +29,7 @@
 
 	<properties>
 		<geotools.version>30.2</geotools.version>
-		<validator.version>1.8.0</validator.version>
+		<validator.version>1.11.0</validator.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
@@ -141,7 +141,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
+			<version>3.22.0</version>
 		</dependency>
 
 		<dependency>
