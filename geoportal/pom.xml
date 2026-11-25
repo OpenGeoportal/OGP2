@@ -6,7 +6,7 @@
 <!--
 	<packaging>war</packaging>
 -->
-	<version>3.0.1</version>
+	<version>3.0.2</version>
 	<name>opengeoportal webapp</name>
 	<url>https://opengeoportal.org</url>
 
